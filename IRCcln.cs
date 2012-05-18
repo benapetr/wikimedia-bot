@@ -1,0 +1,353 @@
+﻿//This program is free software: you can redistribute it and/or modify
+//it under the terms of the GNU General Public License as published by
+//the Free Software Foundation, either version 3 of the License, or
+//(at your option) any later version.
+
+//This program is distributed in the hope that it will be useful,
+//but WITHOUT ANY WARRANTY; without even the implied warranty of
+//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//GNU General Public License for more details.
+
+// Created by Petr Bena
+
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Text;
+
+
+namespace wmib
+{
+    public class IRC
+    {
+        /// <summary>
+        /// Server addr
+        /// </summary>
+        public string server;
+        /// <summary>
+        /// Nick
+        /// </summary>
+        public string nickname;
+        /// <summary>
+        /// ID
+        /// </summary>
+        public string ident;
+        /// <summary>
+        /// User
+        /// </summary>
+        public string username;
+        /// <summary>
+        /// Pw
+        /// </summary>
+        public string password;
+        /// <summary>
+        /// Socket
+        /// </summary>
+        public static System.Net.Sockets.NetworkStream data;
+        /// <summary>
+        /// Enabled
+        /// </summary>
+        public bool disabled = true;
+        /// <summary>
+        /// Socket Reader
+        /// </summary>
+        public System.IO.StreamReader rd;
+        /// <summary>
+        /// Writer
+        /// </summary>
+        public System.IO.StreamWriter wd;
+        public static System.Threading.Thread check_thread;
+
+        public System.Threading.Thread _Queue;
+
+        public SlowQueue _SlowQueue;
+
+        public class SlowQueue
+        {
+            public SlowQueue(IRC _parent)
+            {
+                Parent = _parent;
+            }
+            public struct Message
+            {
+                public string message;
+                public string channel;
+            }
+            public List<Message> messages = new List<Message>();
+            public List<Message> newmessages = new List<Message>();
+            public IRC Parent;
+            private bool locked;
+
+            public void DeliverMessage(string Message, string Channel)
+            {
+                Message text = new Message();
+                text.message = Message;
+                text.channel = Channel;
+                if (locked)
+                {
+                    newmessages.Add(text);
+                    return;
+                }
+                messages.Add(text);
+            }
+
+            public void Run()
+            {
+                while (true)
+                {
+                    locked = true;
+                    foreach (Message message in messages)
+                    {
+                        Parent.Message(message.message, message.channel);
+                        System.Threading.Thread.Sleep(1000);
+                    }
+                    messages.Clear();
+                    locked = false;
+                    foreach (Message message in newmessages)
+                    {
+                        messages.Add(message);
+                    }
+                    newmessages.Clear();
+                    System.Threading.Thread.Sleep(200);
+                }
+            }
+        }
+
+        public IRC(string _server, string _nick, string _ident, string _username)
+        {
+            server= _server;
+            password = "";
+            _SlowQueue = new SlowQueue(this);
+            username = _username;
+            nickname = _nick;
+            ident = _ident;
+        }
+
+        /// <summary>
+        /// Send a message to channel
+        /// </summary>
+        /// <param name="message">Message</param>
+        /// <param name="channel">Channel</param>
+        /// <returns></returns>
+        public bool Message(string message, string channel)
+        {
+            config.channel curr = core.getChannel(channel);
+            if (curr.suppress)
+            {
+                return true;
+            }
+            wd.WriteLine("PRIVMSG " + channel + " :" + message);
+            Logs.chanLog(message, curr, config.username, "");
+            wd.Flush();
+            return true;
+        }
+
+        /// <summary>
+        /// Ping
+        /// </summary>
+        public void Ping()
+        {
+            while (true)
+            {
+                try
+                {
+                    System.Threading.Thread.Sleep(20000);
+                    wd.WriteLine("PING :" + config.network);
+                    wd.Flush();
+                }
+                catch (Exception)
+                { }
+            }
+        }
+
+        /// <summary>
+        /// Connection
+        /// </summary>
+        /// <returns></returns>
+        public bool Reconnect()
+        {
+            _Queue.Abort();
+            data = new System.Net.Sockets.TcpClient(server, 6667).GetStream();
+            rd = new StreamReader(data, System.Text.Encoding.UTF8);
+            wd = new StreamWriter(data);
+            wd.WriteLine("USER " + username + " 8 * :" + ident);
+            wd.WriteLine("NICK " + nickname);
+            Authenticate();
+            _Queue = new System.Threading.Thread(_SlowQueue.Run);
+            foreach (config.channel ch in config.channels)
+            {
+                System.Threading.Thread.Sleep(2000);
+                wd.WriteLine("JOIN " + ch.name);
+                wd.Flush();
+            }
+            _SlowQueue.newmessages.Clear();
+            _SlowQueue.messages.Clear();
+            wd.Flush();
+            _Queue.Start();
+            return false;
+        }
+
+        public bool Authenticate()
+        {
+            if (config.password != "")
+            {
+                wd.WriteLine("PRIVMSG nickserv :identify " + config.login + " " + config.password);
+                wd.Flush();
+                System.Threading.Thread.Sleep(4000);
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Connection
+        /// </summary>
+        /// <returns></returns>
+        public void Connect()
+        {
+            try
+            {
+                data = new System.Net.Sockets.TcpClient(server, 6667).GetStream();
+                rd = new System.IO.StreamReader(data, System.Text.Encoding.UTF8);
+                wd = new System.IO.StreamWriter(data);
+
+                _Queue = new System.Threading.Thread(_SlowQueue.Run);
+                check_thread = new System.Threading.Thread(Ping);
+                check_thread.Start();
+
+                wd.WriteLine("USER " + username + " 8 * :" + ident);
+                wd.WriteLine("NICK " + nickname);
+
+                _Queue.Start();
+                System.Threading.Thread.Sleep(2000);
+
+                Authenticate();
+
+                foreach (config.channel ch in config.channels)
+                {
+                    if (ch.name != "")
+                    {
+                        wd.Flush();
+                        wd.WriteLine("JOIN " + ch.name);
+                        System.Threading.Thread.Sleep(2000);
+                    }
+                }
+                wd.Flush();
+                string text = "";
+                string nick = "";
+                string host = "";
+                string message = "";
+                string channel = "";
+                char delimiter = (char)001;
+
+                while (!disabled)
+                {
+                    try
+                    {
+                        while (!rd.EndOfStream)
+                        {
+                            text = rd.ReadLine();
+                            if (text.StartsWith(":"))
+                            {
+                                string check = text.Substring(text.IndexOf(" "));
+                                if (check.StartsWith(" 005"))
+                                {
+
+                                }
+                                else
+                                {
+                                    if (text.Contains("PRIVMSG"))
+                                    {
+                                        string info = text.Substring(1, text.IndexOf(" :", 1) - 1);
+                                        string info_host;
+                                        // we got a message here :)
+                                        if (text.Contains("!") && text.Contains("@"))
+                                        {
+                                            nick = info.Substring(0, info.IndexOf("!"));
+                                            host = info.Substring(info.IndexOf("@") + 1, info.IndexOf(" ", info.IndexOf("@")) - 1 - info.IndexOf("@"));
+                                        }
+                                        info_host = info.Substring(info.IndexOf("PRIVMSG "));
+
+                                        if (info_host.Contains("#"))
+                                        {
+                                            channel = info_host.Substring(info_host.IndexOf("#"));
+                                            message = text.Replace(info, "");
+                                            message = message.Substring(message.IndexOf(" :") + 2);
+                                            if (message.Contains(delimiter.ToString() + "ACTION"))
+                                            {
+                                                core.getAction(message.Replace(delimiter.ToString() + "ACTION", ""), channel, host, nick);
+                                                continue;
+                                            }
+                                            else
+                                            {
+                                                core.getMessage(channel, nick, host, message);
+                                                continue;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            message = text.Substring(text.IndexOf("PRIVMSG"));
+                                            message = message.Substring(message.IndexOf(":"));
+                                            // private message
+                                            if (message.StartsWith(":" + delimiter.ToString() + "FINGER"))
+                                            {
+                                                wd.WriteLine("NOTICE " + nick + " :" + delimiter.ToString() + "FINGER" + " I am a bot don't finger me");
+                                                wd.Flush();
+                                                continue;
+                                            }
+                                            if (message.StartsWith(":" + delimiter.ToString() + "TIME"))
+                                            {
+                                                wd.WriteLine("NOTICE " + nick + " :" + delimiter.ToString() + "TIME " + System.DateTime.Now.ToString());
+                                                wd.Flush();
+                                                continue;
+                                            }
+                                            if (message.StartsWith(":" + delimiter.ToString() + "PING"))
+                                            {
+                                                wd.WriteLine("NOTICE " + nick + " :" + delimiter.ToString() + "PING" + message.Substring(message.IndexOf(delimiter.ToString() + "PING") + 5));
+                                                wd.Flush();
+                                                continue;
+                                            }
+                                            if (message.StartsWith(":" + delimiter.ToString() + "VERSION"))
+                                            {
+                                                wd.WriteLine("NOTICE " + nick + " :" + delimiter.ToString() + "VERSION " + config.version);
+                                                wd.Flush();
+                                                continue;
+                                            }
+                                        }
+                                    }
+                                    if (text.Contains("PING "))
+                                    {
+                                        wd.WriteLine("PONG " + text.Substring(text.IndexOf("PING ") + 5));
+                                        wd.Flush();
+                                    }
+                                }
+                            }
+                            System.Threading.Thread.Sleep(50);
+                        }
+                        Program.Log("Reconnecting, end of data stream");
+                        Reconnect();
+                    }
+                    catch (System.IO.IOException xx)
+                    {
+                        Program.Log("Reconnecting, connection failed " + xx.Message + xx.StackTrace);
+                        Reconnect();
+                    }
+                    catch (Exception xx)
+                    {
+                        core.handleException(xx, channel);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("RecentChanges disabled, no connection");
+                disabled = true;
+            }
+        }
+
+        public int Disconnect()
+        {
+            wd.Flush();
+            return 0;
+        }
+    }
+}
