@@ -207,6 +207,7 @@ namespace wmib
             try
             {
                 data = new System.Net.Sockets.TcpClient(server, 6667).GetStream();
+				disabled = false;
                 rd = new System.IO.StreamReader(data, System.Text.Encoding.UTF8);
                 wd = new System.IO.StreamWriter(data);
 
@@ -255,7 +256,17 @@ namespace wmib
                                 }
                                 else
                                 {
-                                    if (text.Contains("PRIVMSG"))
+									string command = "";
+									string[] part;
+									if (text.Contains(":"))
+									{
+										part = text.Split (':');
+										if (part.Length > 1)
+										{
+											command = part[1];
+										}
+									}
+                                    if (command.Contains("PRIVMSG"))
                                     {
                                         string info = text.Substring(1, text.IndexOf(" :", 1) - 1);
                                         string info_host;
@@ -314,11 +325,37 @@ namespace wmib
                                             }
                                         }
                                     }
-                                    if (text.Contains("PING "))
+                                    if (command.Contains("PING "))
                                     {
                                         wd.WriteLine("PONG " + text.Substring(text.IndexOf("PING ") + 5));
                                         wd.Flush();
+										Console.WriteLine (command);
                                     }
+									if (command.Contains ("KICK"))
+									{
+										string user;
+										string _channel;
+										string temp = command.Substring (command.IndexOf ("KICK"));
+										string[] parts = temp.Split (' ');
+										if (parts.Length > 1)
+										{
+											_channel = parts[1];
+											user = parts[2];
+											if (user == nickname)
+											{
+												config.channel chan = core.getChannel (_channel);
+												if (chan != null)
+												{
+													if (config.channels.Contains (chan))
+													{
+														config.channels.Remove (chan);
+														Program.Log( "I was kicked from " + parts[1] );
+														config.Save ();
+													}
+												}
+											}
+										}
+									}
                                 }
                             }
                             System.Threading.Thread.Sleep(50);

@@ -4,14 +4,14 @@ using System.Text;
 
 namespace wmib
 {
-    class messages
+    public class messages
     {
         public static string Language = "en";
-        class container
+        public class container
         {
             public string language;
             public Dictionary<string, string> Cache;
-            container(string LanguageCode)
+            public container(string LanguageCode)
             {
                 language = LanguageCode;
                 Cache = new Dictionary<string, string>();
@@ -34,13 +34,11 @@ namespace wmib
 
         public static bool exist(string lang)
         {
-            switch (lang)
-            { 
-                case "en":
-                case "cs":
-                    return true;
-            }
-            return false;
+            if (!data.ContainsKey (lang))
+			{
+				return false;
+			}
+			return true;
         }
 
         public static string get(string item, string language = null)

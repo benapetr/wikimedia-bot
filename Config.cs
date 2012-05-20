@@ -32,7 +32,7 @@ namespace wmib
             /// Log
             /// </summary>
             public string log;
-
+			
             public bool feed;
             public bool info;
 			
@@ -73,6 +73,16 @@ namespace wmib
                 conf += "\n" + a + "=" + b + ";";
             }
 
+			public static bool channelExist(string _Channel)
+			{
+				string conf_file = variables.config + "/" + _Channel + ".setting";
+                if (File.Exists(conf_file))
+                {
+                    return true;
+                }
+				return false;
+			}
+			
             /// <summary>
             /// Load config of channel :)
             /// </summary>

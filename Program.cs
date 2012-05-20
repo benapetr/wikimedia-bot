@@ -25,6 +25,8 @@ namespace wmib
         {
             Log("Loading...");
 			config.UpTime = System.DateTime.Now;
+			messages.data.Add ("cs", new messages.container("cs"));
+			messages.data.Add ("en", new messages.container("en"));
             if ( config.Load() != 0)
 			{
 				return;
