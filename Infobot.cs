@@ -390,12 +390,12 @@ namespace wmib
             }
             if (!misc.IsValidRegex(key))
             {
-                core.irc.Message(messages.get("Search1", Chan.ln), Chan.name);
+                core.irc.Message(messages.get("Error1", Chan.ln), Chan.name);
                 return;
             }
             if (key.Length < 11)
             {
-                core.irc.Message("Could you please tell me what I should search for :P", Chan.name);
+                core.irc.Message(messages.get("Search1", Chan.ln), Chan.name);
                 return;
             }
             search_key = key.Substring(11);
@@ -410,7 +410,7 @@ namespace wmib
                 if (check > 8)
                 {
                     th.Abort();
-                    core.irc.Message("Search took more than 800ms try a better regex", Channel);
+                    core.irc.Message(messages.get("Error2", Chan.ln), Channel);
                     running = false;
                     return;
                 }
@@ -425,7 +425,7 @@ namespace wmib
             }
             if (key.Length < 9)
             {
-                core.irc.Message("Could you please tell me what I should search for :P", Chan.name);
+                core.irc.Message(messages.get("Error1", Chan.ln), Chan.name);
                 return;
             }
             key = key.Substring(8);
@@ -441,11 +441,11 @@ namespace wmib
             }
             if (results == "")
             {
-                core.irc._SlowQueue.DeliverMessage("No results found! :|", Chan.name);
+                core.irc._SlowQueue.DeliverMessage(messages.get("ResultsWereNotFound", Chan.ln), Chan.name);
             }
             else
             {
-                core.irc._SlowQueue.DeliverMessage("Results (found " + count.ToString() + "): " + results, Chan.name);
+                core.irc._SlowQueue.DeliverMessage(messages.get("Results", Chan.ln) + "(" + messages.get("ResultsFound", Chan.ln) + count.ToString() + "): " + results, Chan.name);
             }
         }
 
@@ -461,13 +461,14 @@ namespace wmib
             {
                 Thread.Sleep(200);
             }
+			config.channel ch = core.getChannel (Channel);
             try
             {
                 foreach (item data in text)
                 {
                     if (data.key == key)
                     {
-                        core.irc._SlowQueue.DeliverMessage("Key exist!", Channel);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Error3", ch.ln), Channel);
                         return;
                     }
                 }

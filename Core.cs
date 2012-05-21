@@ -726,7 +726,7 @@ namespace wmib
                 {
                     if (!chan.logged)
                     {
-                        irc.Message("Channel was already not logged", chan.name);
+                        irc.Message(messages.get("LogsE1", chan.ln), chan.name);
                         return;
                     }
                     else
@@ -734,7 +734,7 @@ namespace wmib
                         chan.logged = false;
                         config.Save();
                         chan.SaveConfig();
-                        irc.Message("Channel is not logged", chan.name);
+                        irc.Message(messages.get("NotLogged", chan.ln), chan.name);
                         return;
                     }
                 }
@@ -748,7 +748,7 @@ namespace wmib
                 {
                     channels = channels + a.name + ", ";
                 }
-                irc._SlowQueue.DeliverMessage("I am now in following channels: " + channels, chan.name);
+                irc._SlowQueue.DeliverMessage(messages.get("List", chan.ln) + channels, chan.name);
                 return;
             }
             if (message == "@infobot-off")
@@ -757,12 +757,12 @@ namespace wmib
                 {
                     if (!chan.info)
                     {
-                        irc.Message("Channel had infobot disabled", chan.name);
+                        irc.Message(messages.get("infobot1", chan.ln ), chan.name);
                         return;
                     }
                     else
                     {
-                        irc.Message("Infobot disabled", chan.name);
+                        irc.Message(messages.get("infobot2", chan.ln), chan.name);
                         chan.info = false;
                         chan.SaveConfig();
                         config.Save();
@@ -778,13 +778,13 @@ namespace wmib
                 {
                     if (!chan.logged)
                     {
-                        irc.Message("Infobot was already enabled :O", chan.name);
+                        irc.Message(messages.get( "infobot3", chan.ln ), chan.name);
                         return;
                     }
                     chan.info = true;
                     config.Save();
                     chan.SaveConfig();
-                    irc.Message("Infobot enabled", chan.name);
+                    irc.Message(messages.get("infobot4", chan.ln), chan.name);
                     return;
                 }
                 irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied" ,chan.ln), chan.name);
@@ -856,73 +856,29 @@ namespace wmib
             switch (parameter.ToLower())
             {
                 case "trustdel":
-                    showInfo("trustdel", "Remove an entry from access list, example @trustdel regex", channel.name);
-                    return false;
                 case "refresh":
-                    showInfo("refresh", "Remove data from queue", channel.name);
-                    return false;
                 case "infobot-on":
-                    showInfo("infobot-on", "Turn on the infobot", channel.name);
-                    return false;
                 case "infobot-off":
-                    showInfo("infobot-off", "Turn off the infobot, preserve db", channel.name);
-                    return false;
                 case "channellist":
-                    showInfo("channellist", "Display the list of channels where bot should be used (only if it can join them)", channel.name);
-                    return false;
                 case "trusted":
-                    showInfo("trusted", "Display access list for this channel", channel.name);
-                    return false;
                 case "trustadd":
-                    showInfo("trustadd", "Make an entry to the access list, example @trustadd regex admin", channel.name);
-                    return false;
                 case "drop":
-                    showInfo("drop", "Remove bot from a channel together with all collected data", channel.name);
-                    return false;
                 case "part":
-                    showInfo("part", "Remove bot from a channel and preserve all config", channel.name);
-                    return false;
 				case "language":
-					showInfo("language", messages.get() );
-					return false;
                 case "whoami":
-                    showInfo("whoami", "Display your current status in access list", channel.name);
-                    return false;
 				case "suppress-on":
-					showInfo ("suppress-on", "Disable output to channel", channel.name);
-					return false;
                 case "add":
-                    showInfo("add", "Insert bot to a specified channel and give you admin rights for that", channel.name);
-                    return false;
                 case "reload":
-                    showInfo("reload", "Read a config from disk", channel.name);
-                    return false;
                 case "logon":
-                    showInfo("logon", "Start logging to a file", channel.name);
-                    return false;
                 case "logoff":
-                    showInfo("logoff", "Disable logging", channel.name);
-                    return false;
                 case "recentchanges-on":
-                    showInfo("recentchanges-on", "Turn on a feed of changes on wmf wikis", channel.name);
-                    return false;
                 case "recentchanges-off":
-                    showInfo("recentchanges-off", "Turn off the wiki feed", channel.name);
-                    return false;
                 case "recentchanges-":
-                    showInfo("recentchanges-", "Remove a wiki from a feed, example @recentchanges- en_wikipedia", channel.name);
-                    return false;
                 case "recentchanges+":
-                    showInfo("recentchanges+", "Insert a wiki to feed, example @recentchanges+ en_wikipedia", channel.name);
-                    return false;
                 case "rc-":
-                    showInfo("RC-", "Remove a page from rc list", channel.name);
-                    return false;
                 case "rc+":
-                    showInfo("RC+", "Create entry for feed of specified page, example @RC+ wiki page", channel.name);
-                    return false;
 				case "suppress-off":
-					showInfo ("suppress-off", "Enable output to channel", channel.name);
+					showInfo(parameter, messages.get (parameter.ToLower (), channel.ln), channel.name);
 					return false;
             }
             irc._SlowQueue.DeliverMessage("Unknown command type @commands for a list of all commands I know", channel.name);
