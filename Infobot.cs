@@ -437,20 +437,12 @@ namespace wmib
             }
             if (!misc.IsValidRegex(key))
             {
-<<<<<<< HEAD
                 core.irc.Message(messages.get("Error1", Chan.Language), Chan.Name);
-=======
-                core.irc.Message(messages.get("Error1", Chan.ln), Chan.name);
->>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                 return;
             }
             if (key.Length < 11)
             {
-<<<<<<< HEAD
                 core.irc.Message(messages.get("Search1", Chan.Language), Chan.Name);
-=======
-                core.irc.Message(messages.get("Search1", Chan.ln), Chan.name);
->>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                 return;
             }
             search_key = key.Substring(11);
@@ -465,11 +457,7 @@ namespace wmib
                 if (check > 8)
                 {
                     th.Abort();
-<<<<<<< HEAD
                     core.irc.Message(messages.get("Error2", Chan.Language), Channel);
-=======
-                    core.irc.Message(messages.get("Error2", Chan.ln), Channel);
->>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                     running = false;
                     return;
                 }
@@ -484,11 +472,7 @@ namespace wmib
             }
             if (key.Length < 9)
             {
-<<<<<<< HEAD
                 core.irc.Message(messages.get("Error1", Chan.Language), Chan.Name);
-=======
-                core.irc.Message(messages.get("Error1", Chan.ln), Chan.name);
->>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                 return;
             }
             key = key.Substring(8);
@@ -504,19 +488,11 @@ namespace wmib
             }
             if (results == "")
             {
-<<<<<<< HEAD
                 core.irc._SlowQueue.DeliverMessage(messages.get("ResultsWereNotFound", Chan.Language), Chan.Name);
             }
             else
             {
                 core.irc._SlowQueue.DeliverMessage(messages.get("Results", Chan.Language) + "(" + messages.get("ResultsFound", Chan.Language) + count.ToString() + "): " + results, Chan.Name);
-=======
-                core.irc._SlowQueue.DeliverMessage(messages.get("ResultsWereNotFound", Chan.ln), Chan.name);
-            }
-            else
-            {
-                core.irc._SlowQueue.DeliverMessage(messages.get("Results", Chan.ln) + "(" + messages.get("ResultsFound", Chan.ln) + count.ToString() + "): " + results, Chan.name);
->>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
             }
         }
 
@@ -539,11 +515,7 @@ namespace wmib
                 {
                     if (data.key == key)
                     {
-<<<<<<< HEAD
                         core.irc._SlowQueue.DeliverMessage(messages.get("Error3", ch.Language), Channel);
-=======
-                        core.irc._SlowQueue.DeliverMessage(messages.get("Error3", ch.ln), Channel);
->>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                         return;
                     }
                 }

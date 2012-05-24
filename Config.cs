@@ -31,17 +31,10 @@ namespace wmib
             /// <summary>
             /// Log
             /// </summary>
-<<<<<<< HEAD
             public string Log;
 			
             public bool Feed;
             public bool Info;
-=======
-            public string log;
-			
-            public bool feed;
-            public bool info;
->>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
 			
 			public bool suppress;
 			

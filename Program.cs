@@ -27,10 +27,7 @@ namespace wmib
 			config.UpTime = System.DateTime.Now;
 			messages.data.Add ("cs", new messages.container("cs"));
 			messages.data.Add ("en", new messages.container("en"));
-<<<<<<< HEAD
             messages.data.Add ("zh", new messages.container("zh"));
-=======
->>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
             if ( config.Load() != 0)
 			{
 				return;
