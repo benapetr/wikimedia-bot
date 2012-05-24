@@ -51,6 +51,7 @@ namespace wmib
     {
         public static Thread dumphtmt;
         public static Thread rc;
+        public static Thread ib;
         public static bool disabled;
         public static IRC irc;
         private static List<user> User = new List<user>();
@@ -167,7 +168,7 @@ namespace wmib
         {
             foreach (config.channel current in config.channels)
             {
-                if (current.name.ToLower() == name.ToLower())
+                if (current.Name.ToLower() == name.ToLower())
                 {
                     return current;
                 }
@@ -194,31 +195,31 @@ namespace wmib
                     {
                         if (rights_info.Length < 3)
                         {
-                            irc.Message(messages.get("Trust1", channel.ln), channel.name);
+                            irc.Message(messages.get("Trust1", channel.Language), channel.Name);
                             return 0;
                         }
                         if (!(rights_info[2] == "admin" || rights_info[2] == "trusted"))
                         {
-                            irc.Message(messages.get("Unknown1", channel.ln), channel.name);
+                            irc.Message(messages.get("Unknown1", channel.Language), channel.Name);
                             return 2;
                         }
                         if (rights_info[2] == "admin")
                         {
                             if (!channel.Users.isApproved(user, host, "admin"))
                             {
-                                irc.Message(messages.get("PermissionDenied", channel.ln), channel.name);
+                                irc.Message(messages.get("PermissionDenied", channel.Language), channel.Name);
                                 return 2;
                             }
                         }
                         if (channel.Users.addUser(rights_info[2], rights_info[1]))
                         {
-                            irc.Message(messages.get("UserSc", channel.ln) + rights_info[1], channel.name);
+                            irc.Message(messages.get("UserSc", channel.Language) + rights_info[1], channel.Name);
                             return 0;
                         }
                     }
                     else
                     {
-                        irc._SlowQueue.DeliverMessage(messages.get("Authorization" ,channel.ln), channel.name);
+                        irc._SlowQueue.DeliverMessage(messages.get("Authorization" ,channel.Language), channel.Name);
                         return 0;
                     }
                 }
@@ -240,16 +241,16 @@ namespace wmib
                         }
                         else
                         {
-                            irc._SlowQueue.DeliverMessage(messages.get("Authorization", channel.ln), channel.name);
+                            irc._SlowQueue.DeliverMessage(messages.get("Authorization", channel.Language), channel.Name);
                             return 0;
                         }
                     }
-                    irc.Message(messages.get("InvalidUser", channel.ln), channel.name);
+                    irc.Message(messages.get("InvalidUser", channel.Language), channel.Name);
                 }
             }
             catch (Exception b)
             {
-                handleException(b, channel.name);
+                handleException(b, channel.Name);
             }
             return 0;
         }
@@ -295,29 +296,34 @@ namespace wmib
                             string channel = message.Substring(message.IndexOf(" ") + 1);
                             if (!validFile(channel) || (channel.Contains("#") == false))
                             {
-                                irc._SlowQueue.DeliverMessage(messages.get("InvalidName", chan.ln), chan.name);
+                                irc._SlowQueue.DeliverMessage(messages.get("InvalidName", chan.Language), chan.Name);
                                 return;
                             }
                             foreach (config.channel cu in config.channels)
                             {
-                                if (channel == cu.name)
+                                if (channel == cu.Name)
                                 {
+									irc._SlowQueue.DeliverMessage (messages.get("ChannelIn", chan.Language), chan.Name);
                                     return;
                                 }
                             }
+							bool existing = config.channel.channelExist(channel);
                             config.channels.Add(new config.channel(channel));
                             config.Save();
                             irc.wd.WriteLine("JOIN " + channel);
                             irc.wd.Flush();
                             Thread.Sleep(100);
                             config.channel Chan = getChannel(channel);
-                            Chan.Users.addUser("admin", IRCTrust.normalize(user) + "!.*@" + host);
+							if (!existing)
+							{
+                            	Chan.Users.addUser("admin", IRCTrust.normalize(user) + "!.*@" + host);
+							}
                             return;
                         }
-                        irc.Message(messages.get("InvalidName", chan.ln), chan.name);
+                        irc.Message(messages.get("InvalidName", chan.Language), chan.Name);
                         return;
                     }
-                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.ln), chan.name);
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
                     return;
                 }
             }
@@ -342,26 +348,26 @@ namespace wmib
                 {
                     if (chan.Users.isApproved(user, host, "admin"))
                     {
-                        irc.wd.WriteLine("PART " + chan.name);
+                        irc.wd.WriteLine("PART " + chan.Name);
                         Thread.Sleep(100);
-                        chan.feed = false;
+                        chan.Feed = false;
                         irc.wd.Flush();
                         try
                         {
-                            if (Directory.Exists(chan.log))
+                            if (Directory.Exists(chan.Log))
                             {
-                                Directory.Delete(chan.log, true);
+                                Directory.Delete(chan.Log, true);
                             }
                         }
                         catch (Exception)
                         { }
                         try
                         {
-                            File.Delete(variables.config + "/" + chan.name + ".setting");
+                            File.Delete(variables.config + "/" + chan.Name + ".setting");
                             File.Delete(chan.Users.File);
-                            if (File.Exists(variables.config + "/" + chan.name + ".list"))
+                            if (File.Exists(variables.config + "/" + chan.Name + ".list"))
                             {
-                                File.Delete(variables.config + "/" + chan.name + ".list");
+                                File.Delete(variables.config + "/" + chan.Name + ".list");
                             }
                         }
                         catch (Exception) { }
@@ -369,22 +375,22 @@ namespace wmib
                         config.Save();
                         return;
                     }
-                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.ln), chan.name);
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
                     return;
                 }
                 if (message == "@part")
                 {
                     if (chan.Users.isApproved(user, host, "admin"))
                     {
-                        irc.wd.WriteLine("PART " + chan.name);
-                        chan.feed = false;
+                        irc.wd.WriteLine("PART " + chan.Name);
+                        chan.Feed = false;
                         Thread.Sleep(100);
                         irc.wd.Flush();
                         config.channels.Remove(chan);
                         config.Save();
                         return;
                     }
-                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.ln), chan.name);
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
                     return;
                 }
             }
@@ -408,11 +414,11 @@ namespace wmib
                 if (chan.Users.isApproved(user, host, "admin"))
                 {
                     chan.LoadConfig();
-                    chan.Keys = new dictionary(chan.keydb, chan.name);
-                    irc.Message(messages.get("Config", chan.ln), chan.name);
+                    chan.Keys = new infobot_core(chan.keydb, chan.Name);
+                    irc.Message(messages.get("Config", chan.Language), chan.Name);
                     return;
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.ln), chan.name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
                 return;
             }
             if (message == "@refresh")
@@ -424,10 +430,10 @@ namespace wmib
                     irc._Queue = new System.Threading.Thread(new System.Threading.ThreadStart(irc._SlowQueue.Run));
                     irc._SlowQueue.messages.Clear();
                     irc._Queue.Start();
-                    irc.Message(messages.get("MessageQueueWasReloaded", chan.ln), chan.name);
+                    irc.Message(messages.get("MessageQueueWasReloaded", chan.Language), chan.Name);
                     return;
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.ln), chan.name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
                 return;
             }
 
@@ -435,21 +441,21 @@ namespace wmib
             {
                 if (chan.Users.isApproved(user, host, "recentchanges-manage"))
                 {
-                    if (chan.feed)
+                    if (chan.Feed)
                     {
-                        irc.Message(messages.get("Feed1", chan.ln), chan.name);
+                        irc.Message(messages.get("Feed1", chan.Language), chan.Name);
                         return;
                     }
                     else
                     {
-                        irc.Message(messages.get("Feed2", chan.ln), chan.name);
-                        chan.feed = true;
+                        irc.Message(messages.get("Feed2", chan.Language), chan.Name);
+                        chan.Feed = true;
                         chan.SaveConfig();
                         config.Save();
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.ln), chan.name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
                 return;
             }
 
@@ -457,27 +463,27 @@ namespace wmib
             {
                 if (chan.Users.isApproved(user, host, "recentchanges-manage"))
                 {
-                    if (chan.feed)
+                    if (chan.Feed)
                     {
                         if (!message.Contains(" "))
                         {
-                            irc._SlowQueue.DeliverMessage(messages.get("InvalidWiki", chan.ln), chan.name);
+                            irc._SlowQueue.DeliverMessage(messages.get("InvalidWiki", chan.Language), chan.Name);
                             return;
                         }
                         string channel = message.Substring(message.IndexOf(" ") + 1);
                         if (RecentChanges.InsertChannel(chan, channel))
                         {
-                            irc.Message(messages.get("Wiki+", chan.ln), chan.name);
+                            irc.Message(messages.get("Wiki+", chan.Language), chan.Name);
                         }
                         return;
                     }
                     else
                     {
-                        irc.Message(messages.get("Feed3", chan.ln), chan.name);
+                        irc.Message(messages.get("Feed3", chan.Language), chan.Name);
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.ln), chan.name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
                 return;
             }
 
@@ -485,27 +491,27 @@ namespace wmib
             {
                 if (chan.Users.isApproved(user, host, "admin"))
                 {
-                    if (chan.feed)
+                    if (chan.Feed)
                     {
                         if (!message.Contains(" "))
                         {
-                            irc._SlowQueue.DeliverMessage(messages.get("InvalidWiki", chan.ln), chan.name);
+                            irc._SlowQueue.DeliverMessage(messages.get("InvalidWiki", chan.Language), chan.Name);
                             return;
                         }
                         string channel = message.Substring(message.IndexOf(" ") + 1);
                         if (RecentChanges.DeleteChannel(chan, channel))
                         {
-                            irc.Message(messages.get("Wiki-", chan.ln), chan.name);
+                            irc.Message(messages.get("Wiki-", chan.Language), chan.Name);
                         }
                         return;
                     }
                     else
                     {
-                        irc.Message(messages.get("Feed3", chan.ln), chan.name);
+                        irc.Message(messages.get("Feed3", chan.Language), chan.Name);
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.ln), chan.name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
                 return;
             }
 
@@ -513,12 +519,12 @@ namespace wmib
             {
                 if (chan.Users.isApproved(user, host, "trust"))
                 {
-                    if (chan.feed)
+                    if (chan.Feed)
                     {
                         string[] a = message.Split(' ');
                         if (a.Length < 3)
                         {
-                            irc._SlowQueue.DeliverMessage(messages.get("Feed7", chan.ln) + user + messages.get("Feed8", chan.ln), chan.name);
+                            irc._SlowQueue.DeliverMessage(messages.get("Feed4", chan.Language) + user + messages.get("Feed5", chan.Language), chan.Name);
                             return;
                         }
                         string wiki = a[1];
@@ -528,11 +534,11 @@ namespace wmib
                     }
                     else
                     {
-                        irc._SlowQueue.DeliverMessage(messages.get("Feed3", chan.ln), chan.name);
+                        irc._SlowQueue.DeliverMessage(messages.get("Feed3", chan.Language), chan.Name);
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.ln), chan.name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
                 return;
             }
 
@@ -549,21 +555,23 @@ namespace wmib
                     {
                         if (messages.exist(parameter))
                         {
-                            chan.ln = parameter;
-                            irc._SlowQueue.DeliverMessage(messages.get("Language", chan.ln), chan.name);
+                            chan.Language = parameter;
+                            irc._SlowQueue.DeliverMessage(messages.get("Language", chan.Language), chan.Name);
+                            chan.SaveConfig();
                             return;
                         }
+						irc._SlowQueue.DeliverMessage(messages.get("InvalidCode", chan.Language), chan.Name);
                         return;
                     }
                     else
                     {
-                        irc._SlowQueue.DeliverMessage(messages.get("InvalidCode", chan.ln), chan.name);
+                        irc._SlowQueue.DeliverMessage(messages.get("LanguageInfo", chan.Language), chan.Name);
                         return;
                     }
                 }
                 else
                 {
-                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.ln), chan.name);
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
                     return;
                 }
             }
@@ -577,12 +585,12 @@ namespace wmib
                 }
                 if (parameter != "")
                 {
-                    ShowHelp(parameter, chan.name);
+                    ShowHelp(parameter, chan);
                     return;
                 }
                 else
                 {
-                    irc._SlowQueue.DeliverMessage("Type @commands for list of commands. This bot is running http://meta.wikimedia.org/wiki/WM-Bot version " + config.version + " source code licensed under GPL and located in wikimedia svn", chan.name);
+                    irc._SlowQueue.DeliverMessage("Type @commands for list of commands. This bot is running http://meta.wikimedia.org/wiki/WM-Bot version " + config.version + " source code licensed under GPL and located at https://github.com/benapetr/wikimedia-bot", chan.Name);
                     return;
                 }
             }
@@ -591,12 +599,12 @@ namespace wmib
             {
                 if (chan.Users.isApproved(user, host, "trust"))
                 {
-                    if (chan.feed)
+                    if (chan.Feed)
                     {
                         string[] a = message.Split(' ');
                         if (a.Length < 3)
                         {
-                            irc._SlowQueue.DeliverMessage(messages.get("Feed7", chan.ln) + user + messages.get("Feed8", chan.ln), chan.name);
+                            irc._SlowQueue.DeliverMessage(messages.get("Feed8", chan.Language, new List<string> { user }), chan.Name);
                             return;
                         }
                         string wiki = a[1];
@@ -606,11 +614,11 @@ namespace wmib
                     }
                     else
                     {
-                        irc._SlowQueue.DeliverMessage(messages.get("Feed3", chan.ln), chan.name);
+                        irc._SlowQueue.DeliverMessage(messages.get("Feed3", chan.Language), chan.Name);
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.ln), chan.name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
                 return;
             }
 			
@@ -620,19 +628,19 @@ namespace wmib
                 {
                     if (!chan.suppress)
                     {
-                        irc.Message("Channel had already quiet mode disabled", chan.name);
+                        irc.Message(messages.get("Silence1", chan.Language), chan.Name);
                         return;
                     }
                     else
                     {
 						chan.suppress = false;
-                        irc.Message("Output will be no longer suppressed now", chan.name);
+                        irc.Message(messages.get("Silence2", chan.Language), chan.Name);
                         chan.SaveConfig();
                         config.Save();
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.ln), chan.name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
                 return;
             }
 			
@@ -647,14 +655,14 @@ namespace wmib
                     }
                     else
                     {
-                        irc.Message("I will not talk in here until you disable this", chan.name);
+                        irc.Message(messages.get( "SilenceBegin", chan.Language ), chan.Name);
                         chan.suppress = true;
                         chan.SaveConfig();
                         config.Save();
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.ln), chan.name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
                 return;
             }
 			
@@ -662,21 +670,21 @@ namespace wmib
             {
                 if (chan.Users.isApproved(user, host, "admin"))
                 {
-                    if (!chan.feed)
+                    if (!chan.Feed)
                     {
-                        irc.Message(messages.get("Feed4", chan.ln), chan.name);
+                        irc.Message(messages.get("Feed6", chan.Language), chan.Name);
                         return;
                     }
                     else
                     {
-                        irc.Message(messages.get("Feed5", chan.ln), chan.name);
-                        chan.feed = false;
+                        irc.Message(messages.get("Feed7", chan.Language), chan.Name);
+                        chan.Feed = false;
                         chan.SaveConfig();
                         config.Save();
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.ln), chan.name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
                 return;
             }
 
@@ -684,21 +692,21 @@ namespace wmib
             {
                 if (chan.Users.isApproved(user, host, "admin"))
                 {
-                    if (chan.logged)
+                    if (chan.Logged)
                     {
-                        irc.Message("Channel is already logged", chan.name);
+                        irc.Message(messages.get("ChannelLogged",   chan.Language), chan.Name);
                         return;
                     }
                     else
                     {
-                        irc.Message("Channel is now logged", chan.name);
-                        chan.logged = true;
+                        irc.Message(messages.get("LoggingOn", chan.Language), chan.Name);
+                        chan.Logged = true;
                         chan.SaveConfig();
                         config.Save();
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.ln), chan.name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
                 return;
             }
 
@@ -707,10 +715,10 @@ namespace wmib
                 user current = chan.Users.getUser(user + "!@" + host);
                 if (current.level == "null")
                 {
-                    irc._SlowQueue.DeliverMessage("You are unknown to me :)", chan.name);
+                    irc._SlowQueue.DeliverMessage(messages.get("Unknown", chan.Language), chan.Name);
                     return;
                 }
-                irc.Message("You are " + current.level + " identified by name " + current.name, chan.name);
+                irc.Message(messages.get("usr1",chan.Language) + current.level + messages.get ("usr2", chan.Language) + current.name, chan.Name);
                 return;
             }
 
@@ -718,21 +726,21 @@ namespace wmib
             {
                 if (chan.Users.isApproved(user, host, "admin"))
                 {
-                    if (!chan.logged)
+                    if (!chan.Logged)
                     {
-                        irc.Message("Channel was already not logged", chan.name);
+                        irc.Message(messages.get("LogsE1", chan.Language), chan.Name);
                         return;
                     }
                     else
                     {
-                        chan.logged = false;
+                        chan.Logged = false;
                         config.Save();
                         chan.SaveConfig();
-                        irc.Message("Channel is not logged", chan.name);
+                        irc.Message(messages.get("NotLogged", chan.Language), chan.Name);
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.ln), chan.name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
                 return;
             }
             if (message == "@channellist")
@@ -740,65 +748,67 @@ namespace wmib
                 string channels = "";
                 foreach (config.channel a in config.channels)
                 {
-                    channels = channels + a.name + ", ";
+                    channels = channels + a.Name + ", ";
                 }
-                irc._SlowQueue.DeliverMessage("I am now in following channels: " + channels, chan.name);
+                irc._SlowQueue.DeliverMessage(messages.get("List", chan.Language) + channels, chan.Name);
                 return;
             }
             if (message == "@infobot-off")
             {
                 if (chan.Users.isApproved(user, host, "admin"))
                 {
-                    if (!chan.info)
+                    if (!chan.Info)
                     {
-                        irc.Message("Channel had infobot disabled", chan.name);
+                        irc.Message(messages.get("infobot1", chan.Language ), chan.Name);
                         return;
                     }
                     else
                     {
-                        irc.Message("Infobot disabled", chan.name);
-                        chan.info = false;
+                        irc.Message(messages.get("infobot2", chan.Language), chan.Name);
+                        chan.Info = false;
                         chan.SaveConfig();
                         config.Save();
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.ln), chan.name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
                 return;
             }
             if (message == "@infobot-on")
             {
                 if (chan.Users.isApproved(user, host, "admin"))
                 {
-                    if (!chan.logged)
+                    if (!chan.Logged)
                     {
-                        irc.Message("Infobot was already enabled :O", chan.name);
+                        irc.Message(messages.get( "infobot3", chan.Language ), chan.Name);
                         return;
                     }
-                    chan.info = true;
+                    chan.Info = true;
                     config.Save();
                     chan.SaveConfig();
-                    irc.Message("Infobot enabled", chan.name);
+                    irc.Message(messages.get("infobot4", chan.Language), chan.Name);
                     return;
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied" ,chan.ln), chan.name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied" ,chan.Language), chan.Name);
                 return;
             }
             if (message == "@commands")
             {
-                irc._SlowQueue.DeliverMessage("Commands: channellist, trusted, trustadd, trustdel, infobot-off, refresh, infobot-on, drop, whoami, add, reload, suppress-off, suppress-on, help, RC-, recentchanges-on, recentchanges-off, logon, logoff, recentchanges-, recentchanges+, RC+", chan.name);
+                irc._SlowQueue.DeliverMessage("Commands: channellist, trusted, trustadd, trustdel, infobot-off, refresh, infobot-on, drop, whoami, add, reload, suppress-off, suppress-on, help, RC-, recentchanges-on, language, recentchanges-off, logon, logoff, recentchanges-, recentchanges+, RC+", chan.Name);
                 return;
             }
         }
 
         public static void Connect()
         {
-                irc = new IRC(config.network, config.username, config.name, config.name);
-                irc.Connect();
                 dumphtmt = new Thread(HtmlDump.Start);
                 dumphtmt.Start();
                 rc = new Thread(RecentChanges.Start);
                 rc.Start();
+                ib = new Thread(infobot_core.Initialise);
+                ib.Start();
+                irc = new IRC(config.network, config.username, config.name, config.name);
+                irc.Connect();
         }
 
         /// <summary>
@@ -815,13 +825,24 @@ namespace wmib
             if (curr != null)
             {
                 Logs.chanLog(message, curr, nick, host);
-                if (message.StartsWith("!") && curr.info)
+                if (message.StartsWith("!") && curr.Info)
                 {
-                    curr.Keys.print(message, nick, curr, host);
+                    while (infobot_core.Unwritable)
+                    {
+                        Thread.Sleep(10);
+                    }
+                    infobot_core.Unwritable = true;
+                    infobot_core.InfoItem item = new infobot_core.InfoItem();
+                    item.Channel = curr;
+                    item.Name = message;
+                    item.User = nick;
+                    item.Host = host;
+                    infobot_core.jobs.Add(item);
+                    infobot_core.Unwritable = false;
                 }
                 if (message.StartsWith("@"))
                 {
-                    if (curr.info)
+                    if (curr.Info)
                     {
                         curr.Keys.Find(message, curr);
                         curr.Keys.RSearch(message, curr);
@@ -841,7 +862,7 @@ namespace wmib
             irc._SlowQueue.DeliverMessage("Info for " + name + ": " + info, channel);
         }
 
-        private static bool ShowHelp(string parameter, string channel)
+        private static bool ShowHelp(string parameter, config.channel channel)
         {
 			if (parameter.StartsWith ("@"))
 			{
@@ -850,73 +871,32 @@ namespace wmib
             switch (parameter.ToLower())
             {
                 case "trustdel":
-                    showInfo("trustdel", "Remove an entry from access list, example @trustdel regex", channel);
-                    return false;
                 case "refresh":
-                    showInfo("refresh", "Remove data from queue", channel);
-                    return false;
                 case "infobot-on":
-                    showInfo("infobot-on", "Turn on the infobot", channel);
-                    return false;
                 case "infobot-off":
-                    showInfo("infobot-off", "Turn off the infobot, preserve db", channel);
-                    return false;
                 case "channellist":
-                    showInfo("channellist", "Display the list of channels where bot should be used (only if it can join them)", channel);
-                    return false;
                 case "trusted":
-                    showInfo("trusted", "Display access list for this channel", channel);
-                    return false;
                 case "trustadd":
-                    showInfo("trustadd", "Make an entry to the access list, example @trustadd regex admin", channel);
-                    return false;
                 case "drop":
-                    showInfo("drop", "Remove bot from a channel together with all collected data", channel);
-                    return false;
                 case "part":
-                    showInfo("part", "Remove bot from a channel and preserve all config", channel);
-                    return false;
+				case "language":
                 case "whoami":
-                    showInfo("whoami", "Display your current status in access list", channel);
-                    return false;
 				case "suppress-on":
-					showInfo ("suppress-on", "Disable output to channel", channel);
-					return false;
                 case "add":
-                    showInfo("add", "Insert bot to a specified channel and give you admin rights for that", channel);
-                    return false;
                 case "reload":
-                    showInfo("reload", "Read a config from disk", channel);
-                    return false;
                 case "logon":
-                    showInfo("logon", "Start logging to a file", channel);
-                    return false;
                 case "logoff":
-                    showInfo("logoff", "Disable logging", channel);
-                    return false;
                 case "recentchanges-on":
-                    showInfo("recentchanges-on", "Turn on a feed of changes on wmf wikis", channel);
-                    return false;
                 case "recentchanges-off":
-                    showInfo("recentchanges-off", "Turn off the wiki feed", channel);
-                    return false;
                 case "recentchanges-":
-                    showInfo("recentchanges-", "Remove a wiki from a feed, example @recentchanges- en_wikipedia", channel);
-                    return false;
                 case "recentchanges+":
-                    showInfo("recentchanges+", "Insert a wiki to feed, example @recentchanges+ en_wikipedia", channel);
-                    return false;
                 case "rc-":
-                    showInfo("RC-", "Remove a page from rc list", channel);
-                    return false;
                 case "rc+":
-                    showInfo("RC+", "Create entry for feed of specified page, example @RC+ wiki page", channel);
-                    return false;
 				case "suppress-off":
-					showInfo ("suppress-off", "Enable output to channel", channel);
+					showInfo(parameter, messages.get (parameter.ToLower (), channel.Language), channel.Name);
 					return false;
             }
-            irc._SlowQueue.DeliverMessage("Unknown command type @commands for a list of all commands I know", channel);
+            irc._SlowQueue.DeliverMessage("Unknown command type @commands for a list of all commands I know", channel.Name);
             return false;
         }
 

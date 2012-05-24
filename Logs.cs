@@ -71,7 +71,7 @@ namespace wmib
         {
             try
             {
-                    System.IO.File.AppendAllText(channel.log + DateTime.Now.Year + timedateToString(DateTime.Now.Month) + timedateToString(DateTime.Now.Day) + ".txt", message);
+                    System.IO.File.AppendAllText(channel.Log + DateTime.Now.Year + timedateToString(DateTime.Now.Month) + timedateToString(DateTime.Now.Day) + ".txt", message);
             }
             catch (Exception er)
             {
@@ -92,7 +92,7 @@ namespace wmib
         {
             try
             {
-                if (channel.logged)
+                if (channel.Logged)
                 {
                     while (Locked)
                     {

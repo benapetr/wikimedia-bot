@@ -4,14 +4,14 @@ using System.Text;
 
 namespace wmib
 {
-    class messages
+    public class messages
     {
         public static string Language = "en";
-        class container
+        public class container
         {
             public string language;
             public Dictionary<string, string> Cache;
-            container(string LanguageCode)
+            public container(string LanguageCode)
             {
                 language = LanguageCode;
                 Cache = new Dictionary<string, string>();
@@ -34,16 +34,30 @@ namespace wmib
 
         public static bool exist(string lang)
         {
-            switch (lang)
-            { 
-                case "en":
-                case "cs":
-                    return true;
-            }
-            return false;
+            if (!data.ContainsKey (lang))
+			{
+				return false;
+			}
+			return true;
         }
 
-        public static string get(string item, string language = null)
+        public static string finalize(string text, List<string> va)
+        {
+            string Text = text;
+            int position = 0;
+            if (va == null)
+            {
+                return text;
+            }
+                foreach (string part in va)
+                { 
+                    position++;
+                    Text = Text.Replace("$" + position.ToString(), part);
+                }
+            return Text;
+        }
+
+        public static string get(string item, string language = null, List<string> va = null)
         {
             if (language == null)
             {
@@ -51,11 +65,11 @@ namespace wmib
             }
             if (!data.ContainsKey(language))
             {
-                return "invalid language: " + language;
+                return "error - invalid language: " + language;
             }
             if (data[language].Cache.ContainsKey(item))
             {
-                return data[language].Cache[item];
+                return finalize(data[language].Cache[item], va);
             }
             string text;
             switch (language)
@@ -64,7 +78,10 @@ namespace wmib
                         text = wmib.Properties.Resources.english;
                         break;
                 case "cs":
-                        text = wmib.Properties.Resources.czech;
+                        text = wmib.Properties.Resources.cs_czech;
+                        break;
+                case "zh":
+                        text = wmib.Properties.Resources.zh_chinese;
                         break;
                 default:
                         return "invalid language: " + language;
@@ -74,15 +91,15 @@ namespace wmib
             {
                 if (Language != language)
                 {
-                    return (get(item));
+                    return get(item);
                 } else
                 {
-                    return "error: requested item was not found in dictionary";
+                    return "[" + item + "]";
                 }
             }
             
             data[language].Cache.Add(item, value);
-            return value;
+            return finalize(value, va);
         }
     }
 }

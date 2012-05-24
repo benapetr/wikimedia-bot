@@ -58,10 +58,12 @@ namespace wmib
         /// </summary>
         public static List<wiki> wikiinfo = new List<wiki>();
 
+        public static bool Loaded = false;
+
         /// <summary>
         /// Channels
         /// </summary>
-        private static List<string> channels;
+        private static List<string> channels = new List<string>();
         public bool changed;
         private bool writable = true;
 
@@ -130,33 +132,44 @@ namespace wmib
         /// <returns></returns>
         public static bool InsertChannel(config.channel target, string name)
         {
-            wiki web = null;
-            foreach (wiki site in wikiinfo)
+            try
             {
-                if (name == site.name)
+                wiki web = null;
+                if (Loaded == false)
                 {
-                    web = site;
-                    break;
+                    core.irc.Message(messages.get("rcfeed13", target.Language), target.Name);
+                    return false;
                 }
-            }
-            if (web == null)
-            {
-                core.irc.Message("There is no such a wiki in list of wikis", target.name);
-                return false;
-            }
-            if (channels.Contains(web.channel))
-            {
-                core.irc.Message("This channel is already watched", target.name);
-                return false;
-            }
-            channels.Add(web.channel);
-            WD.WriteLine("JOIN " + web.channel);
-            WD.Flush();
-            File.WriteAllText(channeldata, "");
-            foreach (string x in channels)
-            {
-                File.AppendAllText(channeldata, x + "\n");
-            }
+                foreach (wiki site in wikiinfo)
+                {
+                    if (name == site.name)
+                    {
+                        web = site;
+                        break;
+                    }
+                }
+                if (web == null)
+                {
+                    core.irc.Message(messages.get("rcfeed1", target.Language), target.Name);
+                    return false;
+                }
+                if (channels.Contains(web.channel))
+                {
+                    core.irc.Message(messages.get("rcfeed2", target.Language), target.Name);
+                    return false;
+                }
+                channels.Add(web.channel);
+                WD.WriteLine("JOIN " + web.channel);
+                WD.Flush();
+                File.WriteAllText(channeldata, "");
+                foreach (string x in channels)
+                {
+                    File.AppendAllText(channeldata, x + "\n");
+                }
+            } catch (Exception f)
+                {
+                    Console.WriteLine(f.Message);
+                }
             return true;
         }
 
@@ -169,31 +182,43 @@ namespace wmib
         public static bool DeleteChannel(config.channel target, string WikiName)
         {
             wiki W = null;
-            foreach (wiki site in wikiinfo)
+            if (Loaded == false)
             {
-                if (WikiName == site.name)
+                core.irc.Message(messages.get("rcfeed13", target.Language), target.Name);
+                return false;
+            }
+            try
+            {
+                foreach (wiki site in wikiinfo)
                 {
-                    W = site;
-                    break;
+                    if (WikiName == site.name)
+                    {
+                        W = site;
+                        break;
+                    }
+                }
+                if (W == null)
+                {
+                    core.irc.Message(messages.get("rcfeed1", target.Language), target.Name);
+                    return false;
+                }
+                if (!channels.Contains(W.channel))
+                {
+                    core.irc.Message(messages.get("rcfeed3", target.Language), target.Name);
+                    return false;
+                }
+                channels.Remove(W.channel);
+                WD.WriteLine("PART " + W.channel);
+                WD.Flush();
+                File.WriteAllText(channeldata, "");
+                foreach (string x in channels)
+                {
+                    File.AppendAllText(channeldata, x + "\n");
                 }
             }
-            if (W == null)
+            catch (Exception f)
             {
-                core.irc.Message("There is no such a wiki in list of wikis", target.name);
-                return false;
-            }
-            if (!channels.Contains(W.channel))
-            {
-                core.irc.Message("This channel is already not being watched", target.name);
-                return false;
-            }
-            channels.Remove(W.channel);
-            WD.WriteLine("PART " + W.channel);
-            WD.Flush();
-            File.WriteAllText(channeldata, "");
-            foreach (string x in channels)
-            {
-                File.AppendAllText(channeldata, x + "\n");
+                Console.WriteLine(f.Message);
             }
             return true;
         }
@@ -205,6 +230,7 @@ namespace wmib
         {
             try
             {
+                Program.Log("Connecting to wikimedia recent changes feed");
                 stream = new System.Net.Sockets.TcpClient("irc.wikimedia.org", 6667).GetStream();
                 WD = new StreamWriter(stream);
                 RD = new StreamReader(stream, System.Text.Encoding.UTF8);
@@ -221,6 +247,8 @@ namespace wmib
                     WD.WriteLine("JOIN " + b);
                     WD.Flush();
                 }
+                Program.Log("Connected to feed - OK");
+                Loaded = true;
             }
             catch (Exception)
             {
@@ -250,7 +278,7 @@ namespace wmib
         /// </summary>
         public void Load()
         {
-            string name = variables.config + "/" + channel.name + ".list";
+            string name = variables.config + "/" + channel.Name + ".list";
             writable = false;
             if (File.Exists(name))
             {
@@ -273,7 +301,7 @@ namespace wmib
         /// </summary>
         public void Save()
         {
-            string dbn = variables.config + "/" + channel.name + ".list";
+            string dbn = variables.config + "/" + channel.Name + ".list";
             string content = "";
             foreach (IWatch values in pages)
             {
@@ -336,19 +364,19 @@ namespace wmib
                         pages.Remove(currpage);
                         channel.Keys.update = true;
                         Save();
-                        core.irc._SlowQueue.DeliverMessage("Deleted item from feed", channel.name);
+                        core.irc._SlowQueue.DeliverMessage(messages.get( "rcfeed4", channel.Language ), channel.Name);
                         return true;
                     }
-                    core.irc._SlowQueue.DeliverMessage("Can't find item in a list", channel.name);
+                    core.irc._SlowQueue.DeliverMessage(messages.get( "rcfeed5", channel.Language ), channel.Name);
                     return true;
                 }
                 core.irc._SlowQueue.DeliverMessage(
-                    "Unable to delete the string because the channel is not being watched now", channel.name);
+                    messages.get( "rcfeed6", channel.Language ), channel.Name);
                 return false;
             }
             core.irc._SlowQueue.DeliverMessage(
-                "Unable to delete the string from the list because there is no such a wiki site known by a bot",
-                channel.name);
+                messages.get( "rcfeed7", channel.Language ),
+                channel.Name);
             return false;
         }
 
@@ -366,36 +394,6 @@ namespace wmib
                     }
                 }
             }
-            wikiinfo.Add(new wiki("#cs.wikinews", "https://cs.wikinews.org/w/index.php", "cs_wikinews"));
-            wikiinfo.Add(new wiki("#en.wikinews", "https://en.wikinews.org/w/index.php", "en_wikinews"));
-            wikiinfo.Add(new wiki("#de.wikinews", "https://de.wikinews.org/w/index.php", "de_wikinews"));
-            wikiinfo.Add(new wiki("#fr.wikinews", "https://fr.wikinews.org/w/index.php", "fr_wikinews"));
-            wikiinfo.Add(new wiki("#pt.wikinews", "https://pt.wikinews.org/w/index.php", "pt_wikinews"));
-            wikiinfo.Add(new wiki("#zh.wikinews", "https://zh.wikinews.org/w/index.php", "zh_wikinews"));
-            wikiinfo.Add(new wiki("#es.wikinews", "https://es.wikinews.org/w/index.php", "es_wikinews"));
-            wikiinfo.Add(new wiki("#ru.wikinews", "https://ru.wikinews.org/w/index.php", "ru_wikinews"));
-            wikiinfo.Add(new wiki("#it.wikinews", "https://it.wikinews.org/w/index.php", "it_wikinews"));
-            wikiinfo.Add(new wiki("#nl.wikinews", "https://nl.wikinews.org/w/index.php", "nl_wikinews"));
-            wikiinfo.Add(new wiki("#ja.wikinews", "https://ja.wikinews.org/w/index.php", "ja_wikinews"));
-            wikiinfo.Add(new wiki("#en.wiktionary", "https://en.wiktionary.org/w/index.php", "en_wiktionary"));
-            wikiinfo.Add(new wiki("#cs.wiktionary", "https://cs.wiktionary.org/w/index.php", "cs_wiktionary"));
-            wikiinfo.Add(new wiki("#de.wiktionary", "https://de.wiktionary.org/w/index.php", "de_wiktionary"));
-            wikiinfo.Add(new wiki("#fr.wiktionary", "https://fr.wiktionary.org/w/index.php", "fr_wiktionary"));
-            wikiinfo.Add(new wiki("#pt.wiktionary", "https://pt.wiktionary.org/w/index.php", "pt_wiktionary"));
-            wikiinfo.Add(new wiki("#es.wiktionary", "https://es.wiktionary.org/w/index.php", "es_wiktionary"));
-            wikiinfo.Add(new wiki("#ru.wiktionary", "https://ru.wiktionary.org/w/index.php", "ru_wiktionary"));
-            wikiinfo.Add(new wiki("#it.wiktionary", "https://it.wiktionary.org/w/index.php", "it_wiktionary"));
-            wikiinfo.Add(new wiki("#nl.wiktionary", "https://nl.wiktionary.org/w/index.php", "nl_wiktionary"));
-            wikiinfo.Add(new wiki("#ja.wiktionary", "https://ja.wiktionary.org/w/index.php", "ja_wiktionary"));
-            wikiinfo.Add(new wiki("#cs.wikipedia", "https://cs.wikipedia.org/w/index.php", "cs_wikipedia"));
-            wikiinfo.Add(new wiki("#en.wikipedia", "https://en.wikipedia.org/w/index.php", "en_wikipedia"));
-            wikiinfo.Add(new wiki("#de.wikipedia", "https://de.wikipedia.org/w/index.php", "de_wikipedia"));
-            wikiinfo.Add(new wiki("#fr.wikipedia", "https://fr.wikipedia.org/w/index.php", "fr_wikipedia"));
-            wikiinfo.Add(new wiki("#pt.wikipedia", "https://pt.wikipedia.org/w/index.php", "pt_wikipedia"));
-            wikiinfo.Add(new wiki("#zh.wikipedia", "https://zh.wikipedia.org/w/index.php", "zh_wikipedia"));
-            wikiinfo.Add(new wiki("#es.wikipedia", "https://es.wikipedia.org/w/index.php", "es_wikipedia"));
-            wikiinfo.Add(new wiki("#ru.wikipedia", "https://ru.wikipedia.org/w/index.php", "ru_wikipedia"));
-            wikiinfo.Add(new wiki("#ja.wikipedia", "https://ja.wikipedia.org/w/index.php", "ja_wikipedia"));
             wikiinfo.Add(new wiki("#mediawiki.wikipedia", "https://www.mediawiki.org/w/index.php", "mediawiki"));
             wikiinfo.Add(new wiki("#test.wikipedia", "https://test.wikipedia.org/w/index.php", "test_wikipedia"));
             return 0;
@@ -429,14 +427,14 @@ namespace wmib
                     {
                         if (!Page.EndsWith("*") || Page.Replace("*", "") == "")
                         {
-                            core.irc._SlowQueue.DeliverMessage("Invalid string, you can't use a wildcard like this", channel.name);
+                            core.irc._SlowQueue.DeliverMessage(messages.get( "rcfeed8", channel.Language ), channel.Name);
                             return true;
                         }
                     }
                     if (pages.Contains(currpage))
                     {
-                        core.irc._SlowQueue.DeliverMessage("There is already this string in a list of watched items",
-                                                     channel.name);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed9", channel.Language),
+                                                     channel.Name);
                         return true;
                     }
                     while (!writable)
@@ -444,18 +442,18 @@ namespace wmib
                         System.Threading.Thread.Sleep(100);
                     }
                     pages.Add(new IWatch(site, Page, site.channel));
-                    core.irc._SlowQueue.DeliverMessage("Inserted new item to feed of changes", channel.name);
+                    core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed10", channel.Language), channel.Name);
                     channel.Keys.update = true;
                     Save();
                     return true;
                 }
                 core.irc._SlowQueue.DeliverMessage(
-                    "Unable to insert the string because the channel is not being watched now", channel.name);
+                    messages.get( "rcfeed11", channel.Language ), channel.Name);
                 return false;
             }
             core.irc._SlowQueue.DeliverMessage(
-                "Unable to insert the string to the list because there is no such wiki site known by a bot, contact some developer with svn access in order to insert it",
-                channel.name);
+                messages.get( "rcfeed12", channel.Language ),
+                channel.Name);
             return false;
         }
 
@@ -464,16 +462,18 @@ namespace wmib
             channels = new List<string>();
             if (!File.Exists(channeldata))
             {
-                File.WriteAllText(channeldata, "");
+                File.WriteAllText(channeldata, "#mediawiki.wikipedia");
             }
             try
             {
                 string[] list = System.IO.File.ReadAllLines(channeldata);
+                Program.Log("Loading feed");
                 foreach (string chan in list)
                 {
                     channels.Add(chan);
                 }
                 Connect();
+                Program.Log("Loaded feed");
                 while (true)
                 {
                     try
@@ -496,7 +496,7 @@ namespace wmib
 
                                 foreach (RecentChanges curr in rc)
                                 {
-                                    if (curr.channel.feed)
+                                    if (curr.channel.Feed)
                                     {
                                         foreach (IWatch w in curr.pages)
                                         {
@@ -505,9 +505,10 @@ namespace wmib
                                                 if (page == w.Page)
                                                 {
                                                     core.irc._SlowQueue.DeliverMessage(
-                                                        "Change on 12" + w.URL.name + " a page " + page +
-                                                        " was modified," + " changed by " + username +
-                                                        " link " + w.URL.url + "?diff=" + link + " edit summary: " + summary, curr.channel.name);
+                                                        //messages.get("rfeedline1", curr.channel.Language) + "12" + w.URL.name + "" + messages.get("rfeedline2", curr.channel.Language) + "" + page +
+                                                        //"" + messages.get("rfeedline3", curr.channel.Language) + "" + username +
+                                                        //"" + messages.get("rfeedline4", curr.channel.Language) + w.URL.url + "?diff=" + link + messages.get("rfeedline5", curr.channel.Language) + summary, curr.channel.Name);
+                                                        messages.get("fl" , curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name);
                                                 }
                                                 else
                                                     if (w.Page.EndsWith("*"))
@@ -515,9 +516,7 @@ namespace wmib
                                                         if (page.StartsWith(w.Page.Replace("*", "")))
                                                         {
                                                             core.irc._SlowQueue.DeliverMessage(
-                                                            "Change on 12" + w.URL.name + " a page " + page +
-                                                            " was modified," + " changed by " + username +
-                                                            " link " + w.URL.url + "?diff=" + link + " edit summary: " + summary, curr.channel.name);
+                                                            messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name);
                                                         }
                                                     }
                                             }

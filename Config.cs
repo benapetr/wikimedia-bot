@@ -23,25 +23,25 @@ namespace wmib
             /// <summary>
             /// Channel name
             /// </summary>
-            public string name;
-            public string ln;
+            public string Name;
+            public string Language;
 
-            public bool logged;
+            public bool Logged;
 
             /// <summary>
             /// Log
             /// </summary>
-            public string log;
-
-            public bool feed;
-            public bool info;
+            public string Log;
+			
+            public bool Feed;
+            public bool Info;
 			
 			public bool suppress;
 			
             /// <summary>
             /// Keys
             /// </summary>
-            public dictionary Keys;
+            public infobot_core Keys;
 
             /// <summary>
             /// Recent changes
@@ -73,17 +73,27 @@ namespace wmib
                 conf += "\n" + a + "=" + b + ";";
             }
 
+			public static bool channelExist(string _Channel)
+			{
+				string conf_file = variables.config + "/" + _Channel + ".setting";
+                if (File.Exists(conf_file))
+                {
+                    return true;
+                }
+				return false;
+			}
+			
             /// <summary>
             /// Load config of channel :)
             /// </summary>
             public void LoadConfig()
             {
-                string conf_file = variables.config + "/" + name + ".setting";
+                string conf_file = variables.config + "/" + Name + ".setting";
                 RecentChanges.InsertSite();
                 if (!File.Exists(conf_file))
                 {
                     File.WriteAllText(conf_file, "");
-                    Program.Log("Creating datafile for channel " + name);
+                    Program.Log("Creating datafile for channel " + Name);
                     return;
                 }
                 conf = File.ReadAllText(conf_file);
@@ -93,19 +103,19 @@ namespace wmib
                 }
                 if (parseConfig(conf, "logged") != "")
                 {
-                    logged = bool.Parse(parseConfig(conf, "logged"));
+                    Logged = bool.Parse(parseConfig(conf, "logged"));
                 }
                 if (parseConfig(conf, "feed") != "")
                 {
-                    feed = bool.Parse(parseConfig(conf, "feed"));
+                    Feed = bool.Parse(parseConfig(conf, "feed"));
                 }
                 if (parseConfig(conf, "infodb") != "")
                 {
-                    info = bool.Parse(parseConfig(conf, "infodb"));
+                    Info = bool.Parse(parseConfig(conf, "infodb"));
                 }
                 if (parseConfig(conf, "langcode") != "")
                 {
-                    ln = parseConfig(conf, "langcode");
+                    Language = parseConfig(conf, "langcode");
                 }
 				if (parseConfig(conf, "talkmode") != "")
                 {
@@ -119,29 +129,29 @@ namespace wmib
             public void SaveConfig()
             {
                 conf = "";
-                AddConfig("infodb", info.ToString());
-                AddConfig("logged", logged.ToString());
-                AddConfig("feed", feed.ToString());
+                AddConfig("infodb", Info.ToString());
+                AddConfig("logged", Logged.ToString());
+                AddConfig("feed", Feed.ToString());
 				AddConfig("talkmode", suppress.ToString ());
-                AddConfig("langcode", ln);
+                AddConfig("langcode", Language);
                 AddConfig("keysdb", keydb);
-                File.WriteAllText(variables.config + "/" + name + ".setting", conf);
+                File.WriteAllText(variables.config + "/" + Name + ".setting", conf);
             }
 
             /// <summary>
             /// Constructor
             /// </summary>
             /// <param name="Name">Channel</param>
-            public channel(string Name)
+            public channel(string name)
             {
                 conf = "";
                 keydb = variables.config + "/" + Name + ".db";
-                info = true;
-                ln = "en";
+                Info = true;
+                Language = "en";
 				suppress = false;
-                feed = false;
-                logged = false;
-                name = Name;
+                Feed = false;
+                Logged = false;
+                Name = name;
                 LoadConfig();
                 RC = new RecentChanges(this);
                 if (!Directory.Exists("log"))
@@ -152,9 +162,9 @@ namespace wmib
                 {
                     Directory.CreateDirectory("log/" + Name);
                 }
-                Keys = new dictionary(keydb, name);
-                log = "log/" + Name + "/";
-                Users = new IRCTrust(name);
+                Keys = new infobot_core(keydb, Name);
+                Log = "log/" + Name + "/";
+                Users = new IRCTrust(Name);
             }
         }
 
@@ -179,7 +189,7 @@ namespace wmib
             text += text + "\nchannels=";
             foreach (channel current in channels)
             {
-                text += current.name + ",\n";
+                text += current.Name + ",\n";
             }
             text = text + ";";
             File.WriteAllText(variables.config + "/wmib", text);
@@ -305,7 +315,7 @@ namespace wmib
         /// <summary>
         /// Version
         /// </summary>
-        public static string version = "wikimedia bot v. 1.1.4";
+        public static string version = "wikimedia bot v. 1.3.0";
 
         /// <summary>
         /// Separator

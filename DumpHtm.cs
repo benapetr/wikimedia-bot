@@ -54,7 +54,12 @@ namespace wmib
         /// <param name="channel"></param>
         public HtmlDump(config.channel channel)
         {
-            dumpname = config.DumpDir + "/" + channel.name + ".htm";
+            dumpname = config.DumpDir + "/" + channel.Name + ".htm";
+            if ( !System.IO.Directory.Exists(config.DumpDir) )
+            {
+                Program.Log("Creating a directory for dump");
+                System.IO.Directory.CreateDirectory(config.DumpDir);
+            }
             Channel = channel;
         }
 
@@ -73,7 +78,7 @@ namespace wmib
         /// <returns></returns>
         public string CreateHeader()
         {
-            return "<html><head><title>" + Channel.name + "</title></head><body>\n";
+            return "<html><head><title>" + Channel.Name + "</title></head><body>\n";
         }
 
         /// <summary>
@@ -132,11 +137,11 @@ namespace wmib
 				text += "<h1>System data</h1><p>List of channels:</p>";
 				foreach (config.channel chan in config.channels)
                 {
-					text = text + "" + chan.name + " (infobot: " + chan.info.ToString () + ", recentchanges: " + chan.feed.ToString () + ", logs: " + chan.logged.ToString () +  ")<br>\n";
+					text = text + "" + chan.Name + " (infobot: " + chan.Info.ToString () + ", recentchanges: " + chan.Feed.ToString () + ", logs: " + chan.Logged.ToString () +  ")<br>\n";
 				}
 				text += "Uptime: " + core.getUptime ();
 				text += "</body></html>";
-				File.WriteAllText(config.DumpDir + "/systemdata.htm" , text);
+				File.WriteAllText(config.DumpDir + "/systemdata.htm", text);
 			}catch (Exception b)
             {
                 Console.WriteLine(b.Message);
@@ -154,25 +159,24 @@ namespace wmib
                 text = text + "<h4>Infobot</h4>\n";
                 text = text + "<table border=1 width=100%>\n<tr><th width=10%>Key</th><th>Value</th></tr>\n";
                 Channel.Keys.locked = true;
-				List<dictionary.item> list = new List<dictionary.item>();
+				List<infobot_core.item> list = new List<infobot_core.item>();
 				list.AddRange(Channel.Keys.text);
-				list.Sort();
                 if (Channel.Keys.text.Count > 0)
                 {
-                    foreach (dictionary.item Key in list)
+                    foreach (infobot_core.item Key in list)
                     {
                         text += AddKey(Key.key, Key.text);
                     }
                 }
                 text = text + "</table>\n";
                 text = text + "<h4>Aliases</h4>\n<table border=1 width=100%>\n";
-                foreach (dictionary.staticalias data in Channel.Keys.Alias)
+                foreach (infobot_core.staticalias data in Channel.Keys.Alias)
                 {
                     text += AddLink(data.Name, data.Key);
                 }
                 text = text + "</table>\n";
                 Channel.Keys.locked = false;
-                if (Channel.feed)
+                if (Channel.Feed)
                 {
                     text += "<h4>Recent changes</h4>";
                     text = text + Channel.RC.ToTable();
@@ -183,7 +187,7 @@ namespace wmib
             catch (Exception b)
             {
                 Channel.Keys.locked = false;
-                Console.WriteLine(b.Message);
+                Console.WriteLine(b.InnerException);
             }
         }
     }

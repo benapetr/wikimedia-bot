@@ -130,27 +130,33 @@ namespace wmib
         /// <returns>bool</returns>
         public bool delUser(core.user trusted, string user)
         {
+            config.channel channel = core.getChannel(_Channel);
+            if (channel == null)
+            {
+                core.irc.Message("Error: unable to get pointer of current channel", _Channel);
+                return false;
+            }
             foreach (core.user u in Users)
             {
                 if (u.name == user)
                 {
                     if (getLevel(u.level) > getLevel(trusted.level))
                     {
-                        core.irc.Message("This user has higher level than you, sorry", _Channel);
+                        core.irc.Message(messages.get("Trust1", channel.Language), _Channel);
                         return true;
                     }
                     if (u.name == trusted.name)
                     {
-                        core.irc.Message("You can't delete yourself from db", _Channel);
+                        core.irc.Message(messages.get("Trust2", channel.Language), _Channel);
                         return true;
                     }
                     Users.Remove(u);
                     Save();
-                    core.irc.Message("User was deleted from access list", _Channel);
+                    core.irc.Message(messages.get("Trust3", channel.Language), _Channel);
                     return true;
                 }
             }
-            core.irc.Message("User not found, sorry", _Channel);
+            core.irc.Message(messages.get("Trust4", channel.Language), _Channel);
             return true;
         }
 
@@ -215,12 +221,18 @@ namespace wmib
         /// </summary>
         public void listAll()
         {
+            config.channel Channel = core.getChannel(_Channel);
+            if (Channel == null)
+            {
+                core.irc.Message("Error: unable to get pointer of current channel", _Channel);
+                return;
+            }
             string users_ok = "";
             foreach (core.user b in Users)
             {
                 users_ok += " " + b.name + " (2" + b.level + ")" + ",";
             }
-            core.irc.Message("I trust: " + users_ok, _Channel);
+            core.irc.Message(messages.get("TrustedUserList", Channel.Language) + users_ok, _Channel);
         }
 
         /// <summary>

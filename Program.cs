@@ -25,11 +25,15 @@ namespace wmib
         {
             Log("Loading...");
 			config.UpTime = System.DateTime.Now;
+			messages.data.Add ("cs", new messages.container("cs"));
+			messages.data.Add ("en", new messages.container("en"));
+            messages.data.Add ("zh", new messages.container("zh"));
             if ( config.Load() != 0)
 			{
 				return;
 			}
             Log("Connecting");
+            Logs.Initialise();
             core.Connect();
         }
     }

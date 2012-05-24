@@ -1,2 +1,0 @@
-﻿PermissionDenied=Permission denied;
-Authorization=You are not authorized to perform this, sorry;
