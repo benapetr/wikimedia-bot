@@ -303,7 +303,11 @@ namespace wmib
                             {
                                 if (channel == cu.Name)
                                 {
+<<<<<<< HEAD
 									irc._SlowQueue.DeliverMessage (messages.get("ChannelIn", chan.Language), chan.Name);
+=======
+									irc._SlowQueue.DeliverMessage (messages.get("ChannelIn", chan.ln), chan.name);
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                                     return;
                                 }
                             }
@@ -524,7 +528,11 @@ namespace wmib
                         string[] a = message.Split(' ');
                         if (a.Length < 3)
                         {
+<<<<<<< HEAD
                             irc._SlowQueue.DeliverMessage(messages.get("Feed4", chan.Language) + user + messages.get("Feed5", chan.Language), chan.Name);
+=======
+                            irc._SlowQueue.DeliverMessage(messages.get("Feed4", chan.ln) + user + messages.get("Feed5", chan.ln), chan.name);
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                             return;
                         }
                         string wiki = a[1];
@@ -560,12 +568,20 @@ namespace wmib
                             chan.SaveConfig();
                             return;
                         }
+<<<<<<< HEAD
 						irc._SlowQueue.DeliverMessage(messages.get("InvalidCode", chan.Language), chan.Name);
+=======
+						irc._SlowQueue.DeliverMessage(messages.get("InvalidCode", chan.ln), chan.name);
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                         return;
                     }
                     else
                     {
+<<<<<<< HEAD
                         irc._SlowQueue.DeliverMessage(messages.get("LanguageInfo", chan.Language), chan.Name);
+=======
+                        irc._SlowQueue.DeliverMessage(messages.get("LanguageInfo", chan.ln), chan.name);
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                         return;
                     }
                 }
@@ -590,7 +606,11 @@ namespace wmib
                 }
                 else
                 {
+<<<<<<< HEAD
                     irc._SlowQueue.DeliverMessage("Type @commands for list of commands. This bot is running http://meta.wikimedia.org/wiki/WM-Bot version " + config.version + " source code licensed under GPL and located at https://github.com/benapetr/wikimedia-bot", chan.Name);
+=======
+                    irc._SlowQueue.DeliverMessage("Type @commands for list of commands. This bot is running http://meta.wikimedia.org/wiki/WM-Bot version " + config.version + " source code licensed under GPL and located at https://github.com/benapetr/wikimedia-bot", chan.name);
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                     return;
                 }
             }
@@ -628,13 +648,21 @@ namespace wmib
                 {
                     if (!chan.suppress)
                     {
+<<<<<<< HEAD
                         irc.Message(messages.get("Silence1", chan.Language), chan.Name);
+=======
+                        irc.Message(messages.get("Silence1", chan.ln), chan.name);
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                         return;
                     }
                     else
                     {
 						chan.suppress = false;
+<<<<<<< HEAD
                         irc.Message(messages.get("Silence2", chan.Language), chan.Name);
+=======
+                        irc.Message(messages.get("Silence2", chan.ln), chan.name);
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                         chan.SaveConfig();
                         config.Save();
                         return;
@@ -655,7 +683,11 @@ namespace wmib
                     }
                     else
                     {
+<<<<<<< HEAD
                         irc.Message(messages.get( "SilenceBegin", chan.Language ), chan.Name);
+=======
+                        irc.Message(messages.get( "SilenceBegin", chan.ln ), chan.name);
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                         chan.suppress = true;
                         chan.SaveConfig();
                         config.Save();
@@ -672,13 +704,22 @@ namespace wmib
                 {
                     if (!chan.Feed)
                     {
+<<<<<<< HEAD
                         irc.Message(messages.get("Feed6", chan.Language), chan.Name);
+=======
+                        irc.Message(messages.get("Feed6", chan.ln), chan.name);
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                         return;
                     }
                     else
                     {
+<<<<<<< HEAD
                         irc.Message(messages.get("Feed7", chan.Language), chan.Name);
                         chan.Feed = false;
+=======
+                        irc.Message(messages.get("Feed7", chan.ln), chan.name);
+                        chan.feed = false;
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                         chan.SaveConfig();
                         config.Save();
                         return;
@@ -694,13 +735,22 @@ namespace wmib
                 {
                     if (chan.Logged)
                     {
+<<<<<<< HEAD
                         irc.Message(messages.get("ChannelLogged",   chan.Language), chan.Name);
+=======
+                        irc.Message(messages.get("ChannelLogged",   chan.ln), chan.name);
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                         return;
                     }
                     else
                     {
+<<<<<<< HEAD
                         irc.Message(messages.get("LoggingOn", chan.Language), chan.Name);
                         chan.Logged = true;
+=======
+                        irc.Message(messages.get("LoggingOn", chan.ln), chan.name);
+                        chan.logged = true;
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                         chan.SaveConfig();
                         config.Save();
                         return;
@@ -715,10 +765,17 @@ namespace wmib
                 user current = chan.Users.getUser(user + "!@" + host);
                 if (current.level == "null")
                 {
+<<<<<<< HEAD
                     irc._SlowQueue.DeliverMessage(messages.get("Unknown", chan.Language), chan.Name);
                     return;
                 }
                 irc.Message(messages.get("usr1",chan.Language) + current.level + messages.get ("usr2", chan.Language) + current.name, chan.Name);
+=======
+                    irc._SlowQueue.DeliverMessage(messages.get("Unknown", chan.ln), chan.name);
+                    return;
+                }
+                irc.Message(messages.get("usr1",chan.ln) + current.level + messages.get ("usr2", chan.ln) + current.name, chan.name);
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                 return;
             }
 
@@ -728,7 +785,11 @@ namespace wmib
                 {
                     if (!chan.Logged)
                     {
+<<<<<<< HEAD
                         irc.Message(messages.get("LogsE1", chan.Language), chan.Name);
+=======
+                        irc.Message(messages.get("LogsE1", chan.ln), chan.name);
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                         return;
                     }
                     else
@@ -736,7 +797,11 @@ namespace wmib
                         chan.Logged = false;
                         config.Save();
                         chan.SaveConfig();
+<<<<<<< HEAD
                         irc.Message(messages.get("NotLogged", chan.Language), chan.Name);
+=======
+                        irc.Message(messages.get("NotLogged", chan.ln), chan.name);
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                         return;
                     }
                 }
@@ -750,7 +815,11 @@ namespace wmib
                 {
                     channels = channels + a.Name + ", ";
                 }
+<<<<<<< HEAD
                 irc._SlowQueue.DeliverMessage(messages.get("List", chan.Language) + channels, chan.Name);
+=======
+                irc._SlowQueue.DeliverMessage(messages.get("List", chan.ln) + channels, chan.name);
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                 return;
             }
             if (message == "@infobot-off")
@@ -759,13 +828,22 @@ namespace wmib
                 {
                     if (!chan.Info)
                     {
+<<<<<<< HEAD
                         irc.Message(messages.get("infobot1", chan.Language ), chan.Name);
+=======
+                        irc.Message(messages.get("infobot1", chan.ln ), chan.name);
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                         return;
                     }
                     else
                     {
+<<<<<<< HEAD
                         irc.Message(messages.get("infobot2", chan.Language), chan.Name);
                         chan.Info = false;
+=======
+                        irc.Message(messages.get("infobot2", chan.ln), chan.name);
+                        chan.info = false;
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                         chan.SaveConfig();
                         config.Save();
                         return;
@@ -780,13 +858,21 @@ namespace wmib
                 {
                     if (!chan.Logged)
                     {
+<<<<<<< HEAD
                         irc.Message(messages.get( "infobot3", chan.Language ), chan.Name);
+=======
+                        irc.Message(messages.get( "infobot3", chan.ln ), chan.name);
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                         return;
                     }
                     chan.Info = true;
                     config.Save();
                     chan.SaveConfig();
+<<<<<<< HEAD
                     irc.Message(messages.get("infobot4", chan.Language), chan.Name);
+=======
+                    irc.Message(messages.get("infobot4", chan.ln), chan.name);
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                     return;
                 }
                 irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied" ,chan.Language), chan.Name);
@@ -794,7 +880,11 @@ namespace wmib
             }
             if (message == "@commands")
             {
+<<<<<<< HEAD
                 irc._SlowQueue.DeliverMessage("Commands: channellist, trusted, trustadd, trustdel, infobot-off, refresh, infobot-on, drop, whoami, add, reload, suppress-off, suppress-on, help, RC-, recentchanges-on, language, recentchanges-off, logon, logoff, recentchanges-, recentchanges+, RC+", chan.Name);
+=======
+                irc._SlowQueue.DeliverMessage("Commands: channellist, trusted, trustadd, trustdel, infobot-off, refresh, infobot-on, drop, whoami, add, reload, suppress-off, suppress-on, help, RC-, recentchanges-on, language, recentchanges-off, logon, logoff, recentchanges-, recentchanges+, RC+", chan.name);
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
                 return;
             }
         }
@@ -893,10 +983,17 @@ namespace wmib
                 case "rc-":
                 case "rc+":
 				case "suppress-off":
+<<<<<<< HEAD
 					showInfo(parameter, messages.get (parameter.ToLower (), channel.Language), channel.Name);
 					return false;
             }
             irc._SlowQueue.DeliverMessage("Unknown command type @commands for a list of all commands I know", channel.Name);
+=======
+					showInfo(parameter, messages.get (parameter.ToLower (), channel.ln), channel.name);
+					return false;
+            }
+            irc._SlowQueue.DeliverMessage("Unknown command type @commands for a list of all commands I know", channel.name);
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
             return false;
         }
 

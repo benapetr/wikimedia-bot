@@ -39,6 +39,7 @@ namespace wmib
 				return false;
 			}
 			return true;
+<<<<<<< HEAD
         }
 
         public static string finalize(string text, List<string> va)
@@ -55,6 +56,8 @@ namespace wmib
                     Text = Text.Replace("$" + position.ToString(), part);
                 }
             return Text;
+=======
+>>>>>>> 59e17c65097d32daace729219f7033b504cb6e79
         }
 
         public static string get(string item, string language = null, List<string> va = null)
