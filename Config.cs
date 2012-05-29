@@ -53,6 +53,10 @@ namespace wmib
             /// </summary>
             private string conf;
 
+            public string shared;
+
+            public List<config.channel> sharedlink;
+
             /// <summary>
             /// Users
             /// </summary>
@@ -113,6 +117,7 @@ namespace wmib
                 {
                     Info = bool.Parse(parseConfig(conf, "infodb"));
                 }
+                shared = parseConfig(conf, "shared");
                 if (parseConfig(conf, "langcode") != "")
                 {
                     Language = parseConfig(conf, "langcode");
@@ -121,6 +126,21 @@ namespace wmib
                 {
                     suppress = bool.Parse(parseConfig(conf, "talkmode"));
                 }
+                this.sharedlink = new List<channel>();
+                    foreach (string x in parseConfig(text, "sharedchan").Replace("\n", "").Split(','))
+                    {
+                        string name = x.Replace(" ", "");
+                        if (name != "")
+                        {
+                            if (core.getChannel(name) != null)
+                            {
+                                if (sharedlink.Contains(core.getChannel(name)) == false)
+                                {
+                                    sharedlink.Add(core.getChannel(name));
+                                }
+                            }
+                        }
+                    }
             }
 
             /// <summary>
@@ -135,6 +155,13 @@ namespace wmib
 				AddConfig("talkmode", suppress.ToString ());
                 AddConfig("langcode", Language);
                 AddConfig("keysdb", keydb);
+                AddConfig("sharedinfo", shared);
+                conf += conf + "\nsharedchan=";
+                foreach (channel current in sharedlink)
+                {
+                    conf += current.Name + ",\n";
+                }
+                conf = conf + ";";
                 File.WriteAllText(variables.config + "/" + Name + ".setting", conf);
             }
 
@@ -148,6 +175,7 @@ namespace wmib
                 keydb = variables.config + "/" + Name + ".db";
                 Info = true;
                 Language = "en";
+                shared = "";
 				suppress = false;
                 Feed = false;
                 Logged = false;
@@ -315,7 +343,7 @@ namespace wmib
         /// <summary>
         /// Version
         /// </summary>
-        public static string version = "wikimedia bot v. 1.3.0";
+        public static string version = "wikimedia bot v. 1.3.6";
 
         /// <summary>
         /// Separator

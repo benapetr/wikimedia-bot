@@ -142,6 +142,13 @@ namespace wmib
             return true;
         }
 
+        public bool Join(config.channel Channel)
+        {
+            wd.WriteLine("JOIN " + Channel.Name);
+            wd.Flush();
+            return true;
+        }
+
         /// <summary>
         /// Ping
         /// </summary>
@@ -177,8 +184,7 @@ namespace wmib
             foreach (config.channel ch in config.channels)
             {
                 System.Threading.Thread.Sleep(2000);
-                wd.WriteLine("JOIN " + ch.Name);
-                wd.Flush();
+                this.Join(ch);
             }
             _SlowQueue.newmessages.Clear();
             _SlowQueue.messages.Clear();
@@ -227,8 +233,7 @@ namespace wmib
                 {
                     if (ch.Name != "")
                     {
-                        wd.Flush();
-                        wd.WriteLine("JOIN " + ch.Name);
+                        this.Join(ch);
                         System.Threading.Thread.Sleep(2000);
                     }
                 }

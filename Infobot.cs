@@ -202,6 +202,23 @@ namespace wmib
             Load();
         }
 
+        public static bool Linkable(config.channel host, config.channel guest)
+        {
+            if (host == null)
+            {
+                return false;
+            }
+            if (guest == null)
+            {
+                return false;
+            }
+            if (host.sharedlink.Contains(guest))
+            {
+                return true;
+            }
+            return false;
+        }
+
         /// <summary>
         /// Save to a file
         /// </summary>
@@ -256,145 +273,196 @@ namespace wmib
         /// <returns></returns>
         public bool print(string name, string user, config.channel chan, string host)
         {
-            if (!name.StartsWith("!"))
+            try
             {
-                return true;
-            }
-            name = name.Substring(1);
-            if (name.Contains(" "))
-            {
-                string[] parm = name.Split(' ');
-                if (parm[1] == "is")
+                if (!name.StartsWith("!"))
                 {
-                    if (chan.Users.isApproved(user, host, "info"))
-                    {
-                        if (parm.Length < 3)
-                        {
-                            core.irc.Message(messages.get("key", chan.Language), Channel);
-                            return true;
-                        }
-                        string key = name.Substring(name.IndexOf(" is") + 4);
-                        setKey(key, parm[0], "");
-                    }
-                    else
-                    {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), Channel);
-                    }
-                    return false;
+                    return true;
                 }
-                if (parm[1] == "alias")
+                bool Allowed;
+                config.channel data = null;
+                if (chan.shared == "local" || chan.shared == "")
                 {
-                    if (chan.Users.isApproved(user, host, "info"))
-                    {
-                        if (parm.Length < 3)
-                        {
-                            core.irc.Message(messages.get("InvalidAlias", chan.Language), Channel);
-                            return true;
-                        }
-                        this.aliasKey(name.Substring(name.IndexOf(" alias") + 7), parm[0], "");
-                    }
-                    else
-                    {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), Channel);
-                    }
-                    return false;
-                }
-                if (parm[1] == "unalias")
-                {
-                    if (chan.Users.isApproved(user, host, "info"))
-                    {
-                        foreach (staticalias b in Alias)
-                        {
-                            if (b.Name == parm[0])
-                            {
-                                Alias.Remove(b);
-                                core.irc.Message(messages.get("AliasRemoved", chan.Language), Channel);
-                                Save();
-                                return false;
-                            }
-                        }
-                        return false;
-                    }
-                    core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), Channel);
-                    return false;
-                }
-                if (parm[1] == "del")
-                {
-                    if (chan.Users.isApproved(user, host, "info"))
-                    {
-                        rmKey(parm[0], "");
-                    }
-                    else
-                    {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), Channel);
-                    }
-                    return false;
-                }
-            }
-            string User = "";
-            if (name.Contains("|"))
-            {
-                User = name.Substring(name.IndexOf("|") + 1);
-                if (User.StartsWith( " " ))
-                {
-                    while (User.StartsWith(" "))
-                    {
-                        User = User.Substring(1);
-                    }
-                }
-                name = name.Substring(0, name.IndexOf("|"));
-            }
-            string[] p = name.Split(' ');
-            int parameters = p.Length;
-            string keyv = getValue(p[0]);
-            if (keyv != "")
-            {
-                if (parameters > 1)
-                {
-                    int curr = 1;
-                    while (parameters > curr)
-                    {
-                        keyv = keyv.Replace("$" + curr.ToString(), p[curr]);
-                        curr++;
-                    }
-                }
-                if (User == "")
-                {
-                    core.irc._SlowQueue.DeliverMessage(keyv, Channel);
+                    data = chan;
+                    Allowed = true;
                 }
                 else
                 {
-                    core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, Channel);
-                }
-                return true;
-            }
-            foreach (staticalias b in Alias)
-            {
-                if (b.Name == p[0])
-                {
-                    keyv = getValue(b.Key);
-                    if (keyv != "")
+                    Allowed = Linkable(core.getChannel(chan.shared), chan);
+                    if (Allowed != false)
                     {
-                        if (parameters > 1)
+                        data = core.getChannel(chan.shared);
+                    }
+                    if (data == null)
+                    {
+                        Allowed = false;
+                    }
+                }
+
+                name = name.Substring(1);
+                if (name.Contains(" "))
+                {
+                    string[] parm = name.Split(' ');
+                    if (parm[1] == "is")
+                    {
+                        if (chan.Users.isApproved(user, host, "info"))
                         {
-                            int curr = 1;
-                            while (parameters > curr)
+                            if (!Allowed)
                             {
-                                keyv = keyv.Replace("$" + curr.ToString(), p[curr]);
-                                curr++;
+                                core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), Channel);
+                                return true;
                             }
-                        }
-                        if (User == "")
-                        {
-                            core.irc._SlowQueue.DeliverMessage(keyv, Channel);
+                            if (parm.Length < 3)
+                            {
+                                core.irc._SlowQueue.DeliverMessage(messages.get("key", chan.Language), Channel);
+                                return true;
+                            }
+                            string key = name.Substring(name.IndexOf(" is") + 4);
+                            data.Keys.setKey(key, parm[0], "");
                         }
                         else
                         {
-                            core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, Channel);
+                            core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), Channel);
                         }
-                        return true;
+                        return false;
+                    }
+                    if (parm[1] == "alias")
+                    {
+                        if (chan.Users.isApproved(user, host, "info"))
+                        {
+                            if (!Allowed)
+                            {
+                                core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), Channel);
+                                return true;
+                            }
+                            if (parm.Length < 3)
+                            {
+                                core.irc.Message(messages.get("InvalidAlias", chan.Language), Channel);
+                                return true;
+                            }
+                            data.Keys.aliasKey(name.Substring(name.IndexOf(" alias") + 7), parm[0], "");
+                        }
+                        else
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), Channel);
+                        }
+                        return false;
+                    }
+                    if (parm[1] == "unalias")
+                    {
+                        if (chan.Users.isApproved(user, host, "info"))
+                        {
+                            if (!Allowed)
+                            {
+                                core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), Channel);
+                                return true;
+                            }
+                            foreach (staticalias b in data.Keys.Alias)
+                            {
+                                if (b.Name == parm[0])
+                                {
+                                    data.Keys.Alias.Remove(b);
+                                    core.irc.Message(messages.get("AliasRemoved", chan.Language), Channel);
+                                    data.Keys.Save();
+                                    return false;
+                                }
+                            }
+                            return false;
+                        }
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), Channel);
+                        return false;
+                    }
+                    if (parm[1] == "del")
+                    {
+                        if (chan.Users.isApproved(user, host, "info"))
+                        {
+                            if (!Allowed)
+                            {
+                                core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), Channel);
+                                return true;
+                            }
+                            data.Keys.rmKey(parm[0], "");
+                        }
+                        else
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), Channel);
+                        }
+                        return false;
                     }
                 }
+                if (!Allowed)
+                {
+                    return true;
+                }
+                string User = "";
+                if (name.Contains("|"))
+                {
+                    User = name.Substring(name.IndexOf("|") + 1);
+                    if (User.StartsWith(" "))
+                    {
+                        while (User.StartsWith(" "))
+                        {
+                            User = User.Substring(1);
+                        }
+                    }
+                    name = name.Substring(0, name.IndexOf("|"));
+                }
+                string[] p = name.Split(' ');
+                int parameters = p.Length;
+                string keyv = data.Keys.getValue(p[0]);
+                if (keyv != "")
+                {
+                    if (parameters > 1)
+                    {
+                        int curr = 1;
+                        while (parameters > curr)
+                        {
+                            keyv = keyv.Replace("$" + curr.ToString(), p[curr]);
+                            curr++;
+                        }
+                    }
+                    if (User == "")
+                    {
+                        core.irc._SlowQueue.DeliverMessage(keyv, Channel);
+                    }
+                    else
+                    {
+                        core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, Channel);
+                    }
+                    return true;
+                }
+                foreach (staticalias b in data.Keys.Alias)
+                {
+                    if (b.Name == p[0])
+                    {
+                        keyv = data.Keys.getValue(b.Key);
+                        if (keyv != "")
+                        {
+                            if (parameters > 1)
+                            {
+                                int curr = 1;
+                                while (parameters > curr)
+                                {
+                                    keyv = keyv.Replace("$" + curr.ToString(), p[curr]);
+                                    curr++;
+                                }
+                            }
+                            if (User == "")
+                            {
+                                core.irc._SlowQueue.DeliverMessage(keyv, Channel);
+                            }
+                            else
+                            {
+                                core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, Channel);
+                            }
+                            return true;
+                        }
+                    }
+                }
+            }
+            catch (Exception b)
+            {
+                core.handleException(b);
             }
             return true;
         }
@@ -542,7 +610,7 @@ namespace wmib
             {
                 return;
             }
-            foreach (staticalias stakey in this.Alias)
+            foreach (staticalias stakey in Alias)
             {
                 if (stakey.Name == al)
                 {
@@ -550,7 +618,7 @@ namespace wmib
                     return;
                 }
             }
-            this.Alias.Add(new staticalias(al, key));
+            Alias.Add(new staticalias(al, key));
             core.irc._SlowQueue.DeliverMessage(messages.get( "infobot8", ch.Language), Channel);
             Save();
         }

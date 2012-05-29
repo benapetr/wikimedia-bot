@@ -91,7 +91,7 @@ namespace wmib
             {
                 if (Language != language)
                 {
-                    return get(item);
+                    return get(item, null, va);
                 } else
                 {
                     return "[" + item + "]";
