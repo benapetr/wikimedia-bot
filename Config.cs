@@ -86,7 +86,7 @@ namespace wmib
                 }
 				return false;
 			}
-			
+
             /// <summary>
             /// Load config of channel :)
             /// </summary>
@@ -117,7 +117,7 @@ namespace wmib
                 {
                     Info = bool.Parse(parseConfig(conf, "infodb"));
                 }
-                shared = parseConfig(conf, "shared");
+                shared = parseConfig(conf, "sharedinfo");
                 if (parseConfig(conf, "langcode") != "")
                 {
                     Language = parseConfig(conf, "langcode");
@@ -127,20 +127,6 @@ namespace wmib
                     suppress = bool.Parse(parseConfig(conf, "talkmode"));
                 }
                 this.sharedlink = new List<channel>();
-                    foreach (string x in parseConfig(text, "sharedchan").Replace("\n", "").Split(','))
-                    {
-                        string name = x.Replace(" ", "");
-                        if (name != "")
-                        {
-                            if (core.getChannel(name) != null)
-                            {
-                                if (sharedlink.Contains(core.getChannel(name)) == false)
-                                {
-                                    sharedlink.Add(core.getChannel(name));
-                                }
-                            }
-                        }
-                    }
             }
 
             /// <summary>
@@ -156,13 +142,34 @@ namespace wmib
                 AddConfig("langcode", Language);
                 AddConfig("keysdb", keydb);
                 AddConfig("sharedinfo", shared);
-                conf += conf + "\nsharedchan=";
+                conf += "\nsharedchan=";
                 foreach (channel current in sharedlink)
                 {
                     conf += current.Name + ",\n";
                 }
                 conf = conf + ";";
                 File.WriteAllText(variables.config + "/" + Name + ".setting", conf);
+            }
+
+            public int Shares()
+            {
+                string conf_file = variables.config + "/" + Name + ".setting";
+                conf = File.ReadAllText(conf_file);
+                foreach (string x in parseConfig(conf, "sharedchan").Replace("\n", "").Split(','))
+                {
+                    string name = x.Replace(" ", "");
+                    if (name != "")
+                    {
+                        if (core.getChannel(name) != null)
+                        {
+                            if (sharedlink.Contains(core.getChannel(name)) == false)
+                            {
+                                sharedlink.Add(core.getChannel(name));
+                            }
+                        }
+                    }
+                }
+                return 0;
             }
 
             /// <summary>
@@ -172,7 +179,7 @@ namespace wmib
             public channel(string name)
             {
                 conf = "";
-                keydb = variables.config + "/" + Name + ".db";
+                keydb = variables.config + "/" + name + ".db";
                 Info = true;
                 Language = "en";
                 shared = "";
@@ -211,10 +218,11 @@ namespace wmib
             text = "";
             AddConfig("username", username);
             AddConfig("password", password);
-            AddConfig("network", network);
+            AddConfig("web", url);
             AddConfig("debug", debugchan);
+            AddConfig("network", network);
             AddConfig("nick", login);
-            text += text + "\nchannels=";
+            text += "\nchannels=";
             foreach (channel current in channels)
             {
                 text += current.Name + ",\n";
@@ -265,6 +273,14 @@ namespace wmib
                         channels.Add(new channel(name));
                     }
                 }
+                Program.Log("Channels were all loaded");
+
+                // Now when all chans are loaded let's link them together
+                foreach (channel ch in channels)
+                {
+                    ch.Shares();
+                }
+                Program.Log("Channel db's working");
                 username = parseConfig( text, "username" );
                 network = parseConfig( text, "network" );
                 login = parseConfig( text, "nick" );

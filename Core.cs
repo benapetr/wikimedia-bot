@@ -437,9 +437,9 @@ namespace wmib
                 return;
             }
 
-            if (message.StartsWith("@info "))
+            if (message == ("@info"))
             {
-                irc._SlowQueue.DeliverMessage(System.Web.HttpUtility.UrlEncode(config.url + config.DumpDir + "/" + chan.Name) + ".htm", chan.Name);
+                irc._SlowQueue.DeliverMessage(config.url + config.DumpDir + "/" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm", chan.Name);
                 return;
             }
 
@@ -982,7 +982,7 @@ namespace wmib
 
             if (message == "@commands")
             {
-                irc._SlowQueue.DeliverMessage("Commands: channellist, trusted, trustadd, trustdel, infobot-off, refresh, infobot-on, drop, whoami, add, reload, suppress-off, suppress-on, help, RC-, recentchanges-on, language, recentchanges-off, logon, logoff, recentchanges-, recentchanges+, RC+", chan.Name);
+                irc._SlowQueue.DeliverMessage("Commands: channellist, trusted, trustadd, trustdel, info, infobot-link, infobot-share-trust+, infobot-share-trust-, infobot-share-off, infobot-share-on, infobot-off, refresh, infobot-on, drop, whoami, add, reload, suppress-off, suppress-on, help, RC-, recentchanges-on, language, recentchanges-off, logon, logoff, recentchanges-, recentchanges+, RC+", chan.Name);
                 return;
             }
         }
@@ -1079,7 +1079,13 @@ namespace wmib
                 case "recentchanges-off":
                 case "recentchanges-":
                 case "recentchanges+":
+                case "infobot-share-on":
+                case "infobot-share-trust+":
+                case "infobot-share-trust-":
+                case "infobot-share-link":
+                case "info":
                 case "rc-":
+                case "infobot-share-off":
                 case "rc+":
 				case "suppress-off":
 					showInfo(parameter, messages.get (parameter.ToLower (), channel.Language), channel.Name);
