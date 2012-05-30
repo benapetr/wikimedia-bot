@@ -661,10 +661,9 @@ namespace wmib
                     }
                     else
                     {
-                        irc._SlowQueue.DeliverMessage(messages.get("SilenceBegin", chan.Language), chan.Name);
+                        irc.Message(messages.get("SilenceBegin", chan.Language), chan.Name);
                         chan.suppress = true;
                         chan.SaveConfig();
-                        config.Save();
                         return;
                     }
                 }
@@ -686,7 +685,6 @@ namespace wmib
                         irc._SlowQueue.DeliverMessage(messages.get("Feed7", chan.Language), chan.Name);
                         chan.Feed = false;
                         chan.SaveConfig();
-                        config.Save();
                         return;
                     }
                 }
@@ -708,7 +706,6 @@ namespace wmib
                         irc._SlowQueue.DeliverMessage(messages.get("LoggingOn", chan.Language), chan.Name);
                         chan.Logged = true;
                         chan.SaveConfig();
-                        config.Save();
                         return;
                     }
                 }
@@ -724,7 +721,7 @@ namespace wmib
                     irc._SlowQueue.DeliverMessage(messages.get("Unknown", chan.Language), chan.Name);
                     return;
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("usr1", chan.Language) + current.level + messages.get("usr2", chan.Language) + current.name, chan.Name);
+                irc._SlowQueue.DeliverMessage(messages.get("usr1", chan.Language, new List<string> { current.level, current.name }), chan.Name);
                 return;
             }
 
@@ -740,7 +737,6 @@ namespace wmib
                     else
                     {
                         chan.Logged = false;
-                        config.Save();
                         chan.SaveConfig();
                         irc._SlowQueue.DeliverMessage(messages.get("NotLogged", chan.Language), chan.Name);
                         return;
@@ -775,7 +771,6 @@ namespace wmib
                         irc._SlowQueue.DeliverMessage(messages.get("infobot2", chan.Language), chan.Name);
                         chan.Info = false;
                         chan.SaveConfig();
-                        config.Save();
                         return;
                     }
                 }
@@ -793,7 +788,6 @@ namespace wmib
                         return;
                     }
                     chan.Info = true;
-                    config.Save();
                     chan.SaveConfig();
                     irc.Message(messages.get("infobot4", chan.Language), chan.Name);
                     return;
@@ -821,7 +815,6 @@ namespace wmib
                         irc._SlowQueue.DeliverMessage(messages.get("infobot12", chan.Language), chan.Name);
                         chan.shared = "local";
                         chan.SaveConfig();
-                        config.Save();
                         return;
                     }
                 }
@@ -991,10 +984,13 @@ namespace wmib
         {
                 dumphtmt = new Thread(HtmlDump.Start);
                 dumphtmt.Start();
+                Program.Log("Loading RC module");
                 rc = new Thread(RecentChanges.Start);
                 rc.Start();
+                Program.Log("Loading infobot module");
                 ib = new Thread(infobot_core.Initialise);
                 ib.Start();
+                Program.Log("Modules loaded");
                 irc = new IRC(config.network, config.username, config.name, config.name);
                 irc.Connect();
         }
@@ -1082,7 +1078,7 @@ namespace wmib
                 case "infobot-share-on":
                 case "infobot-share-trust+":
                 case "infobot-share-trust-":
-                case "infobot-share-link":
+                case "infobot-link":
                 case "info":
                 case "rc-":
                 case "infobot-share-off":

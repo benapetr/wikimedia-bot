@@ -133,7 +133,7 @@ namespace wmib
             config.channel channel = core.getChannel(_Channel);
             if (channel == null)
             {
-                core.irc.Message("Error: unable to get pointer of current channel", _Channel);
+                core.irc._SlowQueue.DeliverMessage("Error: unable to get pointer of current channel", _Channel);
                 return false;
             }
             foreach (core.user u in Users)
@@ -142,21 +142,21 @@ namespace wmib
                 {
                     if (getLevel(u.level) > getLevel(trusted.level))
                     {
-                        core.irc.Message(messages.get("Trust1", channel.Language), _Channel);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Trust1", channel.Language), _Channel);
                         return true;
                     }
                     if (u.name == trusted.name)
                     {
-                        core.irc.Message(messages.get("Trust2", channel.Language), _Channel);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Trust2", channel.Language), _Channel);
                         return true;
                     }
                     Users.Remove(u);
                     Save();
-                    core.irc.Message(messages.get("Trust3", channel.Language), _Channel);
+                    core.irc._SlowQueue.DeliverMessage(messages.get("Trust3", channel.Language), _Channel);
                     return true;
                 }
             }
-            core.irc.Message(messages.get("Trust4", channel.Language), _Channel);
+            core.irc._SlowQueue.DeliverMessage(messages.get("Trust4", channel.Language), _Channel);
             return true;
         }
 
@@ -224,7 +224,7 @@ namespace wmib
             config.channel Channel = core.getChannel(_Channel);
             if (Channel == null)
             {
-                core.irc.Message("Error: unable to get pointer of current channel", _Channel);
+                core.irc._SlowQueue.DeliverMessage("Error: unable to get pointer of current channel", _Channel);
                 return;
             }
             string users_ok = "";
@@ -232,7 +232,7 @@ namespace wmib
             {
                 users_ok += " " + b.name + " (2" + b.level + ")" + ",";
             }
-            core.irc.Message(messages.get("TrustedUserList", Channel.Language) + users_ok, _Channel);
+            core.irc._SlowQueue.DeliverMessage(messages.get("TrustedUserList", Channel.Language) + users_ok, _Channel);
         }
 
         /// <summary>

@@ -157,28 +157,35 @@ namespace wmib
             {
                 string text = CreateHeader();
                 text = text + "<h4>Infobot</h4>\n";
-                text = text + "<table border=1 width=100%>\n<tr><th width=10%>Key</th><th>Value</th></tr>\n";
-                Channel.Keys.locked = true;
-				List<infobot_core.item> list = new List<infobot_core.item>();
-				list.AddRange(Channel.Keys.text);
-                if (Channel.Keys.text.Count > 0)
+                if (Channel.shared != "" && Channel.shared != "local")
                 {
-                    foreach (infobot_core.item Key in list)
+                    text += "Linked to <a href=" + System.Web.HttpUtility.UrlEncode(Channel.shared) + ".htm>" + Channel.shared + "</a>\n";
+                }
+                else
+                {
+                    text = text + "\n<table border=1 width=100%>\n<tr><th width=10%>Key</th><th>Value</th></tr>\n";
+                    Channel.Keys.locked = true;
+                    List<infobot_core.item> list = new List<infobot_core.item>();
+                    list.AddRange(Channel.Keys.text);
+                    if (Channel.Keys.text.Count > 0)
                     {
-                        text += AddKey(Key.key, Key.text);
+                        foreach (infobot_core.item Key in list)
+                        {
+                            text += AddKey(Key.key, Key.text);
+                        }
                     }
+                    text = text + "</table>\n";
+                    text = text + "<h4>Aliases</h4>\n<table border=1 width=100%>\n";
+                    foreach (infobot_core.staticalias data in Channel.Keys.Alias)
+                    {
+                        text += AddLink(data.Name, data.Key);
+                    }
+                    text = text + "</table>\n";
+                    Channel.Keys.locked = false;
                 }
-                text = text + "</table>\n";
-                text = text + "<h4>Aliases</h4>\n<table border=1 width=100%>\n";
-                foreach (infobot_core.staticalias data in Channel.Keys.Alias)
-                {
-                    text += AddLink(data.Name, data.Key);
-                }
-                text = text + "</table>\n";
-                Channel.Keys.locked = false;
                 if (Channel.Feed)
                 {
-                    text += "<h4>Recent changes</h4>";
+                    text += "\n<h4>Recent changes</h4>";
                     text = text + Channel.RC.ToTable();
                 }
                 text = text + CreateFooter();
