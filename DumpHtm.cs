@@ -159,7 +159,15 @@ namespace wmib
                 text = text + "<h4>Infobot</h4>\n";
                 if (Channel.shared != "" && Channel.shared != "local")
                 {
-                    text += "Linked to <a href=" + System.Web.HttpUtility.UrlEncode(Channel.shared) + ".htm>" + Channel.shared + "</a>\n";
+                    config.channel temp = core.getChannel(Channel.shared);
+                    if (temp != null)
+                    {
+                        text += "Linked to <a href=" + System.Web.HttpUtility.UrlEncode(temp.Name) + ".htm>" + temp.Name + "</a>\n";
+                    }
+                    else
+                    {
+                        text += "Channel is linked to " + Channel.shared + " which isn't in my db, that's weird";
+                    }
                 }
                 else
                 {
