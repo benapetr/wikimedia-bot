@@ -126,7 +126,6 @@ namespace wmib
                 {
                     suppress = bool.Parse(parseConfig(conf, "talkmode"));
                 }
-                this.sharedlink = new List<channel>();
             }
 
             /// <summary>
@@ -142,12 +141,15 @@ namespace wmib
                 AddConfig("langcode", Language);
                 AddConfig("keysdb", keydb);
                 AddConfig("sharedinfo", shared);
-                conf += "\nsharedchan=";
-                foreach (channel current in sharedlink)
+                if (!(sharedlink.Count < 1))
                 {
-                    conf += current.Name + ",\n";
-                }
+                    conf += "\nsharedchan=";
+                    foreach (channel current in sharedlink)
+                    {
+                        conf += current.Name + ",\n";
+                    }
                 conf = conf + ";";
+                }
                 File.WriteAllText(variables.config + "/" + Name + ".setting", conf);
             }
 
@@ -182,6 +184,7 @@ namespace wmib
                 keydb = variables.config + "/" + name + ".db";
                 Info = true;
                 Language = "en";
+                sharedlink = new List<channel>();
                 shared = "";
 				suppress = false;
                 Feed = false;

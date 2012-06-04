@@ -783,7 +783,7 @@ namespace wmib
             {
                 if (chan.Users.isApproved(user, host, "admin"))
                 {
-                    if (!chan.Logged)
+                    if (chan.Info)
                     {
                         irc._SlowQueue.DeliverMessage(messages.get("infobot3", chan.Language), chan.Name);
                         return;
