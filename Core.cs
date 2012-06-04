@@ -51,6 +51,7 @@ namespace wmib
     {
         public static Thread dumphtmt;
         public static Thread rc;
+        public static string LastText;
         public static Thread ib;
         public static bool disabled;
         public static IRC irc;
@@ -151,9 +152,9 @@ namespace wmib
             {
                 if (config.debugchan != null)
                 {
-                    irc._SlowQueue.DeliverMessage("DEBUG Exception: " + ex.Message + " I feel crushed, uh :|", config.debugchan);
+                    irc._SlowQueue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText + " I feel crushed, uh :|", config.debugchan);
                 }
-                Program.Log(ex.Message + ex.Source + ex.StackTrace);
+                Program.Log("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace);
             }
             catch (Exception) // exception happened while we tried to handle another one, ignore that (probably issue with logging)
             { }
@@ -1005,6 +1006,7 @@ namespace wmib
         /// <returns></returns>
         public static bool getMessage(string channel, string nick, string host, string message)
         {
+            LastText = nick + " chan: " + channel + " " + message;
             config.channel curr = getChannel(channel);
             if (curr != null)
             {

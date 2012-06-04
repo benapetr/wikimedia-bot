@@ -61,20 +61,58 @@ namespace wmib.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to PermissionDenied=Pristup odepren;
+        ///Authorization=Nejsi autorizovan pro tento prikaz;
+        ///ChannelIn=Tento kanal je jiz v db;
+        ///UserSc=Uspesne pridan ;
+        ///InvalidName=Neplatne jmeno;
+        ///MessageQueueWasReloaded=Fronta zprav byla uspesne vyprazdnena!;
+        ///Feed1=Kanal jiz ma seznam zmen spusten;
+        ///Feed2=Seznam zmen je spusten;
+        ///InvalidWiki=Neplatna wiki;
+        ///Wiki+=Wiki pridana;
+        ///Wiki-=Wiki smazana;
+        ///Feed3=Kanal nema seznam zmen;
+        ///Feed4=Chyba, ;
+        ///Feed5=: Spatny pocet parametru;
+        ///InvalidUser=Neplatny uzivatel;
+        ///Language=Od ted t [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string czech {
+        internal static string cs_czech {
             get {
-                return ResourceManager.GetString("czech", resourceCulture);
+                return ResourceManager.GetString("cs_czech", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PermissionDenied=Permission denied;
+        ///Authorization=You are not authorized to perform this, sorry;
+        ///ChannelIn=This channel is already in db;
+        ///UserSc=Successfuly added ;
+        ///InvalidName=Invalid name;
+        ///MessageQueueWasReloaded=Message queue was reloaded!;
+        ///Feed1=Channel had already feed enabled;
+        ///Feed2=Feed is enabled;
+        ///InvalidWiki=Invalid wiki;
+        ///Wiki+=Wiki inserted;
+        ///Wiki-=Wiki removed;
+        ///Feed3=Channel doesn&apos;t have enabled recent changes;
+        ///Feed4=Error, ;
+        ///Feed5=: Wrong number of parameters;
+        ///InvalidUser=Invalid us [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string english {
+            get {
+                return ResourceManager.GetString("english", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to .
         /// </summary>
-        internal static string english {
+        internal static string zh_chinese {
             get {
-                return ResourceManager.GetString("english", resourceCulture);
+                return ResourceManager.GetString("zh_chinese", resourceCulture);
             }
         }
     }
