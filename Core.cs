@@ -847,6 +847,14 @@ namespace wmib
                                 }
                                 irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
                                 return;
+                            case "infobot-sorted":
+                                if (bool.TryParse(value, out chan.infobot_sorted))
+                                {
+                                    irc._SlowQueue.DeliverMessage(messages.get("configureok", chan.Language, new List<string> { value }), chan.Name);
+                                    chan.SaveConfig();
+                                }
+                                irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
+                                return;
                             case "infobot-help":
                                 if (bool.TryParse(value, out chan.infobot_help))
                                 {
@@ -1022,7 +1030,7 @@ namespace wmib
 
             if (message == "@commands")
             {
-                irc._SlowQueue.DeliverMessage("Commands: channellist, trusted, trustadd, trustdel, info, infobot-link, infobot-share-trust+, infobot-share-trust-, infobot-share-off, infobot-share-on, infobot-off, refresh, infobot-on, drop, whoami, add, reload, suppress-off, suppress-on, help, RC-, recentchanges-on, language, recentchanges-off, logon, logoff, recentchanges-, recentchanges+, RC+", chan.Name);
+                irc._SlowQueue.DeliverMessage("Commands: channellist, trusted, trustadd, trustdel, info, configure, infobot-link, infobot-share-trust+, infobot-share-trust-, infobot-share-off, infobot-share-on, infobot-off, refresh, infobot-on, drop, whoami, add, reload, suppress-off, suppress-on, help, RC-, recentchanges-on, language, recentchanges-off, logon, logoff, recentchanges-, recentchanges+, RC+", chan.Name);
                 return;
             }
         }
@@ -1115,6 +1123,7 @@ namespace wmib
                 case "language":
                 case "whoami":
                 case "suppress-on":
+                case "configure":
                 case "add":
                 case "reload":
                 case "logon":

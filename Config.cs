@@ -45,6 +45,8 @@ namespace wmib
 
             public bool infobot_help = false;
 
+            public bool infobot_sorted = false;
+
             public bool infobot_auto_complete = false;
 
             /// <summary>
@@ -109,35 +111,21 @@ namespace wmib
                 {
                     keydb = (parseConfig(conf, "keysdb"));
                 }
-                if (parseConfig(conf, "logged") != "")
-                {
-                    Logged = bool.Parse(parseConfig(conf, "logged"));
-                }
-                if (parseConfig(conf, "feed") != "")
-                {
-                    Feed = bool.Parse(parseConfig(conf, "feed"));
-                }
+                bool.TryParse(parseConfig(conf, "logged"), out Logged);
+                bool.TryParse(parseConfig(conf, "feed"), out Feed);
+                bool.TryParse(parseConfig(conf, "infobot-sorted-list"), out infobot_sorted);
                 if (parseConfig(conf, "infodb") != "")
                 {
                     Info = bool.Parse(parseConfig(conf, "infodb"));
                 }
                 shared = parseConfig(conf, "sharedinfo");
-                if (parseConfig(conf, "infobot-help") != "")
-                {
-                    infobot_help = bool.Parse(parseConfig(conf, "infobot-help"));
-                }
-                if (parseConfig(conf, "infobot-auto-complete") != "")
-                {
-                    infobot_auto_complete = bool.Parse(parseConfig(conf, "infobot-auto-complete"));
-                }
+                bool.TryParse(parseConfig(conf, "infobot-help"), out infobot_help);
+                bool.TryParse(parseConfig(conf, "infobot-auto-complete"), out infobot_auto_complete);
                 if (parseConfig(conf, "langcode") != "")
                 {
                     Language = parseConfig(conf, "langcode");
                 }
-                if (parseConfig(conf, "talkmode") != "")
-                {
-                    suppress = bool.Parse(parseConfig(conf, "talkmode"));
-                }
+                bool.TryParse(parseConfig(conf, "talkmode"), out suppress);
             }
 
             /// <summary>
@@ -150,8 +138,11 @@ namespace wmib
                 AddConfig("logged", Logged.ToString());
                 AddConfig("feed", Feed.ToString());
                 AddConfig("talkmode", suppress.ToString());
+                AddConfig("infobot-sorted-list", infobot_sorted.ToString());
                 AddConfig("langcode", Language);
+                AddConfig("infobot-help", infobot_help.ToString());
                 AddConfig("keysdb", keydb);
+                AddConfig("infobot-auto-complete", infobot_auto_complete.ToString());
                 AddConfig("sharedinfo", shared);
                 if (!(sharedlink.Count < 1))
                 {
@@ -378,7 +369,7 @@ namespace wmib
         /// <summary>
         /// Version
         /// </summary>
-        public static string version = "wikimedia bot v. 1.3.6";
+        public static string version = "wikimedia bot v. 1.3.8";
 
         /// <summary>
         /// Separator

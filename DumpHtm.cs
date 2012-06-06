@@ -181,7 +181,13 @@ namespace wmib
                     text = text + "\n<table border=1 class=\"infobot1\" width=100%>\n<tr><th width=10%>Key</th><th>Value</th></tr>\n";
                     Channel.Keys.locked = true;
                     List<infobot_core.item> list = new List<infobot_core.item>();
-                    list.AddRange(Channel.Keys.text);
+                    if (Channel.infobot_sorted != false)
+                    {
+                        list = Channel.Keys.SortedItem();
+                    }
+                    else {
+                        list.AddRange(Channel.Keys.text);
+                    }
                     if (Channel.Keys.text.Count > 0)
                     {
                         foreach (infobot_core.item Key in list)

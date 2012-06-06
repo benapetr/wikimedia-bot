@@ -107,6 +107,7 @@ rcfeed10=Inserted new item to feed of changes;
 rcfeed11=Unable to insert the string because the channel is not being watched now;
 rcfeed12=Unable to insert the string to the list because there is no such wiki site known by a bot, contact some developer with svn access in order to insert it;
 rcfeed13=Recent changes thread is still not loaded, please wait;
+configure=Change a value of channel config;
 configure-wrong=This value can't be stored;
 configuresave=Value $1 was stored to config;
 configure-va=Value of $1 can't be $2, please use correct data type;

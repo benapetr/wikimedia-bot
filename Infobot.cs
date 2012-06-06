@@ -158,6 +158,43 @@ namespace wmib
             }
         }
 
+        public List<item> SortedItem()
+        {
+            List<item> OriginalList = new List<item>();
+            List<item> Item = new List<item>();
+            locked = true;
+            OriginalList.AddRange(text);
+            locked = false;
+            try
+            {
+            if (text.Count > 0)
+            {
+                List<string> Name = new List<string>();
+                foreach (item curr in OriginalList)
+                {
+                    Name.Add(curr.key);
+                }
+                Name.Sort();
+                foreach (string f in Name)
+                {
+                    foreach(item g in OriginalList)
+                    {
+                        if (f == g.key)
+                        {
+                            Item.Add(g);
+                            break;
+                        }
+                    }
+                }
+            }
+            } catch(Exception)
+            {
+                Program.Log("Exception while creating list for html");
+                locked = false;
+            }
+            return Item;
+        }
+
         public static void Initialise()
         {
             try
