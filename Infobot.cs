@@ -204,6 +204,21 @@ namespace wmib
             Load();
         }
 
+        public static string parseInfo(string key, string[] pars)
+        {
+            string keyv = key;
+            if (pars.Length > 1)
+            {
+                int curr = 1;
+                while (pars.Length > curr)
+                {
+                    keyv = keyv.Replace("$" + curr.ToString(), pars[curr]);
+                    curr++;
+                }
+            }
+            return keyv;
+        }
+
         public static bool Linkable(config.channel host, config.channel guest)
         {
             if (host == null)
@@ -396,15 +411,7 @@ namespace wmib
                 string keyv = data.Keys.getValue(p[0]);
                 if (keyv != "")
                 {
-                    if (parameters > 1)
-                    {
-                        int curr = 1;
-                        while (parameters > curr)
-                        {
-                            keyv = keyv.Replace("$" + curr.ToString(), p[curr]);
-                            curr++;
-                        }
-                    }
+                    keyv = parseInfo(keyv, p);
                     if (User == "")
                     {
                         core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
@@ -422,15 +429,7 @@ namespace wmib
                         keyv = data.Keys.getValue(b.Key);
                         if (keyv != "")
                         {
-                            if (parameters > 1)
-                            {
-                                int curr = 1;
-                                while (parameters > curr)
-                                {
-                                    keyv = keyv.Replace("$" + curr.ToString(), p[curr]);
-                                    curr++;
-                                }
-                            }
+                            keyv = parseInfo(keyv, p);
                             if (User == "")
                             {
                                 core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
@@ -439,6 +438,98 @@ namespace wmib
                             {
                                 core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
                             }
+                            return true;
+                        }
+                    }
+
+                    if (chan.infobot_auto_complete)
+                    {
+                        List<string> results = new List<string>();
+                        foreach (item f in data.Keys.text)
+                        {
+                            if (f.key.StartsWith(p[0]))
+                            {
+                                results.Add(f.key);
+                            }
+                        }
+                        foreach (staticalias f in data.Keys.Alias)
+                        {
+                            if (f.Key.StartsWith(p[0]))
+                            {
+                                results.Add(f.Key);
+                            }
+                        }
+
+                        if (results.Count == 1)
+                        {
+                            keyv = data.Keys.getValue(results[0]);
+                            if (keyv != "")
+                            {
+                                keyv = parseInfo(keyv, p);
+                                if (User == "")
+                                {
+                                    core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
+                                }
+                                else
+                                {
+                                    core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
+                                }
+                                return true;
+                            }
+                            foreach (staticalias alias in data.Keys.Alias)
+                            {
+                                if (alias.Name == p[0])
+                                {
+                                    keyv = data.Keys.getValue(alias.Key);
+                                    if (keyv != "")
+                                    {
+                                        keyv = parseInfo(keyv, p);
+                                        if (User == "")
+                                        {
+                                            core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
+                                        }
+                                        else
+                                        {
+                                            core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
+                                        }
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (results.Count > 1)
+                        { 
+                            string x = "";
+                            foreach (string ix in results)
+                            {
+                                x += ix + ", ";
+                            }
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot-a-e", chan.Language, new List<string>() { x }), chan.Name);
+                            return true;
+                        }
+                    }
+
+                    if (chan.infobot_help == true)
+                    {
+                        List<string> Sugg = new List<string>();
+                        p[0] = p[0].ToLower();
+                        foreach (item f in data.Keys.text)
+                        {
+                            if (f.text.Contains(p[0]) || f.key.ToLower().Contains(p[0]))
+                            {
+                                Sugg.Add(f.key);
+                            }
+                        }
+
+                        if (Sugg.Count > 0)
+                        {
+                            string x = "";
+                            foreach (string a in Sugg)
+                            {
+                                x += a + ", ";
+                            }
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot-help", chan.Language, new List<string>() { x }), chan.Name);
                             return true;
                         }
                     }

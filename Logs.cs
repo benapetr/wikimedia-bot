@@ -67,7 +67,7 @@ namespace wmib
             return true;
         }
 
-        public static void writeLog(string message, config.channel channel)
+        private static void writeLog(string message, config.channel channel)
         {
             try
             {
@@ -132,7 +132,7 @@ namespace wmib
         /// <summary>
         /// Convert the number to format we want to have in log
         /// </summary>
-        public static string timedateToString(int number)
+        private static string timedateToString(int number)
         {
             if (number <= 9 && number >= 0)
             {

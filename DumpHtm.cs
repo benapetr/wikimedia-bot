@@ -43,7 +43,7 @@ namespace wmib
                         chan.Keys.update = false;
                     }
                 }
-				Stat();
+                Stat();
                 Thread.Sleep(320000);
             }
         }
@@ -55,7 +55,7 @@ namespace wmib
         public HtmlDump(config.channel channel)
         {
             dumpname = config.DumpDir + "/" + channel.Name + ".htm";
-            if ( !System.IO.Directory.Exists(config.DumpDir) )
+            if (!System.IO.Directory.Exists(config.DumpDir))
             {
                 Program.Log("Creating a directory for dump");
                 System.IO.Directory.CreateDirectory(config.DumpDir);
@@ -67,7 +67,7 @@ namespace wmib
         /// Html code
         /// </summary>
         /// <returns></returns>
-        public string CreateFooter()
+        private string CreateFooter()
         {
             return "</body></html>\n";
         }
@@ -76,9 +76,15 @@ namespace wmib
         /// Html
         /// </summary>
         /// <returns></returns>
-        public string CreateHeader()
+        private static string CreateHeader(string page_name)
         {
-            return "<html><head><title>" + Channel.Name + "</title></head><body>\n";
+            string html = "<html><head>";
+            if (config.css != "")
+            {
+                html += "<link rel=\"stylesheet\" href=\"" + config.css + "\" type=\"text/css\"/>";
+            }
+            html += "<title>" + page_name + "</title></head><body>\n";
+            return html;
         }
 
         /// <summary>
@@ -99,7 +105,7 @@ namespace wmib
         /// <param name="name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public string AddLine(string name, string value)
+        private string AddLine(string name, string value)
         {
             return "<tr><td>" + Encode(name) + "</td><td>" + Encode(value) + "</td></tr>\n";
         }
@@ -110,7 +116,7 @@ namespace wmib
         /// <param name="name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public string AddLink(string name, string value)
+        private string AddLink(string name, string value)
         {
             return "<tr><td>" + Encode(name) + "</td><td><a href=\"#" + Encode(value) + "\">" + Encode(value) + "</a></td></tr>\n";
         }
@@ -121,33 +127,34 @@ namespace wmib
         /// <param name="name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public string AddKey(string name, string value)
+        private string AddKey(string name, string value)
         {
             return "<tr id=\"" + Encode(name) + "\"><td>" + Encode(name) + "</td><td>" + Encode(value) + "</td></tr>\n";
         }
-		
-		/// <summary>
-		/// Create stat for bot
-		/// </summary>
-		public static void Stat()
-		{
-			try
+
+        /// <summary>
+        /// Create stat for bot
+        /// </summary>
+        public static void Stat()
+        {
+            try
             {
-				string text = "<html><head><title>System info</title></head><body>\n";
-				text += "<h1>System data</h1><p>List of channels:</p>";
-				foreach (config.channel chan in config.channels)
+                string text = CreateHeader("System info");
+                text += "<h1>System data</h1><p class=info>List of channels:</p>";
+                foreach (config.channel chan in config.channels)
                 {
-					text = text + "" + chan.Name + " (infobot: " + chan.Info.ToString () + ", recentchanges: " + chan.Feed.ToString () + ", logs: " + chan.Logged.ToString () +  ")<br>\n";
-				}
-				text += "Uptime: " + core.getUptime ();
-				text += "</body></html>";
-				File.WriteAllText(config.DumpDir + "/systemdata.htm", text);
-			}catch (Exception b)
+                    text = text + "" + chan.Name + " (infobot: " + chan.Info.ToString() + ", recentchanges: " + chan.Feed.ToString() + ", logs: " + chan.Logged.ToString() + ")<br>\n";
+                }
+                text += "Uptime: " + core.getUptime();
+                text += "</body></html>";
+                File.WriteAllText(config.DumpDir + "/systemdata.htm", text);
+            }
+            catch (Exception b)
             {
                 Console.WriteLine(b.Message);
             }
-		}
-		
+        }
+
         /// <summary>
         /// Generate a dump file
         /// </summary>
@@ -155,7 +162,7 @@ namespace wmib
         {
             try
             {
-                string text = CreateHeader();
+                string text = CreateHeader(Channel.Name);
                 text = text + "<h4>Infobot</h4>\n";
                 if (Channel.shared != "" && Channel.shared != "local")
                 {
@@ -171,7 +178,7 @@ namespace wmib
                 }
                 else
                 {
-                    text = text + "\n<table border=1 width=100%>\n<tr><th width=10%>Key</th><th>Value</th></tr>\n";
+                    text = text + "\n<table border=1 class=\"infobot1\" width=100%>\n<tr><th width=10%>Key</th><th>Value</th></tr>\n";
                     Channel.Keys.locked = true;
                     List<infobot_core.item> list = new List<infobot_core.item>();
                     list.AddRange(Channel.Keys.text);
@@ -183,7 +190,7 @@ namespace wmib
                         }
                     }
                     text = text + "</table>\n";
-                    text = text + "<h4>Aliases</h4>\n<table border=1 width=100%>\n";
+                    text = text + "<h4>Aliases</h4>\n<table class=\"infobot2\" border=1 width=100%>\n";
                     foreach (infobot_core.staticalias data in Channel.Keys.Alias)
                     {
                         text += AddLink(data.Name, data.Key);

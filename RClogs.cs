@@ -166,10 +166,11 @@ namespace wmib
                 {
                     File.AppendAllText(channeldata, x + "\n");
                 }
-            } catch (Exception f)
-                {
-                    Console.WriteLine(f.Message);
-                }
+            } 
+            catch (Exception f)
+            {
+                Console.WriteLine(f.Message);
+            }
             return true;
         }
 

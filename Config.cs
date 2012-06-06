@@ -32,16 +32,20 @@ namespace wmib
             /// Log
             /// </summary>
             public string Log;
-			
+
             public bool Feed;
             public bool Info;
-			
-			public bool suppress;
-			
+
+            public bool suppress;
+
             /// <summary>
             /// Keys
             /// </summary>
             public infobot_core Keys;
+
+            public bool infobot_help = false;
+
+            public bool infobot_auto_complete = false;
 
             /// <summary>
             /// Recent changes
@@ -77,15 +81,15 @@ namespace wmib
                 conf += "\n" + a + "=" + b + ";";
             }
 
-			public static bool channelExist(string _Channel)
-			{
-				string conf_file = variables.config + "/" + _Channel + ".setting";
+            public static bool channelExist(string _Channel)
+            {
+                string conf_file = variables.config + "/" + _Channel + ".setting";
                 if (File.Exists(conf_file))
                 {
                     return true;
                 }
-				return false;
-			}
+                return false;
+            }
 
             /// <summary>
             /// Load config of channel :)
@@ -118,11 +122,19 @@ namespace wmib
                     Info = bool.Parse(parseConfig(conf, "infodb"));
                 }
                 shared = parseConfig(conf, "sharedinfo");
+                if (parseConfig(conf, "infobot-help") != "")
+                {
+                    infobot_help = bool.Parse(parseConfig(conf, "infobot-help"));
+                }
+                if (parseConfig(conf, "infobot-auto-complete") != "")
+                {
+                    infobot_auto_complete = bool.Parse(parseConfig(conf, "infobot-auto-complete"));
+                }
                 if (parseConfig(conf, "langcode") != "")
                 {
                     Language = parseConfig(conf, "langcode");
                 }
-				if (parseConfig(conf, "talkmode") != "")
+                if (parseConfig(conf, "talkmode") != "")
                 {
                     suppress = bool.Parse(parseConfig(conf, "talkmode"));
                 }
@@ -137,7 +149,7 @@ namespace wmib
                 AddConfig("infodb", Info.ToString());
                 AddConfig("logged", Logged.ToString());
                 AddConfig("feed", Feed.ToString());
-				AddConfig("talkmode", suppress.ToString ());
+                AddConfig("talkmode", suppress.ToString());
                 AddConfig("langcode", Language);
                 AddConfig("keysdb", keydb);
                 AddConfig("sharedinfo", shared);
@@ -148,7 +160,7 @@ namespace wmib
                     {
                         conf += current.Name + ",\n";
                     }
-                conf = conf + ";";
+                    conf = conf + ";";
                 }
                 File.WriteAllText(variables.config + "/" + Name + ".setting", conf);
             }
@@ -186,7 +198,7 @@ namespace wmib
                 Language = "en";
                 sharedlink = new List<channel>();
                 shared = "";
-				suppress = false;
+                suppress = false;
                 Feed = false;
                 Logged = false;
                 Name = name;
@@ -224,6 +236,7 @@ namespace wmib
             AddConfig("web", url);
             AddConfig("debug", debugchan);
             AddConfig("network", network);
+            AddConfig("style_html_file", css);
             AddConfig("nick", login);
             text += "\nchannels=";
             foreach (channel current in channels)
@@ -263,10 +276,10 @@ namespace wmib
                 {
                     Directory.CreateDirectory(variables.config);
                 }
-				if (!System.IO.File.Exists (variables.config + "/wmib"))
-				{
-					System.IO.File.WriteAllText (variables.config + "/wmib", "//this is configuration file for bot, you need to fill in some stuff for it to work");
-				}
+                if (!System.IO.File.Exists(variables.config + "/wmib"))
+                {
+                    System.IO.File.WriteAllText(variables.config + "/wmib", "//this is configuration file for bot, you need to fill in some stuff for it to work");
+                }
                 text = File.ReadAllText(variables.config + "/wmib");
                 foreach (string x in parseConfig(text, "channels").Replace("\n", "").Split(','))
                 {
@@ -284,28 +297,29 @@ namespace wmib
                     ch.Shares();
                 }
                 Program.Log("Channel db's working");
-                username = parseConfig( text, "username" );
-                network = parseConfig( text, "network" );
-                login = parseConfig( text, "nick" );
-                debugchan = parseConfig( text, "debug" );
-				url = parseConfig( text, "web" );
-                password = parseConfig( text, "password" );
-				if (login == "")
-				{
-					Console.WriteLine ("Error there is no username for bot");
-					return 1;
-				}
-				if (network == "")
-				{
-					Console.WriteLine ("Error irc server is wrong" );
-					return 1;
-				}
-				if (username == "")
-				{
-					Console.WriteLine ("Error there is no username for bot");
-					return 1;
-				}
-				return 0;
+                username = parseConfig(text, "username");
+                network = parseConfig(text, "network");
+                login = parseConfig(text, "nick");
+                debugchan = parseConfig(text, "debug");
+                css = parseConfig(text, "style_html_file");
+                url = parseConfig(text, "web");
+                password = parseConfig(text, "password");
+                if (login == "")
+                {
+                    Console.WriteLine("Error there is no username for bot");
+                    return 1;
+                }
+                if (network == "")
+                {
+                    Console.WriteLine("Error irc server is wrong");
+                    return 1;
+                }
+                if (username == "")
+                {
+                    Console.WriteLine("Error there is no username for bot");
+                    return 1;
+                }
+                return 0;
             }
             catch (Exception ex)
             {
@@ -315,7 +329,7 @@ namespace wmib
             {
                 Directory.CreateDirectory(DumpDir);
             }
-			return 0;
+            return 0;
         }
 
         public static string text;
@@ -331,13 +345,15 @@ namespace wmib
         /// </summary>
 
         public static string username = "wm-bot";
-		
-		/// <summary>
-		/// Uptime
-		/// </summary>
-		public static System.DateTime UpTime;
-		
+
+        /// <summary>
+        /// Uptime
+        /// </summary>
+        public static System.DateTime UpTime;
+
         public static string debugchan = null;
+
+        public static string css;
 
         /// <summary>
         /// Login name
@@ -348,12 +364,12 @@ namespace wmib
         /// Login pw
         /// </summary>
         public static string password = "";
-		
-		/// <summary>
-		/// The webpages url
-		/// </summary>
-		public static string url = "";
-		
+
+        /// <summary>
+        /// The webpages url
+        /// </summary>
+        public static string url = "";
+
         /// <summary>
         /// Dump
         /// </summary>
