@@ -431,6 +431,7 @@ namespace wmib
                     return true;
                 }
                 string User = "";
+
                 if (name.Contains("|"))
                 {
                     User = name.Substring(name.IndexOf("|") + 1);
@@ -459,6 +460,7 @@ namespace wmib
                     }
                     return true;
                 }
+
                 foreach (staticalias b in data.Keys.Alias)
                 {
                     if (b.Name == p[0])
@@ -478,97 +480,97 @@ namespace wmib
                             return true;
                         }
                     }
+                }
 
-                    if (chan.infobot_auto_complete)
+                if (chan.infobot_auto_complete)
+                {
+                    List<string> results = new List<string>();
+                    foreach (item f in data.Keys.text)
                     {
-                        List<string> results = new List<string>();
-                        foreach (item f in data.Keys.text)
+                        if (f.key.StartsWith(p[0]))
                         {
-                            if (f.key.StartsWith(p[0]))
-                            {
-                                results.Add(f.key);
-                            }
+                            results.Add(f.key);
                         }
-                        foreach (staticalias f in data.Keys.Alias)
+                    }
+                    foreach (staticalias f in data.Keys.Alias)
+                    {
+                        if (f.Key.StartsWith(p[0]))
                         {
-                            if (f.Key.StartsWith(p[0]))
-                            {
-                                results.Add(f.Key);
-                            }
-                        }
-
-                        if (results.Count == 1)
-                        {
-                            keyv = data.Keys.getValue(results[0]);
-                            if (keyv != "")
-                            {
-                                keyv = parseInfo(keyv, p);
-                                if (User == "")
-                                {
-                                    core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
-                                }
-                                else
-                                {
-                                    core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
-                                }
-                                return true;
-                            }
-                            foreach (staticalias alias in data.Keys.Alias)
-                            {
-                                if (alias.Name == p[0])
-                                {
-                                    keyv = data.Keys.getValue(alias.Key);
-                                    if (keyv != "")
-                                    {
-                                        keyv = parseInfo(keyv, p);
-                                        if (User == "")
-                                        {
-                                            core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
-                                        }
-                                        else
-                                        {
-                                            core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
-                                        }
-                                        return true;
-                                    }
-                                }
-                            }
-                        }
-
-                        if (results.Count > 1)
-                        { 
-                            string x = "";
-                            foreach (string ix in results)
-                            {
-                                x += ix + ", ";
-                            }
-                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot-a-e", chan.Language, new List<string>() { x }), chan.Name);
-                            return true;
+                            results.Add(f.Key);
                         }
                     }
 
-                    if (chan.infobot_help == true)
+                    if (results.Count == 1)
                     {
-                        List<string> Sugg = new List<string>();
-                        p[0] = p[0].ToLower();
-                        foreach (item f in data.Keys.text)
+                        keyv = data.Keys.getValue(results[0]);
+                        if (keyv != "")
                         {
-                            if (f.text.Contains(p[0]) || f.key.ToLower().Contains(p[0]))
+                            keyv = parseInfo(keyv, p);
+                            if (User == "")
                             {
-                                Sugg.Add(f.key);
+                                core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
                             }
-                        }
-
-                        if (Sugg.Count > 0)
-                        {
-                            string x = "";
-                            foreach (string a in Sugg)
+                            else
                             {
-                                x += a + ", ";
+                                core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
                             }
-                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot-help", chan.Language, new List<string>() { x }), chan.Name);
                             return true;
                         }
+                        foreach (staticalias alias in data.Keys.Alias)
+                        {
+                            if (alias.Name == p[0])
+                            {
+                                keyv = data.Keys.getValue(alias.Key);
+                                if (keyv != "")
+                                {
+                                    keyv = parseInfo(keyv, p);
+                                    if (User == "")
+                                    {
+                                        core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
+                                    }
+                                    else
+                                    {
+                                        core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
+                                    }
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+
+                    if (results.Count > 1)
+                    {
+                        string x = "";
+                        foreach (string ix in results)
+                        {
+                            x += ix + ", ";
+                        }
+                        core.irc._SlowQueue.DeliverMessage(messages.get("infobot-c-e", chan.Language, new List<string>() { x }), chan.Name);
+                        return true;
+                    }
+                }
+
+                if (chan.infobot_help == true)
+                {
+                    List<string> Sugg = new List<string>();
+                    p[0] = p[0].ToLower();
+                    foreach (item f in data.Keys.text)
+                    {
+                        if (f.text.Contains(p[0]) || f.key.ToLower().Contains(p[0]))
+                        {
+                            Sugg.Add(f.key);
+                        }
+                    }
+
+                    if (Sugg.Count > 0)
+                    {
+                        string x = "";
+                        foreach (string a in Sugg)
+                        {
+                            x += "!" + a + ", ";
+                        }
+                        core.irc._SlowQueue.DeliverMessage(messages.get("infobot-help", chan.Language, new List<string>() { x }), chan.Name);
+                        return true;
                     }
                 }
             }

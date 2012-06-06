@@ -835,13 +835,13 @@ namespace wmib
                     if (text.Contains("=") && !text.EndsWith("="))
                     {
                         string name = text.Substring(0, text.IndexOf("="));
-                        string value = text.Substring(text.IndexOf("=" + 1));
+                        string value = text.Substring(text.IndexOf("=") + 1);
                         switch (name)
                         {
                             case "infobot-auto-complete":
                                 if (bool.TryParse(value, out chan.infobot_auto_complete))
                                 {
-                                    irc._SlowQueue.DeliverMessage(messages.get("configureok", chan.Language, new List<string> { value }), chan.Name);
+                                    irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value }), chan.Name);
                                     chan.SaveConfig();
                                     return;
                                 }
@@ -850,15 +850,16 @@ namespace wmib
                             case "infobot-sorted":
                                 if (bool.TryParse(value, out chan.infobot_sorted))
                                 {
-                                    irc._SlowQueue.DeliverMessage(messages.get("configureok", chan.Language, new List<string> { value }), chan.Name);
+                                    irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value }), chan.Name);
                                     chan.SaveConfig();
+                                    return;
                                 }
                                 irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
                                 return;
                             case "infobot-help":
                                 if (bool.TryParse(value, out chan.infobot_help))
                                 {
-                                    irc._SlowQueue.DeliverMessage(messages.get("configureok", chan.Language, new List<string> { value }), chan.Name);
+                                    irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value }), chan.Name);
                                     chan.SaveConfig();
                                     return;
                                 }
@@ -866,6 +867,7 @@ namespace wmib
                                 return;
                         }
                         irc._SlowQueue.DeliverMessage(messages.get("configure-wrong", chan.Language), chan.Name);
+                        return;
                     }
                     irc._SlowQueue.DeliverMessage(messages.get("configure-wrong", chan.Language), chan.Name);
                     return;
