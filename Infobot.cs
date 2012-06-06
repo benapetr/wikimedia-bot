@@ -487,14 +487,14 @@ namespace wmib
                     List<string> results = new List<string>();
                     foreach (item f in data.Keys.text)
                     {
-                        if (f.key.StartsWith(p[0]))
+                        if (!results.Contains(f.key) && f.key.StartsWith(p[0]))
                         {
                             results.Add(f.key);
                         }
                     }
                     foreach (staticalias f in data.Keys.Alias)
                     {
-                        if (f.Key.StartsWith(p[0]))
+                        if (!results.Contains(f.Key) && f.Key.StartsWith(p[0]))
                         {
                             results.Add(f.Key);
                         }
@@ -540,6 +540,10 @@ namespace wmib
 
                     if (results.Count > 1)
                     {
+                        if (chan.infobot_sorted)
+                        {
+                            results.Sort();
+                        }
                         string x = "";
                         foreach (string ix in results)
                         {
@@ -556,7 +560,7 @@ namespace wmib
                     p[0] = p[0].ToLower();
                     foreach (item f in data.Keys.text)
                     {
-                        if (f.text.Contains(p[0]) || f.key.ToLower().Contains(p[0]))
+                        if (!Sugg.Contains(f.key) && (f.text.Contains(p[0]) || f.key.ToLower().Contains(p[0])))
                         {
                             Sugg.Add(f.key);
                         }
@@ -565,6 +569,10 @@ namespace wmib
                     if (Sugg.Count > 0)
                     {
                         string x = "";
+                        if (chan.infobot_sorted)
+                        {
+                            Sugg.Sort();
+                        }
                         foreach (string a in Sugg)
                         {
                             x += "!" + a + ", ";

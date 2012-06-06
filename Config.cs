@@ -43,10 +43,19 @@ namespace wmib
             /// </summary>
             public infobot_core Keys;
 
+            /// <summary>
+            /// 
+            /// </summary>
             public bool infobot_help = false;
 
+            /// <summary>
+            /// Infobot sorted
+            /// </summary>
             public bool infobot_sorted = false;
 
+            /// <summary>
+            /// Completion
+            /// </summary>
             public bool infobot_auto_complete = false;
 
             /// <summary>
@@ -208,6 +217,8 @@ namespace wmib
                 Users = new IRCTrust(Name);
             }
         }
+
+        // Configuration is down, bellow are functions
 
         /// <summary>
         /// Add line to the config file
