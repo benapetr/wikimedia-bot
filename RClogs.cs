@@ -100,13 +100,16 @@ namespace wmib
             string output = "<table align=\"left\" border=1>\n";
             try
             {
-                writable = false;
-                foreach (IWatch b in pages)
+                lock (pages)
                 {
-                    output = output + "<tr><td>" + b.Channel + "</td><td>" + HtmlDump.Encode(b.Page) + "</td></tr>\n";
+                    writable = false;
+                    foreach (IWatch b in pages)
+                    {
+                        output = output + "<tr><td>" + b.Channel + "</td><td>" + HtmlDump.Encode(b.Page) + "</td></tr>\n";
+                    }
+                    output = output + "</table>";
+                    writable = true;
                 }
-                output = output + "</table>";
-                writable = true;
                 return output;
             }
             catch (Exception)

@@ -53,6 +53,8 @@ namespace wmib
             /// </summary>
             public bool infobot_sorted = false;
 
+            public bool logs_no_write_data = false;
+
             /// <summary>
             /// Completion
             /// </summary>

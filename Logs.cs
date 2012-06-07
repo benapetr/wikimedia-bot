@@ -28,6 +28,14 @@ namespace wmib
         public static bool Locked;
         public static Thread WorkerTh;
 
+        public static void CheckLock()
+        {
+            while (Locked)
+            {
+                Thread.Sleep(100);
+            }
+        }
+
         public static void ProcessJobs()
         {
             while (true)
@@ -36,11 +44,36 @@ namespace wmib
                 {
                     if (jobs.Count > 0)
                     {
-                        Locked = true;
                         List<Job> line = new List<Job>();
-                        line.AddRange(jobs);
-                        jobs.Clear();
+                        List<Job> tr = new List<Job>();
+                        CheckLock();
+                        Locked = true;
+                        lock (jobs)
+                        {
+                            line.AddRange(jobs);
+                            jobs.Clear();
+                        }
                         Locked = false;
+                        // clean all logs that can't be written to disk
+                        foreach (Job curr in line)
+                        {
+                            if (curr.ch.logs_no_write_data)
+                            {
+                                lock (jobs)
+                                {
+                                    Locked = true;
+                                    jobs.Add(curr);
+                                    tr.Add(curr);
+                                    Locked = false;
+                                }
+                            }
+                        }
+                        // remove them from queue
+                        foreach (Job curr in tr)
+                        {
+                            line.Remove(curr);
+                        }
+                        // write to disk
                         foreach (Job curr in line)
                         {
                             writeLog(curr.message, curr.ch);
@@ -50,6 +83,7 @@ namespace wmib
                 }
                 catch (Exception fail)
                 {
+                    Locked = false;
                     Console.WriteLine("Exception" + fail.Message);
                 }
             }
@@ -94,31 +128,30 @@ namespace wmib
             {
                 if (channel.Logged)
                 {
-                    while (Locked)
+                    lock (jobs)
                     {
-                        Thread.Sleep(10);
+                        Locked = true;
+                        string log;
+                        if (!noac)
+                        {
+                            log = "[" + timedateToString(DateTime.Now.Hour) + ":" +
+                                timedateToString(DateTime.Now.Minute) + ":" +
+                                timedateToString(DateTime.Now.Second) + "] * " +
+                                user + " " + message + "\n";
+                        }
+                        else
+                        {
+                            log = "[" + timedateToString(DateTime.Now.Hour) + ":"
+                                + timedateToString(DateTime.Now.Minute) + ":" +
+                                timedateToString(DateTime.Now.Second) + "] " + "<" +
+                                user + ">\t " + message + "\n";
+                        }
+                        Job line = new Job();
+                        line.ch = channel;
+                        line.message = log;
+                        jobs.Add(line);
+                        Locked = false;
                     }
-                    Locked = true;
-                    string log;
-                    if (!noac)
-                    {
-                        log = "[" + timedateToString(DateTime.Now.Hour) + ":" +
-                            timedateToString(DateTime.Now.Minute) + ":" +
-                            timedateToString(DateTime.Now.Second) + "] * " +
-                            user + " " + message + "\n";
-                    }
-                    else
-                    {
-                        log = "[" + timedateToString(DateTime.Now.Hour) + ":"
-                            + timedateToString(DateTime.Now.Minute) + ":" +
-                            timedateToString(DateTime.Now.Second) + "] " + "<" +
-                            user + ">\t " + message + "\n";
-                    }
-                    Job line = new Job();
-                    line.ch = channel;
-                    line.message = log;
-                    jobs.Add(line);
-                    Locked = false;
                 }
             }
             catch (Exception er)

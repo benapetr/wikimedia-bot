@@ -410,6 +410,7 @@ namespace wmib
         /// <param name="message">Message</param>
         public static void admin(config.channel chan, string user, string host, string message)
         {
+            User invoker = new User(user, host);
             if (message == "@reload")
             {
                 if (chan.Users.isApproved(user, host, "admin"))
@@ -852,6 +853,14 @@ namespace wmib
                                 {
                                     irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value }), chan.Name);
                                     chan.SaveConfig();
+                                    return;
+                                }
+                                irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
+                                return;
+                            case "logs-no-write-data":
+                                if (bool.TryParse(value, out chan.logs_no_write_data))
+                                {
+                                    irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value }), chan.Name);
                                     return;
                                 }
                                 irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);

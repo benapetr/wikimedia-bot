@@ -595,12 +595,15 @@ namespace wmib
             config.channel _channel = core.getChannel(Channel);
             string results = "";
             int count = 0;
-            foreach (item data in text)
+            lock (text)
             {
-                if (data.key == search_key || value.Match(data.text).Success)
+                foreach (item data in text)
                 {
-                    count++;
-                    results = results + data.key + ", ";
+                    if (data.key == search_key || value.Match(data.text).Success)
+                    {
+                        count++;
+                        results = results + data.key + ", ";
+                    }
                 }
             }
             if (results == "")
@@ -683,12 +686,15 @@ namespace wmib
             key = key.Substring(8);
             int count = 0;
             string results = "";
-            foreach (item Data in data.Keys.text)
+            lock (data.Keys.text)
             {
-                if (Data.key == key || Data.text.Contains(key))
+                foreach (item Data in data.Keys.text)
                 {
-                    results = results + Data.key + ", ";
-                    count++;
+                    if (Data.key == key || Data.text.Contains(key))
+                    {
+                        results = results + Data.key + ", ";
+                        count++;
+                    }
                 }
             }
             if (results == "")
@@ -741,24 +747,27 @@ namespace wmib
             {
                 Thread.Sleep(200);
             }
-			config.channel ch = core.getChannel (Channel);
-            try
+            lock (text)
             {
-                foreach (item data in text)
+                config.channel ch = core.getChannel(Channel);
+                try
                 {
-                    if (data.key == key)
+                    foreach (item data in text)
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("Error3", chan.Language), chan.Name);
-                        return;
+                        if (data.key == key)
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("Error3", chan.Language), chan.Name);
+                            return;
+                        }
                     }
+                    text.Add(new item(key, core.encode(Text), user, "false"));
+                    core.irc.Message(messages.get("infobot6", chan.Language), chan.Name);
+                    ch.Keys.Save();
                 }
-                text.Add(new item(key, core.encode(Text), user, "false"));
-                core.irc.Message(messages.get( "infobot6", chan.Language ), chan.Name);
-                ch.Keys.Save();
-            }
-            catch (Exception b)
-            {
-                core.handleException(b);
+                catch (Exception b)
+                {
+                    core.handleException(b);
+                }
             }
         }
 
@@ -775,15 +784,18 @@ namespace wmib
             {
                 return;
             }
-            foreach (staticalias stakey in Alias)
+            lock (Alias)
             {
-                if (stakey.Name == al)
+                foreach (staticalias stakey in Alias)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("infobot7", chan.Language), chan.Name);
-                    return;
+                    if (stakey.Name == al)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("infobot7", chan.Language), chan.Name);
+                        return;
+                    }
                 }
+                Alias.Add(new staticalias(al, key));
             }
-            Alias.Add(new staticalias(al, key));
             core.irc._SlowQueue.DeliverMessage(messages.get( "infobot8", chan.Language), chan.Name);
             Save();
         }
@@ -795,14 +807,17 @@ namespace wmib
             {
                 Thread.Sleep(200);
             }
-            foreach (item keys in text)
+            lock (text)
             {
-                if (keys.key == key)
+                foreach (item keys in text)
                 {
-                    text.Remove(keys);
-                    core.irc._SlowQueue.DeliverMessage(messages.get( "infobot9", _ch.Language ) + key, _ch.Name);
-                    Save();
-                    return;
+                    if (keys.key == key)
+                    {
+                        text.Remove(keys);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("infobot9", _ch.Language) + key, _ch.Name);
+                        Save();
+                        return;
+                    }
                 }
             }
             core.irc._SlowQueue.DeliverMessage(messages.get( "infobot10", _ch.Language ), _ch.Name);

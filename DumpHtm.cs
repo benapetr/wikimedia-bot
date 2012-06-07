@@ -141,11 +141,14 @@ namespace wmib
             {
                 string text = CreateHeader("System info");
                 text += "<h1>System data</h1><p class=info>List of channels:</p>";
-                foreach (config.channel chan in config.channels)
+                lock (config.channels)
                 {
-                    text = text + "" + chan.Name + " (infobot: " + chan.Info.ToString() + ", recentchanges: " + chan.Feed.ToString() + ", logs: " + chan.Logged.ToString() + ")<br>\n";
+                    foreach (config.channel chan in config.channels)
+                    {
+                        text = text + "" + chan.Name + " (infobot: " + chan.Info.ToString() + ", recentchanges: " + chan.Feed.ToString() + ", logs: " + chan.Logged.ToString() + ")<br>\n";
+                    }
+                    text += "Uptime: " + core.getUptime();                    
                 }
-                text += "Uptime: " + core.getUptime();
                 text += "</body></html>";
                 File.WriteAllText(config.DumpDir + "/systemdata.htm", text);
             }
@@ -181,12 +184,16 @@ namespace wmib
                     text = text + "\n<table border=1 class=\"infobot1\" width=100%>\n<tr><th width=10%>Key</th><th>Value</th></tr>\n";
                     Channel.Keys.locked = true;
                     List<infobot_core.item> list = new List<infobot_core.item>();
-                    if (Channel.infobot_sorted != false)
+                    lock (Channel.Keys.text)
                     {
-                        list = Channel.Keys.SortedItem();
-                    }
-                    else {
-                        list.AddRange(Channel.Keys.text);
+                        if (Channel.infobot_sorted != false)
+                        {
+                            list = Channel.Keys.SortedItem();
+                        }
+                        else
+                        {
+                            list.AddRange(Channel.Keys.text);
+                        }
                     }
                     if (Channel.Keys.text.Count > 0)
                     {
@@ -197,9 +204,12 @@ namespace wmib
                     }
                     text = text + "</table>\n";
                     text = text + "<h4>Aliases</h4>\n<table class=\"infobot2\" border=1 width=100%>\n";
-                    foreach (infobot_core.staticalias data in Channel.Keys.Alias)
+                    lock (Channel.Keys.Alias)
                     {
-                        text += AddLink(data.Name, data.Key);
+                        foreach (infobot_core.staticalias data in Channel.Keys.Alias)
+                        {
+                            text += AddLink(data.Name, data.Key);
+                        }
                     }
                     text = text + "</table>\n";
                     Channel.Keys.locked = false;
