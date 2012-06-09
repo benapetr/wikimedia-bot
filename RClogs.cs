@@ -58,15 +58,25 @@ namespace wmib
         /// </summary>
         public static List<wiki> wikiinfo = new List<wiki>();
 
+        /// <summary>
+        /// Nickname in feed
+        /// </summary>
+        public static string nick;
+
         public static bool Loaded = false;
 
         /// <summary>
         /// Channels
         /// </summary>
         private static List<string> channels = new List<string>();
+        
         public bool changed;
+        
         private bool writable = true;
 
+        /// <summary>
+        /// feed
+        /// </summary>
         private static List<RecentChanges> rc = new List<RecentChanges>();
 
         /// <summary>
@@ -238,11 +248,10 @@ namespace wmib
                 stream = new System.Net.Sockets.TcpClient("irc.wikimedia.org", 6667).GetStream();
                 WD = new StreamWriter(stream);
                 RD = new StreamReader(stream, System.Text.Encoding.UTF8);
+                nick = "wm-bot" + System.DateTime.Now.ToString().Replace("/", "").Replace(":", "").Replace("\\", "").Replace(".", "");
                 Thread pinger = new Thread(Pong);
                 WD.WriteLine("USER " + "wm-bot" + " 8 * :" + "wm-bot");
-                WD.WriteLine("NICK " + "wm-bot" +
-                             System.DateTime.Now.ToShortDateString().Replace("/", "").Replace(":", "").Replace("\\", "")
-                                 .Replace(".", ""));
+                WD.WriteLine("NICK " + nick);
                 WD.Flush();
                 pinger.Start();
                 foreach (string b in channels)
@@ -256,7 +265,7 @@ namespace wmib
             }
             catch (Exception)
             {
-                Console.WriteLine("error in Connect() fc");
+                Console.WriteLine("error in Feed.Connect() call");
             }
         }
 
@@ -512,7 +521,7 @@ namespace wmib
                                                         //messages.get("rfeedline1", curr.channel.Language) + "12" + w.URL.name + "" + messages.get("rfeedline2", curr.channel.Language) + "" + page +
                                                         //"" + messages.get("rfeedline3", curr.channel.Language) + "" + username +
                                                         //"" + messages.get("rfeedline4", curr.channel.Language) + w.URL.url + "?diff=" + link + messages.get("rfeedline5", curr.channel.Language) + summary, curr.channel.Name);
-                                                        messages.get("fl" , curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name);
+                                                        messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.normal);
                                                 }
                                                 else
                                                     if (w.Page.EndsWith("*"))
@@ -520,7 +529,7 @@ namespace wmib
                                                         if (page.StartsWith(w.Page.Replace("*", "")))
                                                         {
                                                             core.irc._SlowQueue.DeliverMessage(
-                                                            messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name);
+                                                            messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.normal);
                                                         }
                                                     }
                                             }

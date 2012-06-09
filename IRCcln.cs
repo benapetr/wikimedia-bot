@@ -70,42 +70,89 @@ namespace wmib
             }
             public struct Message
             {
+                public priority _Priority;
                 public string message;
                 public string channel;
             }
             public List<Message> messages = new List<Message>();
             public List<Message> newmessages = new List<Message>();
             public IRC Parent;
-            private bool locked;
 
-            public void DeliverMessage(string Message, string Channel)
+            public void DeliverMessage(string Message, string Channel, priority Pr = priority.normal)
             {
                 Message text = new Message();
+                text._Priority = Pr;
                 text.message = Message;
                 text.channel = Channel;
-                if (locked)
+                lock (messages)
                 {
-                    newmessages.Add(text);
+                    messages.Add(text);
                     return;
                 }
-                messages.Add(text);
             }
 
             public void Run()
             {
                 while (true)
                 {
-                    locked = true;
-                    foreach (Message message in messages)
+                    if (messages.Count > 0)
                     {
-                        Parent.Message(message.message, message.channel);
-                        System.Threading.Thread.Sleep(1000);
+                        lock (messages)
+                        {
+                            newmessages.AddRange(messages);
+                            messages.Clear();
+                        }
                     }
-                    messages.Clear();
-                    locked = false;
-                    foreach (Message message in newmessages)
+                    if (newmessages.Count > 0)
                     {
-                        messages.Add(message);
+                        List<Message> Processed = new List<Message>();
+                        priority highest = priority.low;
+                        while (newmessages.Count > 0)
+                        {
+                            // we need to get all messages that have been scheduled to be send
+                            lock (messages)
+                            {
+                                if (messages.Count > 0)
+                                {
+                                    newmessages.AddRange(messages);
+                                    messages.Clear();
+                                }
+                            }
+                            highest = priority.low;
+                            // we need to check the priority we need to handle first
+                            foreach (Message message in newmessages)
+                            {
+                                if (message._Priority > highest)
+                                {
+                                    highest = message._Priority;
+                                    if (message._Priority == priority.high)
+                                    {
+                                        break;
+                                    }
+                                }
+                            }
+                            // send highest priority first
+                            foreach (Message message in newmessages)
+                            {
+                                if (message._Priority >= highest)
+                                {
+                                    Processed.Add(message);
+                                    Parent.Message(message.message, message.channel);
+                                    System.Threading.Thread.Sleep(1000);
+                                    if (highest != priority.high)
+                                    {
+                                        break;
+                                    }
+                                }
+                            }
+                            foreach (Message message in Processed)
+                            {
+                                if (newmessages.Contains(message))
+                                {
+                                    newmessages.Remove(message);
+                                }
+                            }
+                        }
                     }
                     newmessages.Clear();
                     System.Threading.Thread.Sleep(200);
@@ -390,6 +437,13 @@ namespace wmib
         {
             wd.Flush();
             return 0;
+        }
+
+        public enum priority
+        {
+            low = 1,
+            normal = 2,
+            high = 3,
         }
     }
 }

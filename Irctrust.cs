@@ -287,6 +287,8 @@ namespace wmib
                 case "recentchanges-manage":
                 case "shutdown":
                     return matchLevel(2, current.level);
+                case "flushcache":
+                    return matchLevel(200, current.level);
             }
             return false;
         }

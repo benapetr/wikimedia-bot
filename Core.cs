@@ -425,7 +425,7 @@ namespace wmib
             }
             if (message == "@refresh")
             {
-                if (chan.Users.isApproved(user, host, "admin"))
+                if (chan.Users.isApproved(user, host, "flushcache"))
                 {
                     irc._Queue.Abort();
                     irc._SlowQueue.newmessages.Clear();
@@ -435,7 +435,7 @@ namespace wmib
                     irc.Message(messages.get("MessageQueueWasReloaded", chan.Language), chan.Name);
                     return;
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                 return;
             }
 
@@ -463,7 +463,7 @@ namespace wmib
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                 return;
             }
 
@@ -491,7 +491,7 @@ namespace wmib
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                 return;
             }
 
@@ -519,7 +519,7 @@ namespace wmib
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                 return;
             }
 
@@ -546,7 +546,7 @@ namespace wmib
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                 return;
             }
 
@@ -579,7 +579,7 @@ namespace wmib
                 }
                 else
                 {
-                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                     return;
                 }
             }
@@ -626,7 +626,7 @@ namespace wmib
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                 return;
             }
 
@@ -648,7 +648,7 @@ namespace wmib
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                 return;
             }
 
@@ -669,7 +669,7 @@ namespace wmib
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                 return;
             }
 
@@ -690,7 +690,7 @@ namespace wmib
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                 return;
             }
 
@@ -711,7 +711,7 @@ namespace wmib
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                 return;
             }
 
@@ -744,7 +744,7 @@ namespace wmib
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                 return;
             }
 
@@ -776,7 +776,7 @@ namespace wmib
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                 return;
             }
 
@@ -794,7 +794,7 @@ namespace wmib
                     irc.Message(messages.get("infobot4", chan.Language), chan.Name);
                     return;
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                 return;
             }
 
@@ -820,7 +820,7 @@ namespace wmib
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                 return;
             }
 
@@ -883,7 +883,7 @@ namespace wmib
                 }
                 else
                 {
-                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                     return;
                 }
             }
@@ -927,7 +927,7 @@ namespace wmib
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                 return;
             }
 
@@ -965,7 +965,7 @@ namespace wmib
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                 return;
             }
 
@@ -1005,7 +1005,7 @@ namespace wmib
                     chan.SaveConfig();
                     return;
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                 return;
             }
 
@@ -1035,7 +1035,7 @@ namespace wmib
                         return;
                     }
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                 return;
             }
 
