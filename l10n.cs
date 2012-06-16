@@ -22,7 +22,7 @@ namespace wmib
 
         private static string parse(string text, string name)
         {
-            if (text.Contains(name))
+            if (text.Contains(name + "="))
             {
                 string x = text;
                 x = text.Substring(text.IndexOf(name + "=")).Replace(name + "=", "");

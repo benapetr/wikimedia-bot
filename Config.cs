@@ -45,6 +45,12 @@ namespace wmib
             /// </summary>
             public infobot_core Keys;
 
+            public int respond_wait = 120;
+
+            public bool respond_message = false;
+
+            public System.DateTime last_msg = System.DateTime.Now;
+
             public bool infobot_trim_white_space_in_name = true;
 
             /// <summary>
@@ -135,10 +141,17 @@ namespace wmib
                 }
                 bool.TryParse(parseConfig(conf, "logged"), out Logged);
 				bool.TryParse(parseConfig(conf, "suppress-warnings"), out suppress_warnings);
+                bool.TryParse(parseConfig(conf, "respond_message"), out respond_message);
+                int _temp_respond_wait;
+                if ( int.TryParse(parseConfig(conf, "respond_wait"), out _temp_respond_wait) )
+                {
+                    respond_wait = _temp_respond_wait;
+                }
                 if (!bool.TryParse(parseConfig(conf, "infobot-trim-white-space-in-name"), out infobot_trim_white_space_in_name))
                 {
                     infobot_trim_white_space_in_name = true;
                 }
+                last_msg = last_msg.AddSeconds((-1) * respond_wait);
                 bool.TryParse(parseConfig(conf, "feed"), out Feed);
                 bool.TryParse(parseConfig(conf, "infobot-sorted-list"), out infobot_sorted);
                 bool.TryParse(parseConfig(conf, "ignore-unknown"), out ignore_unknown);
@@ -180,6 +193,8 @@ namespace wmib
                 AddConfig("talkmode", suppress.ToString());
                 AddConfig("infobot-sorted-list", infobot_sorted.ToString());
                 AddConfig("langcode", Language);
+                AddConfig("respond_message", respond_message.ToString());
+                AddConfig("respond_wait", respond_wait.ToString());
                 AddConfig("infobot-trim-white-space-in-name", infobot_trim_white_space_in_name.ToString());
                 AddConfig("ignore-unknown", ignore_unknown.ToString());
                 AddConfig("infobot-help", infobot_help.ToString());

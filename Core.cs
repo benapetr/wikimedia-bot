@@ -891,11 +891,13 @@ namespace wmib
                     {
                         string name = text.Substring(0, text.IndexOf("="));
                         string value = text.Substring(text.IndexOf("=") + 1);
+                        bool _temp_a;
                         switch (name)
                         {
                             case "ignore-unknown":
-                                if (bool.TryParse(value, out chan.ignore_unknown))
+                                if (bool.TryParse(value, out _temp_a))
                                 {
+                                    chan.ignore_unknown = _temp_a;
                                     irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, name }), chan.Name);
                                     chan.SaveConfig();
                                     return;
@@ -903,8 +905,9 @@ namespace wmib
                                 irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
                                 return;
                             case "infobot-trim-white-space-in-name":
-                                if (bool.TryParse(value, out chan.infobot_trim_white_space_in_name))
+                                if (bool.TryParse(value, out _temp_a))
                                 {
+                                    chan.infobot_trim_white_space_in_name = _temp_a;
                                     irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, name }), chan.Name);
                                     chan.SaveConfig();
                                     return;
@@ -912,8 +915,9 @@ namespace wmib
                                 irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
                                 return;
                             case "infobot-auto-complete":
-                                if (bool.TryParse(value, out chan.infobot_auto_complete))
+                                if (bool.TryParse(value, out _temp_a))
                                 {
+                                    chan.infobot_auto_complete = _temp_a;
                                     irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, name }), chan.Name);
                                     chan.SaveConfig();
                                     return;
@@ -921,8 +925,9 @@ namespace wmib
                                 irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
                                 return;
                             case "infobot-sorted":
-                                if (bool.TryParse(value, out chan.infobot_sorted))
+                                if (bool.TryParse(value, out _temp_a))
                                 {
+                                    chan.infobot_sorted = _temp_a;
                                     irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, name }), chan.Name);
                                     chan.SaveConfig();
                                     return;
@@ -930,16 +935,41 @@ namespace wmib
                                 irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
                                 return;
                             case "logs-no-write-data":
-                                if (bool.TryParse(value, out chan.logs_no_write_data))
+                                if (bool.TryParse(value, out _temp_a))
                                 {
+                                    chan.logs_no_write_data = _temp_a;
                                     irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, name }), chan.Name);
                                     return;
                                 }
                                 irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
                                 return;
-							case "suppress-warnings":
-                                if (bool.TryParse(value, out chan.suppress_warnings))
+                            case "respond-wait":
+                                int _temp_b;
+                                if (int.TryParse(value, out _temp_b))
                                 {
+                                    if (_temp_b > 1 && _temp_b < 364000)
+                                    {
+                                        irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, name }), chan.Name);
+                                        chan.SaveConfig();
+                                        return;
+                                    }
+                                }
+                                irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
+                                return;
+                            case "respond-message":
+                                if (bool.TryParse(value, out _temp_a))
+                                {
+                                    chan.respond_message = _temp_a;
+                                    irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, name }), chan.Name);
+                                    chan.SaveConfig();
+                                    return;
+                                }
+                                irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
+                                return;
+							case "suppress-warnings":
+                                if (bool.TryParse(value, out _temp_a))
+                                {
+                                    chan.suppress_warnings = _temp_a;
                                     irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, name }), chan.Name);
                                     chan.SaveConfig();
                                     return;
@@ -947,8 +977,9 @@ namespace wmib
                                 irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
                                 return;
                             case "infobot-help":
-                                if (bool.TryParse(value, out chan.infobot_help))
+                                if (bool.TryParse(value, out _temp_a))
                                 {
+                                    chan.infobot_help = _temp_a;
                                     irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, name }), chan.Name);
                                     chan.SaveConfig();
                                     return;
@@ -1274,6 +1305,17 @@ namespace wmib
                     addChannel(curr, nick, host, message);
                     admin(curr, nick, host, message);
                     partChannel(curr, nick, host, message);
+                }
+                if (curr.respond_message)
+                {
+                    if (message.StartsWith(config.username + ":"))
+                    {
+                        if (System.DateTime.Now >= curr.last_msg.AddSeconds(curr.respond_wait))
+                        {
+                            irc._SlowQueue.DeliverMessage( messages.get("hi", curr.Language, new List<string> { nick }), curr.Name );
+                            curr.last_msg = System.DateTime.Now;
+                        }
+                    }
                 }
             }
 
