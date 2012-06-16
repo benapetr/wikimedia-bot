@@ -1,4 +1,4 @@
-﻿PermissionDenied=权限被拒绝;
+﻿PermissionDenied=存取被拒;
 Authorization=抱歉，您无权执行此操作;
 ChannelIn=数据库中已有此频道;
 UserSc=已成功添加;

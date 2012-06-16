@@ -141,14 +141,16 @@ namespace wmib
             {
                 string text = CreateHeader("System info");
                 text += "<h1>System data</h1><p class=info>List of channels:</p>";
+                text += "<table class=\"channels\">\n<tr><th>Channel name</th><th>Options</th></tr>";
                 lock (config.channels)
                 {
                     foreach (config.channel chan in config.channels)
                     {
-                        text = text + "" + chan.Name + " (infobot: " + chan.Info.ToString() + ", recentchanges: " + chan.Feed.ToString() + ", logs: " + chan.Logged.ToString() + ")<br>\n";
-                    }
-                    text += "Uptime: " + core.getUptime();                    
+                        text = text + "<tr>";
+                        text = text + "<td><a href=\"" + System.Web.HttpUtility.UrlEncode( chan.Name ) + ".htm\">" + chan.Name + "</a></td><td>infobot: " + chan.Info.ToString() + ", recentchanges: " + chan.Feed.ToString() + ", logs: " + chan.Logged.ToString() + ", suppress: " + chan.suppress.ToString() + "</td></tr>\n";
+                    }                 
                 }
+                text += "</table>Uptime: " + core.getUptime();
                 text += "</body></html>";
                 File.WriteAllText(config.DumpDir + "/systemdata.htm", text);
             }

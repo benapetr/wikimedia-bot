@@ -336,6 +336,15 @@ namespace wmib
                 config.channel data = isAllowed(chan);
                 bool Allowed = (data != null);
                 name = name.Substring(1);
+                string ignore_test = name;
+                if (ignore_test.Contains(" "))
+                {
+                    ignore_test = ignore_test.Substring (0, ignore_test.IndexOf(" "));
+                }
+                if (chan.Infobot_IgnoredNames.Contains(ignore_test))
+                {
+                    return true;
+                }
                 if (name.Contains(" "))
                 {
                     string[] parm = name.Split(' ');
@@ -345,12 +354,18 @@ namespace wmib
                         {
                             if (!Allowed)
                             {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), chan.Name);
+                                if ( !chan.suppress_warnings )
+                                {
+                                    core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), chan.Name);
+                                }
                                 return true;
                             }
                             if (parm.Length < 3)
                             {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("key", chan.Language), chan.Name);
+                                if (!chan.suppress_warnings)
+                                {
+                                    core.irc._SlowQueue.DeliverMessage(messages.get("key", chan.Language), chan.Name);
+                                }
                                 return true;
                             }
                             string key = name.Substring(name.IndexOf(" is") + 4);
@@ -358,7 +373,10 @@ namespace wmib
                         }
                         else
                         {
-                            core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan.Name);
+							if (!chan.suppress_warnings)
+							{
+                            	core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan.Name);
+							}
                         }
                         return false;
                     }
@@ -368,19 +386,28 @@ namespace wmib
                         {
                             if (!Allowed)
                             {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), chan.Name);
+                                if (!chan.suppress_warnings)
+                                {
+                                    core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), chan.Name);
+                                }
                                 return true;
                             }
                             if (parm.Length < 3)
                             {
-                                core.irc.Message(messages.get("InvalidAlias", chan.Language), chan.Name);
+                                if (!chan.suppress_warnings)
+                                {
+                                    core.irc.Message(messages.get("InvalidAlias", chan.Language), chan.Name);
+                                }
                                 return true;
                             }
                             data.Keys.aliasKey(name.Substring(name.IndexOf(" alias") + 7), parm[0], "", chan);
                         }
                         else
                         {
-                            core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan.Name);
+							if (!chan.suppress_warnings)
+							{
+                            	core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan.Name);
+							}
                         }
                         return false;
                     }
@@ -390,7 +417,10 @@ namespace wmib
                         {
                             if (!Allowed)
                             {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), chan.Name);
+                                if (!chan.suppress_warnings)
+                                {
+                                    core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), chan.Name);
+                                }
                                 return true;
                             }
                             foreach (staticalias b in data.Keys.Alias)
@@ -405,7 +435,10 @@ namespace wmib
                             }
                             return false;
                         }
-                        core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan.Name);
+						if (!chan.suppress_warnings)
+						{
+                        	core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan.Name);
+						}
                         return false;
                     }
                     if (parm[1] == "del")
@@ -421,7 +454,10 @@ namespace wmib
                         }
                         else
                         {
-                            core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan.Name);
+							if (!chan.suppress_warnings)
+							{
+                            	core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan.Name);
+							}
                         }
                         return false;
                     }
@@ -435,11 +471,21 @@ namespace wmib
                 if (name.Contains("|"))
                 {
                     User = name.Substring(name.IndexOf("|") + 1);
-                    if (User.StartsWith(" "))
+                    if (chan.infobot_trim_white_space_in_name)
                     {
-                        while (User.StartsWith(" "))
+                        if (User.EndsWith(" "))
                         {
-                            User = User.Substring(1);
+                            while (User.EndsWith(" "))
+                            {
+                                User = User.Substring(0, User.Length - 1);
+                            }
+                        }
+                        if (User.StartsWith(" "))
+                        {
+                            while (User.StartsWith(" "))
+                            {
+                                User = User.Substring(1);
+                            }
                         }
                     }
                     name = name.Substring(0, name.IndexOf("|"));
@@ -639,7 +685,7 @@ namespace wmib
                 return;
             }
             config.channel data = isAllowed(Chan);
-            bool Allowed = Chan != null;
+            bool Allowed = (data != null);
             if (!Allowed)
             {
                 core.irc._SlowQueue.DeliverMessage(messages.get("db7", Chan.Language), Chan.Name);
@@ -667,12 +713,16 @@ namespace wmib
 
         public void Find(string key, config.channel Chan)
         {
+            if (Chan == null)
+            {
+                return;
+            }
             if (!key.StartsWith("@search"))
             {
                 return;
             }
             config.channel data = isAllowed(Chan);
-            bool Allowed = (Chan != null);
+            bool Allowed = (data != null);
             if (!Allowed)
             {
                 core.irc._SlowQueue.DeliverMessage(messages.get("db7", Chan.Language), Chan.Name);
@@ -711,6 +761,10 @@ namespace wmib
         {
             bool Allowed;
             config.channel data = null;
+            if (chan == null)
+            {
+                return chan;
+            }
             if (chan.shared == "local" || chan.shared == "")
             {
                 data = chan;
@@ -756,7 +810,10 @@ namespace wmib
                     {
                         if (data.key == key)
                         {
-                            core.irc._SlowQueue.DeliverMessage(messages.get("Error3", chan.Language), chan.Name);
+							if (!chan.suppress_warnings)
+							{
+                            	core.irc._SlowQueue.DeliverMessage(messages.get("Error3", chan.Language), chan.Name);
+							}
                             return;
                         }
                     }
@@ -790,7 +847,10 @@ namespace wmib
                 {
                     if (stakey.Name == al)
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("infobot7", chan.Language), chan.Name);
+						if (!chan.suppress_warnings)
+						{
+                        	core.irc._SlowQueue.DeliverMessage(messages.get("infobot7", chan.Language), chan.Name);
+						}
                         return;
                     }
                 }

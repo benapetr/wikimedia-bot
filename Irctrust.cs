@@ -289,6 +289,8 @@ namespace wmib
                     return matchLevel(2, current.level);
                 case "flushcache":
                     return matchLevel(200, current.level);
+                case "reconnect":
+                    return matchLevel(800, current.level);
             }
             return false;
         }

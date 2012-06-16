@@ -191,9 +191,13 @@ namespace wmib
 
         public bool Join(config.channel Channel)
         {
-            wd.WriteLine("JOIN " + Channel.Name);
-            wd.Flush();
-            return true;
+            if (Channel != null)
+            {
+                wd.WriteLine("JOIN " + Channel.Name);
+                wd.Flush();
+                return true;
+            }
+            return false;
         }
 
         /// <summary>

@@ -521,7 +521,7 @@ namespace wmib
                                                         //messages.get("rfeedline1", curr.channel.Language) + "12" + w.URL.name + "" + messages.get("rfeedline2", curr.channel.Language) + "" + page +
                                                         //"" + messages.get("rfeedline3", curr.channel.Language) + "" + username +
                                                         //"" + messages.get("rfeedline4", curr.channel.Language) + w.URL.url + "?diff=" + link + messages.get("rfeedline5", curr.channel.Language) + summary, curr.channel.Name);
-                                                        messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.normal);
+                                                        messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
                                                 }
                                                 else
                                                     if (w.Page.EndsWith("*"))
@@ -529,7 +529,7 @@ namespace wmib
                                                         if (page.StartsWith(w.Page.Replace("*", "")))
                                                         {
                                                             core.irc._SlowQueue.DeliverMessage(
-                                                            messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.normal);
+                                                            messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
                                                         }
                                                     }
                                             }

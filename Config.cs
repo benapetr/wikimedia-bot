@@ -38,13 +38,17 @@ namespace wmib
 
             public bool suppress;
 
+            public List<string> Infobot_IgnoredNames = new List<string>();
+
             /// <summary>
             /// Keys
             /// </summary>
             public infobot_core Keys;
 
+            public bool infobot_trim_white_space_in_name = true;
+
             /// <summary>
-            /// 
+            /// Infobot help
             /// </summary>
             public bool infobot_help = false;
 
@@ -52,6 +56,11 @@ namespace wmib
             /// Infobot sorted
             /// </summary>
             public bool infobot_sorted = false;
+			
+            /// <summary>
+            /// Doesn't send any warnings on error
+            /// </summary>
+			public bool suppress_warnings = false;
 
             public bool logs_no_write_data = false;
 
@@ -69,6 +78,8 @@ namespace wmib
             /// Configuration text
             /// </summary>
             private string conf;
+
+            public bool ignore_unknown = false;
 
             public string shared;
 
@@ -123,8 +134,14 @@ namespace wmib
                     keydb = (parseConfig(conf, "keysdb"));
                 }
                 bool.TryParse(parseConfig(conf, "logged"), out Logged);
+				bool.TryParse(parseConfig(conf, "suppress-warnings"), out suppress_warnings);
+                if (!bool.TryParse(parseConfig(conf, "infobot-trim-white-space-in-name"), out infobot_trim_white_space_in_name))
+                {
+                    infobot_trim_white_space_in_name = true;
+                }
                 bool.TryParse(parseConfig(conf, "feed"), out Feed);
                 bool.TryParse(parseConfig(conf, "infobot-sorted-list"), out infobot_sorted);
+                bool.TryParse(parseConfig(conf, "ignore-unknown"), out ignore_unknown);
                 if (parseConfig(conf, "infodb") != "")
                 {
                     Info = bool.Parse(parseConfig(conf, "infodb"));
@@ -132,6 +149,18 @@ namespace wmib
                 shared = parseConfig(conf, "sharedinfo");
                 bool.TryParse(parseConfig(conf, "infobot-help"), out infobot_help);
                 bool.TryParse(parseConfig(conf, "infobot-auto-complete"), out infobot_auto_complete);
+                string infobot_ignore = parseConfig(conf, "infobot_ignores");
+                if (infobot_ignore != "")
+                {
+                    foreach (string x in infobot_ignore.Replace("\n", "").Split(','))
+                    {
+                        string item = x.Replace(" ", "");
+                        if (item != "")
+                        {
+                            Infobot_IgnoredNames.Add(item);
+                        }
+                    }
+                }
                 if (parseConfig(conf, "langcode") != "")
                 {
                     Language = parseConfig(conf, "langcode");
@@ -151,7 +180,10 @@ namespace wmib
                 AddConfig("talkmode", suppress.ToString());
                 AddConfig("infobot-sorted-list", infobot_sorted.ToString());
                 AddConfig("langcode", Language);
+                AddConfig("infobot-trim-white-space-in-name", infobot_trim_white_space_in_name.ToString());
+                AddConfig("ignore-unknown", ignore_unknown.ToString());
                 AddConfig("infobot-help", infobot_help.ToString());
+				AddConfig("suppress-warnings", suppress_warnings.ToString());
                 AddConfig("keysdb", keydb);
                 AddConfig("infobot-auto-complete", infobot_auto_complete.ToString());
                 AddConfig("sharedinfo", shared);
@@ -163,6 +195,15 @@ namespace wmib
                         conf += current.Name + ",\n";
                     }
                     conf = conf + ";";
+                }
+                if (!(Infobot_IgnoredNames.Count < 1))
+                {
+                    conf = conf + "\ninfobot_ignores=";
+                    foreach (string curr in Infobot_IgnoredNames)
+                    {
+                        conf = conf + curr + ",\n";
+                    }
+                    conf += ";";
                 }
                 File.WriteAllText(variables.config + "/" + Name + ".setting", conf);
             }
@@ -382,7 +423,7 @@ namespace wmib
         /// <summary>
         /// Version
         /// </summary>
-        public static string version = "wikimedia bot v. 1.5.4";
+        public static string version = "wikimedia bot v. 1.6.2";
 
         /// <summary>
         /// Separator
