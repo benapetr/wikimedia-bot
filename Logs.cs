@@ -20,6 +20,7 @@ namespace wmib
     class Logs
     {
         public struct Job {
+                public DateTime time;
                 public string message;
                 public config.channel ch;
         }
@@ -76,7 +77,7 @@ namespace wmib
                         // write to disk
                         foreach (Job curr in line)
                         {
-                            writeLog(curr.message, curr.ch);
+                            writeLog(curr.message, curr.ch, curr.time);
                         }
                     }
                     Thread.Sleep(20000);
@@ -101,11 +102,11 @@ namespace wmib
             return true;
         }
 
-        private static void writeLog(string message, config.channel channel)
+        private static void writeLog(string message, config.channel channel, System.DateTime _datetime)
         {
             try
             {
-                    System.IO.File.AppendAllText(channel.Log + DateTime.Now.Year + timedateToString(DateTime.Now.Month) + timedateToString(DateTime.Now.Day) + ".txt", message);
+                System.IO.File.AppendAllText(channel.Log + _datetime.Year + timedateToString(_datetime.Month) + timedateToString(_datetime.Day) + ".txt", message);
             }
             catch (Exception er)
             {
@@ -148,6 +149,7 @@ namespace wmib
                         }
                         Job line = new Job();
                         line.ch = channel;
+                        line.time = DateTime.Now;
                         line.message = log;
                         jobs.Add(line);
                         Locked = false;

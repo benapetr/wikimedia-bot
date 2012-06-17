@@ -244,11 +244,13 @@ namespace wmib
         {
             try
             {
-                Program.Log("Connecting to wikimedia recent changes feed");
+                Random rand = new Random();
+                int random_number = rand.Next(10000);
+                nick = "wm-bot" + System.DateTime.Now.ToString().Replace("/", "").Replace(":", "").Replace("\\", "").Replace(".", "").Replace(" ", "") + random_number.ToString();
+                Program.Log("Connecting to wikimedia recent changes feed as " + nick + ", hold on");
                 stream = new System.Net.Sockets.TcpClient("irc.wikimedia.org", 6667).GetStream();
                 WD = new StreamWriter(stream);
                 RD = new StreamReader(stream, System.Text.Encoding.UTF8);
-                nick = "wm-bot" + System.DateTime.Now.ToString().Replace("/", "").Replace(":", "").Replace("\\", "").Replace(".", "");
                 Thread pinger = new Thread(Pong);
                 WD.WriteLine("USER " + "wm-bot" + " 8 * :" + "wm-bot");
                 WD.WriteLine("NICK " + nick);

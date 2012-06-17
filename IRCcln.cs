@@ -225,7 +225,15 @@ namespace wmib
         public bool Reconnect()
         {
             _Queue.Abort();
-            data = new System.Net.Sockets.TcpClient(server, 6667).GetStream();
+            string _s = server;
+            if (config.serverIO)
+            {
+                data = new System.Net.Sockets.TcpClient("127.0.0.1", 6667).GetStream();
+            }
+            else
+            {
+                data = new System.Net.Sockets.TcpClient(server, 6667).GetStream();
+            }
             rd = new StreamReader(data, System.Text.Encoding.UTF8);
             wd = new StreamWriter(data);
             wd.WriteLine("USER " + username + " 8 * :" + ident);
@@ -263,29 +271,71 @@ namespace wmib
         {
             try
             {
-                data = new System.Net.Sockets.TcpClient(server, 6667).GetStream();
+                if (!config.serverIO)
+                {
+                    data = new System.Net.Sockets.TcpClient(server, 6667).GetStream();
+                } else
+                {
+                    data = new System.Net.Sockets.TcpClient("127.0.0.1", 6667).GetStream();
+                    Program.Log("System is using external bouncer");
+                }
 				disabled = false;
                 rd = new System.IO.StreamReader(data, System.Text.Encoding.UTF8);
                 wd = new System.IO.StreamWriter(data);
 
-                _Queue = new System.Threading.Thread(_SlowQueue.Run);
-                check_thread = new System.Threading.Thread(Ping);
-                check_thread.Start();
+                bool Auth = true;
 
-                wd.WriteLine("USER " + username + " 8 * :" + ident);
-                wd.WriteLine("NICK " + nickname);
+                if (config.serverIO)
+                {
+                    wd.WriteLine("CONTROL: STATUS");
+                    wd.Flush();
+                    Console.WriteLine("CACHE: Waiting for buffer");
+                    bool done = true;
+                    while (done)
+                    {
+                        string response = rd.ReadLine();
+                        if (response == "CONTROL: TRUE")
+                        {
+                            done = false;
+                            Auth = false;
+                        }
+                        else if (response == "CONTROL: FALSE")
+                        {
+                            done = false;
+                            wd.WriteLine("CONTROL: CREATE");
+                            wd.Flush();
+                        }
+                    }
+                }
+
+                _Queue = new System.Threading.Thread(_SlowQueue.Run);
+
+                if (!config.serverIO)
+                {
+                    check_thread = new System.Threading.Thread(Ping);
+                    check_thread.Start();
+                }
+
+                if (Auth)
+                {
+                    wd.WriteLine("USER " + username + " 8 * :" + ident);
+                    wd.WriteLine("NICK " + nickname);
+                }
 
                 _Queue.Start();
                 System.Threading.Thread.Sleep(2000);
 
-                Authenticate();
-
-                foreach (config.channel ch in config.channels)
+                if (Auth)
                 {
-                    if (ch.Name != "")
+                    Authenticate();
+
+                    foreach (config.channel ch in config.channels)
                     {
-                        this.Join(ch);
-                        System.Threading.Thread.Sleep(2000);
+                        if (ch.Name != "")
+                        {
+                            this.Join(ch);
+                            System.Threading.Thread.Sleep(2000);
+                        }
                     }
                 }
                 wd.Flush();
@@ -303,6 +353,31 @@ namespace wmib
                         while (!rd.EndOfStream)
                         {
                             text = rd.ReadLine();
+                            if (config.serverIO)
+                            {
+                                if (text.StartsWith("CONTROL: "))
+                                {
+                                    if (text == "CONTROL: DC")
+                                    {
+                                        wd.WriteLine("CONTROL: CREATE");
+                                        wd.Flush();
+                                        Console.WriteLine("CACHE: Lost connection to remote, reconnecting");
+                                        bool connected = false;
+                                        while (!connected)
+                                        {
+                                            System.Threading.Thread.Sleep(800);
+                                            wd.WriteLine("CONTROL: STATUS");
+                                            wd.Flush();
+                                            string response = rd.ReadLine();
+                                            if (response == "CONTROL: OK")
+                                            {
+                                                Reconnect();
+                                                connected = true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                             if (text.StartsWith(":"))
                             {
                                 string check = text.Substring(text.IndexOf(" "));
@@ -432,7 +507,7 @@ namespace wmib
             }
             catch (Exception)
             {
-                Console.WriteLine("RecentChanges disabled, no connection");
+                Console.WriteLine("IRC: Connection error");
                 disabled = true;
             }
         }

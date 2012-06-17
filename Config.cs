@@ -294,6 +294,7 @@ namespace wmib
             AddConfig("username", username);
             AddConfig("password", password);
             AddConfig("web", url);
+            AddConfig("serverIO", serverIO.ToString());
             AddConfig("debug", debugchan);
             AddConfig("network", network);
             AddConfig("style_html_file", css);
@@ -341,6 +342,11 @@ namespace wmib
                     System.IO.File.WriteAllText(variables.config + "/wmib", "//this is configuration file for bot, you need to fill in some stuff for it to work");
                 }
                 text = File.ReadAllText(variables.config + "/wmib");
+                bool _serverIO;
+                if (bool.TryParse(parseConfig(text, "serverIO"), out _serverIO))
+                {
+                    serverIO = _serverIO;
+                }
                 foreach (string x in parseConfig(text, "channels").Replace("\n", "").Split(','))
                 {
                     string name = x.Replace(" ", "");
@@ -425,6 +431,8 @@ namespace wmib
         /// </summary>
         public static string password = "";
 
+        public static bool serverIO = false;
+
         /// <summary>
         /// The webpages url
         /// </summary>
@@ -438,7 +446,7 @@ namespace wmib
         /// <summary>
         /// Version
         /// </summary>
-        public static string version = "wikimedia bot v. 1.6.2";
+        public static string version = "wikimedia bot v. 1.8.0";
 
         /// <summary>
         /// Separator

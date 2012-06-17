@@ -949,6 +949,7 @@ namespace wmib
                                 {
                                     if (_temp_b > 1 && _temp_b < 364000)
                                     {
+                                        chan.respond_wait = _temp_b;
                                         irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, name }), chan.Name);
                                         chan.SaveConfig();
                                         return;
