@@ -127,6 +127,7 @@ namespace wmib
             public void LoadConfig()
             {
                 string conf_file = variables.config + "/" + Name + ".setting";
+                core.recoverFile(conf_file, Name);
                 RecentChanges.InsertSite();
                 if (!File.Exists(conf_file))
                 {
@@ -220,7 +221,16 @@ namespace wmib
                     }
                     conf += ";";
                 }
-                File.WriteAllText(variables.config + "/" + Name + ".setting", conf);
+                core.backupData(variables.config + "/" + Name + ".setting");
+                try
+                {
+                    File.WriteAllText(variables.config + "/" + Name + ".setting", conf);
+                    File.Delete(tempName(variables.config + "/" + Name + ".setting"));
+                }
+                catch (Exception)
+                {
+                    core.recoverFile(variables.config + "/" + Name + ".setting", Name);
+                }
             }
 
             public int Shares()
@@ -251,7 +261,7 @@ namespace wmib
             public channel(string name)
             {
                 conf = "";
-                keydb = variables.config + "/" + name + ".db";
+                keydb = variables.config + Path.DirectorySeparatorChar + name + ".db";
                 Info = true;
                 Language = "en";
                 sharedlink = new List<channel>();
@@ -324,6 +334,11 @@ namespace wmib
                 return x;
             }
             return "";
+        }
+
+        public static string tempName(string file)
+        {
+            return (file + "~");
         }
 
         /// <summary>
@@ -442,6 +457,8 @@ namespace wmib
         /// Dump
         /// </summary>
         public static string DumpDir = "dump";
+
+        public static string TransactionLog = "transaction.dat";
 
         /// <summary>
         /// Version

@@ -277,6 +277,52 @@ namespace wmib
                 || name.Contains("\\") || name.Contains(">") || name.Contains("<") || name.Contains("*"));
         }
 
+        public static bool backupRecovery(string name, string ch = "unknown object")
+        {
+            if (File.Exists(config.tempName(name)))
+            {
+                string temp = System.IO.Path.GetTempFileName();
+                File.Copy(config.tempName(name), temp, true);
+                Program.Log("Unfinished transaction from ~" + name + " was stored as " + temp);
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Create a backup file
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static bool backupData(string name)
+        {
+            if (File.Exists(config.tempName(name)))
+            {
+                backupRecovery(name);
+            }
+            File.Copy(name, config.tempName(name), true);
+            return true;
+        }
+
+        public static bool recoverFile(string name, string ch = "unknown object")
+        {
+            if (File.Exists(config.tempName(name)))
+            {
+                if (!Program.Temp(name))
+                {
+                    Program.Log("Unfinished transaction could not be restored! DB of " + name + " is probably broken");
+                    return false;
+                }
+                else
+                {
+                    Program.Log( "Restoring unfinished transaction of " + ch + " for db_" + name );
+                    File.Copy(config.tempName(name), name, true);
+                    return true;
+                }
+            }
+            return false;
+        }
+
         /// <summary>
         /// 
         /// </summary>

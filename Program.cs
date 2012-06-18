@@ -21,6 +21,19 @@ namespace wmib
             Console.WriteLine("LOG [" + DateTime.Now.ToShortTimeString() + "]: " + msg);
             return false;
         }
+
+        public static bool Temp(string file)
+        {
+            string path = System.IO.Path.GetTempFileName();
+            System.IO.File.Copy(file, path, true);
+            if (System.IO.File.Exists(path))
+            {
+                Log("Unfinished transaction from " + file + " was stored as " + path);
+                return true;
+            }
+            return false;
+        }
+
         private static void Main(string[] args)
         {
             Log("Loading...");

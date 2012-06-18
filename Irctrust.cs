@@ -40,6 +40,7 @@ namespace wmib
         {
             // Load
             File = variables.config + "/" + channel + "_user";
+            core.recoverFile(File);
             if (!System.IO.File.Exists(File))
             {
                 // Create db
@@ -84,10 +85,20 @@ namespace wmib
         /// <returns></returns>
         public bool Save()
         {
-            System.IO.File.WriteAllText(File, "");
-            foreach (core.user u in Users)
+            core.backupData(File);
+            try
             {
-                System.IO.File.AppendAllText(File, core.encode(u.name) + config.separator + u.level + "\n");
+                System.IO.File.WriteAllText(File, "");
+                foreach (core.user u in Users)
+                {
+                    System.IO.File.AppendAllText(File, core.encode(u.name) + config.separator + u.level + "\n");
+                }
+                System.IO.File.Delete(config.tempName(File));
+            }
+            catch (Exception b)
+            {
+                core.recoverFile(File, _Channel);
+                core.handleException(b);
             }
             return true;
         }

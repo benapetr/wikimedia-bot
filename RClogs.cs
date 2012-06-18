@@ -293,21 +293,25 @@ namespace wmib
         /// </summary>
         public void Load()
         {
-            string name = variables.config + "/" + channel.Name + ".list";
-            writable = false;
-            if (File.Exists(name))
-            {
-                string[] content = File.ReadAllLines(name);
-                pages.Clear();
-                foreach (string value in content)
+            string name = variables.config + Path.DirectorySeparatorChar + channel.Name + ".list";
+                writable = false;
+                core.recoverFile(name, channel.Name);
+                if (File.Exists(name))
                 {
-                    string[] values = value.Split('|');
-                    if (values.Length == 3)
+                    string[] content = File.ReadAllLines(name);
+                    pages.Clear();
+                    lock (content)
                     {
-                        pages.Add(new IWatch(getWiki(values[0]), values[1].Replace("<separator>", "|"), values[2]));
+                        foreach (string value in content)
+                        {
+                            string[] values = value.Split('|');
+                            if (values.Length == 3)
+                            {
+                                pages.Add(new IWatch(getWiki(values[0]), values[1].Replace("<separator>", "|"), values[2]));
+                            }
+                        }
                     }
                 }
-            }
             writable = true;
         }
 
@@ -317,13 +321,22 @@ namespace wmib
         public void Save()
         {
             string dbn = variables.config + "/" + channel.Name + ".list";
-            string content = "";
-            foreach (IWatch values in pages)
+            try
             {
-                content = content + values.URL.name + "|" + values.Page.Replace("|", "<separator>") + "|" +
-                          values.Channel + "\n";
+                string content = "";
+                core.backupData(dbn);
+                foreach (IWatch values in pages)
+                {
+                    content = content + values.URL.name + "|" + values.Page.Replace("|", "<separator>") + "|" +
+                              values.Channel + "\n";
+                }
+                File.WriteAllText(dbn, content);
+                File.Delete(config.tempName(dbn));
             }
-            File.WriteAllText(dbn, content);
+            catch (Exception)
+            {
+                core.recoverFile(dbn, channel.Name);
+            }
         }
 
         private static void Pong()

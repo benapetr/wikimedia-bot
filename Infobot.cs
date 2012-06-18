@@ -130,6 +130,8 @@ namespace wmib
         public void Load()
         {
             text.Clear();
+            // Checking if db isn't broken
+            core.recoverFile(datafile, Channel);
             if (!File.Exists(datafile))
             {
                 // Create db
@@ -281,22 +283,49 @@ namespace wmib
             update = true;
             try
             {
+                core.backupData(Channel);
+                File.Copy(datafile, config.tempName(datafile), true);
+                if (!File.Exists(config.tempName(datafile)))
+                {
+                    Program.Log("Unable to create backup file for " + this.Channel);
+                }
                 File.WriteAllText(datafile, "");
-                foreach (staticalias key in Alias)
+                lock (Alias)
                 {
-                    File.AppendAllText(datafile,
-                                       key.Name + config.separator + key.Key + config.separator + "alias" + "\n");
+                    foreach (staticalias key in Alias)
+                    {
+                        File.AppendAllText(datafile,
+                                           key.Name + config.separator + key.Key + config.separator + "alias" + "\n");
+                    }
                 }
-                foreach (item key in text)
+                lock (text)
                 {
-                    File.AppendAllText(datafile,
-                                       key.key + config.separator + key.text + config.separator + "key" +
-                                       config.separator + key.locked + config.separator + key.user + "\n");
+                    foreach (item key in text)
+                    {
+                        File.AppendAllText(datafile,
+                                           key.key + config.separator + key.text + config.separator + "key" +
+                                           config.separator + key.locked + config.separator + key.user + "\n");
+                    }
                 }
+                File.Delete(config.tempName(datafile));
             }
             catch (Exception b)
             {
-                core.handleException(b, Channel);
+                try
+                {
+                    if (core.recoverFile(datafile, Channel))
+                    {
+                        Program.Log("Recovered db for channel " + Channel);
+                    }
+                    else
+                    {
+                        core.handleException(b, Channel);
+                    }
+                }
+                catch (Exception bb)
+                {
+                    core.handleException(bb, Channel);
+                }
             }
         }
 
