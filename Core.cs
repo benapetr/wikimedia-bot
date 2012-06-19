@@ -251,7 +251,7 @@ namespace wmib
             }
             catch (Exception b)
             {
-                handleException(b, channel.Name);
+                handleException(b);
             }
             return 0;
         }

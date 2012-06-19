@@ -85,7 +85,7 @@ namespace wmib
                 catch (Exception fail)
                 {
                     Locked = false;
-                    Console.WriteLine("Exception" + fail.Message);
+                    core.handleException(fail);
                 }
             }
         }

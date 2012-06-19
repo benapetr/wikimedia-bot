@@ -153,6 +153,7 @@ namespace wmib
                     core.irc.Message(messages.get("rcfeed13", target.Language), target.Name);
                     return false;
                 }
+
                 foreach (wiki site in wikiinfo)
                 {
                     if (name == site.name)
@@ -161,6 +162,7 @@ namespace wmib
                         break;
                     }
                 }
+
                 if (web == null)
                 {
                     core.irc.Message(messages.get("rcfeed1", target.Language), target.Name);
@@ -182,7 +184,7 @@ namespace wmib
             } 
             catch (Exception f)
             {
-                Console.WriteLine(f.Message);
+                core.handleException(f);
             }
             return true;
         }
@@ -232,7 +234,7 @@ namespace wmib
             }
             catch (Exception f)
             {
-                Console.WriteLine(f.Message);
+                core.handleException(f);
             }
             return true;
         }
@@ -299,9 +301,9 @@ namespace wmib
                 if (File.Exists(name))
                 {
                     string[] content = File.ReadAllLines(name);
-                    pages.Clear();
-                    lock (content)
+                    lock (pages)
                     {
+                        pages.Clear();
                         foreach (string value in content)
                         {
                             string[] values = value.Split('|');
@@ -325,10 +327,13 @@ namespace wmib
             {
                 string content = "";
                 core.backupData(dbn);
-                foreach (IWatch values in pages)
+                lock (pages)
                 {
-                    content = content + values.URL.name + "|" + values.Page.Replace("|", "<separator>") + "|" +
-                              values.Channel + "\n";
+                    foreach (IWatch values in pages)
+                    {
+                        content = content + values.URL.name + "|" + values.Page.Replace("|", "<separator>") + "|" +
+                                  values.Channel + "\n";
+                    }
                 }
                 File.WriteAllText(dbn, content);
                 File.Delete(config.tempName(dbn));
@@ -375,12 +380,15 @@ namespace wmib
                 if (channels.Contains(site.channel))
                 {
                     IWatch currpage = null;
-                    foreach (IWatch iw in pages)
+                    lock (pages)
                     {
-                        if (iw.Page == Page)
+                        foreach (IWatch iw in pages)
                         {
-                            currpage = iw;
-                            break;
+                            if (iw.Page == Page && site.channel == iw.Channel)
+                            {
+                                currpage = iw;
+                                break;
+                            }
                         }
                     }
                     if (pages.Contains(currpage))
@@ -443,12 +451,15 @@ namespace wmib
                 if (channels.Contains(site.channel))
                 {
                     IWatch currpage = null;
-                    foreach (IWatch iw in pages)
+                    lock (pages)
                     {
-                        if (iw.Page == Page)
+                        foreach (IWatch iw in pages)
                         {
-                            currpage = iw;
-                            break;
+                            if (iw.Channel == site.channel && iw.Page == Page)
+                            {
+                                currpage = iw;
+                                break;
+                            }
                         }
                     }
                     if (Page.Contains("*"))
@@ -465,11 +476,10 @@ namespace wmib
                                                      channel.Name);
                         return true;
                     }
-                    while (!writable)
+                    lock (pages)
                     {
-                        System.Threading.Thread.Sleep(100);
+                        pages.Add(new IWatch(site, Page, site.channel));
                     }
-                    pages.Add(new IWatch(site, Page, site.channel));
                     core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed10", channel.Language), channel.Name);
                     channel.Keys.update = true;
                     Save();
@@ -496,9 +506,12 @@ namespace wmib
             {
                 string[] list = System.IO.File.ReadAllLines(channeldata);
                 Program.Log("Loading feed");
-                foreach (string chan in list)
+                lock (channels)
                 {
-                    channels.Add(chan);
+                    foreach (string chan in list)
+                    {
+                        channels.Add(chan);
+                    }
                 }
                 Connect();
                 Program.Log("Loaded feed");
@@ -516,37 +529,46 @@ namespace wmib
                                 string _channel = message.Substring(message.IndexOf("PRIVMSG"));
                                 _channel = _channel.Substring(_channel.IndexOf("#"));
                                 _channel = _channel.Substring(0, _channel.IndexOf(" "));
-                                string username = Edit.Groups[6].Value;
-                                string change = Edit.Groups[7].Value;
-                                string page = Edit.Groups[1].Value;
-                                string link = Edit.Groups[4].Value;
-                                string summary = Edit.Groups[8].Value;
-
-                                foreach (RecentChanges curr in rc)
+                                if (Edit.Groups.Count > 7)
                                 {
-                                    if (curr.channel.Feed)
+                                    string page = Edit.Groups[1].Value;
+                                    string link = Edit.Groups[4].Value;
+                                    string username = Edit.Groups[6].Value;
+                                    string change = Edit.Groups[7].Value;
+                                    string summary = Edit.Groups[8].Value;
+
+                                    lock (rc)
                                     {
-                                        foreach (IWatch w in curr.pages)
+                                        foreach (RecentChanges curr in rc)
                                         {
-                                            if (w.Channel == _channel)
+                                            if (curr.channel.Feed)
                                             {
-                                                if (page == w.Page)
+                                                lock (curr.pages)
                                                 {
-                                                    core.irc._SlowQueue.DeliverMessage(
-                                                        //messages.get("rfeedline1", curr.channel.Language) + "12" + w.URL.name + "" + messages.get("rfeedline2", curr.channel.Language) + "" + page +
-                                                        //"" + messages.get("rfeedline3", curr.channel.Language) + "" + username +
-                                                        //"" + messages.get("rfeedline4", curr.channel.Language) + w.URL.url + "?diff=" + link + messages.get("rfeedline5", curr.channel.Language) + summary, curr.channel.Name);
-                                                        messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
-                                                }
-                                                else
-                                                    if (w.Page.EndsWith("*"))
+                                                    foreach (IWatch w in curr.pages)
                                                     {
-                                                        if (page.StartsWith(w.Page.Replace("*", "")))
+                                                        if (w.Channel == _channel)
                                                         {
-                                                            core.irc._SlowQueue.DeliverMessage(
-                                                            messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
+                                                            if (page == w.Page)
+                                                            {
+                                                                core.irc._SlowQueue.DeliverMessage(
+                                                                    //messages.get("rfeedline1", curr.channel.Language) + "12" + w.URL.name + "" + messages.get("rfeedline2", curr.channel.Language) + "" + page +
+                                                                    //"" + messages.get("rfeedline3", curr.channel.Language) + "" + username +
+                                                                    //"" + messages.get("rfeedline4", curr.channel.Language) + w.URL.url + "?diff=" + link + messages.get("rfeedline5", curr.channel.Language) + summary, curr.channel.Name);
+                                                                    messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
+                                                            }
+                                                            else
+                                                                if (w.Page.EndsWith("*"))
+                                                                {
+                                                                    if (page.StartsWith(w.Page.Replace("*", "")))
+                                                                    {
+                                                                        core.irc._SlowQueue.DeliverMessage(
+                                                                        messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
+                                                                    }
+                                                                }
                                                         }
                                                     }
+                                                }
                                             }
                                         }
                                     }
@@ -562,13 +584,13 @@ namespace wmib
                     }
                     catch (Exception x)
                     {
-                        Console.WriteLine(x.Message);
+                        core.handleException(x);
                     }
                 }
             }
             catch (Exception x)
             {
-                Console.WriteLine(x.Message);
+                core.handleException(x);
                 // abort
             }
         }

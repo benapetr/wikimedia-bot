@@ -156,7 +156,7 @@ namespace wmib
             }
             catch (Exception b)
             {
-                Console.WriteLine(b.Message);
+                core.handleException(b);
             }
         }
 
@@ -227,7 +227,7 @@ namespace wmib
             catch (Exception b)
             {
                 Channel.Keys.locked = false;
-                Console.WriteLine(b.InnerException);
+                core.handleException(b);
             }
         }
     }

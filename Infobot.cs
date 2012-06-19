@@ -283,7 +283,7 @@ namespace wmib
             update = true;
             try
             {
-                core.backupData(Channel);
+                core.backupData(datafile);
                 File.Copy(datafile, config.tempName(datafile), true);
                 if (!File.Exists(config.tempName(datafile)))
                 {
