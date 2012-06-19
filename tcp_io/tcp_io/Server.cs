@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
-using System.Net;
 
 namespace tcp_io
 {
@@ -68,9 +67,13 @@ namespace tcp_io
 
         public static Socket _socket;
 
+        public static System.IO.StreamReader local_reader;
+        public static System.IO.StreamWriter local_writer;
+
         public static System.IO.StreamWriter _w;
         public static System.IO.StreamReader _r;
         public static System.Net.Sockets.NetworkStream stream;
+        public static TcpClient client;
 
         public static System.Threading.Thread listener;
         public static System.Threading.Thread irc;
@@ -78,39 +81,42 @@ namespace tcp_io
         public static void Listen()
         {
             TcpListener cache = new TcpListener(IPAddress.Parse("127.0.0.1"), 6667);
+
             cache.Start();
             Console.WriteLine("Cache is ok");
+            
             while (true)
             {
-                _socket = cache.AcceptSocket();
+                client = cache.AcceptTcpClient();
+                NetworkStream temp = client.GetStream();
+                local_writer = new System.IO.StreamWriter(temp);
+                local_reader = new System.IO.StreamReader(temp, System.Text.Encoding.UTF8);
+                //_socket = cache.AcceptSocket();
+                
                 connection_host = true;
+                
                 //Console.WriteLine("");
                 try
                 {
-                    while (_socket.Connected)
+                    while (!local_reader.EndOfStream)
                     {
-                        byte[] text = new byte[8000];
-                        int i = _socket.Receive(text);
-                        string data = "";
-                        if (i > 0)
-                        {
-                            for (int curr = 0; curr < i; curr++)
+                        
+                        //byte[] text = new byte[8000];
+                        //int i = _socket.Receive(text);
+                        //text = Encoding.Convert(Encoding.Unicode, Encoding.UTF8, text);
+                        string data = local_reader.ReadLine();
+                       
+                            if (data == "")
                             {
-                                data = data + Convert.ToChar(text[curr]);
+                                continue;
                             }
-
-
-                        }
-                        string[] lines = data.Split('\n');
-                        foreach (string curr in lines)
-                        {
-                            if (!curr.StartsWith("CONTROL: "))
+                            if (!data.StartsWith("CONTROL: "))
                             {
-                                Buffer.Out(curr);
+                                Buffer.Out(data);
                             }
                             else
                             {
-                                string code = curr.Replace("\r", "").Substring("CONTROLxx".Length);
+                                string code = data.Replace("\r", "").Substring("CONTROLxx".Length);
                                 switch (code)
                                 {
                                     case "STATUS":
@@ -128,17 +134,15 @@ namespace tcp_io
                                         break;
                                 }
                             }
-                        }
                         System.Threading.Thread.Sleep(20);
                     }
                 }
-                catch (SocketException)
+                catch (System.IO.IOException)
                 {
                     connection_host = false;
                     Console.WriteLine("Remote dced");
                 }
 
-                _socket.Close();
                 connection_host = false;
                 System.Threading.Thread.Sleep(20);
             }
@@ -175,7 +179,6 @@ namespace tcp_io
                         while (!_r.EndOfStream)
                         {
                             string text = _r.ReadLine();
-                            Console.WriteLine(text);
                             Buffer.In(text);
                             System.Threading.Thread.Sleep(20);
                         }
@@ -203,9 +206,9 @@ namespace tcp_io
             {
                 try
                 {
-                    if (_socket != null)
+                    if (client != null)
                     {
-                        if (_socket.Connected)
+                        if (client.Connected)
                         {
                             if (Buffer.data_in.Count > 0)
                             {
@@ -223,8 +226,10 @@ namespace tcp_io
                                     }
                                     Buffer.data_in.Remove(lastitem);
                                 }
-                                ASCIIEncoding dc = new ASCIIEncoding();
-                                _socket.Send(dc.GetBytes(lastitem._text + "\n"));
+                                //UTF8Encoding dc = new UTF8Encoding();
+                                local_writer.WriteLine(lastitem._text);
+                                local_writer.Flush();
+                                //_socket.Send(dc.GetBytes(lastitem._text + "\n"));
                             }
                         }
                     }

@@ -1,6 +1,0 @@
-C:\Users\petr.bena\Downloads\huggle\hugglesrv\tcp_io\tcp_io\bin\Debug\tcp_io.exe
-C:\Users\petr.bena\Downloads\huggle\hugglesrv\tcp_io\tcp_io\bin\Debug\tcp_io.pdb
-C:\Users\petr.bena\Downloads\huggle\hugglesrv\tcp_io\tcp_io\obj\x86\Debug\ResolveAssemblyReference.cache
-C:\Users\petr.bena\Downloads\huggle\hugglesrv\tcp_io\tcp_io\obj\x86\Debug\tcp_io.exe
-C:\Users\petr.bena\Downloads\huggle\hugglesrv\tcp_io\tcp_io\obj\x86\Debug\tcp_io.pdb
-C:\Users\petr.bena\Downloads\huggle\hugglesrv\tcp_io\tcp_io\bin\Debug\tcp_io.exe.config
