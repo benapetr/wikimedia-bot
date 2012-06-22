@@ -502,6 +502,7 @@ namespace wmib
             {
                 File.WriteAllText(channeldata, "#mediawiki.wikipedia");
             }
+            string message = "";
             try
             {
                 string[] list = System.IO.File.ReadAllLines(channeldata);
@@ -519,12 +520,11 @@ namespace wmib
                 {
                     try
                     {
-                        string message;
                         while (!RD.EndOfStream)
                         {
                             message = RD.ReadLine();
                             Match Edit = line.Match(message);
-                            if (line.IsMatch(message))
+                            if (line.IsMatch(message) && Edit != null)
                             {
                                 string _channel = message.Substring(message.IndexOf("PRIVMSG"));
                                 _channel = _channel.Substring(_channel.IndexOf("#"));
@@ -541,31 +541,37 @@ namespace wmib
                                     {
                                         foreach (RecentChanges curr in rc)
                                         {
-                                            if (curr.channel.Feed)
+                                            if (curr != null)
                                             {
-                                                lock (curr.pages)
+                                                if (curr.channel.Feed)
                                                 {
-                                                    foreach (IWatch w in curr.pages)
+                                                    lock (curr.pages)
                                                     {
-                                                        if (w.Channel == _channel)
+                                                        foreach (IWatch w in curr.pages)
                                                         {
-                                                            if (page == w.Page)
+                                                            if (w != null)
                                                             {
-                                                                core.irc._SlowQueue.DeliverMessage(
-                                                                    //messages.get("rfeedline1", curr.channel.Language) + "12" + w.URL.name + "" + messages.get("rfeedline2", curr.channel.Language) + "" + page +
-                                                                    //"" + messages.get("rfeedline3", curr.channel.Language) + "" + username +
-                                                                    //"" + messages.get("rfeedline4", curr.channel.Language) + w.URL.url + "?diff=" + link + messages.get("rfeedline5", curr.channel.Language) + summary, curr.channel.Name);
-                                                                    messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
-                                                            }
-                                                            else
-                                                                if (w.Page.EndsWith("*"))
+                                                                if (w.Channel == _channel)
                                                                 {
-                                                                    if (page.StartsWith(w.Page.Replace("*", "")))
+                                                                    if (page == w.Page)
                                                                     {
                                                                         core.irc._SlowQueue.DeliverMessage(
-                                                                        messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
+                                                                            //messages.get("rfeedline1", curr.channel.Language) + "12" + w.URL.name + "" + messages.get("rfeedline2", curr.channel.Language) + "" + page +
+                                                                            //"" + messages.get("rfeedline3", curr.channel.Language) + "" + username +
+                                                                            //"" + messages.get("rfeedline4", curr.channel.Language) + w.URL.url + "?diff=" + link + messages.get("rfeedline5", curr.channel.Language) + summary, curr.channel.Name);
+                                                                            messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
                                                                     }
+                                                                    else
+                                                                        if (w.Page.EndsWith("*"))
+                                                                        {
+                                                                            if (page.StartsWith(w.Page.Replace("*", "")))
+                                                                            {
+                                                                                core.irc._SlowQueue.DeliverMessage(
+                                                                                messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
+                                                                            }
+                                                                        }
                                                                 }
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -584,6 +590,7 @@ namespace wmib
                     }
                     catch (Exception x)
                     {
+                        core.LastText = message;
                         core.handleException(x);
                     }
                 }

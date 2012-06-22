@@ -83,7 +83,7 @@ namespace wmib
             {
                 html += "<link rel=\"stylesheet\" href=\"" + config.css + "\" type=\"text/css\"/>";
             }
-            html += "<title>" + page_name + "</title></head><body>\n";
+            html += "<title>" + page_name + "</title>\n\n<meta charset=\"UTF-8\"></head><body>\n";
             return html;
         }
 
