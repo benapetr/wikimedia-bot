@@ -363,7 +363,7 @@ namespace wmib
                             config.channel Chan = getChannel(channel);
                             if (!existing)
                             {
-                                Chan.Users.addUser("admin", IRCTrust.normalize(user) + "!.*@" + host);
+                                Chan.Users.addUser("admin", IRCTrust.normalize(user) + "!.*@" + IRCTrust.normalize(host));
                             }
                             return;
                         }

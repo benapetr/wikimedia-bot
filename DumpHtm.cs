@@ -78,7 +78,7 @@ namespace wmib
         /// <returns></returns>
         private static string CreateHeader(string page_name)
         {
-            string html = "<html><head>";
+            string html = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n\n\n\n<html><head>";
             if (config.css != "")
             {
                 html += "<link rel=\"stylesheet\" href=\"" + config.css + "\" type=\"text/css\"/>";
@@ -183,7 +183,7 @@ namespace wmib
                 }
                 else
                 {
-                    text = text + "\n<table border=1 class=\"infobot1\" width=100%>\n<tr><th width=10%>Key</th><th>Value</th></tr>\n";
+                    text = text + "\n<table border=1 class=\"infobot\" width=100%>\n<tr><th width=10%>Key</th><th>Value</th></tr>\n";
                     Channel.Keys.locked = true;
                     List<infobot_core.item> list = new List<infobot_core.item>();
                     lock (Channel.Keys.text)
@@ -205,7 +205,7 @@ namespace wmib
                         }
                     }
                     text = text + "</table>\n";
-                    text = text + "<h4>Aliases</h4>\n<table class=\"infobot2\" border=1 width=100%>\n";
+                    text = text + "<h4>Aliases</h4>\n<table class=\"infobot\" border=1 width=100%>\n";
                     lock (Channel.Keys.Alias)
                     {
                         foreach (infobot_core.staticalias data in Channel.Keys.Alias)
