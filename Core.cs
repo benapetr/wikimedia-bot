@@ -1326,7 +1326,8 @@ namespace wmib
                         return false;
                     }
                 }
-                if (message.StartsWith("!") && curr.Info)
+                // "\uff01" is the full-width version of "!".
+                if ((message.StartsWith("!") || message.StartsWith("\uff01")) && curr.Info)
                 {
                     while (infobot_core.Unwritable)
                     {
@@ -1335,7 +1336,7 @@ namespace wmib
                     infobot_core.Unwritable = true;
                     infobot_core.InfoItem item = new infobot_core.InfoItem();
                     item.Channel = curr;
-                    item.Name = message;
+                    item.Name = "!" + message.Substring(1); // Normalizing "!".
                     item.User = nick;
                     item.Host = host;
                     infobot_core.jobs.Add(item);
