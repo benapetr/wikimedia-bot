@@ -75,6 +75,7 @@ infobot10=Nelze nalezt klic v db;
 rcfeed1=Zadna takova wiki neni v tuto chvili sledovana;
 rcfeed2=Tento kanal ja uz celou dobu sleduju;
 rcfeed3=Tento kanal celou dobu nebyl sledovan;
+hi=Cau $1, ja jsem jenom bot, nejsem tak chytry a moc neumim mluvit s lidmi :-);
 rcfeed4=Smazano;
 rcfeed5=Nemuzu nalezt tuto stranku;
 rcfeed6=Nelze smazat tuto stranku protoze tento kanal neni sledovan;

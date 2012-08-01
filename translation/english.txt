@@ -122,6 +122,7 @@ fl=Change on $1 a page $2 was modified, changed by $3 link $4 edit summary: $5;
 Trust1=This user has higher level than you, sorry;
 Trust2=You can't delete yourself from db;
 Trust3=User was deleted from access list;
+hi=Hi $1, there is some error, I am a stupid bot and I am not intelligent enough to hold a conversation with you :-);
 Trust4=User not found, sorry;
 TrustedUserList=I trust: ;
 infobot-ignore+=Insert a new string to ignore list for infobot;

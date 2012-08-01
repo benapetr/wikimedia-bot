@@ -248,12 +248,24 @@ namespace wmib
             string keyv = key;
             if (pars.Length > 1)
             {
+                string keys = "";
                 int curr = 1;
                 while (pars.Length > curr)
                 {
                     keyv = keyv.Replace("$" + curr.ToString(), pars[curr]);
+                    keyv = keyv.Replace("$url_encoded_" + curr.ToString(), System.Web.HttpUtility.UrlEncode(pars[curr]));
+                    if (keys == "")
+                    {
+                        keys = pars[curr];
+                    }
+                    else
+                    {
+                        keys = keys + " " + pars[curr];
+                    }
                     curr++;
                 }
+                keyv = keyv.Replace("$*", keys);
+                keyv = keyv.Replace("$url_encoded_*", System.Web.HttpUtility.UrlEncode(keys));
             }
             return keyv;
         }

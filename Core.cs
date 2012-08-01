@@ -1326,7 +1326,7 @@ namespace wmib
                         return false;
                     }
                 }
-                // "\uff01" is the full-width version of "!".
+                 // "\uff01" is the full-width version of "!".
                 if ((message.StartsWith("!") || message.StartsWith("\uff01")) && curr.Info)
                 {
                     while (infobot_core.Unwritable)
