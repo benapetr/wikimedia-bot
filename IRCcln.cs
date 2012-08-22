@@ -389,13 +389,11 @@ namespace wmib
                                 {
 									string command = "";
 									string[] part;
-									if (text.Contains(":"))
+									if (text.Contains(" :"))
 									{
 										part = text.Split (':');
-										if (part.Length > 1)
-										{
-											command = part[1];
-										}
+                                        command = text.Substring(1);
+                                        command = command.Substring(0, command.IndexOf(" :"));
 									}
                                     if (command.Contains("PRIVMSG"))
                                     {
@@ -436,19 +434,19 @@ namespace wmib
                                                 wd.Flush();
                                                 continue;
                                             }
-                                            if (message.StartsWith(":" + delimiter.ToString() + "TIME"))
+                                            if (message.StartsWith(" :" + delimiter.ToString() + "TIME"))
                                             {
                                                 wd.WriteLine("NOTICE " + nick + " :" + delimiter.ToString() + "TIME " + System.DateTime.Now.ToString());
                                                 wd.Flush();
                                                 continue;
                                             }
-                                            if (message.StartsWith(":" + delimiter.ToString() + "PING"))
+                                            if (message.StartsWith(" :" + delimiter.ToString() + "PING"))
                                             {
                                                 wd.WriteLine("NOTICE " + nick + " :" + delimiter.ToString() + "PING" + message.Substring(message.IndexOf(delimiter.ToString() + "PING") + 5));
                                                 wd.Flush();
                                                 continue;
                                             }
-                                            if (message.StartsWith(":" + delimiter.ToString() + "VERSION"))
+                                            if (message.StartsWith(" :" + delimiter.ToString() + "VERSION"))
                                             {
                                                 wd.WriteLine("NOTICE " + nick + " :" + delimiter.ToString() + "VERSION " + config.version);
                                                 wd.Flush();
