@@ -227,6 +227,8 @@ namespace wmib
                     text += "\n<h4>Most active users :)</h4>\n<table class=\"infobot\" border=1>";
                     text += "<tr><th>Nick</th><th>Messages (average / day)</th><th>Number of posted messages</th><th>Active since</th></tr>";
                     int id = 0;
+                    int totalms = 0;
+                    DateTime startime = DateTime.Now;
                     lock (Channel.info.data)
                     {
                         foreach (Statistics.list user in Channel.info.data)
@@ -236,8 +238,13 @@ namespace wmib
                                 break;
                             }
                             id++;
+                            if (startime > user.logging_since)
+                            {
+                                startime = user.logging_since;
+                            }
                             System.TimeSpan uptime = System.DateTime.Now - user.logging_since;
                             float average = user.messages;
+                            totalms += user.messages;
                             if (uptime.Days > 0)
                             {
                                 average = user.messages / uptime.Days;
@@ -246,6 +253,14 @@ namespace wmib
                             text += "  \n";
                         }
                     }
+                    System.TimeSpan uptime_total = System.DateTime.Now - startime;
+                    float average2 = totalms;
+                    if (uptime_total.Days > 0)
+                    {
+                        average2 = totalms / uptime_total.Days;
+                    }
+                    text += "<tr><th>Total:</th><th>" + average2.ToString() + "</th><th>" + totalms.ToString() + "</th><td>N/A</td></tr>";
+                    text += "  \n";
                     text += "</table>";
                 }
                 text = text + CreateFooter();
