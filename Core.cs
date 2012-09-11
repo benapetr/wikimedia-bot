@@ -296,31 +296,47 @@ namespace wmib
         /// <returns></returns>
         public static bool backupData(string name)
         {
-            if (File.Exists(config.tempName(name)))
+            try
             {
-                backupRecovery(name);
+                if (File.Exists(config.tempName(name)))
+                {
+                    backupRecovery(name);
+                }
+                File.Copy(name, config.tempName(name), true);
             }
-            File.Copy(name, config.tempName(name), true);
+            catch (Exception b)
+            {
+                core.handleException(b);
+            }
             return true;
         }
 
         public static bool recoverFile(string name, string ch = "unknown object")
         {
-            if (File.Exists(config.tempName(name)))
+            try
             {
-                if (!Program.Temp(name))
+                if (File.Exists(config.tempName(name)))
                 {
-                    Program.Log("Unfinished transaction could not be restored! DB of " + name + " is probably broken");
-                    return false;
+                    if (!Program.Temp(name))
+                    {
+                        Program.Log("Unfinished transaction could not be restored! DB of " + name + " is probably broken");
+                        return false;
+                    }
+                    else
+                    {
+                        Program.Log("Restoring unfinished transaction of " + ch + " for db_" + name);
+                        File.Copy(config.tempName(name), name, true);
+                        return true;
+                    }
                 }
-                else
-                {
-                    Program.Log( "Restoring unfinished transaction of " + ch + " for db_" + name );
-                    File.Copy(config.tempName(name), name, true);
-                    return true;
-                }
+                return false;
             }
-            return false;
+            catch (Exception b)
+            {
+                core.handleException(b);
+                Program.Log("Unfinished transaction could not be restored! DB of " + name + " is now broken");
+                return false;
+            }
         }
 
         /// <summary>
@@ -776,6 +792,69 @@ namespace wmib
 				{
                 	irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
 				}
+                return;
+            }
+
+            if (message == "@statistics-off")
+            {
+                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                {
+                    if (!chan.stat)
+                    {
+                        irc._SlowQueue.DeliverMessage(messages.get("StatE2", chan.Language), chan.Name);
+                        return;
+                    }
+                    else
+                    {
+                        chan.stat = false;
+                        chan.SaveConfig();
+                        irc._SlowQueue.DeliverMessage(messages.get("Stat-off", chan.Language), chan.Name);
+                        return;
+                    }
+                }
+                if (!chan.suppress_warnings)
+                {
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                }
+                return;
+            }
+
+            if (message == "@statistics-reset")
+            {
+                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                {
+                    chan.info.Delete();
+                    irc._SlowQueue.DeliverMessage(messages.get("Statdt", chan.Language), chan.Name);
+                    return;
+                }
+                if (!chan.suppress_warnings)
+                {
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                }
+                return;
+            }
+
+            if (message == "@statistics-on")
+            {
+                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                {
+                    if (chan.stat)
+                    {
+                        irc._SlowQueue.DeliverMessage(messages.get("StatE1", chan.Language), chan.Name);
+                        return;
+                    }
+                    else
+                    {
+                        chan.stat = true;
+                        chan.SaveConfig();
+                        irc._SlowQueue.DeliverMessage(messages.get("Stat-on", chan.Language), chan.Name);
+                        return;
+                    }
+                }
+                if (!chan.suppress_warnings)
+                {
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                }
                 return;
             }
 
@@ -1284,7 +1363,7 @@ namespace wmib
 
             if (message == "@commands")
             {
-                irc._SlowQueue.DeliverMessage("Commands: channellist, trusted, trustadd, trustdel, info, configure, infobot-link, infobot-share-trust+, infobot-share-trust-, infobot-share-off, infobot-share-on, infobot-off, refresh, infobot-on, drop, whoami, add, reload, suppress-off, suppress-on, help, RC-, recentchanges-on, language, infobot-ignore+, infobot-ignore-, recentchanges-off, logon, logoff, recentchanges-, recentchanges+, RC+", chan.Name);
+                irc._SlowQueue.DeliverMessage("Commands: channellist, trusted, trustadd, trustdel, info, statistics-off, statistics-on, statistics-reset, configure, infobot-link, infobot-share-trust+, infobot-share-trust-, infobot-share-off, infobot-share-on, infobot-off, refresh, infobot-on, drop, whoami, add, reload, suppress-off, suppress-on, help, RC-, recentchanges-on, language, infobot-ignore+, infobot-ignore-, recentchanges-off, logon, logoff, recentchanges-, recentchanges+, RC+", chan.Name);
                 return;
             }
         }
@@ -1293,6 +1372,9 @@ namespace wmib
         {
             dumphtmt = new Thread(HtmlDump.Start);
             dumphtmt.Start();
+            Program.Log("Loading statistics module");
+            Statistics.db = new Thread(Statistics.DB);
+            Statistics.db.Start();
             Program.Log("Loading RC module");
             rc = new Thread(RecentChanges.Start);
             rc.Start();
@@ -1319,6 +1401,10 @@ namespace wmib
             if (curr != null)
             {
                 Logs.chanLog(message, curr, nick, host);
+                if (curr.stat)
+                {
+                    curr.info.Stat(nick, message);
+                }
                 if (curr.ignore_unknown)
                 {
                     if (!curr.Users.isApproved(nick, host, "trust"))
@@ -1405,6 +1491,9 @@ namespace wmib
                 case "logoff":
                 case "recentchanges-on":
                 case "recentchanges-off":
+                case "statistics-reset":
+                case "statistics-off":
+                case "statistics-on":
                 case "recentchanges-":
                 case "recentchanges+":
                 case "infobot-share-on":
@@ -1413,6 +1502,9 @@ namespace wmib
                 case "infobot-link":
                 case "info":
                 case "rc-":
+                case "search":
+                case "commands":
+                case "regsearch":
                 case "infobot-share-off":
                 case "rc+":
                 case "suppress-off":

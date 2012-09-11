@@ -28,6 +28,8 @@ namespace wmib
 
             public bool Logged;
 
+            public Statistics info;
+
             /// <summary>
             /// Log
             /// </summary>
@@ -69,6 +71,8 @@ namespace wmib
 			public bool suppress_warnings = false;
 
             public bool logs_no_write_data = false;
+
+            public bool stat = false;
 
             /// <summary>
             /// Completion
@@ -155,6 +159,7 @@ namespace wmib
                 last_msg = last_msg.AddSeconds((-1) * respond_wait);
                 bool.TryParse(parseConfig(conf, "feed"), out Feed);
                 bool.TryParse(parseConfig(conf, "infobot-sorted-list"), out infobot_sorted);
+                bool.TryParse(parseConfig(conf, "statistics"), out stat);
                 bool.TryParse(parseConfig(conf, "ignore-unknown"), out ignore_unknown);
                 if (parseConfig(conf, "infodb") != "")
                 {
@@ -195,11 +200,12 @@ namespace wmib
                 AddConfig("infobot-sorted-list", infobot_sorted.ToString());
                 AddConfig("langcode", Language);
                 AddConfig("respond_message", respond_message.ToString());
-                AddConfig("respond_wait", respond_wait.ToString());
                 AddConfig("infobot-trim-white-space-in-name", infobot_trim_white_space_in_name.ToString());
                 AddConfig("ignore-unknown", ignore_unknown.ToString());
                 AddConfig("infobot-help", infobot_help.ToString());
-				AddConfig("suppress-warnings", suppress_warnings.ToString());
+                AddConfig("suppress-warnings", suppress_warnings.ToString());
+                AddConfig("respond_wait", respond_wait.ToString());
+                AddConfig("statistics", stat.ToString());
                 AddConfig("keysdb", keydb);
                 AddConfig("infobot-auto-complete", infobot_auto_complete.ToString());
                 AddConfig("sharedinfo", shared);
@@ -272,6 +278,7 @@ namespace wmib
                 Name = name;
                 LoadConfig();
                 RC = new RecentChanges(this);
+                info = new Statistics(this);
                 if (!Directory.Exists("log"))
                 {
                     Directory.CreateDirectory("log");
@@ -463,7 +470,7 @@ namespace wmib
         /// <summary>
         /// Version
         /// </summary>
-        public static string version = "wikimedia bot v. 1.8.2.4";
+        public static string version = "wikimedia bot v. 1.8.6.2";
 
         /// <summary>
         /// Separator

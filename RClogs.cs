@@ -340,6 +340,7 @@ namespace wmib
             }
             catch (Exception)
             {
+                Program.Log("Error while saving to: " + channel.Name + ".list");
                 core.recoverFile(dbn, channel.Name);
             }
         }
@@ -520,6 +521,10 @@ namespace wmib
                 {
                     try
                     {
+                        if (RD == null)
+                        {
+                            return;
+                        }
                         while (!RD.EndOfStream)
                         {
                             message = RD.ReadLine();

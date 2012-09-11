@@ -36,8 +36,9 @@ namespace wmib
             {
                 foreach (config.channel chan in config.channels)
                 {
-                    if (chan.Keys.update)
+                    if (chan.info.changed || chan.Keys.update)
                     {
+                        chan.info.changed = false;
                         HtmlDump dump = new HtmlDump(chan);
                         dump.Make();
                         chan.Keys.update = false;
@@ -220,6 +221,32 @@ namespace wmib
                 {
                     text += "\n<h4>Recent changes</h4>";
                     text = text + Channel.RC.ToTable();
+                }
+                if (Channel.stat)
+                {
+                    text += "\n<h4>Most active users :)</h4>\n<table class=\"infobot\" border=1>";
+                    text += "<tr><th>Nick</th><th>Messages (average / day)</th><th>Number of posted messages</th><th>Active since</th></tr>";
+                    int id = 0;
+                    lock (Channel.info.data)
+                    {
+                        foreach (Statistics.list user in Channel.info.data)
+                        {
+                            if (id > 100)
+                            {
+                                break;
+                            }
+                            id++;
+                            System.TimeSpan uptime = System.DateTime.Now - user.logging_since;
+                            float average = user.messages;
+                            if (uptime.Days > 0)
+                            {
+                                average = user.messages / uptime.Days;
+                            }
+                            text += "<tr><td>" + user.user + "</td><td>" + average.ToString() + "</td><td>" + user.messages.ToString() + "</td><td>" + user.logging_since.ToString() + "</td></tr>";
+                            text += "  \n";
+                        }
+                    }
+                    text += "</table>";
                 }
                 text = text + CreateFooter();
                 File.WriteAllText(dumpname, text);
