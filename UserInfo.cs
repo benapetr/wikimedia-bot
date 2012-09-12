@@ -49,6 +49,10 @@ namespace wmib
                     }
                     Thread.Sleep(8000);
                 }
+                catch (ThreadAbortException)
+                {
+                    break;
+                }
                 catch (Exception f)
                 {
                     core.handleException(f);
@@ -69,6 +73,7 @@ namespace wmib
             public int longest_message = 0;
             public int average_message;
             public DateTime logging_since;
+            public string URL = "";
 
             public int CompareTo(object O)
             {
@@ -89,7 +94,7 @@ namespace wmib
             Load();
         }
 
-        public void Stat(string nick, string message)
+        public void Stat(string nick, string message, string host)
         {
             list user = null;
             lock (data)
@@ -113,6 +118,21 @@ namespace wmib
                     data.Add(user);
                 }
             }
+            if (host.StartsWith("wikimedia/"))
+            {
+                host = host.Substring("wikipedia/".Length);
+                user.URL = "https://meta.wikimedia.org/wiki/User:" + host;
+            }
+            else if (host.StartsWith("wikipedia/"))
+            {
+                host = host.Substring("wikipedia/".Length);
+                user.URL = "https://en.wikipedia.org/wiki/User:" + host;
+            }
+            else if (host.StartsWith("mediawiki/"))
+            {
+                host = host.Substring("wikipedia/".Length);
+                user.URL = "https://mediawiki.org/wiki/User:" + host;
+            }
             user.messages++;
             changed = true;
             Stored = false;
@@ -130,7 +150,7 @@ namespace wmib
         {
             XmlDocument stat = new XmlDocument();
             XmlNode xmlnode = stat.CreateElement("channel_stat");
-            
+
             foreach (list curr in data)
             {
                 XmlAttribute name = stat.CreateAttribute("username");
@@ -141,11 +161,14 @@ namespace wmib
                 longest_message.Value = "0";
                 XmlAttribute logging_since = stat.CreateAttribute("logging_since");
                 logging_since.Value = curr.logging_since.ToBinary().ToString();
+                XmlAttribute link = stat.CreateAttribute("link");
+                link.Value = curr.URL;
                 XmlNode db = stat.CreateElement("user");
                 db.Attributes.Append(name);
                 db.Attributes.Append(messages);
                 db.Attributes.Append(longest_message);
                 db.Attributes.Append(logging_since);
+                db.Attributes.Append(link);
                 xmlnode.AppendChild(db);
             }
             stat.AppendChild(xmlnode);
@@ -166,27 +189,32 @@ namespace wmib
             try
             {
                 core.recoverFile(variables.config + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics", channel.Name);
-            if (System.IO.File.Exists(variables.config + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics"))
-            {
-                lock (data)
+                if (System.IO.File.Exists(variables.config + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics"))
                 {
-                    data = new List<list>();
-                    XmlDocument stat = new XmlDocument();
-                    stat.Load(variables.config + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics");
-                    if (stat.ChildNodes[0].ChildNodes.Count > 0)
+                    lock (data)
                     {
-                        foreach (XmlNode curr in stat.ChildNodes[0].ChildNodes)
+                        data = new List<list>();
+                        XmlDocument stat = new XmlDocument();
+                        stat.Load(variables.config + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics");
+                        if (stat.ChildNodes[0].ChildNodes.Count > 0)
                         {
-                            list item = new list();
-                            item.user = curr.Attributes[0].Value;
-                            item.messages = int.Parse(curr.Attributes[1].Value);
-                            item.logging_since = DateTime.FromBinary(long.Parse(curr.Attributes[3].Value));
-                            data.Add(item);
+                            foreach (XmlNode curr in stat.ChildNodes[0].ChildNodes)
+                            {
+                                list item = new list();
+                                item.user = curr.Attributes[0].Value;
+                                item.messages = int.Parse(curr.Attributes[1].Value);
+                                item.logging_since = DateTime.FromBinary(long.Parse(curr.Attributes[3].Value));
+                                if (curr.Attributes.Count > 4)
+                                {
+                                    item.URL = curr.Attributes[4].Value;
+                                }
+                                data.Add(item);
+                            }
                         }
                     }
                 }
             }
-            }catch (Exception f)
+            catch (Exception f)
             {
                 core.handleException(f);
             }

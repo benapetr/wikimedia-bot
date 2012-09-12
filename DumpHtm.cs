@@ -214,7 +214,7 @@ namespace wmib
                             text += AddLink(data.Name, data.Key);
                         }
                     }
-                    text = text + "</table>\n";
+                    text = text + "</table><br>\n";
                     Channel.Keys.locked = false;
                 }
                 if (Channel.Feed)
@@ -222,7 +222,7 @@ namespace wmib
                     text += "\n<h4>Recent changes</h4>";
                     text = text + Channel.RC.ToTable();
                 }
-                if (Channel.stat)
+                if (Channel.statistics_enabled)
                 {
                     text += "\n<h4>Most active users :)</h4>\n<table class=\"infobot\" border=1>";
                     text += "<tr><th>Nick</th><th>Messages (average / day)</th><th>Number of posted messages</th><th>Active since</th></tr>";
@@ -245,20 +245,21 @@ namespace wmib
                             System.TimeSpan uptime = System.DateTime.Now - user.logging_since;
                             float average = user.messages;
                             totalms += user.messages;
-                            if (uptime.Days > 0)
+                            average = ((float)user.messages / (float)(uptime.Days+1));
+                            if (user.URL != "")
                             {
-                                average = user.messages / uptime.Days;
+                                text += "<tr><td><a target=\"_blank\" href=\""+ user.URL +"\">" + user.user + "</a></td><td>" + average.ToString() + "</td><td>" + user.messages.ToString() + "</td><td>" + user.logging_since.ToString() + "</td></tr>";
                             }
-                            text += "<tr><td>" + user.user + "</td><td>" + average.ToString() + "</td><td>" + user.messages.ToString() + "</td><td>" + user.logging_since.ToString() + "</td></tr>";
+                            else
+                            {
+                                text += "<tr><td>" + user.user + "</td><td>" + average.ToString() + "</td><td>" + user.messages.ToString() + "</td><td>" + user.logging_since.ToString() + "</td></tr>";
+                            }
                             text += "  \n";
                         }
                     }
                     System.TimeSpan uptime_total = System.DateTime.Now - startime;
                     float average2 = totalms;
-                    if (uptime_total.Days > 0)
-                    {
-                        average2 = totalms / uptime_total.Days;
-                    }
+                    average2 = (float)totalms / (1+uptime_total.Days);
                     text += "<tr><th>Total:</th><th>" + average2.ToString() + "</th><th>" + totalms.ToString() + "</th><td>N/A</td></tr>";
                     text += "  \n";
                     text += "</table>";

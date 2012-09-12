@@ -54,6 +54,7 @@ namespace wmib
         public static string LastText;
         public static Thread ib;
         public static bool disabled;
+        public static bool exit = false;
         public static IRC irc;
         private static List<user> User = new List<user>();
 
@@ -154,7 +155,7 @@ namespace wmib
                 {
                     irc._SlowQueue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText + " I feel crushed, uh :|", config.debugchan);
                 }
-                Program.Log("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace);
+                Program.Log("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace, true);
             }
             catch (Exception) // exception happened while we tried to handle another one, ignore that (probably issue with logging)
             { }
@@ -319,7 +320,7 @@ namespace wmib
                 {
                     if (!Program.Temp(name))
                     {
-                        Program.Log("Unfinished transaction could not be restored! DB of " + name + " is probably broken");
+                        Program.Log("Unfinished transaction could not be restored! DB of " + name + " is probably broken", true);
                         return false;
                     }
                     else
@@ -799,14 +800,14 @@ namespace wmib
             {
                 if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
                 {
-                    if (!chan.stat)
+                    if (!chan.statistics_enabled)
                     {
                         irc._SlowQueue.DeliverMessage(messages.get("StatE2", chan.Language), chan.Name);
                         return;
                     }
                     else
                     {
-                        chan.stat = false;
+                        chan.statistics_enabled = false;
                         chan.SaveConfig();
                         irc._SlowQueue.DeliverMessage(messages.get("Stat-off", chan.Language), chan.Name);
                         return;
@@ -838,14 +839,14 @@ namespace wmib
             {
                 if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
                 {
-                    if (chan.stat)
+                    if (chan.statistics_enabled)
                     {
                         irc._SlowQueue.DeliverMessage(messages.get("StatE1", chan.Language), chan.Name);
                         return;
                     }
                     else
                     {
-                        chan.stat = true;
+                        chan.statistics_enabled = true;
                         chan.SaveConfig();
                         irc._SlowQueue.DeliverMessage(messages.get("Stat-on", chan.Language), chan.Name);
                         return;
@@ -1386,6 +1387,29 @@ namespace wmib
             irc.Connect();
         }
 
+        public static void Kill()
+        {
+            try
+            {
+                Statistics.db.Abort();
+            }
+            catch (Exception) { }
+            try
+            {
+                ib.Abort();
+            }
+            catch (Exception) { }
+            try
+            {
+                rc.Abort();
+            }
+            catch (Exception) { }
+            irc.disabled = true;
+            exit = true;
+            irc.wd.Close();
+            irc.rd.Close();
+        }
+
         /// <summary>
         /// Called when someone post a message to server
         /// </summary>
@@ -1401,9 +1425,9 @@ namespace wmib
             if (curr != null)
             {
                 Logs.chanLog(message, curr, nick, host);
-                if (curr.stat)
+                if (curr.statistics_enabled)
                 {
-                    curr.info.Stat(nick, message);
+                    curr.info.Stat(nick, message, host);
                 }
                 if (curr.ignore_unknown)
                 {

@@ -72,7 +72,7 @@ namespace wmib
 
             public bool logs_no_write_data = false;
 
-            public bool stat = false;
+            public bool statistics_enabled = false;
 
             /// <summary>
             /// Completion
@@ -159,7 +159,7 @@ namespace wmib
                 last_msg = last_msg.AddSeconds((-1) * respond_wait);
                 bool.TryParse(parseConfig(conf, "feed"), out Feed);
                 bool.TryParse(parseConfig(conf, "infobot-sorted-list"), out infobot_sorted);
-                bool.TryParse(parseConfig(conf, "statistics"), out stat);
+                bool.TryParse(parseConfig(conf, "statistics"), out statistics_enabled);
                 bool.TryParse(parseConfig(conf, "ignore-unknown"), out ignore_unknown);
                 if (parseConfig(conf, "infodb") != "")
                 {
@@ -205,7 +205,7 @@ namespace wmib
                 AddConfig("infobot-help", infobot_help.ToString());
                 AddConfig("suppress-warnings", suppress_warnings.ToString());
                 AddConfig("respond_wait", respond_wait.ToString());
-                AddConfig("statistics", stat.ToString());
+                AddConfig("statistics", statistics_enabled.ToString());
                 AddConfig("keysdb", keydb);
                 AddConfig("infobot-auto-complete", infobot_auto_complete.ToString());
                 AddConfig("sharedinfo", shared);
@@ -470,7 +470,7 @@ namespace wmib
         /// <summary>
         /// Version
         /// </summary>
-        public static string version = "wikimedia bot v. 1.8.6.2";
+        public static string version = "wikimedia bot v. 1.8.8.0";
 
         /// <summary>
         /// Separator

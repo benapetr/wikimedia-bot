@@ -74,6 +74,8 @@ namespace wmib
         
         private bool writable = true;
 
+        public static bool terminated = false;
+
         /// <summary>
         /// feed
         /// </summary>
@@ -244,32 +246,35 @@ namespace wmib
         /// </summary>
         public static void Connect()
         {
-            try
+            if (!terminated)
             {
-                Random rand = new Random();
-                int random_number = rand.Next(10000);
-                nick = "wm-bot" + System.DateTime.Now.ToString().Replace("/", "").Replace(":", "").Replace("\\", "").Replace(".", "").Replace(" ", "") + random_number.ToString();
-                Program.Log("Connecting to wikimedia recent changes feed as " + nick + ", hold on");
-                stream = new System.Net.Sockets.TcpClient("irc.wikimedia.org", 6667).GetStream();
-                WD = new StreamWriter(stream);
-                RD = new StreamReader(stream, System.Text.Encoding.UTF8);
-                Thread pinger = new Thread(Pong);
-                WD.WriteLine("USER " + "wm-bot" + " 8 * :" + "wm-bot");
-                WD.WriteLine("NICK " + nick);
-                WD.Flush();
-                pinger.Start();
-                foreach (string b in channels)
+                try
                 {
-                    System.Threading.Thread.Sleep(800);
-                    WD.WriteLine("JOIN " + b);
+                    Random rand = new Random();
+                    int random_number = rand.Next(10000);
+                    nick = "wm-bot" + System.DateTime.Now.ToString().Replace("/", "").Replace(":", "").Replace("\\", "").Replace(".", "").Replace(" ", "") + random_number.ToString();
+                    Program.Log("Connecting to wikimedia recent changes feed as " + nick + ", hold on");
+                    stream = new System.Net.Sockets.TcpClient("irc.wikimedia.org", 6667).GetStream();
+                    WD = new StreamWriter(stream);
+                    RD = new StreamReader(stream, System.Text.Encoding.UTF8);
+                    Thread pinger = new Thread(Pong);
+                    WD.WriteLine("USER " + "wm-bot" + " 8 * :" + "wm-bot");
+                    WD.WriteLine("NICK " + nick);
                     WD.Flush();
+                    pinger.Start();
+                    foreach (string b in channels)
+                    {
+                        System.Threading.Thread.Sleep(800);
+                        WD.WriteLine("JOIN " + b);
+                        WD.Flush();
+                    }
+                    Program.Log("Connected to feed - OK");
+                    Loaded = true;
                 }
-                Program.Log("Connected to feed - OK");
-                Loaded = true;
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("error in Feed.Connect() call");
+                catch (Exception)
+                {
+                    Console.WriteLine("error in Feed.Connect() call");
+                }
             }
         }
 
@@ -588,6 +593,10 @@ namespace wmib
                             Thread.Sleep(10);
                         }
                         Thread.Sleep(100);
+                    }
+                    catch (ThreadAbortException)
+                    {
+                        return;
                     }
                     catch (IOException)
                     {

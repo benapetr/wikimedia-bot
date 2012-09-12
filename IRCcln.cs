@@ -13,7 +13,7 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading;
 
 
 namespace wmib
@@ -93,76 +93,83 @@ namespace wmib
 
             public void Run()
             {
-                while (true)
-                {
-                    if (messages.Count > 0)
+                    while (true)
                     {
-                        lock (messages)
+                        try
                         {
-                            newmessages.AddRange(messages);
-                            messages.Clear();
-                        }
-                    }
-                    if (newmessages.Count > 0)
-                    {
-                        List<Message> Processed = new List<Message>();
-                        priority highest = priority.low;
-                        while (newmessages.Count > 0)
-                        {
-                            // we need to get all messages that have been scheduled to be send
-                            lock (messages)
+                            if (messages.Count > 0)
                             {
-                                if (messages.Count > 0)
+                                lock (messages)
                                 {
                                     newmessages.AddRange(messages);
                                     messages.Clear();
                                 }
                             }
-                            highest = priority.low;
-                            // we need to check the priority we need to handle first
-                            foreach (Message message in newmessages)
+                            if (newmessages.Count > 0)
                             {
-                                if (message._Priority > highest)
+                                List<Message> Processed = new List<Message>();
+                                priority highest = priority.low;
+                                while (newmessages.Count > 0)
                                 {
-                                    highest = message._Priority;
-                                    if (message._Priority == priority.high)
+                                    // we need to get all messages that have been scheduled to be send
+                                    lock (messages)
                                     {
-                                        break;
+                                        if (messages.Count > 0)
+                                        {
+                                            newmessages.AddRange(messages);
+                                            messages.Clear();
+                                        }
+                                    }
+                                    highest = priority.low;
+                                    // we need to check the priority we need to handle first
+                                    foreach (Message message in newmessages)
+                                    {
+                                        if (message._Priority > highest)
+                                        {
+                                            highest = message._Priority;
+                                            if (message._Priority == priority.high)
+                                            {
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    // send highest priority first
+                                    foreach (Message message in newmessages)
+                                    {
+                                        if (message._Priority >= highest)
+                                        {
+                                            Processed.Add(message);
+                                            Parent.Message(message.message, message.channel);
+                                            System.Threading.Thread.Sleep(1000);
+                                            if (highest != priority.high)
+                                            {
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    foreach (Message message in Processed)
+                                    {
+                                        if (newmessages.Contains(message))
+                                        {
+                                            newmessages.Remove(message);
+                                        }
                                     }
                                 }
                             }
-                            // send highest priority first
-                            foreach (Message message in newmessages)
-                            {
-                                if (message._Priority >= highest)
-                                {
-                                    Processed.Add(message);
-                                    Parent.Message(message.message, message.channel);
-                                    System.Threading.Thread.Sleep(1000);
-                                    if (highest != priority.high)
-                                    {
-                                        break;
-                                    }
-                                }
-                            }
-                            foreach (Message message in Processed)
-                            {
-                                if (newmessages.Contains(message))
-                                {
-                                    newmessages.Remove(message);
-                                }
-                            }
+                            newmessages.Clear();
                         }
+                        catch (ThreadAbortException)
+                        {
+                            return;
+                        }
+                        System.Threading.Thread.Sleep(200);
                     }
-                    newmessages.Clear();
-                    System.Threading.Thread.Sleep(200);
-                }
             }
         }
 
         public IRC(string _server, string _nick, string _ident, string _username)
         {
-            server= _server;
+            server = _server;
             password = "";
             _SlowQueue = new SlowQueue(this);
             username = _username;
@@ -274,12 +281,13 @@ namespace wmib
                 if (!config.serverIO)
                 {
                     data = new System.Net.Sockets.TcpClient(server, 6667).GetStream();
-                } else
+                }
+                else
                 {
                     data = new System.Net.Sockets.TcpClient("127.0.0.1", 6667).GetStream();
                     Program.Log("System is using external bouncer");
                 }
-				disabled = false;
+                disabled = false;
                 rd = new System.IO.StreamReader(data, System.Text.Encoding.UTF8);
                 wd = new System.IO.StreamWriter(data);
 
@@ -350,7 +358,7 @@ namespace wmib
                 {
                     try
                     {
-                        while (!rd.EndOfStream)
+                        while (!rd.EndOfStream && !core.exit)
                         {
                             text = rd.ReadLine();
                             if (config.serverIO)
@@ -387,14 +395,14 @@ namespace wmib
                                 }
                                 else
                                 {
-									string command = "";
-									string[] part;
-									if (text.Contains(" :"))
-									{
-										part = text.Split (':');
+                                    string command = "";
+                                    string[] part;
+                                    if (text.Contains(" :"))
+                                    {
+                                        part = text.Split(':');
                                         command = text.Substring(1);
                                         command = command.Substring(0, command.IndexOf(" :"));
-									}
+                                    }
                                     if (command.Contains("PRIVMSG"))
                                     {
                                         string info = text.Substring(1, text.IndexOf(" :", 1) - 1);
@@ -458,33 +466,33 @@ namespace wmib
                                     {
                                         wd.WriteLine("PONG " + text.Substring(text.IndexOf("PING ") + 5));
                                         wd.Flush();
-										Console.WriteLine (command);
+                                        Console.WriteLine(command);
                                     }
-									if (command.Contains ("KICK"))
-									{
-										string user;
-										string _channel;
-										string temp = command.Substring (command.IndexOf ("KICK"));
-										string[] parts = temp.Split (' ');
-										if (parts.Length > 1)
-										{
-											_channel = parts[1];
-											user = parts[2];
-											if (user == nickname)
-											{
-												config.channel chan = core.getChannel (_channel);
-												if (chan != null)
-												{
-													if (config.channels.Contains (chan))
-													{
-														config.channels.Remove (chan);
-														Program.Log( "I was kicked from " + parts[1] );
-														config.Save ();
-													}
-												}
-											}
-										}
-									}
+                                    if (command.Contains("KICK"))
+                                    {
+                                        string user;
+                                        string _channel;
+                                        string temp = command.Substring(command.IndexOf("KICK"));
+                                        string[] parts = temp.Split(' ');
+                                        if (parts.Length > 1)
+                                        {
+                                            _channel = parts[1];
+                                            user = parts[2];
+                                            if (user == nickname)
+                                            {
+                                                config.channel chan = core.getChannel(_channel);
+                                                if (chan != null)
+                                                {
+                                                    if (config.channels.Contains(chan))
+                                                    {
+                                                        config.channels.Remove(chan);
+                                                        Program.Log("I was kicked from " + parts[1]);
+                                                        config.Save();
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                             System.Threading.Thread.Sleep(50);

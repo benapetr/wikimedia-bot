@@ -37,50 +37,61 @@ namespace wmib
             }
         }
 
+        public static int WriteData()
+        {
+            if (jobs.Count > 0)
+            {
+                List<Job> line = new List<Job>();
+                List<Job> tr = new List<Job>();
+                CheckLock();
+                Locked = true;
+                lock (jobs)
+                {
+                    line.AddRange(jobs);
+                    jobs.Clear();
+                }
+                Locked = false;
+                // clean all logs that can't be written to disk
+                foreach (Job curr in line)
+                {
+                    if (curr.ch.logs_no_write_data)
+                    {
+                        lock (jobs)
+                        {
+                            Locked = true;
+                            jobs.Add(curr);
+                            tr.Add(curr);
+                            Locked = false;
+                        }
+                    }
+                }
+                // remove them from queue
+                foreach (Job curr in tr)
+                {
+                    line.Remove(curr);
+                }
+                // write to disk
+                foreach (Job curr in line)
+                {
+                    writeLog(curr.message, curr.ch, curr.time);
+                }
+            }
+            return 2;
+        }
+
         public static void ProcessJobs()
         {
             while (true)
             {
                 try
                 {
-                    if (jobs.Count > 0)
-                    {
-                        List<Job> line = new List<Job>();
-                        List<Job> tr = new List<Job>();
-                        CheckLock();
-                        Locked = true;
-                        lock (jobs)
-                        {
-                            line.AddRange(jobs);
-                            jobs.Clear();
-                        }
-                        Locked = false;
-                        // clean all logs that can't be written to disk
-                        foreach (Job curr in line)
-                        {
-                            if (curr.ch.logs_no_write_data)
-                            {
-                                lock (jobs)
-                                {
-                                    Locked = true;
-                                    jobs.Add(curr);
-                                    tr.Add(curr);
-                                    Locked = false;
-                                }
-                            }
-                        }
-                        // remove them from queue
-                        foreach (Job curr in tr)
-                        {
-                            line.Remove(curr);
-                        }
-                        // write to disk
-                        foreach (Job curr in line)
-                        {
-                            writeLog(curr.message, curr.ch, curr.time);
-                        }
-                    }
+                    WriteData();
                     Thread.Sleep(20000);
+                }
+                catch (ThreadAbortException)
+                {
+                    WriteData();
+                    break;
                 }
                 catch (Exception fail)
                 {

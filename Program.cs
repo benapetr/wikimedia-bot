@@ -16,9 +16,22 @@ namespace wmib
 {
     internal class Program
     {
-        public static bool Log(string msg)
+        public static bool Log(string msg, bool warn = false)
         {
-            Console.WriteLine("LOG [" + DateTime.Now.ToShortTimeString() + "]: " + msg);
+            Console.ForegroundColor = ConsoleColor.Red;
+            if (warn)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.Write("LOG (WARNING)");
+            }
+            else
+            {
+                Console.Write("LOG ");
+            }
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("[" + DateTime.Now.ToShortTimeString() + "]");
+            Console.ResetColor();
+            Console.WriteLine(": " + msg);
             return false;
         }
 
@@ -34,10 +47,28 @@ namespace wmib
             return false;
         }
 
+        protected static void myHandler(object sender, ConsoleCancelEventArgs args)
+        {
+            Log("SIGINT");
+            Log("Shutting down");
+            try
+            {
+                RecentChanges.terminated = true;
+                core.Kill();
+            }
+            catch (Exception)
+            {
+                core.irc.disabled = true;
+                core.exit = true;
+            }
+            Log("Terminated");
+        }
+
         private static void Main(string[] args)
         {
             Log("Loading...");
 			config.UpTime = System.DateTime.Now;
+            Console.CancelKeyPress += new ConsoleCancelEventHandler(myHandler);
 			messages.data.Add ("cs", new messages.container("cs"));
 			messages.data.Add ("en", new messages.container("en"));
             messages.data.Add ("zh", new messages.container("zh"));
