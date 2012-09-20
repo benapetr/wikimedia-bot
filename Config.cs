@@ -26,6 +26,9 @@ namespace wmib
             public string Name;
             public string Language;
 
+            public List<User> ul = new List<User>();
+            public bool FreshList = false;
+
             public bool Logged;
 
             public Statistics info;
@@ -35,6 +38,7 @@ namespace wmib
             /// </summary>
             public string Log;
 
+            public bool Seen = false;
             public bool Feed;
             public bool Info;
 
@@ -146,6 +150,7 @@ namespace wmib
                 }
                 bool.TryParse(parseConfig(conf, "logged"), out Logged);
 				bool.TryParse(parseConfig(conf, "suppress-warnings"), out suppress_warnings);
+                bool.TryParse(parseConfig(conf, "seen"), out Seen);
                 bool.TryParse(parseConfig(conf, "respond_message"), out respond_message);
                 int _temp_respond_wait;
                 if ( int.TryParse(parseConfig(conf, "respond_wait"), out _temp_respond_wait) )
@@ -218,6 +223,7 @@ namespace wmib
                     }
                     conf = conf + ";";
                 }
+                AddConfig("seen", Seen.ToString());
                 if (!(Infobot_IgnoredNames.Count < 1))
                 {
                     conf = conf + "\ninfobot_ignores=";
@@ -237,6 +243,19 @@ namespace wmib
                 {
                     core.recoverFile(variables.config + "/" + Name + ".setting", Name);
                 }
+            }
+
+            public bool containsUser(string name)
+            {
+                name = name.ToUpper();
+                foreach (User us in ul)
+                {
+                    if (name == us.Nick.ToUpper())
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
 
             public int Shares()
@@ -333,12 +352,15 @@ namespace wmib
         /// <returns></returns>
         public static string parseConfig(string text, string name)
         {
-            if (text.Contains(name))
+            if (text.Contains(name + "="))
             {
                 string x = text;
                 x = text.Substring(text.IndexOf(name + "=")).Replace(name + "=", "");
-                x = x.Substring(0, x.IndexOf(";"));
-                return x;
+                if (x.Contains(";"))
+                {
+                    x = x.Substring(0, x.IndexOf(";"));
+                    return x;
+                }
             }
             return "";
         }
@@ -371,7 +393,7 @@ namespace wmib
                 }
                 foreach (string x in parseConfig(text, "channels").Replace("\n", "").Split(','))
                 {
-                    string name = x.Replace(" ", "");
+                    string name = x.Replace(" ", "").Replace("\n", "");
                     if (name != "")
                     {
                         channels.Add(new channel(name));
@@ -470,7 +492,7 @@ namespace wmib
         /// <summary>
         /// Version
         /// </summary>
-        public static string version = "wikimedia bot v. 1.8.8.0";
+        public static string version = "wikimedia bot v. 1.8.20.12";
 
         /// <summary>
         /// Separator

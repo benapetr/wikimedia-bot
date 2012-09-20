@@ -129,7 +129,7 @@ namespace wmib
         /// <returns></returns>
         public static string encode(string text)
         {
-            return text.Replace(config.separator, "<separator>");
+            return text;
         }
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace wmib
         /// <returns></returns>
         public static string decode(string text)
         {
-            return text.Replace("<separator>", config.separator);
+            return text;
         }
 
         /// <summary>
@@ -404,15 +404,20 @@ namespace wmib
         /// <param name="user">User</param>
         /// <param name="host">Host</param>
         /// <param name="message">Message</param>
-        public static void partChannel(config.channel chan, string user, string host, string message)
+        public static void partChannel(config.channel chan, string user, string host, string message, string origin = "NULL")
         {
             try
             {
+                if (origin == "NULL")
+                {
+                    origin = chan.Name;
+                }
                 if (message == "@drop")
                 {
                     if (chan.Users.isApproved(user, host, "admin"))
                     {
-                        irc.wd.WriteLine("PART " + chan.Name);
+                        irc.wd.WriteLine("PART " + chan.Name + " :" + "dropped by " + user + " from " + origin);
+                        Program.Log("Dropped " + chan.Name  + " dropped by " + user + " from " + origin);
                         Thread.Sleep(100);
                         chan.Feed = false;
                         irc.wd.Flush();
@@ -427,11 +432,15 @@ namespace wmib
                         { }
                         try
                         {
-                            File.Delete(variables.config + "/" + chan.Name + ".setting");
+                            File.Delete(variables.config + Path.DirectorySeparatorChar + chan.Name + ".setting");
                             File.Delete(chan.Users.File);
-                            if (File.Exists(variables.config + "/" + chan.Name + ".list"))
+                            if (File.Exists(variables.config + Path.DirectorySeparatorChar + chan.Name + ".list"))
                             {
-                                File.Delete(variables.config + "/" + chan.Name + ".list");
+                                File.Delete(variables.config + Path.DirectorySeparatorChar + chan.Name + ".list");
+                            }
+                            if (File.Exists(variables.config + Path.DirectorySeparatorChar + chan.Name + ".statistics"))
+                            {
+                                File.Delete(variables.config + Path.DirectorySeparatorChar + chan.Name + ".statistics");
                             }
                         }
                         catch (Exception) { }
@@ -439,14 +448,15 @@ namespace wmib
                         config.Save();
                         return;
                     }
-                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), origin);
                     return;
                 }
                 if (message == "@part")
                 {
                     if (chan.Users.isApproved(user, host, "admin"))
                     {
-                        irc.wd.WriteLine("PART " + chan.Name);
+                        irc.wd.WriteLine("PART " + chan.Name + " :" + "removed by " + user + " from " + origin);
+                        Program.Log("Removed " + chan.Name + " removed by " + user + " from " + origin);
                         chan.Feed = false;
                         Thread.Sleep(100);
                         irc.wd.Flush();
@@ -454,7 +464,7 @@ namespace wmib
                         config.Save();
                         return;
                     }
-                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), origin);
                     return;
                 }
             }
@@ -473,10 +483,10 @@ namespace wmib
         /// <param name="message">Message</param>
         public static void admin(config.channel chan, string user, string host, string message)
         {
-            User invoker = new User(user, host);
+            User invoker = new User(user, host, "");
             if (message == "@reload")
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     chan.LoadConfig();
                     chan.Keys = new infobot_core(chan.keydb, chan.Name);
@@ -488,7 +498,7 @@ namespace wmib
             }
             if (message == "@refresh")
             {
-                if (chan.Users.isApproved(invoker.nick, host, "flushcache"))
+                if (chan.Users.isApproved(invoker.Nick, host, "flushcache"))
                 {
                     irc._Queue.Abort();
                     irc._SlowQueue.newmessages.Clear();
@@ -505,6 +515,30 @@ namespace wmib
                 return;
             }
 
+            if (message.StartsWith("@seen "))
+            {
+                if (chan.Seen)
+                {
+                    string parameter = "";
+                    if (message.Contains(" "))
+                    {
+                        parameter = message.Substring(message.IndexOf(" ") + 1);
+                    }
+                    if (parameter != "")
+                    {
+                        Seen.RetrieveStatus(parameter, chan, invoker.Nick);
+                        return;
+                    }
+                }
+                else
+                {
+                    if (!chan.suppress_warnings)
+                    {
+                        irc._SlowQueue.DeliverMessage(messages.get("seen-e", chan.Language), chan.Name, IRC.priority.low);
+                    }
+                }
+            }
+
             if (message == ("@info"))
             {
                 irc._SlowQueue.DeliverMessage(config.url + config.DumpDir + "/" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm", chan.Name);
@@ -513,7 +547,7 @@ namespace wmib
 
             if (message == "@recentchanges-on")
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "recentchanges-manage"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "recentchanges-manage"))
                 {
                     if (chan.Feed)
                     {
@@ -538,7 +572,7 @@ namespace wmib
 
             if (message.StartsWith("@recentchanges+"))
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "recentchanges-manage"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "recentchanges-manage"))
                 {
                     if (chan.Feed)
                     {
@@ -572,7 +606,7 @@ namespace wmib
 
             if (message.StartsWith("@recentchanges- "))
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (chan.Feed)
                     {
@@ -606,7 +640,7 @@ namespace wmib
 
             if (message.StartsWith("@RC+ "))
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "trust"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
                 {
                     if (chan.Feed)
                     {
@@ -636,7 +670,7 @@ namespace wmib
 
             if (message.StartsWith("@language"))
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     string parameter = "";
                     if (message.Contains(" "))
@@ -695,7 +729,7 @@ namespace wmib
 
             if (message.StartsWith("@RC-"))
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "trust"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
                 {
                     if (chan.Feed)
                     {
@@ -725,7 +759,7 @@ namespace wmib
 
             if (message == "@suppress-off")
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (!chan.suppress)
                     {
@@ -750,7 +784,7 @@ namespace wmib
 
             if (message == "@suppress-on")
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (chan.suppress)
                     {
@@ -774,7 +808,7 @@ namespace wmib
 
             if (message == "@recentchanges-off")
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (!chan.Feed)
                     {
@@ -798,7 +832,7 @@ namespace wmib
 
             if (message == "@statistics-off")
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (!chan.statistics_enabled)
                     {
@@ -822,7 +856,7 @@ namespace wmib
 
             if (message == "@statistics-reset")
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     chan.info.Delete();
                     irc._SlowQueue.DeliverMessage(messages.get("Statdt", chan.Language), chan.Name);
@@ -837,7 +871,7 @@ namespace wmib
 
             if (message == "@statistics-on")
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (chan.statistics_enabled)
                     {
@@ -861,7 +895,7 @@ namespace wmib
 
             if (message == "@logon")
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (chan.Logged)
                     {
@@ -895,9 +929,54 @@ namespace wmib
                 return;
             }
 
+            if (message == "@seen-off")
+            {
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                {
+                    if (!chan.Seen)
+                    {
+                        irc._SlowQueue.DeliverMessage(messages.get("seen-e2", chan.Language), chan.Name);
+                        return;
+                    }
+                    else
+                    {
+                        irc._SlowQueue.DeliverMessage(messages.get("seen-off", chan.Language), chan.Name, IRC.priority.high);
+                        chan.Seen = false;
+                        chan.SaveConfig();
+                        return;
+                    }
+                }
+                if (!chan.suppress_warnings)
+                {
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                }
+                return;
+            }
+
+            if (message == "@seen-on")
+            {
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                {
+                    if (chan.Seen)
+                    {
+                        irc._SlowQueue.DeliverMessage(messages.get("seen-oe", chan.Language), chan.Name);
+                        return;
+                    }
+                    chan.Seen = true;
+                    chan.SaveConfig();
+                    irc._SlowQueue.DeliverMessage(messages.get("seen-on", chan.Language), chan.Name, IRC.priority.high);
+                    return;
+                }
+                if (!chan.suppress_warnings)
+                {
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                }
+                return;
+            }
+
             if (message == "@logoff")
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (!chan.Logged)
                     {
@@ -932,7 +1011,7 @@ namespace wmib
 
             if (message == "@infobot-off")
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (!chan.Info)
                     {
@@ -956,7 +1035,7 @@ namespace wmib
 
             if (message == "@infobot-on")
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (chan.Info)
                     {
@@ -977,7 +1056,7 @@ namespace wmib
 
             if (message == "@infobot-share-on")
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (chan.shared == "local")
                     {
@@ -1006,7 +1085,7 @@ namespace wmib
 
             if (message.StartsWith("@configure "))
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     string text = message.Substring("@configure ".Length);
                     if (text == "")
@@ -1138,7 +1217,7 @@ namespace wmib
 
             if (message.StartsWith("@infobot-share-trust+ "))
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (chan.shared != "local")
                     {
@@ -1184,7 +1263,7 @@ namespace wmib
 
             if (message.StartsWith("@infobot-ignore- "))
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "trust"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
                 {
                     string item = message.Substring("@infobot-ignore+ ".Length);
                     if (item != "")
@@ -1211,7 +1290,7 @@ namespace wmib
 
             if (message.StartsWith("@infobot-ignore+ "))
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "trust"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
                 {
                     string item = message.Substring("@infobot-ignore+ ".Length);
                     if (item != "")
@@ -1238,7 +1317,7 @@ namespace wmib
 
             if (message.StartsWith("@join "))
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "reconnect"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "reconnect"))
                 {
                     config.channel channel = core.getChannel(message.Substring("@join ".Length));
                     irc.Join(channel);
@@ -1247,7 +1326,7 @@ namespace wmib
 
             if (message.StartsWith("@infobot-share-trust- "))
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (chan.shared != "local")
                     {
@@ -1286,9 +1365,40 @@ namespace wmib
                 return;
             }
 
+            if (message.StartsWith("@infobot-detail "))
+            {
+                    if ((message.Length) <= "@infobot-detail ".Length)
+                    {
+                        irc._SlowQueue.DeliverMessage(messages.get("db6", chan.Language), chan.Name);
+                        return;
+                    }
+                    if (chan.Info)
+                    {
+                        if (chan.shared == "local" || chan.shared == "")
+                        {
+                            chan.Keys.Info(message.Substring(16), chan);
+                            return;
+                        }
+                        if (chan.shared != "")
+                        {
+                            config.channel db = core.getChannel(chan.shared);
+                            if (db == null)
+                            {
+                                irc._SlowQueue.DeliverMessage("Error, null pointer to shared channel", chan.Name, IRC.priority.low);
+                                return;
+                            }
+                            db.Keys.Info(message.Substring(16), chan);
+                            return;
+                        }
+                        return;
+                    }
+                    irc._SlowQueue.DeliverMessage("Infobot is not enabled on this channel", chan.Name, IRC.priority.low);
+                    return;
+            }
+
             if (message.StartsWith("@infobot-link "))
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (chan.shared == "local")
                     {
@@ -1331,7 +1441,7 @@ namespace wmib
 
             if (message == "@infobot-share-off")
             {
-                if (chan.Users.isApproved(invoker.nick, invoker.host, "admin"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (chan.shared == "")
                     {
@@ -1364,15 +1474,20 @@ namespace wmib
 
             if (message == "@commands")
             {
-                irc._SlowQueue.DeliverMessage("Commands: channellist, trusted, trustadd, trustdel, info, statistics-off, statistics-on, statistics-reset, configure, infobot-link, infobot-share-trust+, infobot-share-trust-, infobot-share-off, infobot-share-on, infobot-off, refresh, infobot-on, drop, whoami, add, reload, suppress-off, suppress-on, help, RC-, recentchanges-on, language, infobot-ignore+, infobot-ignore-, recentchanges-off, logon, logoff, recentchanges-, recentchanges+, RC+", chan.Name);
+                irc._SlowQueue.DeliverMessage("Commands: channellist, trusted, trustadd, trustdel, info, statistics-off, statistics-on, statistics-reset, configure, infobot-link, infobot-share-trust+, infobot-share-trust-, infobot-share-off, infobot-share-on, infobot-detail, infobot-off, refresh, infobot-on, drop, whoami, add, reload, suppress-off, suppress-on, help, RC-, recentchanges-on, language, infobot-ignore+, infobot-ignore-, recentchanges-off, logon, logoff, recentchanges-, recentchanges+, RC+", chan.Name);
                 return;
             }
         }
 
         public static void Connect()
         {
+            Program.Log("Loading HTML module");
             dumphtmt = new Thread(HtmlDump.Start);
             dumphtmt.Start();
+            Program.Log("Loading seen module");
+            Seen.Load();
+            Seen.IO = new Thread(Seen.SaveData);
+            Seen.IO.Start();
             Program.Log("Loading statistics module");
             Statistics.db = new Thread(Statistics.DB);
             Statistics.db.Start();
@@ -1380,6 +1495,8 @@ namespace wmib
             rc = new Thread(RecentChanges.Start);
             rc.Start();
             Program.Log("Loading infobot module");
+            infobot_core.threadsave = new Thread(infobot_core.StoreData);
+            infobot_core.threadsave.Start();
             ib = new Thread(infobot_core.Initialise);
             ib.Start();
             Program.Log("Modules loaded");
@@ -1499,7 +1616,10 @@ namespace wmib
                 case "trustdel":
                 case "refresh":
                 case "infobot-on":
+                case "seen-on":
+                case "seen":
                 case "infobot-off":
+                case "seen-off":
                 case "channellist":
                 case "trusted":
                 case "trustadd":
@@ -1508,6 +1628,7 @@ namespace wmib
                 case "language":
                 case "whoami":
                 case "suppress-on":
+                case "infobot-detail":
                 case "configure":
                 case "add":
                 case "reload":

@@ -18,16 +18,25 @@ using System.Text.RegularExpressions;
 
 namespace wmib
 {
-    public class User
+    public class User : IComparable
     {
-        public string nick;
-        public string name;
-        public string host;
-        public List<string> channels;
-        public User(string _nick, string _host)
+        public string Host;
+        public string Ident;
+        public string Nick;
+        public User(string _Nick, string host, string ident)
         {
-            nick = _nick;
-            host = _host;
+            Nick = _Nick;
+            Ident = ident;
+            Host = host;
+        }
+
+        public int CompareTo(object obj)
+        {
+            if (obj is User)
+            {
+                return this.Nick.CompareTo((obj as User).Nick);
+            }
+            return 0;
         }
     }
 
@@ -118,6 +127,8 @@ namespace wmib
                     data.Add(user);
                 }
             }
+            host = host.Replace("-", "_");
+            host = host.Replace("pdpc.active.", "");
             if (host.StartsWith("wikimedia/"))
             {
                 host = host.Substring("wikipedia/".Length);
@@ -136,8 +147,6 @@ namespace wmib
             user.messages++;
             changed = true;
             Stored = false;
-            data.Sort();
-            data.Reverse();
         }
 
         public void Delete()

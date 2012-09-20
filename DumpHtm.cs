@@ -133,6 +133,20 @@ namespace wmib
             return "<tr id=\"" + Encode(name) + "\"><td>" + Encode(name) + "</td><td>" + Encode(value) + "</td></tr>\n";
         }
 
+        public static string getSize()
+        {
+            string[] a = Directory.GetFiles("configuration");
+            // 2
+            // Calculate total bytes of all files in a loop.
+            long b = 0;
+            foreach (string name in a)
+            {
+                FileInfo info = new FileInfo(name);
+                b += info.Length;
+            }
+            return b.ToString();
+        }
+
         /// <summary>
         /// Create stat for bot
         /// </summary>
@@ -148,10 +162,12 @@ namespace wmib
                     foreach (config.channel chan in config.channels)
                     {
                         text = text + "<tr>";
-                        text = text + "<td><a href=\"" + System.Web.HttpUtility.UrlEncode( chan.Name ) + ".htm\">" + chan.Name + "</a></td><td>infobot: " + chan.Info.ToString() + ", recentchanges: " + chan.Feed.ToString() + ", logs: " + chan.Logged.ToString() + ", suppress: " + chan.suppress.ToString() + "</td></tr>\n";
-                    }                 
+                        text = text + "<td><a href=\"" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm\">" + chan.Name + "</a></td><td>infobot: " + chan.Info.ToString() + ", recentchanges: " + chan.Feed.ToString() + ", logs: " + chan.Logged.ToString() + ", suppress: " + chan.suppress.ToString() + ", seen: " + chan.Seen.ToString() + "</td></tr>\n";
+                    }
                 }
-                text += "</table>Uptime: " + core.getUptime();
+
+
+                text += "</table>Uptime: " + core.getUptime() + " Memory usage: " + (System.Diagnostics.Process.GetCurrentProcess().VirtualMemorySize64 / 1024).ToString() + "kb Database size: " + getSize();
                 text += "</body></html>";
                 File.WriteAllText(config.DumpDir + "/systemdata.htm", text);
             }
@@ -224,43 +240,45 @@ namespace wmib
                 }
                 if (Channel.statistics_enabled)
                 {
-                    text += "\n<h4>Most active users :)</h4>\n<table class=\"infobot\" border=1>";
-                    text += "<tr><th>Nick</th><th>Messages (average / day)</th><th>Number of posted messages</th><th>Active since</th></tr>";
+                    text += "\n<br>\n<h4>Most active users :)</h4>\n<br>\n\n<table class=\"infobot\" width=100% border=1>";
+                    text += "<tr><td>N.</td><th>Nick</th><th>Messages (average / day)</th><th>Number of posted messages</th><th>Active since</th></tr>";
                     int id = 0;
                     int totalms = 0;
                     DateTime startime = DateTime.Now;
                     lock (Channel.info.data)
                     {
+                        Channel.info.data.Sort();
+                        Channel.info.data.Reverse();
                         foreach (Statistics.list user in Channel.info.data)
                         {
+                            id++;
+                            totalms += user.messages;
                             if (id > 100)
                             {
-                                break;
+                                continue;
                             }
-                            id++;
                             if (startime > user.logging_since)
                             {
                                 startime = user.logging_since;
                             }
                             System.TimeSpan uptime = System.DateTime.Now - user.logging_since;
                             float average = user.messages;
-                            totalms += user.messages;
-                            average = ((float)user.messages / (float)(uptime.Days+1));
+                            average = ((float)user.messages / (float)(uptime.Days + 1));
                             if (user.URL != "")
                             {
-                                text += "<tr><td><a target=\"_blank\" href=\""+ user.URL +"\">" + user.user + "</a></td><td>" + average.ToString() + "</td><td>" + user.messages.ToString() + "</td><td>" + user.logging_since.ToString() + "</td></tr>";
+                                text += "<tr><td>" + id.ToString() + ".</td><td><a target=\"_blank\" href=\"" + user.URL + "\">" + user.user + "</a></td><td>" + average.ToString() + "</td><td>" + user.messages.ToString() + "</td><td>" + user.logging_since.ToString() + "</td></tr>";
                             }
                             else
                             {
-                                text += "<tr><td>" + user.user + "</td><td>" + average.ToString() + "</td><td>" + user.messages.ToString() + "</td><td>" + user.logging_since.ToString() + "</td></tr>";
+                                text += "<tr><td>" + id.ToString() + ".</td><td>" + user.user + "</td><td>" + average.ToString() + "</td><td>" + user.messages.ToString() + "</td><td>" + user.logging_since.ToString() + "</td></tr>";
                             }
                             text += "  \n";
                         }
                     }
                     System.TimeSpan uptime_total = System.DateTime.Now - startime;
                     float average2 = totalms;
-                    average2 = (float)totalms / (1+uptime_total.Days);
-                    text += "<tr><th>Total:</th><th>" + average2.ToString() + "</th><th>" + totalms.ToString() + "</th><td>N/A</td></tr>";
+                    average2 = (float)totalms / (1 + uptime_total.Days);
+                    text += "<tr><td>N/A</td><th>Total:</th><th>" + average2.ToString() + "</th><th>" + totalms.ToString() + "</th><td>N/A</td></tr>";
                     text += "  \n";
                     text += "</table>";
                 }

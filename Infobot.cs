@@ -23,7 +23,9 @@ namespace wmib
         /// <summary>
         /// Data file
         /// </summary>
-        public string datafile = "";
+        public string datafile_raw = "";
+        public string datafile_xml = "";
+        public bool stored = true;
 
         // if we need to update dump
         public bool update = true;
@@ -33,7 +35,11 @@ namespace wmib
         /// </summary>
         public bool locked = false;
 
+        public static Thread threadsave;
+
         public static config.channel Reply;
+
+        public static DateTime NA = DateTime.MaxValue;
 
         public class item
         {
@@ -51,6 +57,12 @@ namespace wmib
 
             public string locked;
 
+            public DateTime created;
+
+            public int Displayed = 0;
+
+            public DateTime lasttime;
+
             /// <summary>
             /// Constructor
             /// </summary>
@@ -58,12 +70,29 @@ namespace wmib
             /// <param name="Text">Text of the key</param>
             /// <param name="User">User who created the key</param>
             /// <param name="Lock">If key is locked or not</param>
-            public item(string Key, string Text, string User, string Lock = "false")
+            public item(string Key, string Text, string User, string Lock = "false", string date = "", string time = "", int Number = 0)
             {
                 text = Text;
                 key = Key;
                 locked = Lock;
                 user = User;
+                Displayed = Number;
+                if (time == "")
+                {
+                    lasttime = NA;
+                }
+                else
+                {
+                    lasttime = DateTime.FromBinary(long.Parse(time));
+                }
+                if (date == "")
+                {
+                    created = DateTime.Now;
+                }
+                else
+                {
+                    created = DateTime.FromBinary(long.Parse(date));
+                }
             }
         }
 
@@ -124,21 +153,50 @@ namespace wmib
 
         private string search_key;
 
+        public static void StoreData()
+        {
+            try
+            {
+                while (true)
+                {
+                    SaveData();
+                    Thread.Sleep(2000);
+                }
+            } catch (ThreadAbortException)
+            {
+                SaveData();
+            }
+        }
+
+        public static void SaveData()
+        {
+            lock (config.channels)
+            {
+                foreach (config.channel x in config.channels)
+                {
+                    if (x.Keys.stored == false)
+                    {
+                        x.Keys.stored = true;
+                        x.Keys.Save();
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Load it
         /// </summary>
-        public void Load()
+        public bool Load()
         {
             text.Clear();
             // Checking if db isn't broken
-            core.recoverFile(datafile, Channel);
-            if (!File.Exists(datafile))
+            core.recoverFile(datafile_raw, Channel);
+            if (!File.Exists(datafile_raw))
             {
-                // Create db
-                File.WriteAllText(datafile, "");
+                return false;
             }
 
-            string[] db = File.ReadAllLines(datafile);
+            string[] db = File.ReadAllLines(datafile_raw);
             foreach (string x in db)
             {
                 if (x.Contains(config.separator))
@@ -150,14 +208,93 @@ namespace wmib
                     if (type == "key")
                     {
                         string Locked = info[3];
-                        text.Add(new item(name, value, "", Locked));
+                        text.Add(new item(name.Replace("<separator>", "|"), value.Replace("<separator>", "|"), "", Locked, NA.ToBinary().ToString(), NA.ToBinary().ToString()));
                     }
                     else
                     {
-                        Alias.Add(new staticalias(name, value));
+                        Alias.Add(new staticalias(name.Replace("<separator>", "|"), value.Replace("<separator>", "|")));
                     }
                 }
             }
+            return true;
+        }
+
+        public bool LoadData()
+        {
+            text.Clear();
+            // Checking if db isn't broken
+            core.recoverFile(datafile_xml, Channel);
+            if (Load())
+            {
+                Program.Log("Obsolete database found for " + Channel + " converting to new format");
+                Save();
+                File.Delete(datafile_raw);
+                return true;
+            }
+            if (!File.Exists(datafile_xml))
+            {
+                // Create db
+                Save();
+                return true;
+            }
+            try
+            {
+                System.Xml.XmlDocument data = new System.Xml.XmlDocument();
+                data.Load(datafile_xml);
+                lock (text)
+                {
+                    lock (Alias)
+                    {
+                        text.Clear();
+                        Alias.Clear();
+                        foreach (System.Xml.XmlNode xx in data.ChildNodes[0].ChildNodes)
+                        {
+                            if (xx.Name == "alias")
+                            {
+                                staticalias _Alias = new staticalias(xx.Attributes[0].Value, xx.Attributes[1].Value);
+                                Alias.Add(_Alias);
+                                continue;
+                            }
+                            item _key = new item(xx.Attributes[0].Value, xx.Attributes[1].Value, xx.Attributes[2].Value, "false", xx.Attributes[3].Value, xx.Attributes[4].Value, int.Parse(xx.Attributes[5].Value));
+                            text.Add(_key);
+                        }
+                    }
+                }
+            }
+            catch (Exception fail)
+            {
+                core.handleException(fail);
+            }
+            return true;
+        }
+
+        public void Info(string key, config.channel chan)
+        {
+            foreach (item CV in text)
+            {
+                if (CV.key == key)
+                {
+                    string created = "N/A";
+                    string last = "N/A";
+                    string name = "N/A";
+                    if (CV.lasttime != NA)
+                    { 
+                        TimeSpan span = DateTime.Now - CV.lasttime;
+                        last = CV.lasttime.ToString() + " (" + span.ToString() + " ago)";
+                    }
+                    if (CV.created != NA)
+                    {
+                        created = CV.created.ToString();
+                    }
+                    if (CV.user != "")
+                    {
+                        name = CV.user;
+                    }
+                    core.irc._SlowQueue.DeliverMessage(messages.get("infobot-data", chan.Language, new List<string> {key, name, created, CV.Displayed.ToString(), last }), chan.Name, IRC.priority.low);
+                    return;
+                }
+            }
+            core.irc._SlowQueue.DeliverMessage("There is no such a key", chan.Name, IRC.priority.low);
         }
 
         public List<item> SortedItem()
@@ -238,9 +375,10 @@ namespace wmib
         /// <param name="channel"></param>
         public infobot_core(string database, string channel)
         {
-            datafile = database;
+            datafile_xml = database + ".xml";
+            datafile_raw = database;
             Channel = channel;
-            Load();
+            LoadData();
         }
 
         public static string parseInfo(string key, string[] pars)
@@ -295,37 +433,73 @@ namespace wmib
             update = true;
             try
             {
-                core.backupData(datafile);
-                File.Copy(datafile, config.tempName(datafile), true);
-                if (!File.Exists(config.tempName(datafile)))
+                if (File.Exists(datafile_xml))
                 {
-                    Program.Log("Unable to create backup file for " + this.Channel);
+                    core.backupData(datafile_xml);
+                    if (!File.Exists(config.tempName(datafile_xml)))
+                    {
+                        Program.Log("Unable to create backup file for " + this.Channel);
+                    }
                 }
-                File.WriteAllText(datafile, "");
+                System.Xml.XmlDocument data = new System.Xml.XmlDocument();
+                System.Xml.XmlNode xmlnode = data.CreateElement("database");
+
                 lock (Alias)
                 {
                     foreach (staticalias key in Alias)
                     {
-                        File.AppendAllText(datafile,
-                                           key.Name + config.separator + key.Key + config.separator + "alias" + "\n");
+                        System.Xml.XmlAttribute name = data.CreateAttribute("alias_key_name");
+                        name.Value = key.Name;
+                        System.Xml.XmlAttribute kk = data.CreateAttribute("alias_key_key");
+                        kk.Value = key.Key;
+                        System.Xml.XmlAttribute created = data.CreateAttribute("date");
+                        created.Value = "";
+                        System.Xml.XmlNode db = data.CreateElement("alias");
+                        db.Attributes.Append(name);
+                        db.Attributes.Append(kk);
+                        db.Attributes.Append(created);
+                        xmlnode.AppendChild(db);
                     }
                 }
                 lock (text)
                 {
                     foreach (item key in text)
                     {
-                        File.AppendAllText(datafile,
-                                           key.key + config.separator + key.text + config.separator + "key" +
-                                           config.separator + key.locked + config.separator + key.user + "\n");
+                        System.Xml.XmlAttribute name = data.CreateAttribute("key_name");
+                        name.Value = key.key;
+                        System.Xml.XmlAttribute kk = data.CreateAttribute("data");
+                        kk.Value = key.text;
+                        System.Xml.XmlAttribute created = data.CreateAttribute("created_date");
+                        created.Value = key.created.ToBinary().ToString();
+                        System.Xml.XmlAttribute nick = data.CreateAttribute("nickname");
+                        nick.Value = key.user;
+                        System.Xml.XmlAttribute last = data.CreateAttribute("touched");
+                        last.Value = key.lasttime.ToBinary().ToString();
+                        System.Xml.XmlAttribute triggered = data.CreateAttribute("triggered");
+                        triggered.Value = key.Displayed.ToString();
+                        System.Xml.XmlNode db = data.CreateElement("key");
+                        db.Attributes.Append(name);
+                        db.Attributes.Append(kk);
+                        db.Attributes.Append(nick);
+                        db.Attributes.Append(created);
+                        db.Attributes.Append(last);
+                        db.Attributes.Append(triggered);
+                        xmlnode.AppendChild(db);
                     }
                 }
-                File.Delete(config.tempName(datafile));
+
+                data.AppendChild(xmlnode);
+                data.Save(datafile_xml);
+                if (File.Exists(config.tempName(datafile_xml)))
+                {
+                    File.Delete(config.tempName(datafile_xml));
+                }
             }
             catch (Exception b)
             {
                 try
                 {
-                    if (core.recoverFile(datafile, Channel))
+                    if (core.recoverFile(datafile_xml, Channel))
                     {
                         Program.Log("Recovered db for channel " + Channel);
                     }
@@ -352,7 +526,10 @@ namespace wmib
             {
                 if (data.key == key)
                 {
-                    return core.decode(data.text);
+                    data.lasttime = DateTime.Now;
+                    data.Displayed++;
+                    stored = false;
+                    return data.text;
                 }
             }
             return "";
@@ -410,7 +587,15 @@ namespace wmib
                                 return true;
                             }
                             string key = name.Substring(name.IndexOf(" is") + 4);
-                            data.Keys.setKey(key, parm[0], "", chan);
+                            if (key.Contains("|"))
+                            {
+                                if (!chan.suppress_warnings)
+                                {
+                                    core.irc._SlowQueue.DeliverMessage("Invalid symbol in the key", chan.Name);
+                                }
+                                return true;
+                            }
+                            data.Keys.setKey(key, parm[0], user, chan);
                         }
                         else
                         {
@@ -470,7 +655,7 @@ namespace wmib
                                 {
                                     data.Keys.Alias.Remove(b);
                                     core.irc.Message(messages.get("AliasRemoved", chan.Language), chan.Name);
-                                    data.Keys.Save();
+                                    data.Keys.stored = false;
                                     return false;
                                 }
                             }
@@ -858,9 +1043,9 @@ namespace wmib
                             return;
                         }
                     }
-                    text.Add(new item(key, core.encode(Text), user, "false"));
+                    text.Add(new item(key, Text, user, "false"));
                     core.irc.Message(messages.get("infobot6", chan.Language), chan.Name);
-                    ch.Keys.Save();
+                    ch.Keys.stored = false;
                 }
                 catch (Exception b)
                 {
@@ -898,7 +1083,7 @@ namespace wmib
                 Alias.Add(new staticalias(al, key));
             }
             core.irc._SlowQueue.DeliverMessage(messages.get( "infobot8", chan.Language), chan.Name);
-            Save();
+            stored = false;
         }
 
         public void rmKey(string key, string user, config.channel _ch)
@@ -916,7 +1101,7 @@ namespace wmib
                     {
                         text.Remove(keys);
                         core.irc._SlowQueue.DeliverMessage(messages.get("infobot9", _ch.Language) + key, _ch.Name);
-                        Save();
+                        stored = false;
                         return;
                     }
                 }

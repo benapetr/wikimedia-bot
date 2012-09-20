@@ -61,7 +61,7 @@ namespace wmib
                 {
                     string[] info = x.Split(Char.Parse(config.separator));
                     string level = info[1];
-                    string name = core.decode(info[0]);
+                    string name = info[0];
                     Users.Add(new core.user(level, name));
                 }
             }
