@@ -530,13 +530,32 @@ namespace wmib
                         return;
                     }
                 }
-                else
+            }
+
+            if (message.StartsWith("@seenrx "))
+            {
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
                 {
-                    if (!chan.suppress_warnings)
+                    if (chan.Seen)
                     {
-                        irc._SlowQueue.DeliverMessage(messages.get("seen-e", chan.Language), chan.Name, IRC.priority.low);
+                        string parameter = "";
+                        if (message.Contains(" "))
+                        {
+                            parameter = message.Substring(message.IndexOf(" ") + 1);
+                        }
+                        if (parameter != "")
+                        {
+                            Seen.RegEx(parameter, chan, invoker.Nick);
+                            return;
+                        }
                     }
+                    return;
                 }
+				if (!chan.suppress_warnings)
+				{
+                	irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+				}
+                return;
             }
 
             if (message == ("@info"))
@@ -1474,7 +1493,7 @@ namespace wmib
 
             if (message == "@commands")
             {
-                irc._SlowQueue.DeliverMessage("Commands: channellist, trusted, trustadd, trustdel, info, statistics-off, statistics-on, statistics-reset, configure, infobot-link, infobot-share-trust+, infobot-share-trust-, infobot-share-off, infobot-share-on, infobot-detail, infobot-off, refresh, infobot-on, drop, whoami, add, reload, suppress-off, suppress-on, help, RC-, recentchanges-on, language, infobot-ignore+, infobot-ignore-, recentchanges-off, logon, logoff, recentchanges-, recentchanges+, RC+", chan.Name);
+                irc._SlowQueue.DeliverMessage("Commands: channellist, trusted, trustadd, trustdel, info, statistics-off, statistics-on, statistics-reset, configure, infobot-link, infobot-share-trust+, infobot-share-trust-, infobot-share-off, infobot-share-on, infobot-detail, infobot-off, seenrx, refresh, infobot-on, seen, drop, whoami, add, reload, suppress-off, suppress-on, help, RC-, recentchanges-on, language, infobot-ignore+, infobot-ignore-, recentchanges-off, logon, logoff, recentchanges-, recentchanges+, RC+", chan.Name);
                 return;
             }
         }

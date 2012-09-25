@@ -9,6 +9,22 @@ namespace wmib
     class Seen
     {
         private static bool save = false;
+
+        public class ChannelRequest
+        {
+            public config.channel channel;
+            public string nick;
+            public string source;
+            public bool rg;
+            public ChannelRequest(string _nick, string _source, config.channel Channel, bool regexp)
+            {
+                rg = regexp;
+                nick = _nick;
+                channel = Channel;
+                source = _source;
+            }
+        }
+
         public class item
         {
             public string nick;
@@ -41,6 +57,15 @@ namespace wmib
                 }
             }
         }
+
+        public static List<ChannelRequest> requests = new List<ChannelRequest>();
+        public static Thread SearchThread;
+        public static Thread SearchHostThread;
+        public static bool working = false;
+
+        public static string temp_nick;
+        public static config.channel chan;
+        public static string temp_source;
 
         public static void SaveData()
         {
@@ -101,7 +126,207 @@ namespace wmib
             save = true;
         }
 
+        public static void Search()
+        {
+            try
+            {
+                if (misc.IsValidRegex(temp_nick))
+                {
+                    System.Text.RegularExpressions.Regex ex = new System.Text.RegularExpressions.Regex(temp_nick);
+                    string response = "I have never seen " + temp_nick;
+                    bool found = false;
+                    bool multiple = false;
+                    string results = "";
+                    int cn = 0;
+                    string action = "quiting the network";
+                    foreach (item xx in global)
+                    {
+                        if (ex.IsMatch(xx.nick))
+                        {
+                            if (found)
+                            {
+                                cn++;
+                                if (cn < 6)
+                                {
+                                    results += xx.nick + ", ";
+                                }
+                                multiple = true;
+                                continue;
+                            }
+                            found = true;
+                            config.channel last;
+                            switch (xx.LastAc)
+                            {
+                                case item.Action.Join:
+                                    action = "joining the channel";
+                                    last = core.getChannel(xx.lastplace);
+                                    if (last != null)
+                                    {
+                                        if (last.containsUser(xx.nick))
+                                        {
+                                            action += ", they are still in the channel";
+                                        }
+                                        else
+                                        {
+                                            action += ", but they are not in the channel now and I don't know why, in";
+                                        }
+                                    }
+                                    break;
+                                case item.Action.Kick:
+                                    action = "kicked from the channel";
+                                    break;
+                                case item.Action.Part:
+                                    action = "leaving the channel";
+                                    break;
+                                case item.Action.Talk:
+                                    action = "talking in the channel";
+                                    last = core.getChannel(xx.lastplace);
+                                    if (last != null)
+                                    {
+                                        if (last.containsUser(xx.nick))
+                                        {
+                                            action += ", they are still in the channel";
+                                        }
+                                        else
+                                        {
+                                            action += ", but they are not in the channel now and I don't know why, in";
+                                        }
+                                    }
+                                    break;
+                            }
+                            response = "Last time I saw " + xx.nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString();
+                        }
+                    }
+                    if (temp_nick.ToUpper() == temp_source.ToUpper())
+                    {
+                        response = "are you really looking for yourself?";
+                        core.irc._SlowQueue.DeliverMessage(temp_source + ": " + response, chan.Name);
+                        working = false;
+                        return;
+                    }
+                    if (temp_nick.ToUpper() == config.username.ToUpper())
+                    {
+                        response = "I am right here";
+                        core.irc._SlowQueue.DeliverMessage(temp_source + ": " + response, chan.Name);
+                        working = false;
+                        return;
+                    }
+                    if (chan.containsUser(temp_nick))
+                    {
+                        response = temp_nick + " is in here, right now";
+                        found = true;
+                    }
+                    if (multiple)
+                    {
+                        if (results.Length > 2)
+                        {
+                            results = results.Substring(0, results.Length - 2);
+                        }
+                        if (cn > 5)
+                        {
+                            results = results + " and " + (cn - 5).ToString() + " more results";
+                        }
+                        response += " (multiple results were found: " + results + ")";
+                    }
+                    core.irc._SlowQueue.DeliverMessage(temp_source + ": " + response, chan.Name);
+                    working = false;
+                    return;
+                }
+                core.irc._SlowQueue.DeliverMessage(messages.get("Error1", chan.Language), chan.Name);
+                working = false;
+            }
+            catch (ThreadAbortException)
+            {
+                return;
+            }
+            catch (Exception fail)
+            {
+                core.handleException(fail);
+                working = false;
+            }
+        }
+
+        public static void StartRegex()
+        {
+            try
+            {
+                while (true)
+                {
+                    if (requests.Count > 0)
+                    {
+                        List<ChannelRequest> Requests = new List<ChannelRequest>();
+                        lock (requests)
+                        {
+                            Requests.AddRange(requests);
+                            requests.Clear();
+                        }
+                            foreach (ChannelRequest ch in Requests)
+                            {
+                                if (ch.rg)
+                                {
+                                    RegEx2(ch.nick, ch.channel, ch.source);
+                                    continue;
+                                }
+                                RetrieveStatus2(ch.nick, ch.channel, ch.source);
+                            }
+                            Requests.Clear();
+                    }
+                    Thread.Sleep(100);
+                }
+            }
+            catch (ThreadAbortException)
+            {
+                return;
+            }
+        }
+
+        public static void RegEx2(string nick, config.channel channel, string source)
+        {
+            try
+            {
+                temp_nick = nick;
+                temp_source = source;
+                chan = channel;
+                SearchThread = new Thread(Search);
+                SearchThread.Start();
+                working = true;
+                int curr = 0;
+                while (working)
+                {
+                    Thread.Sleep(10);
+                    curr++;
+                    if (curr > 80)
+                    {
+                        SearchThread.Abort();
+                        core.irc._SlowQueue.DeliverMessage("This search took too much time, please optimize query", channel.Name);
+                        working = false;
+                        break;
+                    }
+                }
+            }
+            catch (Exception fail)
+            {
+                core.handleException(fail);
+            }
+        }
+
+        public static void RegEx(string nick, config.channel channel, string source)
+        {
+            lock (requests)
+            {
+                requests.Add(new ChannelRequest(nick, source, channel, true));
+            }
+        }
+
         public static void RetrieveStatus(string nick, config.channel channel, string source)
+        {
+            lock (requests)
+            { 
+                requests.Add(new ChannelRequest(nick, source, channel, false));
+            }
+        }
+
+        public static void RetrieveStatus2(string nick, config.channel channel, string source)
         {
             string response = "I have never seen " + nick;
             bool found = false;
@@ -240,6 +465,8 @@ namespace wmib
 
         public static void Load()
         {
+            SearchHostThread = new Thread(StartRegex);
+            SearchHostThread.Start();
             try
             {
                 core.recoverFile(variables.config + System.IO.Path.DirectorySeparatorChar + "seen.db");
