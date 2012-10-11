@@ -27,6 +27,7 @@ namespace wmib
         /// </summary>
         public static readonly string config = "configuration";
         public static readonly string prefix_logdir = "log";
+        public static string bold = ((char)002).ToString();
     }
     public class misc
     {
@@ -151,7 +152,7 @@ namespace wmib
         {
             try
             {
-                if (config.debugchan != null)
+                if (config.debugchan != null && config.debugchan != "")
                 {
                     irc._SlowQueue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText + " I feel crushed, uh :|", config.debugchan);
                 }
@@ -284,7 +285,7 @@ namespace wmib
             {
                 string temp = System.IO.Path.GetTempFileName();
                 File.Copy(config.tempName(name), temp, true);
-                Program.Log("Unfinished transaction from ~" + name + " was stored as " + temp);
+                Program.Log("Unfinished transaction from " + name + "~ was stored as " + temp);
                 return true;
             }
             return false;
@@ -432,6 +433,7 @@ namespace wmib
                         { }
                         try
                         {
+                            chan.Rss.Delete();
                             File.Delete(variables.config + Path.DirectorySeparatorChar + chan.Name + ".setting");
                             File.Delete(chan.Users.File);
                             if (File.Exists(variables.config + Path.DirectorySeparatorChar + chan.Name + ".list"))
@@ -948,6 +950,54 @@ namespace wmib
                 return;
             }
 
+            if (message == "@rss-off")
+            {
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                {
+                    if (!chan.EnableRss)
+                    {
+                        irc._SlowQueue.DeliverMessage(messages.get("Rss1", chan.Language), chan.Name);
+                        return;
+                    }
+                    else
+                    {
+                        chan.EnableRss = false;
+                        irc._SlowQueue.DeliverMessage(messages.get("Rss2", chan.Language), chan.Name);
+                        chan.SaveConfig();
+                        return;
+                    }
+                }
+                if (!chan.suppress_warnings)
+                {
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                }
+                return;
+            }
+
+            if (message == "@rss-on")
+            {
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                {
+                    if (chan.EnableRss)
+                    {
+                        irc._SlowQueue.DeliverMessage(messages.get("Rss3", chan.Language), chan.Name);
+                        return;
+                    }
+                    else
+                    {
+                        irc._SlowQueue.DeliverMessage(messages.get("Rss4", chan.Language), chan.Name);
+                        chan.EnableRss = true;
+                        chan.SaveConfig();
+                        return;
+                    }
+                }
+                if (!chan.suppress_warnings)
+                {
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                }
+                return;
+            }
+
             if (message == "@seen-off")
             {
                 if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
@@ -1211,6 +1261,16 @@ namespace wmib
                                 }
                                 irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
                                 return;
+                            case "style-rss":
+                                if (value != "")
+                                {
+                                    chan.StyleRss = value;
+                                    chan.SaveConfig();
+                                    irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, name }), chan.Name);
+                                    return;
+                                }
+                                irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
+                                return;
                         }
 						if (!chan.suppress_warnings)
 						{
@@ -1323,6 +1383,54 @@ namespace wmib
                         irc._SlowQueue.DeliverMessage(messages.get("infobot-ignore-ok", chan.Language, new List<string> { item }), chan.Name);
                         chan.SaveConfig();
                         return;
+                    }
+                }
+                else
+                {
+                    if (!chan.suppress_warnings)
+                    {
+                        irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                    }
+                }
+            }
+
+            if (message.StartsWith("@rss- "))
+            {
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                {
+                    string item = message.Substring("@rss+ ".Length);
+                        chan.Rss.RemoveItem(item);
+                        return;
+                }
+                else
+                {
+                    if (!chan.suppress_warnings)
+                    {
+                        irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                    }
+                }
+            }
+
+            if (message.StartsWith("@rss+ "))
+            {
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                {
+                    string item = message.Substring("@rss+ ".Length);
+                    if (item.Contains(" "))
+                    {
+                        string id = item.Substring(0, item.IndexOf(" "));
+                        string ur = item.Substring(item.IndexOf(" ") + 1);
+                        chan.Rss.InsertItem(id, ur);
+                        return;
+                    }
+                    if (item != "")
+                    {
+                        chan.Rss.InsertItem(item, "");
+                        return;
+                    }
+                    if (!chan.suppress_warnings)
+                    {
+                        irc._SlowQueue.DeliverMessage(messages.get("Rss5", chan.Language), chan.Name, IRC.priority.low);
                     }
                 }
                 else
@@ -1493,7 +1601,7 @@ namespace wmib
 
             if (message == "@commands")
             {
-                irc._SlowQueue.DeliverMessage("Commands: channellist, trusted, trustadd, trustdel, info, statistics-off, statistics-on, statistics-reset, configure, infobot-link, infobot-share-trust+, infobot-share-trust-, infobot-share-off, infobot-share-on, infobot-detail, infobot-off, seenrx, refresh, infobot-on, seen, drop, whoami, add, reload, suppress-off, suppress-on, help, RC-, recentchanges-on, language, infobot-ignore+, infobot-ignore-, recentchanges-off, logon, logoff, recentchanges-, recentchanges+, RC+", chan.Name);
+                irc._SlowQueue.DeliverMessage("Commands: there is too many commands to display on one line, see http://meta.wikimedia.org/wiki/wm-bot for a list of commands and help", chan.Name);
                 return;
             }
         }
@@ -1507,6 +1615,9 @@ namespace wmib
             Seen.Load();
             Seen.IO = new Thread(Seen.SaveData);
             Seen.IO.Start();
+            Program.Log("Loading atom feed module");
+            Feed.feed = new Thread(Feed.Exec);
+            Feed.feed.Start();
             Program.Log("Loading statistics module");
             Statistics.db = new Thread(Statistics.DB);
             Statistics.db.Start();
@@ -1655,6 +1766,10 @@ namespace wmib
                 case "logoff":
                 case "recentchanges-on":
                 case "recentchanges-off":
+                case "rss-on":
+                case "rss-off":
+                case "rss+":
+                case "rss-":
                 case "statistics-reset":
                 case "statistics-off":
                 case "statistics-on":

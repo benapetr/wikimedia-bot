@@ -42,6 +42,12 @@ namespace wmib
             public bool Feed;
             public bool Info;
 
+            public Feed Rss;
+
+            public string StyleRss = variables.bold + "[$name]" + variables.bold + " $title $link $description";
+
+            public bool EnableRss = false;
+
             public bool suppress;
 
             public List<string> Infobot_IgnoredNames = new List<string>();
@@ -162,7 +168,12 @@ namespace wmib
                     infobot_trim_white_space_in_name = true;
                 }
                 last_msg = last_msg.AddSeconds((-1) * respond_wait);
+                bool.TryParse(parseConfig(conf, "atom"), out EnableRss);
                 bool.TryParse(parseConfig(conf, "feed"), out Feed);
+                if (parseConfig(conf, "style1") != "")
+                {
+                    StyleRss = (parseConfig(conf, "style1"));
+                }
                 bool.TryParse(parseConfig(conf, "infobot-sorted-list"), out infobot_sorted);
                 bool.TryParse(parseConfig(conf, "statistics"), out statistics_enabled);
                 bool.TryParse(parseConfig(conf, "ignore-unknown"), out ignore_unknown);
@@ -201,7 +212,9 @@ namespace wmib
                 AddConfig("infodb", Info.ToString());
                 AddConfig("logged", Logged.ToString());
                 AddConfig("feed", Feed.ToString());
+                AddConfig("atom", EnableRss.ToString());
                 AddConfig("talkmode", suppress.ToString());
+                AddConfig("style1", StyleRss);
                 AddConfig("infobot-sorted-list", infobot_sorted.ToString());
                 AddConfig("langcode", Language);
                 AddConfig("respond_message", respond_message.ToString());
@@ -285,29 +298,38 @@ namespace wmib
             /// <param name="Name">Channel</param>
             public channel(string name)
             {
+                Name = name;
                 conf = "";
                 keydb = variables.config + Path.DirectorySeparatorChar + name + ".db";
                 Info = true;
                 Language = "en";
                 sharedlink = new List<channel>();
                 shared = "";
+                Rss = new wmib.Feed(this);
                 suppress = false;
                 Feed = false;
                 Logged = false;
-                Name = name;
                 LoadConfig();
                 RC = new RecentChanges(this);
                 info = new Statistics(this);
-                if (!Directory.Exists("log"))
+                if (!Directory.Exists(config.path_txt))
                 {
-                    Directory.CreateDirectory("log");
+                    Directory.CreateDirectory(config.path_txt);
                 }
-                if (!Directory.Exists("log/" + Name))
+                if (!Directory.Exists(config.path_txt + "/" + Name))
                 {
-                    Directory.CreateDirectory("log/" + Name);
+                    Directory.CreateDirectory(config.path_txt + "/" + Name);
+                }
+                if (!Directory.Exists(config.path_htm))
+                {
+                    Directory.CreateDirectory(config.path_htm);
+                }
+                if (!Directory.Exists(config.path_htm + Path.DirectorySeparatorChar + Name))
+                {
+                    Directory.CreateDirectory(config.path_htm + Path.DirectorySeparatorChar + Name);
                 }
                 Keys = new infobot_core(keydb, Name);
-                Log = "log/" + Name + "/";
+                Log = Path.DirectorySeparatorChar + Name + Path.DirectorySeparatorChar;
                 Users = new IRCTrust(Name);
             }
         }
@@ -489,10 +511,15 @@ namespace wmib
 
         public static string TransactionLog = "transaction.dat";
 
+        public static string path_txt = "log";
+
+
+        public static string path_htm = "html";
+
         /// <summary>
         /// Version
         /// </summary>
-        public static string version = "wikimedia bot v. 1.8.20.12";
+        public static string version = "wikimedia bot v. 1.8.24.0";
 
         /// <summary>
         /// Separator

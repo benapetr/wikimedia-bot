@@ -19,8 +19,10 @@ namespace wmib
 {
     class Logs
     {
+        public static List<char> Separator = new List<char> { ' ', ',', (char)3 , '(', ')', '{', '}', (char)2, '<', '>' };
         public struct Job {
                 public DateTime time;
+                public string HTML;
                 public string message;
                 public config.channel ch;
         }
@@ -73,7 +75,7 @@ namespace wmib
                 // write to disk
                 foreach (Job curr in line)
                 {
-                    writeLog(curr.message, curr.ch, curr.time);
+                    writeLog(curr.message, curr.HTML, curr.ch, curr.time);
                 }
             }
             return 2;
@@ -113,16 +115,101 @@ namespace wmib
             return true;
         }
 
-        private static void writeLog(string message, config.channel channel, System.DateTime _datetime)
+        private static void writeLog(string message, string html, config.channel channel, System.DateTime _datetime)
         {
             try
             {
-                System.IO.File.AppendAllText(channel.Log + _datetime.Year + timedateToString(_datetime.Month) + timedateToString(_datetime.Day) + ".txt", message);
+                System.IO.File.AppendAllText(config.path_txt + channel.Log + _datetime.Year + timedateToString(_datetime.Month) + timedateToString(_datetime.Day) + ".txt", message);
+                System.IO.File.AppendAllText(config.path_htm + channel.Log + _datetime.Year + timedateToString(_datetime.Month) + timedateToString(_datetime.Day) + ".htm", html);
             }
             catch (Exception er)
             {
                 // nothing
                 Console.WriteLine(er.Message);
+            }
+        }
+
+        public static int positionSeparator(string data)
+        {
+            int pi = -1;
+            int temp;
+            foreach (char separator in Separator)
+            {
+                if (data.Contains(separator.ToString()))
+                {
+                    temp = data.IndexOf(separator.ToString());
+                    if (pi == -1 || pi > temp)
+                    {
+                        pi = temp;
+                    }
+                }
+            }
+            if (pi == -1)
+            {
+                return 0;
+            }
+            return pi;
+        }
+
+        public static bool includesSeparator(string text)
+        {
+            foreach (char separator in Separator)
+            {
+                if (text.Contains(separator.ToString()))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static bool matchesSeparator(string text, string data)
+        {
+            return false;
+        }
+
+        public static void updateHttp(ref string html)
+        {
+            int curr = 0;
+            if (html.Contains("https://") || html.Contains("http://"))
+            {
+                string URL;
+                string temp = html;
+                string original = html;
+                try
+                {
+                    while (temp.Length > 6)
+                    {
+                        if (curr > 10000)
+                        {
+                            Program.Log("Maximal cpu on updateHttp(" + html + ") aborted call");
+                            html = original;
+                            return;
+                        }
+                        if (temp.StartsWith("http://") || temp.StartsWith("https://"))
+                        {
+                            URL = temp;
+                            int position = temp.Length;
+                            if (includesSeparator(temp))
+                            {
+                                URL = temp.Substring(0, positionSeparator(temp));
+                            }
+                            html = html.Insert(curr + URL.Length, "</a>");
+                            html = html.Insert(curr, "<a target=\"_new\" href=\"" + URL + "\">");
+                            curr = curr + (URL.Length * 2) + "</a><a target=\"_new\" href=\"\">".Length;
+                            temp = temp.Substring(URL.Length);
+                        }
+                        else
+                        {
+                            curr++;
+                            temp = temp.Substring(1);
+                        }
+                    }
+                }
+                catch (Exception er)
+                {
+                    core.handleException(er);
+                }
             }
         }
 
@@ -144,8 +231,26 @@ namespace wmib
                     {
                         Locked = true;
                         string log;
+                        string URL = Statistics.Host2Name(host);
+                        string srcs = "";
+                        string messagehtml = System.Web.HttpUtility.HtmlEncode(message);
+                        updateHttp(ref messagehtml);
                         if (!noac)
                         {
+                            if (URL != "")
+                            {
+                                srcs = "<font class=\"date\"><b>" + timedateToString(DateTime.Now.Hour) + ":" +
+                                    timedateToString(DateTime.Now.Minute) + ":" +
+                                    timedateToString(DateTime.Now.Second) + "</b></font><font>* <a target=\"_blank\" href=\"" + URL + "\">" + user +
+                                    "</a> " + messagehtml + "</font><br>\n";
+                            }
+                            else
+                            {
+                                srcs = "<font class=\"date\"><b>" + timedateToString(DateTime.Now.Hour) + ":" +
+                                    timedateToString(DateTime.Now.Minute) + ":" +
+                                    timedateToString(DateTime.Now.Second) + "</b></font><font>* " + user + " " +
+                                    messagehtml + "</font><br>\n";
+                            }
                             log = "[" + timedateToString(DateTime.Now.Hour) + ":" +
                                 timedateToString(DateTime.Now.Minute) + ":" +
                                 timedateToString(DateTime.Now.Second) + "] * " +
@@ -153,6 +258,21 @@ namespace wmib
                         }
                         else
                         {
+                            if (URL != "")
+                            {
+                                srcs = "<font class=\"date\"><b>" + timedateToString(DateTime.Now.Hour) + ":" +
+                                        timedateToString(DateTime.Now.Minute) + ":" +
+                                        timedateToString(DateTime.Now.Second) + "</b></font><font class=\"nick\"><b> &lt;<a target=\"_blank\" href=\"" + URL +
+                                        "\">" + user + "</a>&gt; </b></font><font>" + messagehtml + "</font><br>\n";
+                            }
+                            else
+                            {
+                                srcs = "<font class=\"date\"><b>" + timedateToString(DateTime.Now.Hour) + ":" +
+                                        timedateToString(DateTime.Now.Minute) + ":" +
+                                        timedateToString(DateTime.Now.Second) + "</b></font><font class=\"nick\"><b> &lt;" + user + "&gt; </b></font><font>" +
+                                        messagehtml + "</font><br>\n";
+                            }
+
                             log = "[" + timedateToString(DateTime.Now.Hour) + ":"
                                 + timedateToString(DateTime.Now.Minute) + ":" +
                                 timedateToString(DateTime.Now.Second) + "] " + "<" +
@@ -161,6 +281,7 @@ namespace wmib
                         Job line = new Job();
                         line.ch = channel;
                         line.time = DateTime.Now;
+                        line.HTML = srcs;
                         line.message = log;
                         jobs.Add(line);
                         Locked = false;

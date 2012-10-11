@@ -103,6 +103,29 @@ namespace wmib
             Load();
         }
 
+        public static string Host2Name(string host)
+        {
+            host = host.Replace("-", "_");
+            host = host.Replace("pdpc.professional.", "");
+            host = host.Replace("pdpc.active.", "");
+            if (host.StartsWith("wikimedia/"))
+            {
+                host = host.Substring("wikipedia/".Length);
+                return "https://meta.wikimedia.org/wiki/User:" + host;
+            }
+            else if (host.StartsWith("wikipedia/"))
+            {
+                host = host.Substring("wikipedia/".Length);
+                return "https://en.wikipedia.org/wiki/User:" + host;
+            }
+            else if (host.StartsWith("mediawiki/"))
+            {
+                host = host.Substring("wikipedia/".Length);
+                return "https://mediawiki.org/wiki/User:" + host;
+            }
+            return "";
+        }
+
         public void Stat(string nick, string message, string host)
         {
             list user = null;
@@ -127,23 +150,7 @@ namespace wmib
                     data.Add(user);
                 }
             }
-            host = host.Replace("-", "_");
-            host = host.Replace("pdpc.active.", "");
-            if (host.StartsWith("wikimedia/"))
-            {
-                host = host.Substring("wikipedia/".Length);
-                user.URL = "https://meta.wikimedia.org/wiki/User:" + host;
-            }
-            else if (host.StartsWith("wikipedia/"))
-            {
-                host = host.Substring("wikipedia/".Length);
-                user.URL = "https://en.wikipedia.org/wiki/User:" + host;
-            }
-            else if (host.StartsWith("mediawiki/"))
-            {
-                host = host.Substring("wikipedia/".Length);
-                user.URL = "https://mediawiki.org/wiki/User:" + host;
-            }
+            user.URL = Host2Name(host);
             user.messages++;
             changed = true;
             Stored = false;

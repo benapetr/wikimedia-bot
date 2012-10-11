@@ -649,6 +649,11 @@ namespace wmib
         public bool Message(string message, string channel)
         {
             config.channel curr = core.getChannel(channel);
+            if (curr == null)
+            {
+                Program.Log("Attempt to send a message to non existing channel: " + channel + " " + message, true);
+                return true;
+            }
             if (curr.suppress)
             {
                 return true;

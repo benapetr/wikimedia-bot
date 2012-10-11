@@ -587,7 +587,7 @@ namespace wmib
                                 return true;
                             }
                             string key = name.Substring(name.IndexOf(" is") + 4);
-                            if (key.Contains("|"))
+                            if (parm[0].Contains("|"))
                             {
                                 if (!chan.suppress_warnings)
                                 {

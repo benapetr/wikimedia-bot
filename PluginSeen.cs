@@ -194,7 +194,8 @@ namespace wmib
                                     }
                                     break;
                             }
-                            response = "Last time I saw " + xx.nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString();
+                            TimeSpan span2 = DateTime.Now - xx.LastSeen;
+                            response = "Last time I saw " + xx.nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString() + " (" + span2.ToString() + " ago)";
                         }
                     }
                     if (temp_nick.ToUpper() == temp_source.ToUpper())
@@ -376,7 +377,8 @@ namespace wmib
                             }
                             break;
                     }
-                    response = "Last time I saw " + nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString();
+                    TimeSpan span = DateTime.Now - xx.LastSeen;
+                    response = "Last time I saw " + nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString() + " (" + span.ToString() + " ago)";
                     break;
                 }
             }
@@ -415,41 +417,43 @@ namespace wmib
         {
             XmlDocument stat = new XmlDocument();
             XmlNode xmlnode = stat.CreateElement("channel_stat");
-
-            foreach (item curr in global)
+            lock (global)
             {
-                XmlAttribute name = stat.CreateAttribute("nick");
-                name.Value = curr.nick;
-                XmlAttribute host = stat.CreateAttribute("hostname");
-                host.Value = curr.hostname.ToString();
-                XmlAttribute last = stat.CreateAttribute("lastplace");
-                last.Value = curr.lastplace;
-                XmlAttribute action = stat.CreateAttribute("action");
-                XmlAttribute date = stat.CreateAttribute("date");
-                date.Value = curr.LastSeen.ToBinary().ToString();
-                action.Value = "Exit";
-                switch (curr.LastAc)
+                foreach (item curr in global)
                 {
-                    case item.Action.Join:
-                        action.Value = "Join";
-                        break;
-                    case item.Action.Part:
-                        action.Value = "Part";
-                        break;
-                    case item.Action.Kick:
-                        action.Value = "Kick";
-                        break;
-                    case item.Action.Talk:
-                        action.Value = "Talk";
-                        break;
+                    XmlAttribute name = stat.CreateAttribute("nick");
+                    name.Value = curr.nick;
+                    XmlAttribute host = stat.CreateAttribute("hostname");
+                    host.Value = curr.hostname.ToString();
+                    XmlAttribute last = stat.CreateAttribute("lastplace");
+                    last.Value = curr.lastplace;
+                    XmlAttribute action = stat.CreateAttribute("action");
+                    XmlAttribute date = stat.CreateAttribute("date");
+                    date.Value = curr.LastSeen.ToBinary().ToString();
+                    action.Value = "Exit";
+                    switch (curr.LastAc)
+                    {
+                        case item.Action.Join:
+                            action.Value = "Join";
+                            break;
+                        case item.Action.Part:
+                            action.Value = "Part";
+                            break;
+                        case item.Action.Kick:
+                            action.Value = "Kick";
+                            break;
+                        case item.Action.Talk:
+                            action.Value = "Talk";
+                            break;
+                    }
+                    XmlNode db = stat.CreateElement("user");
+                    db.Attributes.Append(name);
+                    db.Attributes.Append(host);
+                    db.Attributes.Append(last);
+                    db.Attributes.Append(action);
+                    db.Attributes.Append(date);
+                    xmlnode.AppendChild(db);
                 }
-                XmlNode db = stat.CreateElement("user");
-                db.Attributes.Append(name);
-                db.Attributes.Append(host);
-                db.Attributes.Append(last);
-                db.Attributes.Append(action);
-                db.Attributes.Append(date);
-                xmlnode.AppendChild(db);
             }
             stat.AppendChild(xmlnode);
             if (System.IO.File.Exists(variables.config + System.IO.Path.DirectorySeparatorChar + "seen.db"))

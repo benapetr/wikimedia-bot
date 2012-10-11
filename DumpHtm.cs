@@ -155,8 +155,8 @@ namespace wmib
             try
             {
                 string text = CreateHeader("System info");
-                text += "<h1>System data</h1><p class=info>List of channels:</p>";
-                text += "<table class=\"channels\">\n<tr><th>Channel name</th><th>Options</th></tr>";
+                text += "<h1>System data</h1><p class=info>List of channels:</p>\n";
+                text += "<table class=\"channels\">\n<tr><th>Channel name</th><th>Options</th></tr>\n";
                 lock (config.channels)
                 {
                     foreach (config.channel chan in config.channels)
@@ -168,6 +168,7 @@ namespace wmib
 
 
                 text += "</table>Uptime: " + core.getUptime() + " Memory usage: " + (System.Diagnostics.Process.GetCurrentProcess().VirtualMemorySize64 / 1024).ToString() + "kb Database size: " + getSize();
+                text += "\n<br><br>Rss feeds: " + Feed.item.Count.ToString() + "\n";
                 text += "</body></html>";
                 File.WriteAllText(config.DumpDir + "/systemdata.htm", text);
             }
@@ -281,6 +282,19 @@ namespace wmib
                     text += "<tr><td>N/A</td><th>Total:</th><th>" + average2.ToString() + "</th><th>" + totalms.ToString() + "</th><td>N/A</td></tr>";
                     text += "  \n";
                     text += "</table>";
+                }
+                if (Channel.EnableRss)
+                { 
+                    text += "\n<br>\n<h4>Rss</h4>\n<br>\n\n<table class=\"infobot\" width=100% border=1>";
+                    text += "<tr><th>Name</th><th>URL</th><th>Enabled</th></tr>";
+                    lock (Channel.Rss.Content)
+                    {
+                        foreach (Feed.item feed in Channel.Rss.Content)
+                        {
+                            text += "\n<tr><td>" + feed.name + "</td><td><a href=\"" + feed.URL + "\">" + feed.URL + "</a></td><td>" + (!feed.disabled).ToString() + "</td></tr>";
+                        }
+                    }
+                    text += "</table>\n";
                 }
                 text = text + CreateFooter();
                 File.WriteAllText(dumpname, text);
