@@ -208,7 +208,8 @@ namespace wmib
                     if (type == "key")
                     {
                         string Locked = info[3];
-                        text.Add(new item(name.Replace("<separator>", "|"), value.Replace("<separator>", "|"), "", Locked, NA.ToBinary().ToString(), NA.ToBinary().ToString()));
+                        text.Add(new item(name.Replace("<separator>", "|"), value.Replace("<separator>", "|"), "", Locked, NA.ToBinary().ToString(),
+                            NA.ToBinary().ToString()));
                     }
                     else
                     {
@@ -255,7 +256,8 @@ namespace wmib
                                 Alias.Add(_Alias);
                                 continue;
                             }
-                            item _key = new item(xx.Attributes[0].Value, xx.Attributes[1].Value, xx.Attributes[2].Value, "false", xx.Attributes[3].Value, xx.Attributes[4].Value, int.Parse(xx.Attributes[5].Value));
+                                item _key = new item(xx.Attributes[0].Value, xx.Attributes[1].Value, xx.Attributes[2].Value, "false", xx.Attributes[3].Value,
+                                xx.Attributes[4].Value, int.Parse(xx.Attributes[5].Value));
                             text.Add(_key);
                         }
                     }
@@ -290,7 +292,8 @@ namespace wmib
                     {
                         name = CV.user;
                     }
-                    core.irc._SlowQueue.DeliverMessage(messages.get("infobot-data", chan.Language, new List<string> {key, name, created, CV.Displayed.ToString(), last }), chan.Name, IRC.priority.low);
+                    core.irc._SlowQueue.DeliverMessage(messages.get("infobot-data", chan.Language, new List<string> {key, name, created, CV.Displayed.ToString(),
+                        last }), chan.Name, IRC.priority.low);
                     return;
                 }
             }

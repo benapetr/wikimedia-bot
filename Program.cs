@@ -65,9 +65,9 @@ namespace wmib
         }
 
         private static void Main(string[] args)
-        {
+        {	
             Log("Loading...");
-			config.UpTime = System.DateTime.Now;
+            config.UpTime = System.DateTime.Now;
             Console.CancelKeyPress += new ConsoleCancelEventHandler(myHandler);
 			messages.data.Add ("cs", new messages.container("cs"));
 			messages.data.Add ("en", new messages.container("en"));
