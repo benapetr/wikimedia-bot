@@ -44,7 +44,7 @@ namespace wmib
     {
         public override bool Construct()
         {
-            base.Create("STATISTICS", true);
+            base.Create("STATISTICS", true, true);
             return true;
         }
 
