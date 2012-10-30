@@ -17,6 +17,100 @@ namespace wmib
             return true;
         }
 
+        public override void Hook_PRIV(config.channel channel, User invoker, string message)
+        {
+            if (working)
+            {
+                if (message.StartsWith("@seen "))
+                {
+                    if (channel.Seen)
+                    {
+                        string parameter = "";
+                        if (message.Contains(" "))
+                        {
+                            parameter = message.Substring(message.IndexOf(" ") + 1);
+                        }
+                        if (parameter != "")
+                        {
+                            core.plugin_seen.RetrieveStatus(parameter, channel, invoker.Nick);
+                            return;
+                        }
+                    }
+                }
+
+                if (message.StartsWith("@seenrx "))
+                {
+                    if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                    {
+                        if (channel.Seen)
+                        {
+                            string parameter = "";
+                            if (message.Contains(" "))
+                            {
+                                parameter = message.Substring(message.IndexOf(" ") + 1);
+                            }
+                            if (parameter != "")
+                            {
+                                core.plugin_seen.RegEx(parameter, channel, invoker.Nick);
+                                return;
+                            }
+                        }
+                        return;
+                    }
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                    return;
+                }
+            }
+
+            if (message == "@seen-off")
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                {
+                    if (!channel.Seen)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("seen-e2", channel.Language), channel.Name);
+                        return;
+                    }
+                    else
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("seen-off", channel.Language), channel.Name, IRC.priority.high);
+                        channel.Seen = false;
+                        channel.SaveConfig();
+                        return;
+                    }
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
+
+            if (message == "@seen-on")
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                {
+                    if (channel.Seen)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("seen-oe", channel.Language), channel.Name);
+                        return;
+                    }
+                    channel.Seen = true;
+                    channel.SaveConfig();
+                    core.irc._SlowQueue.DeliverMessage(messages.get("seen-on", channel.Language), channel.Name, IRC.priority.high);
+                    return;
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
+        }
+
         public class ChannelRequest
         {
             public config.channel channel;

@@ -109,17 +109,22 @@ namespace wmib
 
         public virtual void Hook_AfterChannelWeb(ref string html, config.channel channel)
         {
-
+            return;
         }
 
         public virtual void Hook_ChannelWeb(ref string html, config.channel channel)
         {
+            return;
+        }
 
+        public virtual void Hook_PRIV(config.channel channel, User invoker, string message)
+        {
+            return;
         }
 
         public virtual void Hook_BeforeSysWeb(ref string html)
         {
-
+            return;
         }
 
         public virtual void Hook_AfterSysWeb(ref string html)

@@ -74,6 +74,72 @@ namespace wmib
                 }
             }
         }
+
+        public override void Hook_PRIV(config.channel channel, User invoker, string message)
+        {
+            if (message == "@statistics-off")
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                {
+                    if (!channel.statistics_enabled)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("StatE2", channel.Language), channel.Name);
+                        return;
+                    }
+                    else
+                    {
+                        channel.statistics_enabled = false;
+                        channel.SaveConfig();
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Stat-off", channel.Language), channel.Name);
+                        return;
+                    }
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
+
+            if (message == "@statistics-reset")
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                {
+                    channel.info.Delete();
+                    core.irc._SlowQueue.DeliverMessage(messages.get("Statdt", channel.Language), channel.Name);
+                    return;
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
+
+            if (message == "@statistics-on")
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                {
+                    if (channel.statistics_enabled)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("StatE1", channel.Language), channel.Name);
+                        return;
+                    }
+                    else
+                    {
+                        channel.statistics_enabled = true;
+                        channel.SaveConfig();
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Stat-on", channel.Language), channel.Name);
+                        return;
+                    }
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
+        }
     }
 
     public class Statistics

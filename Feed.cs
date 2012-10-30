@@ -341,6 +341,135 @@ namespace wmib
 
     public class FeedMod : Module
     {
+        public override void Hook_PRIV(config.channel channel, User invoker, string message)
+        {
+            if (message.StartsWith("@rss- "))
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                {
+                    string item = message.Substring("@rss+ ".Length);
+                    channel.Rss.RemoveItem(item);
+                    return;
+                }
+                else
+                {
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                }
+            }
+
+            if (message.StartsWith("@rss-setstyle "))
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                {
+                    string item = message.Substring("@rss-setstyle ".Length);
+                    if (item.Contains(" "))
+                    {
+                        string id = item.Substring(0, item.IndexOf(" "));
+                        string ur = item.Substring(item.IndexOf(" ") + 1);
+                        channel.Rss.StyleItem(id, ur);
+                        return;
+                    }
+                    if (item != "")
+                    {
+                        channel.Rss.StyleItem(item, "");
+                        return;
+                    }
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Rss5", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                }
+                else
+                {
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                }
+            }
+
+            if (message.StartsWith("@rss+ "))
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                {
+                    string item = message.Substring("@rss+ ".Length);
+                    if (item.Contains(" "))
+                    {
+                        string id = item.Substring(0, item.IndexOf(" "));
+                        string ur = item.Substring(item.IndexOf(" ") + 1);
+                        channel.Rss.InsertItem(id, ur);
+                        return;
+                    }
+                    if (item != "")
+                    {
+                        channel.Rss.InsertItem(item, "");
+                        return;
+                    }
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Rss5", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                }
+                else
+                {
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                }
+            }
+            if (message == "@rss-off")
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                {
+                    if (!channel.EnableRss)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Rss1", channel.Language), channel.Name);
+                        return;
+                    }
+                    else
+                    {
+                        channel.EnableRss = false;
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Rss2", channel.Language), channel.Name);
+                        channel.SaveConfig();
+                        return;
+                    }
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
+
+            if (message == "@rss-on")
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                {
+                    if (channel.EnableRss)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Rss3", channel.Language), channel.Name);
+                        return;
+                    }
+                    else
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Rss4", channel.Language), channel.Name);
+                        channel.EnableRss = true;
+                        channel.SaveConfig();
+                        return;
+                    }
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
+        }
+
         public override void Hook_BeforeSysWeb(ref string html)
         {
             html += "\n<br><br>Rss feeds: " + Feed.item.Count.ToString() + "\n";

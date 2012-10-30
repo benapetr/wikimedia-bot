@@ -29,6 +29,57 @@ namespace wmib
 
         public List<Job> jobs = new List<Job>();
 
+        public override void Hook_PRIV(config.channel channel, User invoker, string message)
+        {
+            if (message == "@logon")
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                {
+                    if (channel.Logged)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("ChannelLogged", channel.Language), channel.Name);
+                        return;
+                    }
+                    else
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("LoggingOn", channel.Language), channel.Name);
+                        channel.Logged = true;
+                        channel.SaveConfig();
+                        return;
+                    }
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
+
+            if (message == "@logoff")
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                {
+                    if (!channel.Logged)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("LogsE1", channel.Language), channel.Name);
+                        return;
+                    }
+                    else
+                    {
+                        channel.Logged = false;
+                        channel.SaveConfig();
+                        core.irc._SlowQueue.DeliverMessage(messages.get("NotLogged", channel.Language), channel.Name);
+                        return;
+                    }
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
+        }
+
         public int WriteData()
         {
             if (jobs.Count > 0)

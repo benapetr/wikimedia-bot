@@ -25,6 +25,338 @@ namespace wmib
         public bool Unwritable;
         public bool Disabled;
 
+        public override void Hook_PRIV(config.channel channel, User invoker, string message)
+        {
+            try
+            {
+                if (message.StartsWith("@infobot-share-trust+ "))
+                {
+                    if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                    {
+                        if (channel.shared != "local")
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot16", channel.Language), channel.Name);
+                            return;
+                        }
+                        if (channel.shared != "local" && channel.shared != "")
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot15", channel.Language), channel.Name);
+                            return;
+                        }
+                        else
+                        {
+                            if (message.Length <= "@infobot-share-trust+ ".Length)
+                            {
+                                core.irc._SlowQueue.DeliverMessage(messages.get("db6", channel.Language), channel.Name);
+                                return;
+                            }
+                            string name = message.Substring("@infobot-share-trust+ ".Length);
+                            config.channel guest = core.getChannel(name);
+                            if (guest == null)
+                            {
+                                core.irc._SlowQueue.DeliverMessage(messages.get("db8", channel.Language), channel.Name);
+                                return;
+                            }
+                            if (channel.sharedlink.Contains(guest))
+                            {
+                                core.irc._SlowQueue.DeliverMessage(messages.get("db14", channel.Language), channel.Name);
+                                return;
+                            }
+                            core.irc._SlowQueue.DeliverMessage(messages.get("db1", channel.Language, new List<string> { name }), channel.Name);
+                            channel.sharedlink.Add(guest);
+                            channel.SaveConfig();
+                            return;
+                        }
+                    }
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                    return;
+                }
+
+                if (message.StartsWith("@infobot-ignore- "))
+                {
+                    if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                    {
+                        string item = message.Substring("@infobot-ignore+ ".Length);
+                        if (item != "")
+                        {
+                            if (!channel.Infobot_IgnoredNames.Contains(item))
+                            {
+                                core.irc._SlowQueue.DeliverMessage(messages.get("infobot-ignore-found", channel.Language, new List<string> { item }), channel.Name);
+                                return;
+                            }
+                            channel.Infobot_IgnoredNames.Remove(item);
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot-ignore-rm", channel.Language, new List<string> { item }), channel.Name);
+                            channel.SaveConfig();
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        if (!channel.suppress_warnings)
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                        }
+                    }
+                }
+
+                if (message.StartsWith("@infobot-ignore+ "))
+                {
+                    if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                    {
+                        string item = message.Substring("@infobot-ignore+ ".Length);
+                        if (item != "")
+                        {
+                            if (channel.Infobot_IgnoredNames.Contains(item))
+                            {
+                                core.irc._SlowQueue.DeliverMessage(messages.get("infobot-ignore-exist", channel.Language, new List<string> { item }), channel.Name);
+                                return;
+                            }
+                            channel.Infobot_IgnoredNames.Add(item);
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot-ignore-ok", channel.Language, new List<string> { item }), channel.Name);
+                            channel.SaveConfig();
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        if (!channel.suppress_warnings)
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                        }
+                    }
+                }
+
+                if (message == "@infobot-off")
+                {
+                    if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                    {
+                        if (!channel.Info)
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot1", channel.Language), channel.Name);
+                            return;
+                        }
+                        else
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot2", channel.Language), channel.Name, IRC.priority.high);
+                            channel.Info = false;
+                            channel.SaveConfig();
+                            return;
+                        }
+                    }
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                    return;
+                }
+
+                if (message.StartsWith("@infobot-share-trust- "))
+                {
+                    if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                    {
+                        if (channel.shared != "local")
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot16", channel.Language), channel.Name);
+                            return;
+                        }
+                        else
+                        {
+                            if (message.Length <= "@infobot-share-trust+ ".Length)
+                            {
+                                core.irc._SlowQueue.DeliverMessage(messages.get("db6", channel.Language), channel.Name);
+                                return;
+                            }
+                            string name = message.Substring("@infobot-share-trust- ".Length);
+                            config.channel target = core.getChannel(name);
+                            if (target == null)
+                            {
+                                core.irc._SlowQueue.DeliverMessage(messages.get("db8", channel.Language), channel.Name);
+                                return;
+                            }
+                            if (channel.sharedlink.Contains(target))
+                            {
+                                channel.sharedlink.Remove(target);
+                                core.irc._SlowQueue.DeliverMessage(messages.get("db2", channel.Language, new List<string> { name }), channel.Name);
+                                channel.SaveConfig();
+                                return;
+                            }
+                            core.irc._SlowQueue.DeliverMessage(messages.get("db4", channel.Language), channel.Name);
+                            return;
+                        }
+                    }
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                    return;
+                }
+
+                if (message.StartsWith("@infobot-detail "))
+                {
+                    if ((message.Length) <= "@infobot-detail ".Length)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("db6", channel.Language), channel.Name);
+                        return;
+                    }
+                    if (channel.Info)
+                    {
+                        if (channel.shared == "local" || channel.shared == "")
+                        {
+                            channel.Keys.Info(message.Substring(16), channel);
+                            return;
+                        }
+                        if (channel.shared != "")
+                        {
+                            config.channel db = core.getChannel(channel.shared);
+                            if (db == null)
+                            {
+                                core.irc._SlowQueue.DeliverMessage("Error, null pointer to shared channel", channel.Name, IRC.priority.low);
+                                return;
+                            }
+                            db.Keys.Info(message.Substring(16), channel);
+                            return;
+                        }
+                        return;
+                    }
+                    core.irc._SlowQueue.DeliverMessage("Infobot is not enabled on this channel", channel.Name, IRC.priority.low);
+                    return;
+                }
+
+                if (message.StartsWith("@infobot-link "))
+                {
+                    if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                    {
+                        if (channel.shared == "local")
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot17", channel.Language), channel.Name);
+                            return;
+                        }
+                        if (channel.shared != "")
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot18", channel.Language, new List<string> { channel.shared }), channel.Name);
+                            return;
+                        }
+                        if ((message.Length - 1) < "@infobot-link ".Length)
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("db6", channel.Language), channel.Name);
+                            return;
+                        }
+                        string name = message.Substring("@infobot-link ".Length);
+                        config.channel db = core.getChannel(name);
+                        if (db == null)
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("db8", channel.Language), channel.Name);
+                            return;
+                        }
+                        if (!infobot_core.Linkable(db, channel))
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("db9", channel.Language), channel.Name);
+                            return;
+                        }
+                        channel.shared = name.ToLower();
+                        core.irc._SlowQueue.DeliverMessage(messages.get("db10", channel.Language), channel.Name);
+                        channel.SaveConfig();
+                        return;
+                    }
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                    return;
+                }
+
+                if (message == "@infobot-share-off")
+                {
+                    if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                    {
+                        if (channel.shared == "")
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot14", channel.Language), channel.Name);
+                            return;
+                        }
+                        else
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot13", channel.Language), channel.Name);
+                            foreach (config.channel curr in config.channels)
+                            {
+                                if (curr.shared == channel.Name.ToLower())
+                                {
+                                    curr.shared = "";
+                                    curr.SaveConfig();
+                                    core.irc._SlowQueue.DeliverMessage(messages.get("infobot19", curr.Language, new List<string> { invoker.Nick }), curr.Name);
+                                }
+                            }
+                            channel.shared = "";
+                            channel.SaveConfig();
+                            return;
+                        }
+                    }
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                    return;
+                }
+
+                if (message == "@infobot-on")
+                {
+                    if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                    {
+                        if (channel.Info)
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot3", channel.Language), channel.Name);
+                            return;
+                        }
+                        channel.Info = true;
+                        channel.SaveConfig();
+                        core.irc._SlowQueue.DeliverMessage(messages.get("infobot4", channel.Language), channel.Name, IRC.priority.high);
+                        return;
+                    }
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                    return;
+                }
+
+                if (message == "@infobot-share-on")
+                {
+                    if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                    {
+                        if (channel.shared == "local")
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot11", channel.Language), channel.Name, IRC.priority.high);
+                            return;
+                        }
+                        if (channel.shared != "local" && channel.shared != "")
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot15", channel.Language), channel.Name, IRC.priority.high);
+                            return;
+                        }
+                        else
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot12", channel.Language), channel.Name);
+                            channel.shared = "local";
+                            channel.SaveConfig();
+                            return;
+                        }
+                    }
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                    return;
+                }
+            }
+            catch (Exception f)
+            {
+                core.handleException(f);
+            }
+        }
+
         public override bool Construct()
         {
             base.Create("Infobot core", true, true);
