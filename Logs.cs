@@ -17,9 +17,9 @@ using System.Text;
 
 namespace wmib
 {
-    class Logs
+    public class Logs : Module
     {
-        public static List<char> Separator = new List<char> { ' ', ',', (char)3 , '(', ')', '{', '}', (char)2, '<', '>' };
+        public List<char> Separator = new List<char> { ' ', ',', (char)3 , '(', ')', '{', '}', (char)2, '<', '>' };
         public struct Job {
                 public DateTime time;
                 public string HTML;
@@ -27,32 +27,19 @@ namespace wmib
                 public config.channel ch;
         }
 
-        public static List<Job> jobs = new List<Job>();
-        public static bool Locked;
-        public static Thread WorkerTh;
+        public List<Job> jobs = new List<Job>();
 
-        public static void CheckLock()
-        {
-            while (Locked)
-            {
-                Thread.Sleep(100);
-            }
-        }
-
-        public static int WriteData()
+        public int WriteData()
         {
             if (jobs.Count > 0)
             {
                 List<Job> line = new List<Job>();
                 List<Job> tr = new List<Job>();
-                CheckLock();
-                Locked = true;
                 lock (jobs)
                 {
                     line.AddRange(jobs);
                     jobs.Clear();
                 }
-                Locked = false;
                 // clean all logs that can't be written to disk
                 foreach (Job curr in line)
                 {
@@ -60,10 +47,8 @@ namespace wmib
                     {
                         lock (jobs)
                         {
-                            Locked = true;
                             jobs.Add(curr);
                             tr.Add(curr);
-                            Locked = false;
                         }
                     }
                 }
@@ -81,7 +66,7 @@ namespace wmib
             return 2;
         }
 
-        public static void ProcessJobs()
+        public override void Load()
         {
             while (true)
             {
@@ -97,7 +82,6 @@ namespace wmib
                 }
                 catch (Exception fail)
                 {
-                    Locked = false;
                     core.handleException(fail);
                 }
             }
@@ -107,15 +91,13 @@ namespace wmib
         /// Start work
         /// </summary>
         /// <returns></returns>
-        public static bool Initialise()
+        public override bool Construct()
         {
-            Locked = false;
-            WorkerTh = new Thread(ProcessJobs);
-            WorkerTh.Start();
+            base.Create("LOGS", true);
             return true;
         }
 
-        private static void writeLog(string message, string html, config.channel channel, System.DateTime _datetime)
+        private void writeLog(string message, string html, config.channel channel, System.DateTime _datetime)
         {
             try
             {
@@ -129,7 +111,7 @@ namespace wmib
             }
         }
 
-        public static int positionSeparator(string data)
+        public int positionSeparator(string data)
         {
             int pi = -1;
             int temp;
@@ -151,7 +133,7 @@ namespace wmib
             return pi;
         }
 
-        public static bool includesSeparator(string text)
+        public bool includesSeparator(string text)
         {
             foreach (char separator in Separator)
             {
@@ -163,12 +145,67 @@ namespace wmib
             return false;
         }
 
-        public static bool matchesSeparator(string text, string data)
+        public bool matchesSeparator(string text, string data)
         {
             return false;
         }
 
-        public static void updateHttp(ref string html)
+        public void updateBold(ref string html)
+        {
+            bool open = false;
+            char delimiter = ((char)002);
+            int curr = 0;
+            if (html.Contains(delimiter.ToString()))
+            {
+                string temp = html;
+                string original = html;
+                try
+                {
+                    while (html.Length > curr)
+                    {
+                        if (curr > 10000)
+                        {
+                            Program.Log("Maximal cpu on updateBold(" + html + ") aborted call");
+                            html = original;
+                            return;
+                        }
+                        if (html[curr] == delimiter)
+                        {
+                            if (open)
+                            {
+                                open = false;
+                                html.Remove(curr, 1);
+                                html.Insert(curr, "</b>");
+                                curr = curr + 3;
+                                continue;
+                            }
+                            open = true;
+                            html.Remove(curr, 1);
+                            html.Insert(curr, "<b>");
+                            curr = curr + 2;
+                            continue;
+                        }
+                        curr++;
+                    }
+                    if (open)
+                    {
+                        html += "</b>";
+                    }
+                }
+                catch (Exception b)
+                {
+                    html = original;
+                    core.handleException(b);
+                }
+            }
+        }
+
+        public void updateColor(ref string html)
+        { 
+            
+        }
+
+        public void updateHttp(ref string html)
         {
             int curr = 0;
             if (html.Contains("https://") || html.Contains("http://"))
@@ -209,6 +246,7 @@ namespace wmib
                 catch (Exception er)
                 {
                     core.handleException(er);
+                    html = original;
                 }
             }
         }
@@ -221,7 +259,7 @@ namespace wmib
         /// <param name="user">User</param>
         /// <param name="host">Host</param>
         /// <param name="noac">Action (if true it's logged as message, if false it's action)</param>
-        public static void chanLog(string message, config.channel channel, string user, string host, bool noac = true)
+        public void chanLog(string message, config.channel channel, string user, string host, bool noac = true)
         {
             try
             {
@@ -229,12 +267,12 @@ namespace wmib
                 {
                     lock (jobs)
                     {
-                        Locked = true;
                         string log;
                         string URL = Statistics.Host2Name(host);
                         string srcs = "";
                         string messagehtml = System.Web.HttpUtility.HtmlEncode(message);
                         updateHttp(ref messagehtml);
+                        //updateBold(ref messagehtml);
                         if (!noac)
                         {
                             if (URL != "")
@@ -284,7 +322,6 @@ namespace wmib
                         line.HTML = srcs;
                         line.message = log;
                         jobs.Add(line);
-                        Locked = false;
                     }
                 }
             }
@@ -292,14 +329,13 @@ namespace wmib
             {
                 // nothing
                 Console.WriteLine(er.Message);
-                Locked = false;
             }
         }
 
         /// <summary>
         /// Convert the number to format we want to have in log
         /// </summary>
-        private static string timedateToString(int number)
+        private string timedateToString(int number)
         {
             if (number <= 9 && number >= 0)
             {

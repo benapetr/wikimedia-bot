@@ -50,10 +50,14 @@ namespace wmib
 
     public class core
     {
-        public static Thread dumphtmt;
-        public static Thread rc;
+        public static module_r plugin_recentchanges;
+        public static Logs plugin_logs;
+        public static FeedMod plugin_feed;
+        public static module_html plugin_html;
+        public static infobot_m plugin_ib1;
+        public static infobot_writer plugin_ib2;
+        public static Seen plugin_seen;
         public static string LastText;
-        public static Thread ib;
         public static bool disabled;
         public static bool exit = false;
         public static IRC irc;
@@ -169,11 +173,14 @@ namespace wmib
         /// <returns></returns>
         public static config.channel getChannel(string name)
         {
-            foreach (config.channel current in config.channels)
+            lock (config.channels)
             {
-                if (current.Name.ToLower() == name.ToLower())
+                foreach (config.channel current in config.channels)
                 {
-                    return current;
+                    if (current.Name.ToLower() == name.ToLower())
+                    {
+                        return current;
+                    }
                 }
             }
             return null;
@@ -269,7 +276,7 @@ namespace wmib
         public static bool getAction(string message, string Channel, string host, string nick)
         {
             config.channel curr = getChannel(Channel);
-            Logs.chanLog(message, curr, nick, host, false);
+            core.plugin_logs.chanLog(message, curr, nick, host, false);
             return false;
         }
 
@@ -300,6 +307,10 @@ namespace wmib
         {
             try
             {
+                if (!File.Exists(name))
+                {
+                    return false;
+                }
                 if (File.Exists(config.tempName(name)))
                 {
                     backupRecovery(name);
@@ -364,16 +375,22 @@ namespace wmib
                                 irc._SlowQueue.DeliverMessage(messages.get("InvalidName", chan.Language), chan.Name);
                                 return;
                             }
-                            foreach (config.channel cu in config.channels)
+                            lock (config.channels)
                             {
-                                if (channel == cu.Name)
+                                foreach (config.channel cu in config.channels)
                                 {
-                                    irc._SlowQueue.DeliverMessage(messages.get("ChannelIn", chan.Language), chan.Name);
-                                    return;
+                                    if (channel == cu.Name)
+                                    {
+                                        irc._SlowQueue.DeliverMessage(messages.get("ChannelIn", chan.Language), chan.Name);
+                                        return;
+                                    }
                                 }
                             }
                             bool existing = config.channel.channelExist(channel);
-                            config.channels.Add(new config.channel(channel));
+                            lock (config.channels)
+                            {
+                                config.channels.Add(new config.channel(channel));
+                            }
                             config.Save();
                             irc.wd.WriteLine("JOIN " + channel);
                             irc.wd.Flush();
@@ -446,7 +463,10 @@ namespace wmib
                             }
                         }
                         catch (Exception) { }
-                        config.channels.Remove(chan);
+                        lock (config.channels)
+                        {
+                            config.channels.Remove(chan);
+                        }
                         config.Save();
                         return;
                     }
@@ -528,7 +548,7 @@ namespace wmib
                     }
                     if (parameter != "")
                     {
-                        Seen.RetrieveStatus(parameter, chan, invoker.Nick);
+                        core.plugin_seen.RetrieveStatus(parameter, chan, invoker.Nick);
                         return;
                     }
                 }
@@ -547,7 +567,7 @@ namespace wmib
                         }
                         if (parameter != "")
                         {
-                            Seen.RegEx(parameter, chan, invoker.Nick);
+                            core.plugin_seen.RegEx(parameter, chan, invoker.Nick);
                             return;
                         }
                     }
@@ -625,9 +645,45 @@ namespace wmib
                 return;
             }
 
+            if (message.StartsWith("@part "))
+            {
+                string channel = message.Substring(6);
+                if (channel != "")
+                {
+                    config.channel Channel = core.getChannel(channel);
+                    if (Channel == null)
+                    {
+                        irc._SlowQueue.DeliverMessage(messages.get("UnknownChan", chan.Language), chan.Name, IRC.priority.low);
+                        return;
+                    }
+                    core.partChannel(Channel, invoker.Nick, invoker.Host, "@part", chan.Name);
+                    return;
+                }
+                irc._SlowQueue.DeliverMessage("It would be cool to give me a name of channel you want to part", chan.Name, IRC.priority.low);
+                return;
+            }
+
+            if (message.StartsWith("@drop "))
+            {
+                string channel = message.Substring(6);
+                if (channel != "")
+                { 
+                    config.channel Channel = core.getChannel(channel);
+                    if (Channel == null)
+                    {
+                        irc._SlowQueue.DeliverMessage(messages.get("UnknownChan", chan.Language), chan.Name, IRC.priority.low);
+                        return;
+                    }
+                    core.partChannel(Channel, invoker.Nick, invoker.Host, "@drop", chan.Name);
+                    return;
+                }
+                irc._SlowQueue.DeliverMessage("It would be cool to give me a name of channel you want to drop", chan.Name, IRC.priority.low);
+                return;
+            }
+
             if (message.StartsWith("@recentchanges- "))
             {
-                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
                 {
                     if (chan.Feed)
                     {
@@ -1411,6 +1467,37 @@ namespace wmib
                 }
             }
 
+            if (message.StartsWith("@rss-setstyle "))
+            {
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                {
+                    string item = message.Substring("@rss-setstyle ".Length);
+                    if (item.Contains(" "))
+                    {
+                        string id = item.Substring(0, item.IndexOf(" "));
+                        string ur = item.Substring(item.IndexOf(" ") + 1);
+                        chan.Rss.StyleItem(id, ur);
+                        return;
+                    }
+                    if (item != "")
+                    {
+                        chan.Rss.StyleItem(item, "");
+                        return;
+                    }
+                    if (!chan.suppress_warnings)
+                    {
+                        irc._SlowQueue.DeliverMessage(messages.get("Rss5", chan.Language), chan.Name, IRC.priority.low);
+                    }
+                }
+                else
+                {
+                    if (!chan.suppress_warnings)
+                    {
+                        irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                    }
+                }
+            }
+
             if (message.StartsWith("@rss+ "))
             {
                 if (chan.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
@@ -1608,27 +1695,13 @@ namespace wmib
 
         public static void Connect()
         {
-            Program.Log("Loading HTML module");
-            dumphtmt = new Thread(HtmlDump.Start);
-            dumphtmt.Start();
-            Program.Log("Loading seen module");
-            Seen.Load();
-            Seen.IO = new Thread(Seen.SaveData);
-            Seen.IO.Start();
-            Program.Log("Loading atom feed module");
-            Feed.feed = new Thread(Feed.Exec);
-            Feed.feed.Start();
-            Program.Log("Loading statistics module");
-            Statistics.db = new Thread(Statistics.DB);
-            Statistics.db.Start();
-            Program.Log("Loading RC module");
-            rc = new Thread(RecentChanges.Start);
-            rc.Start();
-            Program.Log("Loading infobot module");
-            infobot_core.threadsave = new Thread(infobot_core.StoreData);
-            infobot_core.threadsave.Start();
-            ib = new Thread(infobot_core.Initialise);
-            ib.Start();
+            plugin_logs = new Logs();
+            plugin_html = new module_html();
+            plugin_ib1 = new infobot_m();
+            plugin_ib2 = new infobot_writer();
+            plugin_recentchanges = new module_r();
+            plugin_seen = new Seen();
+            plugin_feed = new FeedMod();
             Program.Log("Modules loaded");
             irc = new IRC(config.network, config.username, config.name, config.name);
             irc.Connect();
@@ -1639,16 +1712,6 @@ namespace wmib
             try
             {
                 Statistics.db.Abort();
-            }
-            catch (Exception) { }
-            try
-            {
-                ib.Abort();
-            }
-            catch (Exception) { }
-            try
-            {
-                rc.Abort();
             }
             catch (Exception) { }
             irc.disabled = true;
@@ -1671,7 +1734,7 @@ namespace wmib
             config.channel curr = getChannel(channel);
             if (curr != null)
             {
-                Logs.chanLog(message, curr, nick, host);
+                core.plugin_logs.chanLog(message, curr, nick, host);
                 if (curr.statistics_enabled)
                 {
                     curr.info.Stat(nick, message, host);
@@ -1686,18 +1749,18 @@ namespace wmib
                  // "\uff01" is the full-width version of "!".
                 if ((message.StartsWith("!") || message.StartsWith("\uff01")) && curr.Info)
                 {
-                    while (infobot_core.Unwritable)
+                    while (core.plugin_ib1.Unwritable)
                     {
                         Thread.Sleep(10);
                     }
-                    infobot_core.Unwritable = true;
+                    core.plugin_ib1.Unwritable = true;
                     infobot_core.InfoItem item = new infobot_core.InfoItem();
                     item.Channel = curr;
                     item.Name = "!" + message.Substring(1); // Normalizing "!".
                     item.User = nick;
                     item.Host = host;
-                    infobot_core.jobs.Add(item);
-                    infobot_core.Unwritable = false;
+                    core.plugin_ib1.jobs.Add(item);
+                    core.plugin_ib1.Unwritable = false;
                 }
                 if (message.StartsWith("@"))
                 {

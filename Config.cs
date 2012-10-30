@@ -358,9 +358,12 @@ namespace wmib
             AddConfig("style_html_file", css);
             AddConfig("nick", login);
             text += "\nchannels=";
-            foreach (channel current in channels)
+            lock (config.channels)
             {
-                text += current.Name + ",\n";
+                foreach (channel current in channels)
+                {
+                    text += current.Name + ",\n";
+                }
             }
             text = text + ";";
             File.WriteAllText(variables.config + "/wmib", text);
@@ -519,7 +522,7 @@ namespace wmib
         /// <summary>
         /// Version
         /// </summary>
-        public static string version = "wikimedia bot v. 1.8.24.19";
+        public static string version = "wikimedia bot v. 1.8.26.2";
 
         /// <summary>
         /// Separator

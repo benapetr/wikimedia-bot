@@ -49,6 +49,7 @@
     <Compile Include="Irctrust.cs" />
     <Compile Include="l10n.cs" />
     <Compile Include="Logs.cs" />
+    <Compile Include="Module.cs" />
     <Compile Include="PluginSeen.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

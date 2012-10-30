@@ -276,7 +276,7 @@ namespace wmib
 
                 foreach (XmlNode node in rss.ChildNodes)
                 {
-                    if (node.Name.ToLower() == "rss")
+                    if (node.Name.ToLower() == "rss" || node.Name.ToLower() == "channel")
                     {
                         foreach (XmlNode entry in node.ChildNodes[0].ChildNodes)
                         {
@@ -314,18 +314,69 @@ namespace wmib
                         return rssFeedItems;
                     }
                 }
-
-                item.disabled = true;
-                core.irc._SlowQueue.DeliverMessage("Unable to parse the feed from " + url + " this url is probably not a valid rss, the feed will be disabled, until you re-enable it by typing @rss+ " + item.name, channel);
+                if (item.retries < 1)
+                {
+                    item.disabled = true;
+                    core.irc._SlowQueue.DeliverMessage("Unable to parse the feed from " + url + " this url is probably not a valid rss, the feed will be disabled, until you re-enable it by typing @rss+ " + item.name, channel);
+                    return null;
+                }
+                item.retries--;
                 return null;
+            }
+            catch (Exception fail)
+            {
+                Program.Log("Unable to parse feed from " + url + " I will try to do that again " + item.retries.ToString() + " times", true);
+                core.handleException(fail);
+                if (item.retries < 1)
+                {
+                    item.disabled = true;
+                    core.irc._SlowQueue.DeliverMessage("Unable to parse the feed from " + url + " this url is probably not a valid rss, the feed will be disabled, until you re-enable it by typing @rss+ " + item.name, channel);
+                    return null;
+                }
+                item.retries--;
+                return null;
+            }
+        }
+    }
 
+    public class FeedMod : Module
+    {
+        public override void Hook_BeforeSysWeb(ref string html)
+        {
+            html += "\n<br><br>Rss feeds: " + Feed.item.Count.ToString() + "\n";
+        }
+
+        public override bool Construct()
+        {
+            base.Create("Feed", true);
+            return true;
+        }
+
+        public override void Load()
+        {
+            try
+            {
+                while (true)
+                {
+                    lock (config.channels)
+                    {
+                        foreach (config.channel channel in config.channels)
+                        {
+                            if (channel.EnableRss)
+                            {
+                                if (channel.Rss != null)
+                                {
+                                    channel.Rss.Recreate();
+                                }
+                            }
+                        }
+                    }
+                    System.Threading.Thread.Sleep(10000);
+                }
             }
             catch (Exception fail)
             {
                 core.handleException(fail);
-                item.disabled = true;
-                core.irc._SlowQueue.DeliverMessage("Unable to parse the feed from " + url + " this url is probably not a valid rss, the feed will be disabled, until you re-enable it by typing @rss+ " + item.name, channel);
-                return null;
             }
         }
     }
@@ -339,9 +390,16 @@ namespace wmib
             public string URL;
             public List<RssFeedItem> data = null;
             public bool disabled;
+            public string message = "";
+            public int retries = 0;
+            public void reset()
+            {
+                retries = 2;
+            }
             public item()
             {
                 Count++;
+                reset();
                 disabled = false;
             }
             ~item()
@@ -351,8 +409,6 @@ namespace wmib
         }
 
         public List<item> Content = new List<item>();
-
-        public static System.Threading.Thread feed;
 
         public string DB = "";
 
@@ -368,31 +424,6 @@ namespace wmib
                 }
             }
             return false;
-        }
-
-        public static void Exec()
-        {
-            try
-            {
-                while (true)
-                {
-                    foreach (config.channel channel in config.channels)
-                    {
-                        if (channel.EnableRss)
-                        {
-                            if (channel.Rss != null)
-                            {
-                                channel.Rss.Recreate();
-                            }
-                        }
-                    }
-                    System.Threading.Thread.Sleep(10000);
-                }
-            }
-            catch (Exception fail)
-            {
-                core.handleException(fail);
-            }
         }
 
         public void Load()
@@ -416,6 +447,10 @@ namespace wmib
                                 if (xx.Attributes.Count > 1)
                                 {
                                     i.disabled = bool.Parse(xx.Attributes[2].Value);
+                                }
+                                if (xx.Attributes.Count > 2)
+                                {
+                                    i.message = xx.Attributes[3].Value;
                                 }
                             }
                             catch (Exception)
@@ -452,16 +487,19 @@ namespace wmib
                 {
                     foreach (item key in Content)
                     {
-                        System.Xml.XmlAttribute name = data.CreateAttribute("name");
+                        XmlAttribute name = data.CreateAttribute("name");
                         name.Value = key.name;
-                        System.Xml.XmlAttribute url = data.CreateAttribute("url");
+                        XmlAttribute url = data.CreateAttribute("url");
                         url.Value = key.URL;
-                        System.Xml.XmlAttribute rn = data.CreateAttribute("disb");
+                        XmlAttribute rn = data.CreateAttribute("disb");
                         rn.Value = key.disabled.ToString();
+                        XmlAttribute template = data.CreateAttribute("template");
+                        template.Value = key.message;
                         System.Xml.XmlNode db = data.CreateElement("data");
                         db.Attributes.Append(name);
                         db.Attributes.Append(url);
                         db.Attributes.Append(rn);
+                        db.Attributes.Append(template);
                         xmlnode.AppendChild(db);
                     }
                 }
@@ -522,8 +560,15 @@ namespace wmib
                                     {
                                         description = description.Substring(0, 200);
                                     }
-                                    
-                                    message = owner.StyleRss.Replace("$link", di.Link)
+
+                                    string temp = owner.StyleRss;
+
+                                    if (curr.message != "")
+                                    {
+                                        temp = curr.message;
+                                    }
+
+                                    message = temp.Replace("$link", di.Link)
                                         .Replace("$title", di.Title)
                                         .Replace("$name", curr.name)
                                         .Replace("$author", di.Author)
@@ -551,6 +596,34 @@ namespace wmib
                 core.handleException(fail);
             }
             return true;
+        }
+
+        public void StyleItem(string Name, string temp)
+        {
+            if (!contains(Name))
+            {
+                core.irc._SlowQueue.DeliverMessage("I don't have this item in a db", owner.Name);
+                return;
+            }
+            item rm = null;
+            lock (Content)
+            {
+                foreach (item Item in Content)
+                {
+                    if (Item.name == Name)
+                    {
+                        rm = Item;
+                        break;
+                    }
+                }
+                if (rm != null)
+                {
+                    rm.message = temp;
+                    Save();
+                    core.irc._SlowQueue.DeliverMessage("Item now has a different style you can restore default style by removing this value", owner.Name);
+                    return;
+                }
+            }
         }
 
         public void RemoveItem(string Name)
@@ -593,6 +666,7 @@ namespace wmib
                         if (curr.name == name)
                         {
                             core.irc._SlowQueue.DeliverMessage("This item was enabled now", owner.Name);
+                            curr.reset();
                             curr.disabled = false;
                             return;
                         }

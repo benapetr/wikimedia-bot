@@ -18,6 +18,94 @@ using System.IO;
 
 namespace wmib
 {
+    public class infobot_m : Module
+    {
+        public List<infobot_core.InfoItem> jobs = new List<infobot_core.InfoItem>();
+        public bool running;
+        public bool Unwritable;
+        public bool Disabled;
+
+        public override bool Construct()
+        {
+            base.Create("Infobot core", true);
+            return true;
+        }
+
+        public override void Load()
+        {
+            try
+            {
+                Unwritable = false;
+                while (Disabled != true)
+                {
+                    if (Unwritable)
+                    {
+                        Thread.Sleep(200);
+                    }
+                    else if (jobs.Count > 0)
+                    {
+                        Unwritable = true;
+                        List<infobot_core.InfoItem> list = new List<infobot_core.InfoItem>();
+                        list.AddRange(jobs);
+                        jobs.Clear();
+                        Unwritable = false;
+                        foreach (infobot_core.InfoItem item in list)
+                        {
+                            item.Channel.Keys.print(item.Name, item.User, item.Channel, item.Host);
+                        }
+                    }
+                    Thread.Sleep(200);
+                }
+            }
+            catch (Exception b)
+            {
+                Unwritable = false;
+                Console.WriteLine(b.InnerException);
+            }
+            return;
+        }
+    }
+
+    public class infobot_writer : Module
+    {
+        public override bool Construct()
+        {
+            base.Create("Infobot DB", true);
+            return true;
+        }
+
+        public override void Load()
+        {
+            try
+            {
+                while (true)
+                {
+                    SaveData();
+                    Thread.Sleep(2000);
+                }
+            }
+            catch (ThreadAbortException)
+            {
+                SaveData();
+            }
+        }
+
+        public void SaveData()
+        {
+            lock (config.channels)
+            {
+                foreach (config.channel x in config.channels)
+                {
+                    if (x.Keys.stored == false)
+                    {
+                        x.Keys.stored = true;
+                        x.Keys.Save();
+                    }
+                }
+            }
+        }
+    }
+
     public class infobot_core
     {
         /// <summary>
@@ -34,8 +122,6 @@ namespace wmib
         /// Locked
         /// </summary>
         public bool locked = false;
-
-        public static Thread threadsave;
 
         public static config.channel Reply;
 
@@ -128,8 +214,6 @@ namespace wmib
             public string Host;
         }
 
-        public static List<InfoItem> jobs = new List<InfoItem>();
-
         /// <summary>
         /// List of all items in class
         /// </summary>
@@ -145,43 +229,9 @@ namespace wmib
         /// </summary>
         public string Channel;
 
-        private static bool running;
-
-        public static bool Unwritable;
-
-        public static bool Disabled;
-
         private string search_key;
 
-        public static void StoreData()
-        {
-            try
-            {
-                while (true)
-                {
-                    SaveData();
-                    Thread.Sleep(2000);
-                }
-            } catch (ThreadAbortException)
-            {
-                SaveData();
-            }
-        }
-
-        public static void SaveData()
-        {
-            lock (config.channels)
-            {
-                foreach (config.channel x in config.channels)
-                {
-                    if (x.Keys.stored == false)
-                    {
-                        x.Keys.stored = true;
-                        x.Keys.Save();
-                    }
-                }
-            }
-        }
+        
 
         /// <summary>
         /// Load it
@@ -241,6 +291,11 @@ namespace wmib
             try
             {
                 System.Xml.XmlDocument data = new System.Xml.XmlDocument();
+                if (!File.Exists(datafile_xml))
+                {
+                    text.Clear();
+                    return true;
+                }
                 data.Load(datafile_xml);
                 lock (text)
                 {
@@ -335,40 +390,6 @@ namespace wmib
                 locked = false;
             }
             return Item;
-        }
-
-        public static void Initialise()
-        {
-            try
-            {
-                Unwritable = false;
-                while (Disabled != true)
-                {
-                    if (Unwritable)
-                    {
-                        Thread.Sleep(200);
-                    }
-                    else if (jobs.Count > 0)
-                    {
-                        Unwritable = true;
-                        List<InfoItem> list = new List<InfoItem>();
-                        list.AddRange(jobs);
-                        jobs.Clear();
-                        Unwritable = false;
-                        foreach (InfoItem item in list)
-                        {
-                            item.Channel.Keys.print(item.Name, item.User, item.Channel, item.Host);
-                        }
-                    }
-                    Thread.Sleep(200);
-                }
-            }
-            catch (Exception b)
-            {
-                Unwritable = false;
-                Console.WriteLine(b.InnerException);
-            }
-            return;
         }
 
         /// <summary>
@@ -889,7 +910,7 @@ namespace wmib
             {
                 core.irc._SlowQueue.DeliverMessage(messages.get("Results", _channel.Language, new List<string>{count.ToString()})  + results, Reply.Name);
             }
-            running = false;
+            core.plugin_ib1.running = false;
         }
 
         /// <summary>
@@ -921,12 +942,12 @@ namespace wmib
                 return;
             }
             data.Keys.search_key = key.Substring(11);
-            running = true;
+            core.plugin_ib1.running = true;
             Reply = Chan;
             Thread th = new Thread(data.Keys.StartSearch);
             th.Start();
             int check = 1;
-            while (running)
+            while (core.plugin_ib1.running)
             {
                 check++;
                 Thread.Sleep(100);
@@ -934,7 +955,7 @@ namespace wmib
                 {
                     th.Abort();
                     core.irc.Message(messages.get("Error2", Chan.Language), Chan.Name);
-                    running = false;
+                    core.plugin_ib1.running = false;
                     return;
                 }
             }

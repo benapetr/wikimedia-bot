@@ -167,7 +167,7 @@ namespace wmib
             config.channel channel = core.getChannel(chan);
             if (channel != null)
             {
-                Seen.WriteStatus(user, _host, channel.Name, Seen.item.Action.Part);
+                core.plugin_seen.WriteStatus(user, _host, channel.Name, Seen.item.Action.Part);
                 User delete = null;
                     if (channel.containsUser(user))
                     {
@@ -205,7 +205,7 @@ namespace wmib
             _host = source.Substring(source.IndexOf("@") + 1);
             _ident = source.Substring(source.IndexOf("!") + 1);
             _ident = _ident.Substring(0, _ident.IndexOf("@"));
-            Seen.WriteStatus(user, _host, "N/A", Seen.item.Action.Exit);
+            core.plugin_seen.WriteStatus(user, _host, "N/A", Seen.item.Action.Exit);
             string _new = value;
             foreach (config.channel item in config.channels)
             {
@@ -239,7 +239,7 @@ namespace wmib
             config.channel channel = core.getChannel(parameters.Substring(0, parameters.IndexOf(" ")));
             if (channel != null)
             {
-                Seen.WriteStatus(user, "", channel.Name, Seen.item.Action.Kick);
+                core.plugin_seen.WriteStatus(user, "", channel.Name, Seen.item.Action.Kick);
                     if (channel.containsUser(user))
                     {
                         User delete = null;
@@ -279,7 +279,7 @@ namespace wmib
             _ident = source.Substring(source.IndexOf("!") + 1);
             _ident = _ident.Substring(0, _ident.IndexOf("@"));
             config.channel channel = core.getChannel(chan);
-            Seen.WriteStatus(user, _host, chan, Seen.item.Action.Join);
+            core.plugin_seen.WriteStatus(user, _host, chan, Seen.item.Action.Join);
             if (channel != null)
             {
                         if (!channel.containsUser(user))
@@ -658,8 +658,8 @@ namespace wmib
             {
                 return true;
             }
-            wd.WriteLine("PRIVMSG " + channel + " :" + message);
-            Logs.chanLog(message, curr, config.username, "");
+            wd.WriteLine("PRIVMSG " + channel + " :" + message.Replace("\n", " "));
+            core.plugin_logs.chanLog(message, curr, config.username, "");
             wd.Flush();
             return true;
         }
@@ -902,13 +902,13 @@ namespace wmib
                                             message = message.Substring(message.IndexOf(" :") + 2);
                                             if (message.Contains(delimiter.ToString() + "ACTION"))
                                             {
-                                                Seen.WriteStatus(nick, host, channel, Seen.item.Action.Talk);
+                                                core.plugin_seen.WriteStatus(nick, host, channel, Seen.item.Action.Talk);
                                                 core.getAction(message.Replace(delimiter.ToString() + "ACTION", ""), channel, host, nick);
                                                 continue;
                                             }
                                             else
                                             {
-                                                Seen.WriteStatus(nick, host, channel, Seen.item.Action.Talk);
+                                                core.plugin_seen.WriteStatus(nick, host, channel, Seen.item.Action.Talk);
                                                 core.getMessage(channel, nick, host, message);
                                                 continue;
                                             }
@@ -916,9 +916,9 @@ namespace wmib
                                         else
                                         {
                                             message = text.Substring(text.IndexOf("PRIVMSG"));
-                                            message = message.Substring(message.IndexOf(":"));
+                                            message = message.Substring(message.IndexOf(" :"));
                                             // private message
-                                            if (message.StartsWith(":" + delimiter.ToString() + "FINGER"))
+                                            if (message.StartsWith(" :" + delimiter.ToString() + "FINGER"))
                                             {
                                                 wd.WriteLine("NOTICE " + nick + " :" + delimiter.ToString() + "FINGER" + " I am a bot don't finger me");
                                                 wd.Flush();
@@ -942,6 +942,8 @@ namespace wmib
                                                 wd.Flush();
                                                 continue;
                                             }
+                                            Program.Log("Ignoring private message: (" + nick + ") " + message.Substring(1), false);
+                                            continue;
                                         }
                                     }
                                     if (command.Contains("PING "))

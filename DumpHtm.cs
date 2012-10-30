@@ -17,20 +17,15 @@ using System.Threading;
 
 namespace wmib
 {
-    public class HtmlDump
+    public class module_html : Module
     {
-        /// <summary>
-        /// Channel name
-        /// </summary>
-        public config.channel Channel;
-
-        /// <summary>
-        /// Dump
-        /// </summary>
-        public string dumpname;
-
+        public override bool Construct()
+        {
+            base.Create("HTML", true);
+            return true;
+        }
         // This function is called on start of bot
-        public static void Start()
+        public override void Load()
         {
             while (true)
             {
@@ -44,10 +39,23 @@ namespace wmib
                         chan.Keys.update = false;
                     }
                 }
-                Stat();
+                HtmlDump.Stat();
                 Thread.Sleep(320000);
             }
         }
+    }
+
+    public class HtmlDump
+    {
+        /// <summary>
+        /// Channel name
+        /// </summary>
+        public config.channel Channel;
+
+        /// <summary>
+        /// Dump
+        /// </summary>
+        public string dumpname;
 
         /// <summary>
         /// Constructor
@@ -162,15 +170,35 @@ namespace wmib
                     foreach (config.channel chan in config.channels)
                     {
                         text = text + "<tr>";
-                        text = text + "<td><a href=\"" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm\">" + chan.Name + "</a></td><td>infobot: " + chan.Info.ToString() + ", recentchanges: " + chan.Feed.ToString() + ", logs: " + chan.Logged.ToString() + ", suppress: " + chan.suppress.ToString() + ", seen: " + chan.Seen.ToString() + "</td></tr>\n";
+                        text = text + "<td><a href=\"" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm\">" + chan.Name + "</a></td><td>infobot: " + chan.Info.ToString() + ", recentchanges: " + chan.Feed.ToString() + ", logs: " + chan.Logged.ToString() + ", suppress: " + chan.suppress.ToString() + ", seen: " + chan.Seen.ToString() +  ", rss: " + chan.EnableRss.ToString() +  ", statistics: " + chan.statistics_enabled.ToString() +"</td></tr>\n";
                     }
                 }
 
 
                 text += "</table>Uptime: " + core.getUptime() + " Memory usage: " + (System.Diagnostics.Process.GetCurrentProcess().VirtualMemorySize64 / 1024).ToString() + "kb Database size: " + getSize();
-                text += "\n<br><br>Rss feeds: " + Feed.item.Count.ToString() + "\n";
-                text += "</body></html>";
+
+                foreach (Module mm in Module.module)
+                {
+                    mm.Hook_BeforeSysWeb(ref text);
+                }
+
+                text += "<br>Core version: " + config.version + "<br><h2>Plugins</h2><br><br><table class=\"modules\">";
+                foreach (Module module in Module.module)
+                {
+                    string status = "Terminated";
+                    if (module.working)
+                    {
+                        status = "OK";
+                        if (module.Warning)
+                        {
+                            status += " - RECOVERING";
+                        }
+                    }
+                    text = text + "<tr><td>" + module.Name + "</td><td>" + status + "</td></tr>\n";
+                }
+                text += "</table>\n\n</body></html>";
                 File.WriteAllText(config.DumpDir + "/systemdata.htm", text);
+                
             }
             catch (Exception b)
             {

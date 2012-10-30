@@ -65,7 +65,7 @@ namespace wmib
         }
 
         private static void Main(string[] args)
-        {	
+        {
             Log("Loading...");
             config.UpTime = System.DateTime.Now;
             Console.CancelKeyPress += new ConsoleCancelEventHandler(myHandler);
@@ -77,7 +77,6 @@ namespace wmib
 				return;
 			}
             Log("Connecting");
-            Logs.Initialise();
             core.Connect();
         }
     }

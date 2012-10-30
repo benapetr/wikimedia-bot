@@ -302,6 +302,8 @@ namespace wmib
                     return matchLevel(200, current.level);
                 case "reconnect":
                     return matchLevel(800, current.level);
+                case "root":
+                    return matchLevel(65535, current.level);
             }
             return false;
         }

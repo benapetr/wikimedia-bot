@@ -18,6 +18,130 @@ using System.Text.RegularExpressions;
 
 namespace wmib
 {
+    public class module_r : Module
+    {
+        public override bool Construct()
+        {
+            base.Create("RC", true);
+            return true;
+        }
+
+        public override void Load()
+        {
+            RecentChanges.channels = new List<string>();
+            if (!File.Exists(RecentChanges.channeldata))
+            {
+                File.WriteAllText(RecentChanges.channeldata, "#mediawiki.wikipedia");
+            }
+            string message = "";
+            try
+            {
+                string[] list = System.IO.File.ReadAllLines(RecentChanges.channeldata);
+                Program.Log("Loading feed");
+                lock (RecentChanges.channels)
+                {
+                    foreach (string chan in list)
+                    {
+                        RecentChanges.channels.Add(chan);
+                    }
+                }
+                RecentChanges.Connect();
+                Program.Log("Loaded feed");
+                while (true)
+                {
+                    try
+                    {
+                        if (RecentChanges.RD == null)
+                        {
+                            return;
+                        }
+                        while (!RecentChanges.RD.EndOfStream)
+                        {
+                            message = RecentChanges.RD.ReadLine();
+                            Match Edit = RecentChanges.line.Match(message);
+                            if (RecentChanges.line.IsMatch(message) && Edit != null)
+                            {
+                                string _channel = message.Substring(message.IndexOf("PRIVMSG"));
+                                _channel = _channel.Substring(_channel.IndexOf("#"));
+                                _channel = _channel.Substring(0, _channel.IndexOf(" "));
+                                if (Edit.Groups.Count > 7)
+                                {
+                                    string page = Edit.Groups[1].Value;
+                                    string link = Edit.Groups[4].Value;
+                                    string username = Edit.Groups[6].Value;
+                                    string change = Edit.Groups[7].Value;
+                                    string summary = Edit.Groups[8].Value;
+
+                                    lock (RecentChanges.rc)
+                                    {
+                                        foreach (RecentChanges curr in RecentChanges.rc)
+                                        {
+                                            if (curr != null)
+                                            {
+                                                if (curr.channel.Feed)
+                                                {
+                                                    lock (curr.pages)
+                                                    {
+                                                        foreach (RecentChanges.IWatch w in curr.pages)
+                                                        {
+                                                            if (w != null)
+                                                            {
+                                                                if (w.Channel == _channel)
+                                                                {
+                                                                    if (page == w.Page)
+                                                                    {
+                                                                        core.irc._SlowQueue.DeliverMessage(
+                                                                            //messages.get("rfeedline1", curr.channel.Language) + "12" + w.URL.name + "" + messages.get("rfeedline2", curr.channel.Language) + "" + page +
+                                                                            //"" + messages.get("rfeedline3", curr.channel.Language) + "" + username +
+                                                                            //"" + messages.get("rfeedline4", curr.channel.Language) + w.URL.url + "?diff=" + link + messages.get("rfeedline5", curr.channel.Language) + summary, curr.channel.Name);
+                                                                            messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
+                                                                    }
+                                                                    else
+                                                                        if (w.Page.EndsWith("*"))
+                                                                        {
+                                                                            if (page.StartsWith(w.Page.Replace("*", "")))
+                                                                            {
+                                                                                core.irc._SlowQueue.DeliverMessage(
+                                                                                messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
+                                                                            }
+                                                                        }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            Thread.Sleep(10);
+                        }
+                        Thread.Sleep(100);
+                    }
+                    catch (ThreadAbortException)
+                    {
+                        return;
+                    }
+                    catch (IOException)
+                    {
+                        RecentChanges.Connect();
+                    }
+                    catch (Exception x)
+                    {
+                        core.LastText = message;
+                        core.handleException(x);
+                    }
+                }
+            }
+            catch (Exception x)
+            {
+                core.handleException(x);
+                // abort
+            }
+        }
+    }
+
     public class RecentChanges
     {
         public class IWatch
@@ -51,7 +175,7 @@ namespace wmib
         /// <summary>
         /// List of pages
         /// </summary>
-        private List<IWatch> pages = new List<IWatch>();
+        public List<IWatch> pages = new List<IWatch>();
 
         /// <summary>
         /// Wiki
@@ -68,25 +192,25 @@ namespace wmib
         /// <summary>
         /// Channels
         /// </summary>
-        private static List<string> channels = new List<string>();
+        public static List<string> channels = new List<string>();
         
         public bool changed;
         
-        private bool writable = true;
+        public bool writable = true;
 
         public static bool terminated = false;
 
         /// <summary>
         /// feed
         /// </summary>
-        private static List<RecentChanges> rc = new List<RecentChanges>();
+        public static List<RecentChanges> rc = new List<RecentChanges>();
 
         /// <summary>
         /// Stream reader
         /// </summary>
-        private static StreamReader RD;
+        public static StreamReader RD;
 
-        private static string channeldata = variables.config + "/feed";
+        public static string channeldata = variables.config + "/feed";
         public static StreamWriter WD;
         public static System.Net.Sockets.NetworkStream stream;
 
@@ -499,121 +623,6 @@ namespace wmib
                 messages.get( "rcfeed12", channel.Language ),
                 channel.Name);
             return false;
-        }
-
-        public static void Start()
-        {
-            channels = new List<string>();
-            if (!File.Exists(channeldata))
-            {
-                File.WriteAllText(channeldata, "#mediawiki.wikipedia");
-            }
-            string message = "";
-            try
-            {
-                string[] list = System.IO.File.ReadAllLines(channeldata);
-                Program.Log("Loading feed");
-                lock (channels)
-                {
-                    foreach (string chan in list)
-                    {
-                        channels.Add(chan);
-                    }
-                }
-                Connect();
-                Program.Log("Loaded feed");
-                while (true)
-                {
-                    try
-                    {
-                        if (RD == null)
-                        {
-                            return;
-                        }
-                        while (!RD.EndOfStream)
-                        {
-                            message = RD.ReadLine();
-                            Match Edit = line.Match(message);
-                            if (line.IsMatch(message) && Edit != null)
-                            {
-                                string _channel = message.Substring(message.IndexOf("PRIVMSG"));
-                                _channel = _channel.Substring(_channel.IndexOf("#"));
-                                _channel = _channel.Substring(0, _channel.IndexOf(" "));
-                                if (Edit.Groups.Count > 7)
-                                {
-                                    string page = Edit.Groups[1].Value;
-                                    string link = Edit.Groups[4].Value;
-                                    string username = Edit.Groups[6].Value;
-                                    string change = Edit.Groups[7].Value;
-                                    string summary = Edit.Groups[8].Value;
-
-                                    lock (rc)
-                                    {
-                                        foreach (RecentChanges curr in rc)
-                                        {
-                                            if (curr != null)
-                                            {
-                                                if (curr.channel.Feed)
-                                                {
-                                                    lock (curr.pages)
-                                                    {
-                                                        foreach (IWatch w in curr.pages)
-                                                        {
-                                                            if (w != null)
-                                                            {
-                                                                if (w.Channel == _channel)
-                                                                {
-                                                                    if (page == w.Page)
-                                                                    {
-                                                                        core.irc._SlowQueue.DeliverMessage(
-                                                                            //messages.get("rfeedline1", curr.channel.Language) + "12" + w.URL.name + "" + messages.get("rfeedline2", curr.channel.Language) + "" + page +
-                                                                            //"" + messages.get("rfeedline3", curr.channel.Language) + "" + username +
-                                                                            //"" + messages.get("rfeedline4", curr.channel.Language) + w.URL.url + "?diff=" + link + messages.get("rfeedline5", curr.channel.Language) + summary, curr.channel.Name);
-                                                                            messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
-                                                                    }
-                                                                    else
-                                                                        if (w.Page.EndsWith("*"))
-                                                                        {
-                                                                            if (page.StartsWith(w.Page.Replace("*", "")))
-                                                                            {
-                                                                                core.irc._SlowQueue.DeliverMessage(
-                                                                                messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
-                                                                            }
-                                                                        }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            Thread.Sleep(10);
-                        }
-                        Thread.Sleep(100);
-                    }
-                    catch (ThreadAbortException)
-                    {
-                        return;
-                    }
-                    catch (IOException)
-                    {
-                        Connect();
-                    }
-                    catch (Exception x)
-                    {
-                        core.LastText = message;
-                        core.handleException(x);
-                    }
-                }
-            }
-            catch (Exception x)
-            {
-                core.handleException(x);
-                // abort
-            }
         }
     }
 }

@@ -6,9 +6,16 @@ using System.Threading;
 
 namespace wmib
 {
-    class Seen
+    public class Seen : Module
     {
-        private static bool save = false;
+        private bool save = false;
+
+        public override bool Construct()
+        {
+            LoadData();
+            base.Create("SEEN", true);
+            return true;
+        }
 
         public class ChannelRequest
         {
@@ -59,15 +66,15 @@ namespace wmib
         }
 
         public static List<ChannelRequest> requests = new List<ChannelRequest>();
-        public static Thread SearchThread;
-        public static Thread SearchHostThread;
-        public static bool working = false;
+        public Thread SearchThread;
+        public Thread SearchHostThread;
+        public bool Working = false;
 
-        public static string temp_nick;
-        public static config.channel chan;
-        public static string temp_source;
+        public string temp_nick;
+        public config.channel chan;
+        public string temp_source;
 
-        public static void SaveData()
+        public override void Load()
         {
             try
             {
@@ -92,11 +99,9 @@ namespace wmib
             }
         }
 
-        public static Thread IO;
+        public List<item> global = new List<item>();
 
-        public static List<item> global = new List<item>();
-
-        public static void WriteStatus(string nick, string host, string place, item.Action action)
+        public void WriteStatus(string nick, string host, string place, item.Action action)
         {
             item user = null;
             lock (global)
@@ -126,7 +131,7 @@ namespace wmib
             save = true;
         }
 
-        public static void Search()
+        public void Search()
         {
             try
             {
@@ -202,14 +207,14 @@ namespace wmib
                     {
                         response = "are you really looking for yourself?";
                         core.irc._SlowQueue.DeliverMessage(temp_source + ": " + response, chan.Name);
-                        working = false;
+                        Working = false;
                         return;
                     }
                     if (temp_nick.ToUpper() == config.username.ToUpper())
                     {
                         response = "I am right here";
                         core.irc._SlowQueue.DeliverMessage(temp_source + ": " + response, chan.Name);
-                        working = false;
+                        Working = false;
                         return;
                     }
                     if (chan.containsUser(temp_nick))
@@ -230,11 +235,11 @@ namespace wmib
                         response += " (multiple results were found: " + results + ")";
                     }
                     core.irc._SlowQueue.DeliverMessage(temp_source + ": " + response, chan.Name);
-                    working = false;
+                    Working = false;
                     return;
                 }
                 core.irc._SlowQueue.DeliverMessage(messages.get("Error1", chan.Language), chan.Name);
-                working = false;
+                Working = false;
             }
             catch (ThreadAbortException)
             {
@@ -243,11 +248,11 @@ namespace wmib
             catch (Exception fail)
             {
                 core.handleException(fail);
-                working = false;
+                Working = false;
             }
         }
 
-        public static void StartRegex()
+        public void StartRegex()
         {
             try
             {
@@ -281,7 +286,7 @@ namespace wmib
             }
         }
 
-        public static void RegEx2(string nick, config.channel channel, string source)
+        public void RegEx2(string nick, config.channel channel, string source)
         {
             try
             {
@@ -290,9 +295,9 @@ namespace wmib
                 chan = channel;
                 SearchThread = new Thread(Search);
                 SearchThread.Start();
-                working = true;
+                Working = true;
                 int curr = 0;
-                while (working)
+                while (Working)
                 {
                     Thread.Sleep(10);
                     curr++;
@@ -300,7 +305,7 @@ namespace wmib
                     {
                         SearchThread.Abort();
                         core.irc._SlowQueue.DeliverMessage("This search took too much time, please optimize query", channel.Name);
-                        working = false;
+                        Working = false;
                         break;
                     }
                 }
@@ -311,7 +316,7 @@ namespace wmib
             }
         }
 
-        public static void RegEx(string nick, config.channel channel, string source)
+        public void RegEx(string nick, config.channel channel, string source)
         {
             lock (requests)
             {
@@ -319,7 +324,7 @@ namespace wmib
             }
         }
 
-        public static void RetrieveStatus(string nick, config.channel channel, string source)
+        public void RetrieveStatus(string nick, config.channel channel, string source)
         {
             lock (requests)
             { 
@@ -327,7 +332,7 @@ namespace wmib
             }
         }
 
-        public static void RetrieveStatus2(string nick, config.channel channel, string source)
+        public void RetrieveStatus2(string nick, config.channel channel, string source)
         {
             string response = "I have never seen " + nick;
             bool found = false;
@@ -413,7 +418,7 @@ namespace wmib
             core.irc._SlowQueue.DeliverMessage(source + ": " + response, channel.Name, IRC.priority.normal);
         }
 
-        public static void Save()
+        public void Save()
         {
             XmlDocument stat = new XmlDocument();
             XmlNode xmlnode = stat.CreateElement("channel_stat");
@@ -467,7 +472,7 @@ namespace wmib
             }
         }
 
-        public static void Load()
+        public void LoadData()
         {
             SearchHostThread = new Thread(StartRegex);
             SearchHostThread.Start();

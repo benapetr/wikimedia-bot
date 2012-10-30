@@ -156,6 +156,7 @@ Rss3=Rss feed is enabled on this channel;
 Rss4=Rss feed has been enabled on channel;
 Rss5=Invalid number of parameters, you need to specify name and url, for example @rss+ name (some url);
 rss-on=Turn on a rss feed;
+UnknownChan=I don't know about this channel, you need to specify some I am in;
 rss-off=Turn off an rss feed;
 rss-=Remove item from rss feed;
 rss+=Insert item to rss feed;

@@ -40,9 +40,15 @@ namespace wmib
         }
     }
 
-    public class Statistics
+    public class module_stat : Module
     {
-        public static void DB()
+        public override bool Construct()
+        {
+            base.Create("STATISTICS", true);
+            return true;
+        }
+
+        public override void Load()
         {
             while (true)
             {
@@ -68,7 +74,10 @@ namespace wmib
                 }
             }
         }
+    }
 
+    public class Statistics
+    {
         public config.channel channel;
         public bool enabled = true;
         public bool changed = false;
