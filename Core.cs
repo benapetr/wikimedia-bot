@@ -132,6 +132,26 @@ namespace wmib
         /// </summary>
         /// <param name="text">Text</param>
         /// <returns></returns>
+        public static string encode2(string text)
+        {
+            return text.Replace("|", "<separator>");
+        }
+
+        /// <summary>
+        /// Decode
+        /// </summary>
+        /// <param name="text">String</param>
+        /// <returns></returns>
+        public static string decode2(string text)
+        {
+            return text.Replace("<separator>", "|");
+        }
+
+        /// <summary>
+        /// Encode a data before saving it to a file
+        /// </summary>
+        /// <param name="text">Text</param>
+        /// <returns></returns>
         public static string encode(string text)
         {
             return text;

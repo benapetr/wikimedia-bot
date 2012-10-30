@@ -61,7 +61,7 @@ namespace wmib
                 {
                     string[] info = x.Split(Char.Parse(config.separator));
                     string level = info[1];
-                    string name = info[0];
+                    string name = core.decode2(info[0]);
                     Users.Add(new core.user(level, name));
                 }
             }
@@ -73,7 +73,7 @@ namespace wmib
                 {
                     string[] info = x.Split(Char.Parse(config.separator));
                     string level = info[1];
-                    string name = core.decode(info[0]);
+                    string name = core.decode2(info[0]);
                     GlobalUsers.Add(new core.user(level, name));
                 }
             }
@@ -91,7 +91,7 @@ namespace wmib
                 System.IO.File.WriteAllText(File, "");
                 foreach (core.user u in Users)
                 {
-                    System.IO.File.AppendAllText(File, core.encode(u.name) + config.separator + u.level + "\n");
+                    System.IO.File.AppendAllText(File, core.encode2(u.name) + config.separator + u.level + "\n");
                 }
                 System.IO.File.Delete(config.tempName(File));
             }

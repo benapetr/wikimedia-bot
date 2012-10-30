@@ -93,7 +93,7 @@ namespace wmib
         /// <returns></returns>
         public override bool Construct()
         {
-            base.Create("LOGS", true);
+            base.Create("LOGS", true, true);
             return true;
         }
 

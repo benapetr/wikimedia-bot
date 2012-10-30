@@ -27,7 +27,7 @@ namespace wmib
 
         public override bool Construct()
         {
-            base.Create("Infobot core", true);
+            base.Create("Infobot core", true, true);
             return true;
         }
 
@@ -70,7 +70,7 @@ namespace wmib
     {
         public override bool Construct()
         {
-            base.Create("Infobot DB", true);
+            base.Create("Infobot DB", true, true);
             return true;
         }
 

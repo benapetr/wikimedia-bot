@@ -11,6 +11,7 @@
 // Created by Petr Bena
 
 using System;
+using System.Threading;
 using System.Collections.Generic;
 using System.Text;
 
@@ -133,7 +134,21 @@ namespace wmib
                 Load();
                 Program.Log("Module terminated: " + Name, true);
                 working = false;
-                while (Reload)
+            }
+            catch (ThreadAbortException)
+            {
+                Program.Log("Module terminated: " + Name, true);
+                return;
+            }
+            catch (Exception f)
+            {
+                core.handleException(f);
+                working = false;
+                Program.Log("Module crashed: " + Name, true);
+            }
+            while (Reload)
+            {
+                try
                 {
                     Warning = true;
                     working = true;
@@ -142,11 +157,17 @@ namespace wmib
                     Program.Log("Module terminated: " + Name, true);
                     working = false;
                 }
-            }
-            catch (Exception f)
-            {
-                core.handleException(f);
-                working = false;
+                catch (ThreadAbortException)
+                {
+                    Program.Log("Module terminated: " + Name, true);
+                    return;
+                }
+                catch (Exception f)
+                {
+                    core.handleException(f);
+                    working = false;
+                    Program.Log("Module crashed: " + Name, true);
+                }
             }
         }
 
