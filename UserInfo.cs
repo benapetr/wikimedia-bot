@@ -45,6 +45,7 @@ namespace wmib
         public override bool Construct()
         {
             base.Create("STATISTICS", true, true);
+            Version = "1.0.0";
             return true;
         }
 
@@ -77,6 +78,11 @@ namespace wmib
 
         public override void Hook_PRIV(config.channel channel, User invoker, string message)
         {
+            if (channel.statistics_enabled)
+            {
+                channel.info.Stat(invoker.Nick, message, invoker.Host);
+            }
+
             if (message == "@statistics-off")
             {
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))

@@ -6,26 +6,26 @@ using System.Threading;
 
 namespace wmib
 {
-    public class module_seen : Module
+    public class RegularModule : Module
     {
         private bool save = false;
 
         public override bool Construct()
         {
             LoadData();
-            Version = "1.0.0";
+            Version = "1.0.2";
             base.Create("SEEN", true);
             return true;
         }
 
         public override void Hook_ACTN(config.channel channel, User invoker, string message)
         {
-            core.plugin_seen.WriteStatus(invoker.Nick, invoker.Host, channel.Name, module_seen.item.Action.Talk);
+            WriteStatus(invoker.Nick, invoker.Host, channel.Name, item.Action.Talk);
         }
 
         public override void Hook_PRIV(config.channel channel, User invoker, string message)
         {
-            core.plugin_seen.WriteStatus(invoker.Nick, invoker.Host, channel.Name, module_seen.item.Action.Talk);
+            WriteStatus(invoker.Nick, invoker.Host, channel.Name, item.Action.Talk);
             if (message.StartsWith("@seen "))
             {
                 if (channel.Seen)
@@ -56,7 +56,7 @@ namespace wmib
                         }
                         if (parameter != "")
                         {
-                            core.plugin_seen.RegEx(parameter, channel, invoker.Nick);
+                            RegEx(parameter, channel, invoker.Nick);
                             return;
                         }
                     }
@@ -117,22 +117,22 @@ namespace wmib
 
         public override void Hook_Join(config.channel channel, User user)
         {
-            WriteStatus(user.Nick, user.Host, channel.Name, module_seen.item.Action.Join);
+            WriteStatus(user.Nick, user.Host, channel.Name, item.Action.Join);
         }
 
         public override void Hook_Kick(config.channel channel, User source, User user)
         {
-            WriteStatus(user.Nick, user.Host, channel.Name, module_seen.item.Action.Kick);
+            WriteStatus(user.Nick, user.Host, channel.Name, item.Action.Kick);
         }
 
         public override void Hook_Part(config.channel channel, User user)
         {
-            WriteStatus(user.Nick, user.Host, channel.Name, module_seen.item.Action.Part);
+            WriteStatus(user.Nick, user.Host, channel.Name, item.Action.Part);
         }
 
         public override void Hook_Quit(User user)
         {
-            WriteStatus(user.Nick, user.Host, "N/A", module_seen.item.Action.Exit);
+            WriteStatus(user.Nick, user.Host, "N/A", item.Action.Exit);
         }
 
         public class ChannelRequest
@@ -209,6 +209,10 @@ namespace wmib
             catch (ThreadAbortException)
             {
                 Save();
+                if (SearchThread.ThreadState == ThreadState.Running)
+                {
+                    SearchThread.Abort();
+                }
                 return;
             }
             catch (Exception fail)

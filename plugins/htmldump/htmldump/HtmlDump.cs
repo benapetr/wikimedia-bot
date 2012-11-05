@@ -1,4 +1,4 @@
-//This program is free software: you can redistribute it and/or modify
+﻿//This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
 //the Free Software Foundation, either version 3 of the License, or
 //(at your option) any later version.
@@ -17,11 +17,11 @@ using System.Threading;
 
 namespace wmib
 {
-    public class module_html : Module
+    public class RegularModule : Module
     {
         public override bool Construct()
         {
-            Version = "1.0.0";
+            Version = "1.0.1";
             base.Create("HTML", true);
             return true;
         }
@@ -67,7 +67,7 @@ namespace wmib
             dumpname = config.DumpDir + "/" + channel.Name + ".htm";
             if (!System.IO.Directory.Exists(config.DumpDir))
             {
-                Program.Log("Creating a directory for dump");
+                core.Log("Creating a directory for dump");
                 System.IO.Directory.CreateDirectory(config.DumpDir);
             }
             Channel = channel;
@@ -171,7 +171,7 @@ namespace wmib
                     foreach (config.channel chan in config.channels)
                     {
                         text = text + "<tr>";
-                        text = text + "<td><a href=\"" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm\">" + chan.Name + "</a></td><td>infobot: " + chan.Info.ToString() + ", recentchanges: " + chan.Feed.ToString() + ", logs: " + chan.Logged.ToString() + ", suppress: " + chan.suppress.ToString() + ", seen: " + chan.Seen.ToString() +  ", rss: " + chan.EnableRss.ToString() +  ", statistics: " + chan.statistics_enabled.ToString() +"</td></tr>\n";
+                        text = text + "<td><a href=\"" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm\">" + chan.Name + "</a></td><td>infobot: " + chan.Info.ToString() + ", recentchanges: " + chan.Feed.ToString() + ", logs: " + chan.Logged.ToString() + ", suppress: " + chan.suppress.ToString() + ", seen: " + chan.Seen.ToString() + ", rss: " + chan.EnableRss.ToString() + ", statistics: " + chan.statistics_enabled.ToString() + "</td></tr>\n";
                     }
                 }
 
@@ -199,7 +199,7 @@ namespace wmib
                 }
                 text += "</table>\n\n</body></html>";
                 File.WriteAllText(config.DumpDir + "/systemdata.htm", text);
-                
+
             }
             catch (Exception b)
             {
@@ -313,7 +313,7 @@ namespace wmib
                     text += "</table>";
                 }
                 if (Channel.EnableRss)
-                { 
+                {
                     text += "\n<br>\n<h4>Rss</h4>\n<br>\n\n<table class=\"infobot\" width=100% border=1>";
                     text += "<tr><th>Name</th><th>URL</th><th>Enabled</th></tr>";
                     lock (Channel.Rss.Content)

@@ -168,7 +168,7 @@ namespace wmib
                                                             else
                                                             {
                                                                 switch (st.Replace(" ", ""))
-                                                                { 
+                                                                {
                                                                     case "Product":
                                                                         curr.bugzilla_product = td.InnerText;
                                                                         break;
@@ -200,8 +200,8 @@ namespace wmib
                                                     }
                                                 }
                                                 catch (Exception)
-                                                { 
-                                                    
+                                                {
+
                                                 }
                                             }
                                             break;
@@ -339,7 +339,7 @@ namespace wmib
         }
     }
 
-    public class FeedMod : Module
+    public class module_feed : Module
     {
         public override void Hook_PRIV(config.channel channel, User invoker, string message)
         {
@@ -478,6 +478,7 @@ namespace wmib
         public override bool Construct()
         {
             base.Create("Feed", true);
+            Version = "1.0.0";
             return true;
         }
 
@@ -721,7 +722,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                Program.Log("Unable to handle rss in " + owner.Name,true);
+                Program.Log("Unable to handle rss in " + owner.Name, true);
                 core.handleException(fail);
             }
             return true;

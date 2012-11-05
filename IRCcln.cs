@@ -44,7 +44,7 @@ namespace wmib
 
         private bool ChannelTopic(string[] code, string command, string source, string parameters, string value)
         {
-            
+
             return false;
         }
 
@@ -78,21 +78,21 @@ namespace wmib
                 string server = code[6];
                 if (channel != null)
                 {
-                        if (!channel.containsUser(nick))
+                    if (!channel.containsUser(nick))
+                    {
+                        User _user = new User(nick, host, ident);
+                        channel.ul.Add(_user);
+                        return true;
+                    }
+                    foreach (User u in channel.ul)
+                    {
+                        if (u.Nick == nick)
                         {
-                            User _user = new User(nick, host, ident);
-                            channel.ul.Add(_user);
-                            return true;
+                            u.Ident = ident;
+                            u.Host = host;
+                            break;
                         }
-                        foreach (User u in channel.ul)
-                        {
-                            if (u.Nick == nick)
-                            {
-                                u.Ident = ident;
-                                u.Host = host;
-                                break;
-                            }
-                        }
+                    }
                 }
             }
             return false;
@@ -125,7 +125,7 @@ namespace wmib
 
         private bool ChannelBans(string[] code)
         {
-            
+
             return false;
         }
 
@@ -135,16 +135,16 @@ namespace wmib
             string _new = value;
             foreach (config.channel item in config.channels)
             {
-                    lock (item.ul)
+                lock (item.ul)
+                {
+                    foreach (User curr in item.ul)
                     {
-                        foreach (User curr in item.ul)
+                        if (curr.Nick == nick)
                         {
-                            if (curr.Nick == nick)
-                            {
-                                    curr.Nick = _new;
-                            }
+                            curr.Nick = _new;
                         }
                     }
+                }
             }
             return true;
         }
@@ -165,27 +165,45 @@ namespace wmib
             _ident = source.Substring(source.IndexOf("!") + 1);
             _ident = _ident.Substring(0, _ident.IndexOf("@"));
             config.channel channel = core.getChannel(chan);
+            User us = new User(user, _host, _ident);
             if (channel != null)
             {
-                core.plugin_seen.WriteStatus(user, _host, channel.Name, Seen.item.Action.Part);
-                User delete = null;
-                    if (channel.containsUser(user))
+                lock (Module.module)
+                {
+                    foreach (Module module in Module.module)
                     {
-                        lock (channel.ul)
+                        if (!module.working)
                         {
-                            foreach (User User in channel.ul)
-                            {
-                                if (User.Nick == user)
-                                {
-                                    delete = User;
-                                    break;
-                                }
-                            }
-                            channel.ul.Remove(delete);
+                            continue;
                         }
-                        return true;
+                        try
+                        {
+                            module.Hook_Part(channel, us);
+                        }
+                        catch (Exception fail)
+                        {
+                            core.handleException(fail);
+                        }
+                    }
+                }
+                User delete = null;
+                if (channel.containsUser(user))
+                {
+                    lock (channel.ul)
+                    {
+                        foreach (User User in channel.ul)
+                        {
+                            if (User.Nick == user)
+                            {
+                                delete = User;
+                                break;
+                            }
+                        }
+                        channel.ul.Remove(delete);
                     }
                     return true;
+                }
+                return true;
             }
             return false;
         }
@@ -193,7 +211,7 @@ namespace wmib
         private bool Topic(string source, string parameters, string value)
         {
             string chan = parameters;
-            
+
             return false;
         }
 
@@ -205,29 +223,47 @@ namespace wmib
             _host = source.Substring(source.IndexOf("@") + 1);
             _ident = source.Substring(source.IndexOf("!") + 1);
             _ident = _ident.Substring(0, _ident.IndexOf("@"));
-            core.plugin_seen.WriteStatus(user, _host, "N/A", Seen.item.Action.Exit);
+            User _user = new User(user, _host, _ident);
             string _new = value;
+            lock (Module.module)
+            {
+                foreach (Module module in Module.module)
+                {
+                    if (!module.working)
+                    {
+                        continue;
+                    }
+                    try
+                    {
+                        module.Hook_Quit(_user);
+                    }
+                    catch (Exception fail)
+                    {
+                        core.handleException(fail);
+                    }
+                }
+            }
             foreach (config.channel item in config.channels)
             {
-                    User target = null;
-                    lock (item.ul)
+                User target = null;
+                lock (item.ul)
+                {
+                    foreach (User curr in item.ul)
                     {
-                        foreach (User curr in item.ul)
+                        if (curr.Nick == user)
                         {
-                            if (curr.Nick == user)
-                            {
-                                target = curr;
-                                break;
-                            }
+                            target = curr;
+                            break;
                         }
                     }
-                    if (target != null)
+                }
+                if (target != null)
+                {
+                    lock (item.ul)
                     {
-                            lock (item.ul)
-                            {
-                                item.ul.Remove(target);
-                            }
+                        item.ul.Remove(target);
                     }
+                }
             }
             return true;
         }
@@ -235,30 +271,55 @@ namespace wmib
         private bool Kick(string source, string parameters, string value)
         {
             string user = parameters.Substring(parameters.IndexOf(" ") + 1);
+            string user2 = source.Substring(0, source.IndexOf("!"));
+            string _ident;
+            string _host;
+            _host = source.Substring(source.IndexOf("@") + 1);
+            _ident = source.Substring(source.IndexOf("!") + 1);
+            _ident = _ident.Substring(0, _ident.IndexOf("@"));
+            User user01 = new User(user, "", "");
+            User sr = new User(user2, _host, _ident);
             // petan!pidgeon@petan.staff.tm-irc.org KICK #support HelpBot :Removed from the channel
             config.channel channel = core.getChannel(parameters.Substring(0, parameters.IndexOf(" ")));
             if (channel != null)
             {
-                core.plugin_seen.WriteStatus(user, "", channel.Name, Seen.item.Action.Kick);
-                    if (channel.containsUser(user))
+                lock (Module.module)
+                {
+                    foreach (Module module in Module.module)
                     {
-                        User delete = null;
-                        lock (channel.ul)
+                        if (!module.working)
                         {
-                            foreach (User _user in channel.ul)
-                            {
-                                if (_user.Nick == user)
-                                {
-                                    delete = _user;
-                                    break;
-                                }
-                            }
-                            if (delete != null)
-                            {
-                                channel.ul.Remove(delete);
-                            }
+                            continue;
+                        }
+                        try
+                        {
+                            module.Hook_Kick(channel, sr, user01);
+                        }
+                        catch (Exception fail)
+                        {
+                            core.handleException(fail);
                         }
                     }
+                }
+                if (channel.containsUser(user))
+                {
+                    User delete = null;
+                    lock (channel.ul)
+                    {
+                        foreach (User _user in channel.ul)
+                        {
+                            if (_user.Nick == user)
+                            {
+                                delete = _user;
+                                break;
+                            }
+                        }
+                        if (delete != null)
+                        {
+                            channel.ul.Remove(delete);
+                        }
+                    }
+                }
                 return true;
             }
             return false;
@@ -279,17 +340,31 @@ namespace wmib
             _ident = source.Substring(source.IndexOf("!") + 1);
             _ident = _ident.Substring(0, _ident.IndexOf("@"));
             config.channel channel = core.getChannel(chan);
-            core.plugin_seen.WriteStatus(user, _host, chan, Seen.item.Action.Join);
+            User _user = new User(user, _host, _ident);
             if (channel != null)
             {
-                        if (!channel.containsUser(user))
+                lock (Module.module)
+                {
+                    foreach (Module module in Module.module)
+                    {
+                        try
                         {
-                            lock (channel.ul)
-                            {
-                                channel.ul.Add(new User(user, _host, _ident));
-                            }
+                            module.Hook_Join(channel, _user);
                         }
-                    return true;
+                        catch (Exception fail)
+                        {
+                            core.handleException(fail);
+                        }
+                    }
+                }
+                if (!channel.containsUser(user))
+                {
+                    lock (channel.ul)
+                    {
+                        channel.ul.Add(new User(user, _host, _ident));
+                    }
+                }
+                return true;
             }
             return false;
         }
@@ -556,77 +631,77 @@ namespace wmib
 
             public void Run()
             {
-                    while (true)
+                while (true)
+                {
+                    try
                     {
-                        try
+                        if (messages.Count > 0)
                         {
-                            if (messages.Count > 0)
+                            lock (messages)
                             {
+                                newmessages.AddRange(messages);
+                                messages.Clear();
+                            }
+                        }
+                        if (newmessages.Count > 0)
+                        {
+                            List<Message> Processed = new List<Message>();
+                            priority highest = priority.low;
+                            while (newmessages.Count > 0)
+                            {
+                                // we need to get all messages that have been scheduled to be send
                                 lock (messages)
                                 {
-                                    newmessages.AddRange(messages);
-                                    messages.Clear();
+                                    if (messages.Count > 0)
+                                    {
+                                        newmessages.AddRange(messages);
+                                        messages.Clear();
+                                    }
                                 }
-                            }
-                            if (newmessages.Count > 0)
-                            {
-                                List<Message> Processed = new List<Message>();
-                                priority highest = priority.low;
-                                while (newmessages.Count > 0)
+                                highest = priority.low;
+                                // we need to check the priority we need to handle first
+                                foreach (Message message in newmessages)
                                 {
-                                    // we need to get all messages that have been scheduled to be send
-                                    lock (messages)
+                                    if (message._Priority > highest)
                                     {
-                                        if (messages.Count > 0)
+                                        highest = message._Priority;
+                                        if (message._Priority == priority.high)
                                         {
-                                            newmessages.AddRange(messages);
-                                            messages.Clear();
-                                        }
-                                    }
-                                    highest = priority.low;
-                                    // we need to check the priority we need to handle first
-                                    foreach (Message message in newmessages)
-                                    {
-                                        if (message._Priority > highest)
-                                        {
-                                            highest = message._Priority;
-                                            if (message._Priority == priority.high)
-                                            {
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    // send highest priority first
-                                    foreach (Message message in newmessages)
-                                    {
-                                        if (message._Priority >= highest)
-                                        {
-                                            Processed.Add(message);
-                                            Parent.Message(message.message, message.channel);
-                                            System.Threading.Thread.Sleep(1000);
-                                            if (highest != priority.high)
-                                            {
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    foreach (Message message in Processed)
-                                    {
-                                        if (newmessages.Contains(message))
-                                        {
-                                            newmessages.Remove(message);
+                                            break;
                                         }
                                     }
                                 }
+                                // send highest priority first
+                                foreach (Message message in newmessages)
+                                {
+                                    if (message._Priority >= highest)
+                                    {
+                                        Processed.Add(message);
+                                        Parent.Message(message.message, message.channel);
+                                        System.Threading.Thread.Sleep(1000);
+                                        if (highest != priority.high)
+                                        {
+                                            break;
+                                        }
+                                    }
+                                }
+                                foreach (Message message in Processed)
+                                {
+                                    if (newmessages.Contains(message))
+                                    {
+                                        newmessages.Remove(message);
+                                    }
+                                }
                             }
-                            newmessages.Clear();
                         }
-                        catch (ThreadAbortException)
-                        {
-                            return;
-                        }
-                        System.Threading.Thread.Sleep(200);
+                        newmessages.Clear();
                     }
+                    catch (ThreadAbortException)
+                    {
+                        return;
+                    }
+                    System.Threading.Thread.Sleep(200);
+                }
             }
         }
 
@@ -902,13 +977,11 @@ namespace wmib
                                             message = message.Substring(message.IndexOf(" :") + 2);
                                             if (message.Contains(delimiter.ToString() + "ACTION"))
                                             {
-                                                core.plugin_seen.WriteStatus(nick, host, channel, Seen.item.Action.Talk);
                                                 core.getAction(message.Replace(delimiter.ToString() + "ACTION", ""), channel, host, nick);
                                                 continue;
                                             }
                                             else
                                             {
-                                                core.plugin_seen.WriteStatus(nick, host, channel, Seen.item.Action.Talk);
                                                 core.getMessage(channel, nick, host, message);
                                                 continue;
                                             }

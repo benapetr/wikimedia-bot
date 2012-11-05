@@ -17,7 +17,7 @@ using System.Text;
 
 namespace wmib
 {
-    public class Logs : Module
+    public class module_logs : Module
     {
         public List<char> Separator = new List<char> { ' ', ',', (char)3 , '(', ')', '{', '}', (char)2, '<', '>' };
         public struct Job {
@@ -29,8 +29,14 @@ namespace wmib
 
         public List<Job> jobs = new List<Job>();
 
+        public override void Hook_ACTN(config.channel channel, User invoker, string message)
+        {
+            chanLog(message, channel, invoker.Nick, invoker.Host, false);
+        }
+
         public override void Hook_PRIV(config.channel channel, User invoker, string message)
         {
+            chanLog(message, channel, invoker.Nick, invoker.Host);
             if (message == "@logon")
             {
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
@@ -145,6 +151,7 @@ namespace wmib
         public override bool Construct()
         {
             base.Create("LOGS", true, true);
+            Version = "1.0.0";
             return true;
         }
 

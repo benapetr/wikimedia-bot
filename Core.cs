@@ -29,8 +29,14 @@ namespace wmib
         public static readonly string prefix_logdir = "log";
         public static string bold = ((char)002).ToString();
     }
+
     public class misc
     {
+        /// <summary>
+        /// Check if a regex is valid
+        /// </summary>
+        /// <param name="pattern"></param>
+        /// <returns></returns>
         public static bool IsValidRegex(string pattern)
         {
             if (pattern == null) return false;
@@ -43,20 +49,18 @@ namespace wmib
             {
                 return false;
             }
-
             return true;
         }
     }
 
     public class core
     {
-        public static module_r plugin_recentchanges;
-        public static Logs plugin_logs;
-        public static FeedMod plugin_feed;
-        public static module_html plugin_html;
-        public static infobot_m plugin_ib1;
+        // Plugins should be defined here if static pointer is required from outside, otherwise can be loaded on demand
+        public static module_rc plugin_recentchanges;
+        public static module_logs plugin_logs;
+        public static module_feed plugin_feed;
+        public static module_infobot plugin_ib1;
         public static infobot_writer plugin_ib2;
-        public static Seen plugin_seen;
         public static string LastText;
         public static bool disabled;
         public static bool exit = false;
@@ -147,24 +151,48 @@ namespace wmib
             return text.Replace("<separator>", "|");
         }
 
-        /// <summary>
-        /// Encode a data before saving it to a file
-        /// </summary>
-        /// <param name="text">Text</param>
-        /// <returns></returns>
-        public static string encode(string text)
+        public static bool LoadMod(string path)
         {
-            return text;
+            try
+            {
+                if (File.Exists(path))
+                {
+                    System.Reflection.Assembly library = System.Reflection.Assembly.LoadFrom(path);
+                    if (library == null)
+                    {
+                        Program.Log("Unable to load " + path + " because the file can't be read", true);
+                        return false;
+                    }
+                    Type[] types = library.GetTypes();
+                    Type type = library.GetType("wmib.RegularModule");
+                    Type pluginInfo = null;
+                    foreach (Type curr in types)
+                    {
+                        if (curr.IsAssignableFrom(type))            
+                        {
+                            pluginInfo = curr;
+                            break;
+                        }
+                    }
+                    if (pluginInfo == null)
+                    {
+                        Program.Log("Unable to load " + path + " because the library contains no module", true);
+                        return false;
+                    }
+                    Module _plugin = (Module)Activator.CreateInstance(pluginInfo);
+                    return true;
+                }
+            }
+            catch (Exception fail)
+            {
+                core.handleException(fail);
+            }
+            return false;
         }
 
-        /// <summary>
-        /// Decode
-        /// </summary>
-        /// <param name="text">String</param>
-        /// <returns></returns>
-        public static string decode(string text)
+        public static void Log(string text, bool error = false)
         {
-            return text;
+            Program.Log(text, error);
         }
 
         /// <summary>
@@ -295,8 +323,29 @@ namespace wmib
         /// <returns></returns>
         public static bool getAction(string message, string Channel, string host, string nick)
         {
-            config.channel curr = getChannel(Channel);
-            core.plugin_logs.chanLog(message, curr, nick, host, false);
+            config.channel channel = getChannel(Channel);
+            if (channel != null)
+            {
+                lock (Module.module)
+                {
+                    foreach (Module curr in Module.module)
+                    {
+                        if (!curr.working)
+                        {
+                            continue;
+                        }
+                        try
+                        {
+                            curr.Hook_ACTN(channel, new User(nick, host, ""), message);
+                        }
+                        catch (Exception fail)
+                        {
+                            Program.Log("Exception on Hook_ACTN in module: " + curr.Name);
+                            core.handleException(fail);
+                        }
+                    }
+                }
+            }
             return false;
         }
 
@@ -455,7 +504,7 @@ namespace wmib
                     if (chan.Users.isApproved(user, host, "admin"))
                     {
                         irc.wd.WriteLine("PART " + chan.Name + " :" + "dropped by " + user + " from " + origin);
-                        Program.Log("Dropped " + chan.Name  + " dropped by " + user + " from " + origin);
+                        Program.Log("Dropped " + chan.Name + " dropped by " + user + " from " + origin);
                         Thread.Sleep(100);
                         chan.Feed = false;
                         irc.wd.Flush();
@@ -550,10 +599,10 @@ namespace wmib
                     irc.Message(messages.get("MessageQueueWasReloaded", chan.Language), chan.Name);
                     return;
                 }
-				if (!chan.suppress_warnings)
-				{
-                	irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
-				}
+                if (!chan.suppress_warnings)
+                {
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                }
                 return;
             }
 
@@ -585,7 +634,7 @@ namespace wmib
             {
                 string channel = message.Substring(6);
                 if (channel != "")
-                { 
+                {
                     config.channel Channel = core.getChannel(channel);
                     if (Channel == null)
                     {
@@ -617,10 +666,10 @@ namespace wmib
                             chan.SaveConfig();
                             return;
                         }
-						if (!chan.suppress_warnings)
-						{
-                        	irc._SlowQueue.DeliverMessage(messages.get("InvalidCode", chan.Language), chan.Name);
-						}
+                        if (!chan.suppress_warnings)
+                        {
+                            irc._SlowQueue.DeliverMessage(messages.get("InvalidCode", chan.Language), chan.Name);
+                        }
                         return;
                     }
                     else
@@ -631,10 +680,10 @@ namespace wmib
                 }
                 else
                 {
-					if (!chan.suppress_warnings)
-					{
-                    	irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
-					}
+                    if (!chan.suppress_warnings)
+                    {
+                        irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                    }
                     return;
                 }
             }
@@ -676,10 +725,10 @@ namespace wmib
                         return;
                     }
                 }
-				if (!chan.suppress_warnings)
-				{
-                	irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
-				}
+                if (!chan.suppress_warnings)
+                {
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                }
                 return;
             }
 
@@ -700,10 +749,10 @@ namespace wmib
                         return;
                     }
                 }
-				if (!chan.suppress_warnings)
-				{
-                	irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
-				}
+                if (!chan.suppress_warnings)
+                {
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                }
                 return;
             }
 
@@ -819,7 +868,7 @@ namespace wmib
                                 }
                                 irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
                                 return;
-							case "suppress-warnings":
+                            case "suppress-warnings":
                                 if (bool.TryParse(value, out _temp_a))
                                 {
                                     chan.suppress_warnings = _temp_a;
@@ -850,25 +899,151 @@ namespace wmib
                                 irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
                                 return;
                         }
-						if (!chan.suppress_warnings)
-						{
-                        	irc._SlowQueue.DeliverMessage(messages.get("configure-wrong", chan.Language), chan.Name);
-						}
+                        if (!chan.suppress_warnings)
+                        {
+                            irc._SlowQueue.DeliverMessage(messages.get("configure-wrong", chan.Language), chan.Name);
+                        }
                         return;
                     }
-					if (!chan.suppress_warnings)
-					{
-                    	irc._SlowQueue.DeliverMessage(messages.get("configure-wrong", chan.Language), chan.Name);
-					}
+                    if (!chan.suppress_warnings)
+                    {
+                        irc._SlowQueue.DeliverMessage(messages.get("configure-wrong", chan.Language), chan.Name);
+                    }
                     return;
                 }
                 else
                 {
-					if (!chan.suppress_warnings)
-					{
-                    	irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
-					}
+                    if (!chan.suppress_warnings)
+                    {
+                        irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                    }
                     return;
+                }
+            }
+
+            if (message.StartsWith("@system-lm "))
+            {
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
+                {
+                    string module = message.Substring("@system-lm ".Length);
+                    if (isModule(module) || module.EndsWith(".bin"))
+                    {
+                        Module _m = null;
+                        _m = getModule(module);
+                        if (_m != null)
+                        {
+                            irc._SlowQueue.DeliverMessage("This module was already loaded and you can't load one module twice, module will be reloaded now", chan.Name, IRC.priority.high);
+                            _m.Exit();
+                        }
+                        if (module.EndsWith(".bin"))
+                        {
+                            if (File.Exists(module))
+                            {
+                                if (LoadMod(module))
+                                {
+                                    irc._SlowQueue.DeliverMessage("Loaded module " + module, chan.Name, IRC.priority.high);
+                                    return;
+                                }
+                                irc._SlowQueue.DeliverMessage("Unable to load module " + module, chan.Name, IRC.priority.high);
+                                return;
+                            }
+                            irc._SlowQueue.DeliverMessage("File not found " + module, chan.Name, IRC.priority.high);
+                            return;
+                        }
+                        switch (module)
+                        {
+                            case "LOGS":
+                                lock (Module.module)
+                                {
+                                    if (Module.module.Contains(plugin_logs))
+                                    {
+                                        Module.module.Remove(plugin_logs);
+                                    }
+                                }
+                                plugin_logs = new module_logs();
+                                break;
+                            case "Infobot core":
+                                lock (Module.module)
+                                {
+                                    if (Module.module.Contains(plugin_ib1))
+                                    {
+                                        Module.module.Remove(plugin_ib1);
+                                    }
+                                }
+                                plugin_ib1 = new module_infobot();
+                                break;
+                            case "Infobot DB":
+                                lock (Module.module)
+                                {
+                                    if (Module.module.Contains(plugin_ib2))
+                                    {
+                                        Module.module.Remove(plugin_ib2);
+                                    }
+                                }
+                                plugin_ib2 = new infobot_writer();
+                                break;
+                            case "RC":
+                                lock (Module.module)
+                                {
+                                    if (Module.module.Contains(plugin_recentchanges))
+                                    {
+                                        Module.module.Remove(plugin_recentchanges);
+                                    }
+                                }
+                                plugin_recentchanges = new module_rc();
+                                break;
+                            case "Feed":
+                                lock (Module.module)
+                                {
+                                    if (Module.module.Contains(plugin_feed))
+                                    {
+                                        Module.module.Remove(plugin_feed);
+                                    }
+                                }
+                                plugin_feed = new module_feed();
+                                break;
+                        }
+                        irc._SlowQueue.DeliverMessage("Loaded module " + module, chan.Name, IRC.priority.high);
+                        return;
+                    }
+                    irc._SlowQueue.DeliverMessage("This module is not currently loaded in core", chan.Name, IRC.priority.high);
+                    return;
+
+                }
+            }
+
+            if (message.StartsWith("@system-rm "))
+            {
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
+                {
+                    string module = message.Substring("@system-lm ".Length);
+                    Module _m = getModule(module);
+                    if (_m == null)
+                    {
+                        irc._SlowQueue.DeliverMessage("This module is not currently loaded in core", chan.Name, IRC.priority.high);
+                        return;
+                    }
+                    _m.Exit();
+                    // sort out static ones
+                    switch (module)
+                    {
+                        case "LOGS":
+                            //plugin_logs = null;
+                            break;
+                        case "Infobot core":
+                            plugin_ib1 = null;
+                            break;
+                        case "Infobot DB":
+                            plugin_ib2 = null;
+                            break;
+                        case "RC":
+                            plugin_recentchanges = null;
+                            break;
+                        case "Feed":
+                            plugin_feed = null;
+                            break;
+                    }
+                    irc._SlowQueue.DeliverMessage("Unloaded module " + module, chan.Name, IRC.priority.high);
                 }
             }
 
@@ -907,15 +1082,48 @@ namespace wmib
             }
         }
 
+        public static Module getModule(string name)
+        {
+            lock (Module.module)
+            {
+                foreach (Module module in Module.module)
+                {
+                    if (module.Name == name)
+                    {
+                        return module;
+                    }
+                }
+            }
+            return null;
+        }
+
+        public static bool isModule(string name)
+        {
+            switch (name)
+            {
+                case "LOGS":
+                case "Infobot core":
+                case "Infobot DB":
+                case "RC":
+                case "Feed":
+                    return true;
+            }
+            return false;
+        }
+
         public static void Connect()
         {
-            plugin_logs = new Logs();
-            plugin_html = new module_html();
-            plugin_ib1 = new infobot_m();
+            plugin_logs = new module_logs();
+            plugin_ib1 = new module_infobot();
             plugin_ib2 = new infobot_writer();
-            plugin_recentchanges = new module_r();
-            plugin_seen = new Seen();
-            plugin_feed = new FeedMod();
+            plugin_recentchanges = new module_rc();
+            //plugin_seen = new module_seen();
+            plugin_feed = new module_feed();
+            // dynamic mods
+            foreach (string dll in Directory.GetFiles(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "*.bin"))
+            {
+                LoadMod(dll);
+            }
             Program.Log("Modules loaded");
             irc = new IRC(config.network, config.username, config.name, config.name);
             irc.Connect();
@@ -948,33 +1156,12 @@ namespace wmib
             config.channel curr = getChannel(channel);
             if (curr != null)
             {
-                core.plugin_logs.chanLog(message, curr, nick, host);
-                if (curr.statistics_enabled)
-                {
-                    curr.info.Stat(nick, message, host);
-                }
                 if (curr.ignore_unknown)
                 {
                     if (!curr.Users.isApproved(nick, host, "trust"))
                     {
                         return false;
                     }
-                }
-                 // "\uff01" is the full-width version of "!".
-                if ((message.StartsWith("!") || message.StartsWith("\uff01")) && curr.Info)
-                {
-                    while (core.plugin_ib1.Unwritable)
-                    {
-                        Thread.Sleep(10);
-                    }
-                    core.plugin_ib1.Unwritable = true;
-                    infobot_core.InfoItem item = new infobot_core.InfoItem();
-                    item.Channel = curr;
-                    item.Name = "!" + message.Substring(1); // Normalizing "!".
-                    item.User = nick;
-                    item.Host = host;
-                    core.plugin_ib1.jobs.Add(item);
-                    core.plugin_ib1.Unwritable = false;
                 }
                 if (message.StartsWith("@"))
                 {
@@ -985,16 +1172,16 @@ namespace wmib
                     }
                     modifyRights(message, curr, nick, host);
                     addChannel(curr, nick, host, message);
-                    admin(curr, nick, host, message);
                     partChannel(curr, nick, host, message);
                 }
+                admin(curr, nick, host, message);
                 if (curr.respond_message)
                 {
                     if (message.StartsWith(config.username + ":"))
                     {
                         if (System.DateTime.Now >= curr.last_msg.AddSeconds(curr.respond_wait))
                         {
-                            irc._SlowQueue.DeliverMessage( messages.get("hi", curr.Language, new List<string> { nick }), curr.Name );
+                            irc._SlowQueue.DeliverMessage(messages.get("hi", curr.Language, new List<string> { nick }), curr.Name);
                             curr.last_msg = System.DateTime.Now;
                         }
                     }

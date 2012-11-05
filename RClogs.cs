@@ -18,190 +18,191 @@ using System.Text.RegularExpressions;
 
 namespace wmib
 {
-    public class module_r : Module
+    public class module_rc : Module
     {
         public override void Hook_PRIV(config.channel channel, User invoker, string message)
         {
-                    if (message.StartsWith("@RC-"))
+            if (message.StartsWith("@RC-"))
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                {
+                    if (channel.Feed)
                     {
-                        if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                        string[] a = message.Split(' ');
+                        if (a.Length < 3)
                         {
-                            if (channel.Feed)
-                            {
-                                string[] a = message.Split(' ');
-                                if (a.Length < 3)
-                                {
-                                    core.irc._SlowQueue.DeliverMessage(messages.get("Feed8", channel.Language, new List<string> { invoker.Nick }), channel.Name);
-                                    return;
-                                }
-                                string wiki = a[1];
-                                string Page = a[2];
-                                channel.RC.removeString(wiki, Page);
-                                return;
-                            }
-                            else
-                            {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("Feed3", channel.Language), channel.Name);
-                                return;
-                            }
+                            core.irc._SlowQueue.DeliverMessage(messages.get("Feed8", channel.Language, new List<string> { invoker.Nick }), channel.Name);
+                            return;
                         }
-                        if (!channel.suppress_warnings)
-                        {
-                            core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
-                        }
+                        string wiki = a[1];
+                        string Page = a[2];
+                        channel.RC.removeString(wiki, Page);
                         return;
                     }
+                    else
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Feed3", channel.Language), channel.Name);
+                        return;
+                    }
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
 
-                    if (message.StartsWith("@recentchanges- "))
+            if (message.StartsWith("@recentchanges- "))
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "root"))
+                {
+                    if (channel.Feed)
                     {
-                        if (channel.Users.isApproved(invoker.Nick, invoker.Host, "root"))
+                        if (!message.Contains(" "))
                         {
-                            if (channel.Feed)
+                            if (!channel.suppress_warnings)
                             {
-                                if (!message.Contains(" "))
-                                {
-                                    if (!channel.suppress_warnings)
-                                    {
-                                        core.irc._SlowQueue.DeliverMessage(messages.get("InvalidWiki", channel.Language), channel.Name);
-                                    }
-                                    return;
-                                }
-                                string _channel = message.Substring(message.IndexOf(" ") + 1);
-                                if (RecentChanges.DeleteChannel(channel, _channel))
-                                {
-                                    core.irc._SlowQueue.DeliverMessage(messages.get("Wiki-", channel.Language), channel.Name, IRC.priority.high);
-                                }
-                                return;
+                                core.irc._SlowQueue.DeliverMessage(messages.get("InvalidWiki", channel.Language), channel.Name);
                             }
-                            else
-                            {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("Feed3", channel.Language), channel.Name);
-                                return;
-                            }
+                            return;
                         }
-                        if (!channel.suppress_warnings)
+                        string _channel = message.Substring(message.IndexOf(" ") + 1);
+                        if (RecentChanges.DeleteChannel(channel, _channel))
                         {
-                            core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                            core.irc._SlowQueue.DeliverMessage(messages.get("Wiki-", channel.Language), channel.Name, IRC.priority.high);
                         }
                         return;
                     }
+                    else
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Feed3", channel.Language), channel.Name);
+                        return;
+                    }
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
 
-                    if (message.StartsWith("@RC+ "))
+            if (message.StartsWith("@RC+ "))
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                {
+                    if (channel.Feed)
                     {
-                        if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                        string[] a = message.Split(' ');
+                        if (a.Length < 3)
                         {
-                            if (channel.Feed)
-                            {
-                                string[] a = message.Split(' ');
-                                if (a.Length < 3)
-                                {
-                                    core.irc._SlowQueue.DeliverMessage(messages.get("Feed4", channel.Language) + invoker.Nick + messages.get("Feed5", channel.Language), channel.Name);
-                                    return;
-                                }
-                                string wiki = a[1];
-                                string Page = a[2];
-                                channel.RC.insertString(wiki, Page);
-                                return;
-                            }
-                            else
-                            {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("Feed3", channel.Language), channel.Name);
-                                return;
-                            }
+                            core.irc._SlowQueue.DeliverMessage(messages.get("Feed4", channel.Language) + invoker.Nick + messages.get("Feed5", channel.Language), channel.Name);
+                            return;
                         }
-                        if (!channel.suppress_warnings)
-                        {
-                            core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
-                        }
+                        string wiki = a[1];
+                        string Page = a[2];
+                        channel.RC.insertString(wiki, Page);
                         return;
                     }
+                    else
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Feed3", channel.Language), channel.Name);
+                        return;
+                    }
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
 
-                    if (message == "@recentchanges-off")
+            if (message == "@recentchanges-off")
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                {
+                    if (!channel.Feed)
                     {
-                        if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
-                        {
-                            if (!channel.Feed)
-                            {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("Feed6", channel.Language), channel.Name);
-                                return;
-                            }
-                            else
-                            {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("Feed7", channel.Language), channel.Name);
-                                channel.Feed = false;
-                                channel.SaveConfig();
-                                return;
-                            }
-                        }
-                        if (!channel.suppress_warnings)
-                        {
-                            core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
-                        }
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Feed6", channel.Language), channel.Name);
                         return;
                     }
+                    else
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Feed7", channel.Language), channel.Name);
+                        channel.Feed = false;
+                        channel.SaveConfig();
+                        return;
+                    }
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
 
-                    if (message == "@recentchanges-on")
+            if (message == "@recentchanges-on")
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "recentchanges-manage"))
+                {
+                    if (channel.Feed)
                     {
-                        if (channel.Users.isApproved(invoker.Nick, invoker.Host, "recentchanges-manage"))
-                        {
-                            if (channel.Feed)
-                            {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("Feed1", channel.Language), channel.Name);
-                                return;
-                            }
-                            else
-                            {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("Feed2", channel.Language), channel.Name);
-                                channel.Feed = true;
-                                channel.SaveConfig();
-                                config.Save();
-                                return;
-                            }
-                        }
-                        if (!channel.suppress_warnings)
-                        {
-                            core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
-                        }
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Feed1", channel.Language), channel.Name);
                         return;
                     }
+                    else
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Feed2", channel.Language), channel.Name);
+                        channel.Feed = true;
+                        channel.SaveConfig();
+                        config.Save();
+                        return;
+                    }
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
 
-                    if (message.StartsWith("@recentchanges+"))
+            if (message.StartsWith("@recentchanges+"))
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "recentchanges-manage"))
+                {
+                    if (channel.Feed)
                     {
-                        if (channel.Users.isApproved(invoker.Nick, invoker.Host, "recentchanges-manage"))
+                        if (!message.Contains(" "))
                         {
-                            if (channel.Feed)
+                            if (!channel.suppress_warnings)
                             {
-                                if (!message.Contains(" "))
-                                {
-                                    if (!channel.suppress_warnings)
-                                    {
-                                        core.irc._SlowQueue.DeliverMessage(messages.get("InvalidWiki", channel.Language), channel.Name);
-                                    }
-                                    return;
-                                }
-                                string _channel = message.Substring(message.IndexOf(" ") + 1);
-                                if (RecentChanges.InsertChannel(channel, _channel))
-                                {
-                                    core.irc.Message(messages.get("Wiki+", channel.Language), channel.Name);
-                                }
-                                return;
+                                core.irc._SlowQueue.DeliverMessage(messages.get("InvalidWiki", channel.Language), channel.Name);
                             }
-                            else
-                            {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("Feed3", channel.Language), channel.Name);
-                                return;
-                            }
+                            return;
                         }
-                        if (!channel.suppress_warnings)
+                        string _channel = message.Substring(message.IndexOf(" ") + 1);
+                        if (RecentChanges.InsertChannel(channel, _channel))
                         {
-                            core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                            core.irc.Message(messages.get("Wiki+", channel.Language), channel.Name);
                         }
                         return;
                     }
+                    else
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Feed3", channel.Language), channel.Name);
+                        return;
+                    }
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
         }
         public override bool Construct()
         {
             base.Create("RC", true);
+            Version = "1.0.0";
             return true;
         }
 
@@ -372,9 +373,9 @@ namespace wmib
         /// Channels
         /// </summary>
         public static List<string> channels = new List<string>();
-        
+
         public bool changed;
-        
+
         public bool writable = true;
 
         public static bool terminated = false;
@@ -420,7 +421,7 @@ namespace wmib
                     writable = false;
                     foreach (IWatch b in pages)
                     {
-                        output = output + "<tr><td>" + b.Channel + "</td><td>" + HtmlDump.Encode(b.Page) + "</td></tr>\n";
+                        output = output + "<tr><td>" + b.Channel + "</td><td>" + System.Web.HttpUtility.HtmlEncode(b.Page) + "</td></tr>\n";
                     }
                     output = output + "</table>";
                     writable = true;
@@ -486,7 +487,7 @@ namespace wmib
                 {
                     File.AppendAllText(channeldata, x + "\n");
                 }
-            } 
+            }
             catch (Exception f)
             {
                 core.handleException(f);
@@ -604,24 +605,24 @@ namespace wmib
         public void Load()
         {
             string name = variables.config + Path.DirectorySeparatorChar + channel.Name + ".list";
-                writable = false;
-                core.recoverFile(name, channel.Name);
-                if (File.Exists(name))
+            writable = false;
+            core.recoverFile(name, channel.Name);
+            if (File.Exists(name))
+            {
+                string[] content = File.ReadAllLines(name);
+                lock (pages)
                 {
-                    string[] content = File.ReadAllLines(name);
-                    lock (pages)
+                    pages.Clear();
+                    foreach (string value in content)
                     {
-                        pages.Clear();
-                        foreach (string value in content)
+                        string[] values = value.Split('|');
+                        if (values.Length == 3)
                         {
-                            string[] values = value.Split('|');
-                            if (values.Length == 3)
-                            {
-                                pages.Add(new IWatch(getWiki(values[0]), values[1].Replace("<separator>", "|"), values[2]));
-                            }
+                            pages.Add(new IWatch(getWiki(values[0]), values[1].Replace("<separator>", "|"), values[2]));
                         }
                     }
                 }
+            }
             writable = true;
         }
 
@@ -709,18 +710,18 @@ namespace wmib
                         pages.Remove(currpage);
                         channel.Keys.update = true;
                         Save();
-                        core.irc._SlowQueue.DeliverMessage(messages.get( "rcfeed4", channel.Language ), channel.Name);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed4", channel.Language), channel.Name);
                         return true;
                     }
-                    core.irc._SlowQueue.DeliverMessage(messages.get( "rcfeed5", channel.Language ), channel.Name);
+                    core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed5", channel.Language), channel.Name);
                     return true;
                 }
                 core.irc._SlowQueue.DeliverMessage(
-                    messages.get( "rcfeed6", channel.Language ), channel.Name);
+                    messages.get("rcfeed6", channel.Language), channel.Name);
                 return false;
             }
             core.irc._SlowQueue.DeliverMessage(
-                messages.get( "rcfeed7", channel.Language ),
+                messages.get("rcfeed7", channel.Language),
                 channel.Name);
             return false;
         }
@@ -775,7 +776,7 @@ namespace wmib
                     {
                         if (!Page.EndsWith("*") || Page.Replace("*", "") == "")
                         {
-                            core.irc._SlowQueue.DeliverMessage(messages.get( "rcfeed8", channel.Language ), channel.Name);
+                            core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed8", channel.Language), channel.Name);
                             return true;
                         }
                     }
@@ -795,11 +796,11 @@ namespace wmib
                     return true;
                 }
                 core.irc._SlowQueue.DeliverMessage(
-                    messages.get( "rcfeed11", channel.Language ), channel.Name);
+                    messages.get("rcfeed11", channel.Language), channel.Name);
                 return false;
             }
             core.irc._SlowQueue.DeliverMessage(
-                messages.get( "rcfeed12", channel.Language ),
+                messages.get("rcfeed12", channel.Language),
                 channel.Name);
             return false;
         }
