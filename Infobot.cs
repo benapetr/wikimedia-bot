@@ -25,10 +25,55 @@ namespace wmib
         public bool Unwritable;
         public bool Disabled;
 
+        public override bool Hook_OnUnload()
+        {
+            bool success = true;
+            lock (config.channels)
+            {
+                foreach (config.channel channel in config.channels)
+                {
+                    if (!channel.UnregisterObject("Infobot"))
+                    {
+                        success = false;
+                    }
+                }
+            }
+            if (!success)
+            {
+                core.Log("Failed to unregister infobot objects in some channels", true);
+            }
+            return success;
+        }
+
+        public string getDB(config.channel chan)
+        {
+            return Module.GetConfig(chan, "Infobot.Keydb", (string)variables.config + Path.DirectorySeparatorChar + chan.Name + ".db");
+        }
+
+        public override bool Hook_OnRegister()
+        {
+            bool success = true;
+            lock (config.channels)
+            {
+                foreach (config.channel channel in config.channels)
+                {
+                    if (!channel.RegisterObject(new infobot_core(getDB(channel), channel.Name), "Infobot"))
+                    {
+                        success = false;
+                    }
+                }
+            }
+            if (!success)
+            {
+                core.Log("Failed to register infobot objects in some channels", true);
+            }
+            return success;
+        }
+
         public override void Hook_PRIV(config.channel channel, User invoker, string message)
         {
             // "\uff01" is the full-width version of "!".
-            if ((message.StartsWith("!") || message.StartsWith("\uff01")) && channel.Info)
+            if ((message.StartsWith("!") || message.StartsWith("\uff01")) && GetConfig(channel, "Infobot.Enable", false))
             {
                 while (Unwritable)
                 {
@@ -42,6 +87,25 @@ namespace wmib
                 item.Host = invoker.Host;
                 jobs.Add(item);
                 Unwritable = false;
+            }
+
+            infobot_core infobot = null;
+
+            if (message.StartsWith("@"))
+            {
+                infobot = (infobot_core)channel.RetrieveObject("Infobot");
+                if (infobot == null)
+                {
+                    core.Log("Object Infobot in " + channel.Name + " doesn't exist", true);
+                }
+                if (GetConfig(channel, "Infobot.Enable", false))
+                {
+                    if (infobot != null)
+                    {
+                        infobot.Find(message, channel);
+                        infobot.RSearch(message, channel);
+                    }
+                }
             }
 
             if (message.StartsWith("@infobot-share-trust+ "))
@@ -148,7 +212,7 @@ namespace wmib
             {
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
-                    if (!channel.Info)
+                    if (!GetConfig(channel, "Infobot.Enable", false))
                     {
                         core.irc._SlowQueue.DeliverMessage(messages.get("infobot1", channel.Language), channel.Name);
                         return;
@@ -156,7 +220,7 @@ namespace wmib
                     else
                     {
                         core.irc._SlowQueue.DeliverMessage(messages.get("infobot2", channel.Language), channel.Name, IRC.priority.high);
-                        channel.Info = false;
+                        SetConfig(channel, "Infobot.Enable", false);
                         channel.SaveConfig();
                         return;
                     }
@@ -216,11 +280,14 @@ namespace wmib
                     core.irc._SlowQueue.DeliverMessage(messages.get("db6", channel.Language), channel.Name);
                     return;
                 }
-                if (channel.Info)
+                if (GetConfig(channel, "Infobot.Enable", false))
                 {
                     if (channel.shared == "local" || channel.shared == "")
                     {
-                        channel.Keys.Info(message.Substring(16), channel);
+                        if (infobot != null)
+                        {
+                            infobot.Info(message.Substring(16), channel);
+                        }
                         return;
                     }
                     if (channel.shared != "")
@@ -231,7 +298,10 @@ namespace wmib
                             core.irc._SlowQueue.DeliverMessage("Error, null pointer to shared channel", channel.Name, IRC.priority.low);
                             return;
                         }
-                        db.Keys.Info(message.Substring(16), channel);
+                        if (infobot != null)
+                        {
+                            infobot.Info(message.Substring(16), channel);
+                        }
                         return;
                     }
                     return;
@@ -320,12 +390,12 @@ namespace wmib
             {
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
-                    if (channel.Info)
+                    if (GetConfig(channel, "Infobot.Enable", false))
                     {
                         core.irc._SlowQueue.DeliverMessage(messages.get("infobot3", channel.Language), channel.Name);
                         return;
                     }
-                    channel.Info = true;
+                    SetConfig(channel, "Infobot.Enable", true);
                     channel.SaveConfig();
                     core.irc._SlowQueue.DeliverMessage(messages.get("infobot4", channel.Language), channel.Name, IRC.priority.high);
                     return;
@@ -367,11 +437,68 @@ namespace wmib
             }
         }
 
+        public override bool Hook_SetConfig(config.channel chan, User invoker, string config, string value)
+        {
+            bool _temp_a;
+            switch (config)
+            {
+                case "infobot-trim-white-space-in-name":
+                    if (bool.TryParse(value, out _temp_a))
+                    {
+                        Module.SetConfig(chan, "Infobot.Trim-white-space-in-name", _temp_a);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
+                        chan.SaveConfig();
+                        return true;
+                    }
+                    core.irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
+                    return true;
+                case "infobot-auto-complete":
+                    if (bool.TryParse(value, out _temp_a))
+                    {
+                        Module.SetConfig(chan, "Infobot.auto-complete", _temp_a);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
+                        chan.SaveConfig();
+                        return true;
+                    }
+                    core.irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
+                    return true;
+                case "infobot-sorted":
+                    if (bool.TryParse(value, out _temp_a))
+                    {
+                        Module.SetConfig(chan, "Infobot.Sorted", _temp_a);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
+                        chan.SaveConfig();
+                        return true;
+                    }
+                    core.irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
+                    return true;
+                case "infobot-help":
+                    if (bool.TryParse(value, out _temp_a))
+                    {
+                        Module.SetConfig(chan, "Infobot.Help", _temp_a);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
+                        chan.SaveConfig();
+                        return true;
+                    }
+                    core.irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
+                    return true;
+            }
+            return false;
+        }
+
         public override bool Construct()
         {
-            Version = "1.0.0";
+            Version = "1.0.2";
             base.Create("Infobot core", true, true);
             return true;
+        }
+
+        public override void Hook_ReloadConfig(config.channel chan)
+        {
+            if (chan.ExtensionObjects.ContainsKey("Infobot"))
+            {
+                chan.ExtensionObjects["Infobot"] = new infobot_core(getDB(chan), chan.Name);
+            }
         }
 
         public override void Load()
@@ -394,7 +521,11 @@ namespace wmib
                         Unwritable = false;
                         foreach (infobot_core.InfoItem item in list)
                         {
-                            item.Channel.Keys.print(item.Name, item.User, item.Channel, item.Host);
+                            infobot_core infobot = (infobot_core)item.Channel.RetrieveObject("Infobot");
+                            if (infobot != null)
+                            {
+                                infobot.print(item.Name, item.User, item.Channel, item.Host);
+                            }
                         }
                     }
                     Thread.Sleep(200);
@@ -440,10 +571,14 @@ namespace wmib
             {
                 foreach (config.channel x in config.channels)
                 {
-                    if (x.Keys.stored == false)
+                    infobot_core infobot = (infobot_core)x.RetrieveObject("Infobot");
+                    if (infobot != null)
                     {
-                        x.Keys.stored = true;
-                        x.Keys.Save();
+                        if (infobot.stored == false)
+                        {
+                            infobot.stored = true;
+                            infobot.Save();
+                        }
                     }
                 }
             }
@@ -575,7 +710,7 @@ namespace wmib
 
         private string search_key;
 
-        
+
 
         /// <summary>
         /// Load it
@@ -655,8 +790,8 @@ namespace wmib
                                 Alias.Add(_Alias);
                                 continue;
                             }
-                                item _key = new item(xx.Attributes[0].Value, xx.Attributes[1].Value, xx.Attributes[2].Value, "false", xx.Attributes[3].Value,
-                                xx.Attributes[4].Value, int.Parse(xx.Attributes[5].Value));
+                            item _key = new item(xx.Attributes[0].Value, xx.Attributes[1].Value, xx.Attributes[2].Value, "false", xx.Attributes[3].Value,
+                            xx.Attributes[4].Value, int.Parse(xx.Attributes[5].Value));
                             text.Add(_key);
                         }
                     }
@@ -679,7 +814,7 @@ namespace wmib
                     string last = "N/A";
                     string name = "N/A";
                     if (CV.lasttime != NA)
-                    { 
+                    {
                         TimeSpan span = DateTime.Now - CV.lasttime;
                         last = CV.lasttime.ToString() + " (" + span.ToString() + " ago)";
                     }
@@ -708,27 +843,28 @@ namespace wmib
             locked = false;
             try
             {
-            if (text.Count > 0)
-            {
-                List<string> Name = new List<string>();
-                foreach (item curr in OriginalList)
+                if (text.Count > 0)
                 {
-                    Name.Add(curr.key);
-                }
-                Name.Sort();
-                foreach (string f in Name)
-                {
-                    foreach(item g in OriginalList)
+                    List<string> Name = new List<string>();
+                    foreach (item curr in OriginalList)
                     {
-                        if (f == g.key)
+                        Name.Add(curr.key);
+                    }
+                    Name.Sort();
+                    foreach (string f in Name)
+                    {
+                        foreach (item g in OriginalList)
                         {
-                            Item.Add(g);
-                            break;
+                            if (f == g.key)
+                            {
+                                Item.Add(g);
+                                break;
+                            }
                         }
                     }
                 }
             }
-            } catch(Exception)
+            catch (Exception)
             {
                 Program.Log("Exception while creating list for html");
                 locked = false;
@@ -922,10 +1058,11 @@ namespace wmib
                 config.channel data = isAllowed(chan);
                 bool Allowed = (data != null);
                 name = name.Substring(1);
+                infobot_core infobot = (infobot_core)data.RetrieveObject("Infobot");
                 string ignore_test = name;
                 if (ignore_test.Contains(" "))
                 {
-                    ignore_test = ignore_test.Substring (0, ignore_test.IndexOf(" "));
+                    ignore_test = ignore_test.Substring(0, ignore_test.IndexOf(" "));
                 }
                 if (chan.Infobot_IgnoredNames.Contains(ignore_test))
                 {
@@ -940,7 +1077,7 @@ namespace wmib
                         {
                             if (!Allowed)
                             {
-                                if ( !chan.suppress_warnings )
+                                if (!chan.suppress_warnings)
                                 {
                                     core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), chan.Name);
                                 }
@@ -963,14 +1100,17 @@ namespace wmib
                                 }
                                 return true;
                             }
-                            data.Keys.setKey(key, parm[0], user, chan);
+                            if (infobot != null)
+                            {
+                                infobot.setKey(key, parm[0], user, chan);
+                            }
                         }
                         else
                         {
-							if (!chan.suppress_warnings)
-							{
-                            	core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan.Name);
-							}
+                            if (!chan.suppress_warnings)
+                            {
+                                core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan.Name);
+                            }
                         }
                         return false;
                     }
@@ -994,14 +1134,17 @@ namespace wmib
                                 }
                                 return true;
                             }
-                            data.Keys.aliasKey(name.Substring(name.IndexOf(" alias") + 7), parm[0], "", chan);
+                            if (infobot != null)
+                            {
+                                infobot.aliasKey(name.Substring(name.IndexOf(" alias") + 7), parm[0], "", chan);
+                            }
                         }
                         else
                         {
-							if (!chan.suppress_warnings)
-							{
-                            	core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan.Name);
-							}
+                            if (!chan.suppress_warnings)
+                            {
+                                core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan.Name);
+                            }
                         }
                         return false;
                     }
@@ -1017,22 +1160,28 @@ namespace wmib
                                 }
                                 return true;
                             }
-                            foreach (staticalias b in data.Keys.Alias)
+                            if (infobot != null)
                             {
-                                if (b.Name == parm[0])
+                                lock (infobot.Alias)
                                 {
-                                    data.Keys.Alias.Remove(b);
-                                    core.irc.Message(messages.get("AliasRemoved", chan.Language), chan.Name);
-                                    data.Keys.stored = false;
-                                    return false;
+                                    foreach (staticalias b in infobot.Alias)
+                                    {
+                                        if (b.Name == parm[0])
+                                        {
+                                            infobot.Alias.Remove(b);
+                                            core.irc.Message(messages.get("AliasRemoved", chan.Language), chan.Name);
+                                            infobot.stored = false;
+                                            return false;
+                                        }
+                                    }
                                 }
                             }
                             return false;
                         }
-						if (!chan.suppress_warnings)
-						{
-                        	core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan.Name);
-						}
+                        if (!chan.suppress_warnings)
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan.Name);
+                        }
                         return false;
                     }
                     if (parm[1] == "del")
@@ -1044,14 +1193,17 @@ namespace wmib
                                 core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), chan.Name);
                                 return true;
                             }
-                            data.Keys.rmKey(parm[0], "", chan);
+                            if (infobot != null)
+                            {
+                                infobot.rmKey(parm[0], "", chan);
+                            }
                         }
                         else
                         {
-							if (!chan.suppress_warnings)
-							{
-                            	core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan.Name);
-							}
+                            if (!chan.suppress_warnings)
+                            {
+                                core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan.Name);
+                            }
                         }
                         return false;
                     }
@@ -1061,11 +1213,10 @@ namespace wmib
                     return true;
                 }
                 string User = "";
-
                 if (name.Contains("|"))
                 {
                     User = name.Substring(name.IndexOf("|") + 1);
-                    if (chan.infobot_trim_white_space_in_name)
+                    if (Module.GetConfig(chan, "Infobot.Trim-whitespace-in-name", false))
                     {
                         if (User.EndsWith(" "))
                         {
@@ -1086,7 +1237,11 @@ namespace wmib
                 }
                 string[] p = name.Split(' ');
                 int parameters = p.Length;
-                string keyv = data.Keys.getValue(p[0]);
+                string keyv = "";
+                if (infobot != null)
+                {
+                    keyv = infobot.getValue(p[0]);
+                }
                 if (keyv != "")
                 {
                     keyv = parseInfo(keyv, p);
@@ -1100,105 +1255,109 @@ namespace wmib
                     }
                     return true;
                 }
-
-                foreach (staticalias b in data.Keys.Alias)
+                if (infobot != null)
                 {
-                    if (b.Name == p[0])
+                    foreach (staticalias b in infobot.Alias)
                     {
-                        keyv = data.Keys.getValue(b.Key);
-                        if (keyv != "")
+                        if (b.Name == p[0])
                         {
-                            keyv = parseInfo(keyv, p);
-                            if (User == "")
+                            keyv = infobot.getValue(b.Key);
+                            if (keyv != "")
                             {
-                                core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
+                                keyv = parseInfo(keyv, p);
+                                if (User == "")
+                                {
+                                    core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
+                                }
+                                else
+                                {
+                                    core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
+                                }
+                                return true;
                             }
-                            else
-                            {
-                                core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
-                            }
-                            return true;
                         }
                     }
                 }
-
-                if (chan.infobot_auto_complete)
+                if (Module.GetConfig(chan, "Infobot.auto-complete", false))
                 {
-                    List<string> results = new List<string>();
-                    foreach (item f in data.Keys.text)
+                    if (infobot != null)
                     {
-                        if (!results.Contains(f.key) && f.key.StartsWith(p[0]))
+                        List<string> results = new List<string>();
+                        foreach (item f in infobot.text)
                         {
-                            results.Add(f.key);
+                            if (!results.Contains(f.key) && f.key.StartsWith(p[0]))
+                            {
+                                results.Add(f.key);
+                            }
                         }
-                    }
-                    foreach (staticalias f in data.Keys.Alias)
-                    {
-                        if (!results.Contains(f.Key) && f.Key.StartsWith(p[0]))
+                        foreach (staticalias f in infobot.Alias)
                         {
-                            results.Add(f.Key);
+                            if (!results.Contains(f.Key) && f.Key.StartsWith(p[0]))
+                            {
+                                results.Add(f.Key);
+                            }
                         }
-                    }
 
-                    if (results.Count == 1)
-                    {
-                        keyv = data.Keys.getValue(results[0]);
-                        if (keyv != "")
+                        if (results.Count == 1)
                         {
-                            keyv = parseInfo(keyv, p);
-                            if (User == "")
+                            keyv = infobot.getValue(results[0]);
+                            if (keyv != "")
                             {
-                                core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
-                            }
-                            else
-                            {
-                                core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
-                            }
-                            return true;
-                        }
-                        foreach (staticalias alias in data.Keys.Alias)
-                        {
-                            if (alias.Name == p[0])
-                            {
-                                keyv = data.Keys.getValue(alias.Key);
-                                if (keyv != "")
+                                keyv = parseInfo(keyv, p);
+                                if (User == "")
                                 {
-                                    keyv = parseInfo(keyv, p);
-                                    if (User == "")
+                                    core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
+                                }
+                                else
+                                {
+                                    core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
+                                }
+                                return true;
+                            }
+                            foreach (staticalias alias in infobot.Alias)
+                            {
+                                if (alias.Name == p[0])
+                                {
+                                    keyv = infobot.getValue(alias.Key);
+                                    if (keyv != "")
                                     {
-                                        core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
+                                        keyv = parseInfo(keyv, p);
+                                        if (User == "")
+                                        {
+                                            core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
+                                        }
+                                        else
+                                        {
+                                            core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
+                                        }
+                                        return true;
                                     }
-                                    else
-                                    {
-                                        core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
-                                    }
-                                    return true;
                                 }
                             }
                         }
-                    }
 
-                    if (results.Count > 1)
-                    {
-                        if (chan.infobot_sorted)
+                        if (results.Count > 1)
                         {
-                            results.Sort();
+                            if (Module.GetConfig(chan, "Infobot.Sorted", false))
+                            {
+                                results.Sort();
+                            }
+                            string x = "";
+                            foreach (string ix in results)
+                            {
+                                x += ix + ", ";
+                            }
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot-c-e", chan.Language, new List<string>() { x }), chan.Name);
+                            return true;
                         }
-                        string x = "";
-                        foreach (string ix in results)
-                        {
-                            x += ix + ", ";
-                        }
-                        core.irc._SlowQueue.DeliverMessage(messages.get("infobot-c-e", chan.Language, new List<string>() { x }), chan.Name);
-                        return true;
                     }
                 }
 
-                if (chan.infobot_help == true)
+                if (Module.GetConfig(chan, "Infobot.Help", false) && infobot != null)
                 {
                     List<string> Sugg = new List<string>();
                     p[0] = p[0].ToLower();
-                    foreach (item f in data.Keys.text)
+                    foreach (item f in infobot.text)
                     {
                         if (!Sugg.Contains(f.key) && (f.text.Contains(p[0]) || f.key.ToLower().Contains(p[0])))
                         {
@@ -1209,7 +1368,7 @@ namespace wmib
                     if (Sugg.Count > 0)
                     {
                         string x = "";
-                        if (chan.infobot_sorted)
+                        if (Module.GetConfig(chan, "Infobot.Sorted", false))
                         {
                             Sugg.Sort();
                         }
@@ -1252,7 +1411,7 @@ namespace wmib
             }
             else
             {
-                core.irc._SlowQueue.DeliverMessage(messages.get("Results", _channel.Language, new List<string>{count.ToString()})  + results, Reply.Name);
+                core.irc._SlowQueue.DeliverMessage(messages.get("Results", _channel.Language, new List<string> { count.ToString() }) + results, Reply.Name);
             }
             module_infobot.running = false;
         }
@@ -1285,10 +1444,16 @@ namespace wmib
                 core.irc._SlowQueue.DeliverMessage(messages.get("db7", Chan.Language), Chan.Name);
                 return;
             }
-            data.Keys.search_key = key.Substring(11);
+            infobot_core infobot = (infobot_core)data.RetrieveObject("Infobot");
+            if (infobot == null)
+            {
+                Program.Log("Unable to perform regsearch because the Infobot doesn't exist in " + Chan.Name, true);
+                return;
+            }
+            infobot.search_key = key.Substring(11);
             module_infobot.running = true;
             Reply = Chan;
-            Thread th = new Thread(data.Keys.StartSearch);
+            Thread th = new Thread(infobot.StartSearch);
             th.Start();
             int check = 1;
             while (module_infobot.running)
@@ -1329,10 +1494,16 @@ namespace wmib
             }
             key = key.Substring(8);
             int count = 0;
-            string results = "";
-            lock (data.Keys.text)
+            infobot_core infobot = (infobot_core)data.RetrieveObject("Infobot");
+            if (infobot == null)
             {
-                foreach (item Data in data.Keys.text)
+                Program.Log("Unable to perform regsearch because the Infobot doesn't exist in " + Chan.Name, true);
+                return;
+            }
+            string results = "";
+            lock (infobot.text)
+            {
+                foreach (item Data in infobot.text)
                 {
                     if (Data.key == key || Data.text.Contains(key))
                     {
@@ -1404,16 +1575,22 @@ namespace wmib
                     {
                         if (data.key == key)
                         {
-							if (!chan.suppress_warnings)
-							{
-                            	core.irc._SlowQueue.DeliverMessage(messages.get("Error3", chan.Language), chan.Name);
-							}
+                            if (!chan.suppress_warnings)
+                            {
+                                core.irc._SlowQueue.DeliverMessage(messages.get("Error3", chan.Language), chan.Name);
+                            }
                             return;
                         }
                     }
                     text.Add(new item(key, Text, user, "false"));
                     core.irc.Message(messages.get("infobot6", chan.Language), chan.Name);
-                    ch.Keys.stored = false;
+                    infobot_core infobot = (infobot_core)ch.RetrieveObject("Infobot");
+                    if (infobot == null)
+                    {
+                        Program.Log("Unable to save the key because the Infobot doesn't exist in " + ch.Name, true);
+                        return;
+                    }
+                    infobot.stored = false;
                 }
                 catch (Exception b)
                 {
@@ -1441,16 +1618,16 @@ namespace wmib
                 {
                     if (stakey.Name == al)
                     {
-						if (!chan.suppress_warnings)
-						{
-                        	core.irc._SlowQueue.DeliverMessage(messages.get("infobot7", chan.Language), chan.Name);
-						}
+                        if (!chan.suppress_warnings)
+                        {
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot7", chan.Language), chan.Name);
+                        }
                         return;
                     }
                 }
                 Alias.Add(new staticalias(al, key));
             }
-            core.irc._SlowQueue.DeliverMessage(messages.get( "infobot8", chan.Language), chan.Name);
+            core.irc._SlowQueue.DeliverMessage(messages.get("infobot8", chan.Language), chan.Name);
             stored = false;
         }
 
@@ -1474,7 +1651,7 @@ namespace wmib
                     }
                 }
             }
-            core.irc._SlowQueue.DeliverMessage(messages.get( "infobot10", _ch.Language ), _ch.Name);
+            core.irc._SlowQueue.DeliverMessage(messages.get("infobot10", _ch.Language), _ch.Name);
         }
     }
 }

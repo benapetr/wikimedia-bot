@@ -13,7 +13,7 @@ namespace wmib
         public override bool Construct()
         {
             LoadData();
-            Version = "1.0.2";
+            Version = "1.0.4";
             base.Create("SEEN", true);
             return true;
         }
@@ -28,7 +28,7 @@ namespace wmib
             WriteStatus(invoker.Nick, invoker.Host, channel.Name, item.Action.Talk);
             if (message.StartsWith("@seen "))
             {
-                if (channel.Seen)
+                if (GetConfig(channel, "Seen.Enabled", false))
                 {
                     string parameter = "";
                     if (message.Contains(" "))
@@ -47,7 +47,7 @@ namespace wmib
             {
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
                 {
-                    if (channel.Seen)
+                    if (GetConfig(channel, "Seen.Enabled", false))
                     {
                         string parameter = "";
                         if (message.Contains(" "))
@@ -73,7 +73,7 @@ namespace wmib
             {
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
-                    if (!channel.Seen)
+                    if (!GetConfig(channel, "Seen.Enabled", false))
                     {
                         core.irc._SlowQueue.DeliverMessage(messages.get("seen-e2", channel.Language), channel.Name);
                         return;
@@ -81,7 +81,7 @@ namespace wmib
                     else
                     {
                         core.irc._SlowQueue.DeliverMessage(messages.get("seen-off", channel.Language), channel.Name, IRC.priority.high);
-                        channel.Seen = false;
+                        SetConfig(channel, "Seen.Enabled", false);
                         channel.SaveConfig();
                         return;
                     }
@@ -97,12 +97,12 @@ namespace wmib
             {
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
-                    if (channel.Seen)
+                    if (GetConfig(channel, "Seen.Enabled", false))
                     {
                         core.irc._SlowQueue.DeliverMessage(messages.get("seen-oe", channel.Language), channel.Name);
                         return;
                     }
-                    channel.Seen = true;
+                    SetConfig(channel, "Seen.Enabled", true);
                     channel.SaveConfig();
                     core.irc._SlowQueue.DeliverMessage(messages.get("seen-on", channel.Language), channel.Name, IRC.priority.high);
                     return;

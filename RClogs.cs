@@ -26,7 +26,7 @@ namespace wmib
             {
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
                 {
-                    if (channel.Feed)
+                    if (GetConfig(channel, "RC.Enabled", false))
                     {
                         string[] a = message.Split(' ');
                         if (a.Length < 3)
@@ -56,7 +56,7 @@ namespace wmib
             {
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "root"))
                 {
-                    if (channel.Feed)
+                    if (GetConfig(channel, "RC.Enabled", false))
                     {
                         if (!message.Contains(" "))
                         {
@@ -90,7 +90,7 @@ namespace wmib
             {
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
                 {
-                    if (channel.Feed)
+                    if (GetConfig(channel, "RC.Enabled", false))
                     {
                         string[] a = message.Split(' ');
                         if (a.Length < 3)
@@ -120,7 +120,7 @@ namespace wmib
             {
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
-                    if (!channel.Feed)
+                    if (!GetConfig(channel, "RC.Enabled", false))
                     {
                         core.irc._SlowQueue.DeliverMessage(messages.get("Feed6", channel.Language), channel.Name);
                         return;
@@ -128,7 +128,7 @@ namespace wmib
                     else
                     {
                         core.irc._SlowQueue.DeliverMessage(messages.get("Feed7", channel.Language), channel.Name);
-                        channel.Feed = false;
+                        SetConfig(channel, "RC.Enabled", false);
                         channel.SaveConfig();
                         return;
                     }
@@ -144,7 +144,7 @@ namespace wmib
             {
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "recentchanges-manage"))
                 {
-                    if (channel.Feed)
+                    if (GetConfig(channel, "RC.Enabled", false))
                     {
                         core.irc._SlowQueue.DeliverMessage(messages.get("Feed1", channel.Language), channel.Name);
                         return;
@@ -152,7 +152,7 @@ namespace wmib
                     else
                     {
                         core.irc._SlowQueue.DeliverMessage(messages.get("Feed2", channel.Language), channel.Name);
-                        channel.Feed = true;
+                        SetConfig(channel, "RC.Enabled", true);
                         channel.SaveConfig();
                         config.Save();
                         return;
@@ -169,7 +169,7 @@ namespace wmib
             {
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "recentchanges-manage"))
                 {
-                    if (channel.Feed)
+                    if (GetConfig(channel, "RC.Enabled", false))
                     {
                         if (!message.Contains(" "))
                         {
@@ -258,7 +258,7 @@ namespace wmib
                                         {
                                             if (curr != null)
                                             {
-                                                if (curr.channel.Feed)
+                                                if (GetConfig(curr.channel, "RC.Enabled", false))
                                                 {
                                                     lock (curr.pages)
                                                     {
@@ -708,7 +708,7 @@ namespace wmib
                             System.Threading.Thread.Sleep(100);
                         }
                         pages.Remove(currpage);
-                        channel.Keys.update = true;
+                        Module.SetConfig(channel, "HTML.Update", true);
                         Save();
                         core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed4", channel.Language), channel.Name);
                         return true;
@@ -791,7 +791,7 @@ namespace wmib
                         pages.Add(new IWatch(site, Page, site.channel));
                     }
                     core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed10", channel.Language), channel.Name);
-                    channel.Keys.update = true;
+                    Module.SetConfig(channel, "HTML.Update", true);
                     Save();
                     return true;
                 }

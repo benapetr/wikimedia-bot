@@ -13,6 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Xml;
 
 namespace wmib
 {
@@ -29,51 +30,26 @@ namespace wmib
             public List<User> ul = new List<User>();
             public bool FreshList = false;
 
-            public bool Logged;
-
-            public Statistics info;
-
             /// <summary>
-            /// Log
+            /// Deprecated
             /// </summary>
-            public string Log;
+            public string LogDir;
 
-            public bool Seen = false;
-            public bool Feed;
-            public bool Info;
+            public List<string> SharedChans = new List<string>();
 
-            public Feed Rss;
+            public Dictionary<string, object> ExtensionObjects = new Dictionary<string, object>();
 
-            public string StyleRss = variables.bold + "[$name]" + variables.bold + " $title $link $description";
-
-            public bool EnableRss = false;
+            private Dictionary<string, string> ExtensionData = new Dictionary<string, string>();
 
             public bool suppress;
 
             public List<string> Infobot_IgnoredNames = new List<string>();
-
-            /// <summary>
-            /// Keys
-            /// </summary>
-            public infobot_core Keys;
 
             public int respond_wait = 120;
 
             public bool respond_message = false;
 
             public System.DateTime last_msg = System.DateTime.Now;
-
-            public bool infobot_trim_white_space_in_name = true;
-
-            /// <summary>
-            /// Infobot help
-            /// </summary>
-            public bool infobot_help = false;
-
-            /// <summary>
-            /// Infobot sorted
-            /// </summary>
-            public bool infobot_sorted = false;
 			
             /// <summary>
             /// Doesn't send any warnings on error
@@ -81,18 +57,6 @@ namespace wmib
 			public bool suppress_warnings = false;
 
             public bool logs_no_write_data = false;
-
-            public bool statistics_enabled = false;
-
-            /// <summary>
-            /// Completion
-            /// </summary>
-            public bool infobot_auto_complete = false;
-
-            /// <summary>
-            /// Recent changes
-            /// </summary>
-            public RecentChanges RC;
 
             /// <summary>
             /// Configuration text
@@ -109,11 +73,6 @@ namespace wmib
             /// Users
             /// </summary>
             public IRCTrust Users;
-
-            /// <summary>
-            /// Path of db
-            /// </summary>
-            public string keydb = "";
 
             /// <summary>
             /// Add a line to config
@@ -135,6 +94,92 @@ namespace wmib
                 return false;
             }
 
+            public void Extension_SetConfig(string name, string data)
+            {
+                lock (ExtensionData)
+                {
+                    if (ExtensionData.ContainsKey(name))
+                    {
+                        ExtensionData[name] = data;
+                        return;
+                    }
+                }
+                ExtensionData.Add(name, data);
+            }
+
+            public string Extension_GetConfig(string key)
+            {
+                lock (ExtensionData)
+                {
+                    if (ExtensionData.ContainsKey(key))
+                    {
+                        return ExtensionData[key];
+                    }
+                }
+                return null;
+            }
+
+            public object RetrieveObject(string name)
+            {
+                try
+                {
+                    lock (ExtensionObjects)
+                    {
+                        if (ExtensionObjects.ContainsKey(name))
+                        {
+                            return ExtensionObjects[name];
+                        }
+                    }
+                }
+                catch (Exception er)
+                {
+                    core.handleException(er);
+                }
+                return null;
+            }
+
+            public bool UnregisterObject(string Nm)
+            {
+                try
+                {
+                    lock (ExtensionObjects)
+                    {
+                        if (!ExtensionObjects.ContainsKey(Nm))
+                        {
+                            return true;
+                        }
+                        ExtensionObjects.Remove(Nm);
+                        return true;
+                    }
+                }
+                catch (Exception er)
+                {
+                    core.handleException(er);
+                }
+                return false;
+            }
+
+            public bool RegisterObject(object Ob, string Nm)
+            {
+                try
+                {
+                    lock (ExtensionObjects)
+                    {
+                        if (ExtensionObjects.ContainsKey(Nm))
+                        {
+                            return false;
+                        }
+                        ExtensionObjects.Add(Nm, Ob);
+                        return true;
+                    }
+                }
+                catch (Exception er)
+                {
+                    core.handleException(er);
+                    return false;
+                }
+            }
+
             /// <summary>
             /// Load config of channel :)
             /// </summary>
@@ -142,65 +187,80 @@ namespace wmib
             {
                 string conf_file = variables.config + "/" + Name + ".setting";
                 core.recoverFile(conf_file, Name);
-                RecentChanges.InsertSite();
-                if (!File.Exists(conf_file))
+                try
                 {
-                    File.WriteAllText(conf_file, "");
-                    Program.Log("Creating datafile for channel " + Name);
-                    return;
-                }
-                conf = File.ReadAllText(conf_file);
-                if (parseConfig(conf, "keysdb") != "")
-                {
-                    keydb = (parseConfig(conf, "keysdb"));
-                }
-                bool.TryParse(parseConfig(conf, "logged"), out Logged);
-				bool.TryParse(parseConfig(conf, "suppress-warnings"), out suppress_warnings);
-                bool.TryParse(parseConfig(conf, "seen"), out Seen);
-                bool.TryParse(parseConfig(conf, "respond_message"), out respond_message);
-                int _temp_respond_wait;
-                if ( int.TryParse(parseConfig(conf, "respond_wait"), out _temp_respond_wait) )
-                {
-                    respond_wait = _temp_respond_wait;
-                }
-                if (!bool.TryParse(parseConfig(conf, "infobot-trim-white-space-in-name"), out infobot_trim_white_space_in_name))
-                {
-                    infobot_trim_white_space_in_name = true;
-                }
-                last_msg = last_msg.AddSeconds((-1) * respond_wait);
-                bool.TryParse(parseConfig(conf, "atom"), out EnableRss);
-                bool.TryParse(parseConfig(conf, "feed"), out Feed);
-                if (parseConfig(conf, "style1") != "")
-                {
-                    StyleRss = (parseConfig(conf, "style1"));
-                }
-                bool.TryParse(parseConfig(conf, "infobot-sorted-list"), out infobot_sorted);
-                bool.TryParse(parseConfig(conf, "statistics"), out statistics_enabled);
-                bool.TryParse(parseConfig(conf, "ignore-unknown"), out ignore_unknown);
-                if (parseConfig(conf, "infodb") != "")
-                {
-                    Info = bool.Parse(parseConfig(conf, "infodb"));
-                }
-                shared = parseConfig(conf, "sharedinfo");
-                bool.TryParse(parseConfig(conf, "infobot-help"), out infobot_help);
-                bool.TryParse(parseConfig(conf, "infobot-auto-complete"), out infobot_auto_complete);
-                string infobot_ignore = parseConfig(conf, "infobot_ignores");
-                if (infobot_ignore != "")
-                {
-                    foreach (string x in infobot_ignore.Replace("\n", "").Split(','))
+                    System.Xml.XmlDocument data = new System.Xml.XmlDocument();
+                    if (!File.Exists(conf_file))
                     {
-                        string item = x.Replace(" ", "");
-                        if (item != "")
-                        {
-                            Infobot_IgnoredNames.Add(item);
+                        SaveConfig();
+                        return;
+                    }
+                    data.Load(conf_file);
+                    foreach (System.Xml.XmlNode xx in data.ChildNodes[0].ChildNodes)
+                    {
+                        switch (xx.Name)
+                        { 
+                            case "extension":
+                                if (ExtensionData.ContainsKey(xx.Attributes[0].Value))
+                                {
+                                    ExtensionData[xx.Attributes[0].Value] = xx.Attributes[1].Value;
+                                }
+                                else
+                                {
+                                    ExtensionData.Add(xx.Attributes[0].Value, xx.Attributes[1].Value);
+                                }
+                                continue;
+                            case "ignored":
+                                Infobot_IgnoredNames.Add(xx.Attributes[1].Value);
+                                continue;
+                            case "sharedch":
+                                SharedChans.Add(xx.Attributes[1].Value);
+                                continue;
+
+                        }
+                        switch (xx.Attributes[0].Value)
+                        { 
+                            case "talkmode":
+                                this.suppress = bool.Parse(xx.Attributes[1].Value);
+                                break;
+                            case "langcode":
+                                this.Language = xx.Attributes[1].Value;
+                                break;
+                            case "respond_message":
+                                this.respond_message = bool.Parse(xx.Attributes[1].Value);
+                                break;
+                            case "ignore-unknown":
+                                this.ignore_unknown = bool.Parse(xx.Attributes[1].Value);
+                                break;
+                            case "suppress-warnings":
+                                this.suppress_warnings = bool.Parse(xx.Attributes[1].Value);
+                                break;
+                            case "respond_wait":
+                                this.respond_wait = int.Parse(xx.Attributes[1].Value);
+                                break;
+                            case "sharedinfo":
+                                this.shared = xx.Attributes[1].Value;
+                                break;
                         }
                     }
                 }
-                if (parseConfig(conf, "langcode") != "")
+                catch (Exception fail)
                 {
-                    Language = parseConfig(conf, "langcode");
+                    core.Log("Unable to load the config of " + Name, true);
+                    core.handleException(fail);
                 }
-                bool.TryParse(parseConfig(conf, "talkmode"), out suppress);
+            }
+
+            private static void InsertData(string key, string value, ref XmlDocument document, ref XmlNode node, string Name = "local")
+            {
+                XmlAttribute name = document.CreateAttribute("key");
+                name.Value = key;
+                System.Xml.XmlAttribute kk = document.CreateAttribute("value");
+                kk.Value = value;
+                System.Xml.XmlNode db = document.CreateElement(Name);
+                db.Attributes.Append(name);
+                db.Attributes.Append(kk);
+                node.AppendChild(db);
             }
 
             /// <summary>
@@ -208,49 +268,52 @@ namespace wmib
             /// </summary>
             public void SaveConfig()
             {
-                conf = "";
-                AddConfig("infodb", Info.ToString());
-                AddConfig("logged", Logged.ToString());
-                AddConfig("feed", Feed.ToString());
-                AddConfig("atom", EnableRss.ToString());
-                AddConfig("talkmode", suppress.ToString());
-                AddConfig("style1", StyleRss);
-                AddConfig("infobot-sorted-list", infobot_sorted.ToString());
-                AddConfig("langcode", Language);
-                AddConfig("respond_message", respond_message.ToString());
-                AddConfig("infobot-trim-white-space-in-name", infobot_trim_white_space_in_name.ToString());
-                AddConfig("ignore-unknown", ignore_unknown.ToString());
-                AddConfig("infobot-help", infobot_help.ToString());
-                AddConfig("suppress-warnings", suppress_warnings.ToString());
-                AddConfig("respond_wait", respond_wait.ToString());
-                AddConfig("statistics", statistics_enabled.ToString());
-                AddConfig("keysdb", keydb);
-                AddConfig("infobot-auto-complete", infobot_auto_complete.ToString());
-                AddConfig("sharedinfo", shared);
-                if (!(sharedlink.Count < 1))
-                {
-                    conf += "\nsharedchan=";
-                    foreach (channel current in sharedlink)
-                    {
-                        conf += current.Name + ",\n";
-                    }
-                    conf = conf + ";";
-                }
-                AddConfig("seen", Seen.ToString());
-                if (!(Infobot_IgnoredNames.Count < 1))
-                {
-                    conf = conf + "\ninfobot_ignores=";
-                    foreach (string curr in Infobot_IgnoredNames)
-                    {
-                        conf = conf + curr + ",\n";
-                    }
-                    conf += ";";
-                }
-                core.backupData(variables.config + "/" + Name + ".setting");
                 try
                 {
-                    File.WriteAllText(variables.config + "/" + Name + ".setting", conf);
-                    File.Delete(tempName(variables.config + "/" + Name + ".setting"));
+                    System.Xml.XmlDocument data = new System.Xml.XmlDocument();
+                    System.Xml.XmlNode xmlnode = data.CreateElement("channel");
+                    InsertData("talkmode", suppress.ToString(), ref data, ref xmlnode);
+                    InsertData("langcode", this.Language, ref data, ref xmlnode);
+                    InsertData("respond_message", this.respond_message.ToString(), ref data, ref xmlnode);
+                    InsertData("ignore-unknown", this.ignore_unknown.ToString(), ref data, ref xmlnode);
+                    InsertData("suppress-warnings", this.suppress_warnings.ToString(), ref data, ref xmlnode);
+                    InsertData("respond_wait", respond_wait.ToString(), ref data, ref xmlnode);
+                    InsertData("sharedinfo", this.shared, ref data, ref xmlnode);
+                    if (!(sharedlink.Count < 1))
+                    {
+                        foreach (channel current in sharedlink)
+                        {
+                            InsertData("name", current.Name, ref data, ref xmlnode, "sharedch");
+                        }
+                    }
+                    if (!(Infobot_IgnoredNames.Count < 1))
+                    {
+                        foreach (string curr in Infobot_IgnoredNames)
+                        {
+                            InsertData("name", curr, ref data, ref xmlnode, "ignored");
+                        }
+                    }
+                    if (ExtensionData.Count > 0)
+                    {
+                        foreach (KeyValuePair<string, string> item in ExtensionData)
+                        {
+                            InsertData(item.Key, item.Value, ref data, ref xmlnode, "extension");
+                        }
+                    }
+                    if (File.Exists(variables.config + "/" + Name + ".setting"))
+                    {
+                        core.backupData(variables.config + "/" + Name + ".setting");
+                        if (!File.Exists(config.tempName(variables.config + "/" + Name + ".setting")))
+                        {
+                            core.Log("Unable to create backup file for " + Name);
+                        }
+                    }
+                    data.AppendChild(xmlnode);
+                    data.Save(variables.config + "/" + Name + ".setting");
+                    if (File.Exists(config.tempName(variables.config + "/" + Name + ".setting")))
+                    {
+                        File.Delete(config.tempName(variables.config + "/" + Name + ".setting"));
+                    }
                 }
                 catch (Exception)
                 {
@@ -273,9 +336,7 @@ namespace wmib
 
             public int Shares()
             {
-                string conf_file = variables.config + "/" + Name + ".setting";
-                conf = File.ReadAllText(conf_file);
-                foreach (string x in parseConfig(conf, "sharedchan").Replace("\n", "").Split(','))
+                foreach (string x in SharedChans)
                 {
                     string name = x.Replace(" ", "");
                     if (name != "")
@@ -300,18 +361,14 @@ namespace wmib
             {
                 Name = name;
                 conf = "";
-                keydb = variables.config + Path.DirectorySeparatorChar + name + ".db";
-                Info = true;
+                //Info = true;
                 Language = "en";
                 sharedlink = new List<channel>();
                 shared = "";
-                Rss = new wmib.Feed(this);
                 suppress = false;
-                Feed = false;
-                Logged = false;
+                //Feed = false;
+                //Logged = false;
                 LoadConfig();
-                RC = new RecentChanges(this);
-                info = new Statistics(this);
                 if (!Directory.Exists(config.path_txt))
                 {
                     Directory.CreateDirectory(config.path_txt);
@@ -328,9 +385,26 @@ namespace wmib
                 {
                     Directory.CreateDirectory(config.path_htm + Path.DirectorySeparatorChar + Name);
                 }
-                Keys = new infobot_core(keydb, Name);
-                Log = Path.DirectorySeparatorChar + Name + Path.DirectorySeparatorChar;
+                LogDir = Path.DirectorySeparatorChar + Name + Path.DirectorySeparatorChar;
                 Users = new IRCTrust(Name);
+                lock (Module.module)
+                {
+                    foreach (Module module in Module.module)
+                    {
+                        try
+                        {
+                            if (module.working)
+                            {
+                                module.Hook_Channel(this);
+                            }
+                        }
+                        catch (Exception fail)
+                        {
+                            core.Log("MODULE: exception at Hook_Channel in " + module.Name, true);
+                            core.handleException(fail);
+                        }
+                    }
+                }
             }
         }
 
@@ -421,7 +495,10 @@ namespace wmib
                     string name = x.Replace(" ", "").Replace("\n", "");
                     if (name != "")
                     {
-                        channels.Add(new channel(name));
+                        lock (channels)
+                        {
+                            channels.Add(new channel(name));
+                        }
                     }
                 }
                 Program.Log("Channels were all loaded");
@@ -522,7 +599,7 @@ namespace wmib
         /// <summary>
         /// Version
         /// </summary>
-        public static string version = "wikimedia bot v. 1.10.0.0";
+        public static string version = "wikimedia bot v. 1.10.4.3";
 
         /// <summary>
         /// Separator

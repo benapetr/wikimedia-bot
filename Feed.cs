@@ -348,7 +348,11 @@ namespace wmib
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
                 {
                     string item = message.Substring("@rss+ ".Length);
-                    channel.Rss.RemoveItem(item);
+                    Feed feed = (Feed)channel.RetrieveObject("rss");
+                    if (feed != null)
+                    {
+                        feed.RemoveItem(item);
+                    }
                     return;
                 }
                 else
@@ -369,12 +373,20 @@ namespace wmib
                     {
                         string id = item.Substring(0, item.IndexOf(" "));
                         string ur = item.Substring(item.IndexOf(" ") + 1);
-                        channel.Rss.StyleItem(id, ur);
+                        Feed feed = (Feed)channel.RetrieveObject("rss");
+                        if (feed != null)
+                        {
+                            feed.StyleItem(id, ur);
+                        }
                         return;
                     }
                     if (item != "")
                     {
-                        channel.Rss.StyleItem(item, "");
+                        Feed feed = (Feed)channel.RetrieveObject("rss");
+                        if (feed != null)
+                        {
+                            feed.StyleItem(item, "");
+                        }
                         return;
                     }
                     if (!channel.suppress_warnings)
@@ -400,12 +412,20 @@ namespace wmib
                     {
                         string id = item.Substring(0, item.IndexOf(" "));
                         string ur = item.Substring(item.IndexOf(" ") + 1);
-                        channel.Rss.InsertItem(id, ur);
+                        Feed feed = (Feed)channel.RetrieveObject("rss");
+                        if (feed != null)
+                        {
+                            feed.InsertItem(id, ur);
+                        }
                         return;
                     }
                     if (item != "")
                     {
-                        channel.Rss.InsertItem(item, "");
+                        Feed feed = (Feed)channel.RetrieveObject("rss");
+                        if (feed != null)
+                        {
+                            feed.InsertItem(item, "");
+                        }
                         return;
                     }
                     if (!channel.suppress_warnings)
@@ -425,14 +445,15 @@ namespace wmib
             {
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
-                    if (!channel.EnableRss)
+                    if (!GetConfig(channel, "RSS.Enable", false))
                     {
                         core.irc._SlowQueue.DeliverMessage(messages.get("Rss1", channel.Language), channel.Name);
                         return;
                     }
                     else
                     {
-                        channel.EnableRss = false;
+                        SetConfig(channel, "RSS.Enable", false);
+                        //channel.EnableRss = false;
                         core.irc._SlowQueue.DeliverMessage(messages.get("Rss2", channel.Language), channel.Name);
                         channel.SaveConfig();
                         return;
@@ -449,7 +470,7 @@ namespace wmib
             {
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
-                    if (channel.EnableRss)
+                    if (GetConfig(channel, "RSS.Enable", false))
                     {
                         core.irc._SlowQueue.DeliverMessage(messages.get("Rss3", channel.Language), channel.Name);
                         return;
@@ -457,7 +478,7 @@ namespace wmib
                     else
                     {
                         core.irc._SlowQueue.DeliverMessage(messages.get("Rss4", channel.Language), channel.Name);
-                        channel.EnableRss = true;
+                        SetConfig(channel, "RSS.Enable", true);
                         channel.SaveConfig();
                         return;
                     }
@@ -473,6 +494,51 @@ namespace wmib
         public override void Hook_BeforeSysWeb(ref string html)
         {
             html += "\n<br><br>Rss feeds: " + Feed.item.Count.ToString() + "\n";
+        }
+
+        public override bool Hook_SetConfig(config.channel chan, User invoker, string config, string value)
+        {
+            if (config == "style-rss")
+            {
+                if (value != "")
+                {
+                    SetConfig(chan, "Feed.Style", value);
+                    chan.SaveConfig();
+                    core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
+                    return true;
+                }
+                core.irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
+                return true;
+            }
+            return false;
+        }
+
+        public override bool Hook_OnRegister()
+        {
+            bool done = true;
+            foreach (config.channel chan in config.channels)
+            {
+                if (!chan.RegisterObject(new Feed(chan), "Rss"))
+                {
+                    done = false;
+                }
+            }
+
+            return done;
+        }
+
+        public override bool Hook_OnUnload()
+        {
+            bool done = true;
+            foreach (config.channel chan in config.channels)
+            {
+                if (!chan.UnregisterObject("Rss"))
+                {
+                    done = false;
+                }
+            }
+
+            return done;
         }
 
         public override bool Construct()
@@ -492,11 +558,12 @@ namespace wmib
                     {
                         foreach (config.channel channel in config.channels)
                         {
-                            if (channel.EnableRss)
+                            if (GetConfig(channel, "RSS.Enable", false))
                             {
-                                if (channel.Rss != null)
+                                Feed feed = (Feed)channel.RetrieveObject("rss");
+                                if (feed != null)
                                 {
-                                    channel.Rss.Recreate();
+                                        feed.Recreate();
                                 }
                             }
                         }
@@ -691,7 +758,7 @@ namespace wmib
                                         description = description.Substring(0, 200);
                                     }
 
-                                    string temp = owner.StyleRss;
+                                    string temp = owner.Extension_GetConfig("Feed.Style");
 
                                     if (curr.message != "")
                                     {

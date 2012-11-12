@@ -41,7 +41,7 @@ namespace wmib
             {
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
-                    if (channel.Logged)
+                    if (Module.GetConfig(channel, "Logging.Enabled", false))
                     {
                         core.irc._SlowQueue.DeliverMessage(messages.get("ChannelLogged", channel.Language), channel.Name);
                         return;
@@ -49,7 +49,7 @@ namespace wmib
                     else
                     {
                         core.irc._SlowQueue.DeliverMessage(messages.get("LoggingOn", channel.Language), channel.Name);
-                        channel.Logged = true;
+                        Module.SetConfig(channel, "Logging.Enabled", true);
                         channel.SaveConfig();
                         return;
                     }
@@ -65,14 +65,14 @@ namespace wmib
             {
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
-                    if (!channel.Logged)
+                    if (!Module.GetConfig(channel, "Logging.Enabled", false))
                     {
                         core.irc._SlowQueue.DeliverMessage(messages.get("LogsE1", channel.Language), channel.Name);
                         return;
                     }
                     else
                     {
-                        channel.Logged = false;
+                        Module.SetConfig(channel, "Logging.Enabled", false);
                         channel.SaveConfig();
                         core.irc._SlowQueue.DeliverMessage(messages.get("NotLogged", channel.Language), channel.Name);
                         return;
@@ -159,8 +159,8 @@ namespace wmib
         {
             try
             {
-                System.IO.File.AppendAllText(config.path_txt + channel.Log + _datetime.Year + timedateToString(_datetime.Month) + timedateToString(_datetime.Day) + ".txt", message);
-                System.IO.File.AppendAllText(config.path_htm + channel.Log + _datetime.Year + timedateToString(_datetime.Month) + timedateToString(_datetime.Day) + ".htm", html);
+                System.IO.File.AppendAllText(config.path_txt + channel.LogDir + _datetime.Year + timedateToString(_datetime.Month) + timedateToString(_datetime.Day) + ".txt", message);
+                System.IO.File.AppendAllText(config.path_htm + channel.LogDir + _datetime.Year + timedateToString(_datetime.Month) + timedateToString(_datetime.Day) + ".htm", html);
             }
             catch (Exception er)
             {
@@ -321,7 +321,7 @@ namespace wmib
         {
             try
             {
-                if (channel.Logged)
+                if (Module.GetConfig(channel, "Logging.Enabled", false))
                 {
                     lock (jobs)
                     {
@@ -388,6 +388,11 @@ namespace wmib
                 // nothing
                 Console.WriteLine(er.Message);
             }
+        }
+
+        public override void Hook_OnSelf(config.channel channel, User self, string message)
+        {
+            chanLog(message, channel, config.username, "");
         }
 
         /// <summary>

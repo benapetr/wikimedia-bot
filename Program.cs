@@ -53,7 +53,6 @@ namespace wmib
             Log("Shutting down");
             try
             {
-                RecentChanges.terminated = true;
                 core.Kill();
             }
             catch (Exception)
@@ -74,8 +73,12 @@ namespace wmib
             messages.data.Add ("zh", new messages.container("zh"));
             if ( config.Load() != 0)
 			{
+                Log("Error while loading the config file, exiting", true);
 				return;
 			}
+            core.Help.CreateHelp();
+            Log("Loading modules");
+            core.SearchMods();
             Log("Connecting");
             core.Connect();
         }

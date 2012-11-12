@@ -17,6 +17,7 @@ using System.Text;
 
 namespace wmib
 {
+    [Serializable()]
     public class Module
     {
         public static List<Module> module = new List<Module>();
@@ -25,26 +26,41 @@ namespace wmib
         public DateTime Date = DateTime.Now;
         public bool Reload = false;
         public bool Warning = false;
+        [NonSerialized()]
         public System.Threading.Thread thread;
         public bool working = false;
 
         public void Create(string name, bool start = false, bool restart = false)
         {
+            if (name == null || name == "")
+            {
+                core.Log("This module has invalid name and was terminated to prevent troubles", true);
+                throw new Exception("Invalid name");
+            }
             Date = DateTime.Now;
             if (Exist(name))
             {
+                core.Log("This module is already registered " + name + " this new instance was terminated to prevent troubles", true);
                 throw new Exception("This module is already registered");
             }
-            lock (module)
+            try
             {
-                core.Log("Loading module: " + name);
-                Name = name;
-                Reload = restart;
-                module.Add(this);
+                lock (module)
+                {
+                    core.Log("Loading module: " + name);
+                    Name = name;
+                    Reload = restart;
+                    module.Add(this);
+                }
+                if (start)
+                {
+                    Init();
+                }
             }
-            if (start)
+            catch (Exception fail)
             {
-                Init();
+                working = false;
+                core.handleException(fail);
             }
         }
 
@@ -54,6 +70,7 @@ namespace wmib
             {
                 return;
             }
+            core.Log("Invalid module", true);
             throw new Exception("Invalid module");
         }
 
@@ -87,6 +104,7 @@ namespace wmib
                 thread = new System.Threading.Thread(Exec);
                 thread.Name = "Module " + Name;
                 working = true;
+                Hook_OnRegister();
                 thread.Start();
             }
             catch (Exception f)
@@ -131,9 +149,53 @@ namespace wmib
             return;
         }
 
+        public virtual bool Hook_SetConfig(config.channel chan, User invoker, string config, string value)
+        {
+            return false;
+        }
+
+        public virtual void Hook_ReloadConfig(config.channel chan)
+        {
+            return;
+        }
+
+        public virtual void Hook_ChannelDrop(config.channel chan)
+        {
+            return;
+        }
+
         public virtual void Hook_Part(config.channel channel, User user)
         {
             return;
+        }
+
+        public virtual void Hook_OnSelf(config.channel channel, User self, string message)
+        {
+            return;
+        }
+
+        public virtual string Extension_DumpHtml(config.channel channel)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// This hook is called when channel is constructed
+        /// </summary>
+        /// <param name="channel"></param>
+        public virtual void Hook_Channel(config.channel channel)
+        {
+            return;
+        }
+
+        public virtual bool Hook_OnUnload()
+        {
+            return true;
+        }
+
+        public virtual bool Hook_OnRegister()
+        {
+            return true;
         }
 
         public virtual void Hook_Quit(User user)
@@ -157,6 +219,108 @@ namespace wmib
         public virtual void Hook_AfterSysWeb(ref string html)
         {
             return;
+        }
+
+        public static int GetConfig(config.channel chan, string name, int invalid)
+        {
+            try
+            {
+                if (chan != null)
+                {
+                    string value = chan.Extension_GetConfig(name);
+                    int result = 0;
+                    if (int.TryParse(value, out result))
+                    {
+                        return result;
+                    }
+                }
+            }
+            catch (Exception fail)
+            {
+                core.handleException(fail);
+            }
+            return invalid;
+        }
+
+        public static string GetConfig(config.channel chan, string name, string invalid)
+        {
+            try
+            {
+                string result = null;
+                if (chan != null)
+                {
+                    string value = chan.Extension_GetConfig(name);
+                    if (result == null)
+                    {
+                        result = invalid;
+                    }
+                        return result;
+                }
+            }
+            catch (Exception fail)
+            {
+                core.handleException(fail);
+            }
+            return invalid;
+        }
+
+        public static void SetConfig(config.channel chan, string name, bool data)
+        {
+            try
+            {
+                if (chan != null)
+                {
+                    chan.Extension_SetConfig(name, data.ToString());
+                }
+            }
+            catch (Exception fail)
+            {
+                core.handleException(fail);
+            }
+        }
+
+        public static void SetConfig(config.channel chan, string name, string data)
+        {
+            try
+            {
+                if (chan != null)
+                {
+                    chan.Extension_SetConfig(name, data);
+                }
+            }
+            catch (Exception fail)
+            {
+                core.handleException(fail);
+            }
+        }
+
+        /// <summary>
+        /// Get a bool from config of channel
+        /// </summary>
+        /// <param name="chan"></param>
+        /// <param name="name"></param>
+        /// <param name="invalid"></param>
+        /// <returns></returns>
+        public static bool GetConfig(config.channel chan, string name, bool invalid)
+        {
+            try
+            {
+                if (chan != null)
+                {
+                    string value = chan.Extension_GetConfig(name);
+                    bool result = false;
+                    if (bool.TryParse(value, out result))
+                    {
+                        return result;
+                    }
+                }
+              return invalid;
+            }
+            catch (Exception fail)
+            {
+                core.handleException(fail);
+                return invalid;
+            }
         }
 
         public void Exec()
@@ -203,6 +367,11 @@ namespace wmib
             }
         }
 
+        public virtual bool Hook_OnPrivateFromUser(User user)
+        {
+            return false;
+        }
+
         public virtual void Load()
         { 
             core.Log("Module " + Name + " is missing core thread, terminated", true);
@@ -216,6 +385,10 @@ namespace wmib
             core.Log("Unloading module: " + Name);
             try
             {
+                if (!Hook_OnUnload())
+                {
+                    core.Log("Unable to unload module, forcefully removed from memory: " + Name, true);
+                }
                 working = false;
                 Reload = false;
                 if (thread != null)
@@ -228,6 +401,14 @@ namespace wmib
                             Reload = false;
                         }
                         thread.Abort();
+                    }
+                }
+                lock (core.Domains)
+                {
+                    if (core.Domains.ContainsKey(this))
+                    {
+                        AppDomain.Unload(core.Domains[this]);
+                        core.Domains.Remove(this);
                     }
                 }
                 lock (module)

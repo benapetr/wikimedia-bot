@@ -21,7 +21,7 @@ namespace wmib
     {
         public override bool Construct()
         {
-            Version = "1.0.1";
+            Version = "1.0.2";
             base.Create("HTML", true);
             return true;
         }
@@ -32,12 +32,11 @@ namespace wmib
             {
                 foreach (config.channel chan in config.channels)
                 {
-                    if (chan.info.changed || chan.Keys.update)
+                    if (GetConfig(chan, "HTML.Update", true))
                     {
-                        chan.info.changed = false;
                         HtmlDump dump = new HtmlDump(chan);
                         dump.Make();
-                        chan.Keys.update = false;
+                        SetConfig(chan, "HTML.Update", false);
                     }
                 }
                 HtmlDump.Stat();
@@ -171,7 +170,8 @@ namespace wmib
                     foreach (config.channel chan in config.channels)
                     {
                         text = text + "<tr>";
-                        text = text + "<td><a href=\"" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm\">" + chan.Name + "</a></td><td>infobot: " + chan.Info.ToString() + ", recentchanges: " + chan.Feed.ToString() + ", logs: " + chan.Logged.ToString() + ", suppress: " + chan.suppress.ToString() + ", seen: " + chan.Seen.ToString() + ", rss: " + chan.EnableRss.ToString() + ", statistics: " + chan.statistics_enabled.ToString() + "</td></tr>\n";
+                        text = text + "<td><a href=\"" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm\">" + chan.Name + "</a></td><td>";
+                        text += "infobot: " + Module.GetConfig(chan, "Infobot.Enabled", true).ToString() + ", recentchanges: " + Module.GetConfig(chan, "RC.Enabled", false).ToString() + ", logs: " + Module.GetConfig(chan, "Logging.Enabled", false).ToString() + ", suppress: " + chan.suppress.ToString() + ", seen: " + Module.GetConfig(chan, "Seen.Enabled", false).ToString() + ", rss: " + Module.GetConfig(chan, "Rss.Enabled", false).ToString() + ", statistics: " + Module.GetConfig(chan, "Statistics.Enabled", false).ToString() + "</td></tr>\n";
                     }
                 }
 
@@ -214,123 +214,83 @@ namespace wmib
         {
             try
             {
+                Dictionary<string, string> ModuleData = new Dictionary<string, string>();
+                foreach (Module xx in Module.module)
+                {
+                    try
+                    {
+                        if (xx.working)
+                        {
+                            ModuleData.Add(xx.Name, xx.Extension_DumpHtml(Channel));
+                        }
+                    }catch (Exception fail)
+                    {
+                        core.Log ("Unable to retrieve web data", true);
+                        core.handleException(fail);
+                    }
+                }
                 string text = CreateHeader(Channel.Name);
-                text = text + "<h4>Infobot</h4>\n";
-                if (Channel.shared != "" && Channel.shared != "local")
+                if (ModuleData.ContainsKey("Infobot"))
                 {
-                    config.channel temp = core.getChannel(Channel.shared);
-                    if (temp != null)
+                    if (Module.GetConfig(Channel, "Infobot.Enabled", true))
                     {
-                        text += "Linked to <a href=" + System.Web.HttpUtility.UrlEncode(temp.Name) + ".htm>" + temp.Name + "</a>\n";
-                    }
-                    else
-                    {
-                        text += "Channel is linked to " + Channel.shared + " which isn't in my db, that's weird";
-                    }
-                }
-                else
-                {
-                    text = text + "\n<table border=1 class=\"infobot\" width=100%>\n<tr><th width=10%>Key</th><th>Value</th></tr>\n";
-                    Channel.Keys.locked = true;
-                    List<infobot_core.item> list = new List<infobot_core.item>();
-                    lock (Channel.Keys.text)
-                    {
-                        if (Channel.infobot_sorted != false)
+                        text = text + "<h4>Infobot</h4>\n";
+                        if (Channel.shared != "" && Channel.shared != "local")
                         {
-                            list = Channel.Keys.SortedItem();
-                        }
-                        else
-                        {
-                            list.AddRange(Channel.Keys.text);
-                        }
-                    }
-                    if (Channel.Keys.text.Count > 0)
-                    {
-                        foreach (infobot_core.item Key in list)
-                        {
-                            text += AddKey(Key.key, Key.text);
-                        }
-                    }
-                    text = text + "</table>\n";
-                    text = text + "<h4>Aliases</h4>\n<table class=\"infobot\" border=1 width=100%>\n";
-                    lock (Channel.Keys.Alias)
-                    {
-                        foreach (infobot_core.staticalias data in Channel.Keys.Alias)
-                        {
-                            text += AddLink(data.Name, data.Key);
-                        }
-                    }
-                    text = text + "</table><br>\n";
-                    Channel.Keys.locked = false;
-                }
-                if (Channel.Feed)
-                {
-                    text += "\n<h4>Recent changes</h4>";
-                    text = text + Channel.RC.ToTable();
-                }
-                if (Channel.statistics_enabled)
-                {
-                    text += "\n<br>\n<h4>Most active users :)</h4>\n<br>\n\n<table class=\"infobot\" width=100% border=1>";
-                    text += "<tr><td>N.</td><th>Nick</th><th>Messages (average / day)</th><th>Number of posted messages</th><th>Active since</th></tr>";
-                    int id = 0;
-                    int totalms = 0;
-                    DateTime startime = DateTime.Now;
-                    lock (Channel.info.data)
-                    {
-                        Channel.info.data.Sort();
-                        Channel.info.data.Reverse();
-                        foreach (Statistics.list user in Channel.info.data)
-                        {
-                            id++;
-                            totalms += user.messages;
-                            if (id > 100)
+                            config.channel temp = core.getChannel(Channel.shared);
+                            if (temp != null)
                             {
-                                continue;
-                            }
-                            if (startime > user.logging_since)
-                            {
-                                startime = user.logging_since;
-                            }
-                            System.TimeSpan uptime = System.DateTime.Now - user.logging_since;
-                            float average = user.messages;
-                            average = ((float)user.messages / (float)(uptime.Days + 1));
-                            if (user.URL != "")
-                            {
-                                text += "<tr><td>" + id.ToString() + ".</td><td><a target=\"_blank\" href=\"" + user.URL + "\">" + user.user + "</a></td><td>" + average.ToString() + "</td><td>" + user.messages.ToString() + "</td><td>" + user.logging_since.ToString() + "</td></tr>";
+                                text += "Linked to <a href=" + System.Web.HttpUtility.UrlEncode(temp.Name) + ".htm>" + temp.Name + "</a>\n";
                             }
                             else
                             {
-                                text += "<tr><td>" + id.ToString() + ".</td><td>" + user.user + "</td><td>" + average.ToString() + "</td><td>" + user.messages.ToString() + "</td><td>" + user.logging_since.ToString() + "</td></tr>";
+                                text += "Channel is linked to " + Channel.shared + " which isn't in my db, that's weird";
                             }
-                            text += "  \n";
                         }
-                    }
-                    System.TimeSpan uptime_total = System.DateTime.Now - startime;
-                    float average2 = totalms;
-                    average2 = (float)totalms / (1 + uptime_total.Days);
-                    text += "<tr><td>N/A</td><th>Total:</th><th>" + average2.ToString() + "</th><th>" + totalms.ToString() + "</th><td>N/A</td></tr>";
-                    text += "  \n";
-                    text += "</table>";
-                }
-                if (Channel.EnableRss)
-                {
-                    text += "\n<br>\n<h4>Rss</h4>\n<br>\n\n<table class=\"infobot\" width=100% border=1>";
-                    text += "<tr><th>Name</th><th>URL</th><th>Enabled</th></tr>";
-                    lock (Channel.Rss.Content)
-                    {
-                        foreach (Feed.item feed in Channel.Rss.Content)
+                        else
                         {
-                            text += "\n<tr><td>" + feed.name + "</td><td><a href=\"" + feed.URL + "\">" + feed.URL + "</a></td><td>" + (!feed.disabled).ToString() + "</td></tr>";
+                            text += ModuleData["Infobot"];
                         }
                     }
-                    text += "</table>\n";
+                    ModuleData.Remove("Infobot");
+                }
+                if (ModuleData.ContainsKey("RC"))
+                {
+                    if (Module.GetConfig(Channel, "RC.Enabled", false))
+                    {
+                        text += "\n<h4>Recent changes</h4>";
+                        text += ModuleData["RC"];
+                        ModuleData.Remove("RC");
+                    }
+                }
+                if (ModuleData.ContainsKey("Statistics"))
+                {
+                    if (Module.GetConfig(Channel, "Statistics.Enabled", false))
+                    {
+                        text += ModuleData["Statistics"];
+                        ModuleData.Remove("Statistics");
+                    }
+                }
+                if (ModuleData.ContainsKey("Rss"))
+                {
+                    if (Module.GetConfig(Channel, "Rss.Enabled", false))
+                    {
+                        text += ModuleData["Rss"];
+                        ModuleData.Remove("Rss");
+                    }
+                }
+                foreach (KeyValuePair<string, string> item in ModuleData)
+                {
+                    if (item.Value != null && item.Value != "")
+                    {
+                        text += item.Value;
+                    }
                 }
                 text = text + CreateFooter();
                 File.WriteAllText(dumpname, text);
             }
             catch (Exception b)
             {
-                Channel.Keys.locked = false;
                 core.handleException(b);
             }
         }

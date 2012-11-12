@@ -55,17 +55,13 @@ namespace wmib
 
     public class core
     {
-        // Plugins should be defined here if static pointer is required from outside, otherwise can be loaded on demand
-        public static module_rc plugin_recentchanges;
-        public static module_logs plugin_logs;
-        public static module_feed plugin_feed;
-        public static module_infobot plugin_ib1;
-        public static infobot_writer plugin_ib2;
         public static string LastText;
         public static bool disabled;
         public static bool exit = false;
         public static IRC irc;
+        public static Dictionary<Module, AppDomain> Domains = new Dictionary<Module, AppDomain>();
         private static List<user> User = new List<user>();
+        private static Dictionary<string, string> HelpData = new Dictionary<string, string>();
 
         public class user
         {
@@ -158,6 +154,12 @@ namespace wmib
                 if (File.Exists(path))
                 {
                     System.Reflection.Assembly library = System.Reflection.Assembly.LoadFrom(path);
+                    AppDomainSetup setup = new AppDomainSetup();
+                    setup.ApplicationName = "DemoApp";
+                    setup.ApplicationBase = Environment.CurrentDirectory;
+                    setup.ShadowCopyDirectories = Environment.CurrentDirectory;
+                    setup.ShadowCopyFiles = "true";
+                    AppDomain domain = AppDomain.CreateDomain("extension$" + path, null, setup);
                     if (library == null)
                     {
                         Program.Log("Unable to load " + path + " because the file can't be read", true);
@@ -179,7 +181,13 @@ namespace wmib
                         Program.Log("Unable to load " + path + " because the library contains no module", true);
                         return false;
                     }
-                    Module _plugin = (Module)Activator.CreateInstance(pluginInfo);
+
+                    Module _plugin = domain.CreateInstanceFromAndUnwrap(path, "wmib.RegularModule") as Module;  //(Module)Activator.CreateInstance(pluginInfo);
+
+                    lock (Domains)
+                    {
+                        Domains.Add(_plugin, domain);
+                    }
                     return true;
                 }
             }
@@ -506,20 +514,23 @@ namespace wmib
                         irc.wd.WriteLine("PART " + chan.Name + " :" + "dropped by " + user + " from " + origin);
                         Program.Log("Dropped " + chan.Name + " dropped by " + user + " from " + origin);
                         Thread.Sleep(100);
-                        chan.Feed = false;
                         irc.wd.Flush();
                         try
                         {
-                            if (Directory.Exists(chan.Log))
+                            if (Directory.Exists(chan.LogDir))
                             {
-                                Directory.Delete(chan.Log, true);
+                                Directory.Delete(chan.LogDir, true);
                             }
                         }
                         catch (Exception)
                         { }
                         try
                         {
-                            chan.Rss.Delete();
+                            //Feed feed = (Feed)chan.RetrieveObject("rss");
+                            //if (feed != null)
+                            //{
+                            //    feed.Delete();
+                            //}
                             File.Delete(variables.config + Path.DirectorySeparatorChar + chan.Name + ".setting");
                             File.Delete(chan.Users.File);
                             if (File.Exists(variables.config + Path.DirectorySeparatorChar + chan.Name + ".list"))
@@ -529,6 +540,24 @@ namespace wmib
                             if (File.Exists(variables.config + Path.DirectorySeparatorChar + chan.Name + ".statistics"))
                             {
                                 File.Delete(variables.config + Path.DirectorySeparatorChar + chan.Name + ".statistics");
+                            }
+                            lock (Module.module)
+                            {
+                                foreach (Module curr in Module.module)
+                                {
+                                    try
+                                    {
+                                        if (curr.working)
+                                        {
+                                            curr.Hook_ChannelDrop(chan);
+                                        }
+                                    }
+                                    catch (Exception fail)
+                                    {
+                                        core.Log("MODULE: exception at Hook_ChannelDrop in " + curr.Name, true);
+                                        core.handleException(fail);
+                                    }
+                                }
                             }
                         }
                         catch (Exception) { }
@@ -548,7 +577,6 @@ namespace wmib
                     {
                         irc.wd.WriteLine("PART " + chan.Name + " :" + "removed by " + user + " from " + origin);
                         Program.Log("Removed " + chan.Name + " removed by " + user + " from " + origin);
-                        chan.Feed = false;
                         Thread.Sleep(100);
                         irc.wd.Flush();
                         config.channels.Remove(chan);
@@ -580,7 +608,24 @@ namespace wmib
                 if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     chan.LoadConfig();
-                    chan.Keys = new infobot_core(chan.keydb, chan.Name);
+                    lock (Module.module)
+                    {
+                        foreach (Module xx in Module.module)
+                        {
+                            try
+                            {
+                                if (xx.working)
+                                {
+                                    xx.Hook_ReloadConfig(chan);
+                                }
+                            }
+                            catch (Exception fail)
+                            {
+                                Program.Log("Crash on Hook_Reload in " + xx.Name);
+                                core.handleException(fail);
+                            }
+                        }
+                    }
                     irc._SlowQueue.DeliverMessage(messages.get("Config", chan.Language), chan.Name);
                     return;
                 }
@@ -805,36 +850,6 @@ namespace wmib
                                 }
                                 irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
                                 return;
-                            case "infobot-trim-white-space-in-name":
-                                if (bool.TryParse(value, out _temp_a))
-                                {
-                                    chan.infobot_trim_white_space_in_name = _temp_a;
-                                    irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, name }), chan.Name);
-                                    chan.SaveConfig();
-                                    return;
-                                }
-                                irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
-                                return;
-                            case "infobot-auto-complete":
-                                if (bool.TryParse(value, out _temp_a))
-                                {
-                                    chan.infobot_auto_complete = _temp_a;
-                                    irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, name }), chan.Name);
-                                    chan.SaveConfig();
-                                    return;
-                                }
-                                irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
-                                return;
-                            case "infobot-sorted":
-                                if (bool.TryParse(value, out _temp_a))
-                                {
-                                    chan.infobot_sorted = _temp_a;
-                                    irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, name }), chan.Name);
-                                    chan.SaveConfig();
-                                    return;
-                                }
-                                irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
-                                return;
                             case "logs-no-write-data":
                                 if (bool.TryParse(value, out _temp_a))
                                 {
@@ -878,28 +893,30 @@ namespace wmib
                                 }
                                 irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
                                 return;
-                            case "infobot-help":
-                                if (bool.TryParse(value, out _temp_a))
-                                {
-                                    chan.infobot_help = _temp_a;
-                                    irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, name }), chan.Name);
-                                    chan.SaveConfig();
-                                    return;
-                                }
-                                irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
-                                return;
-                            case "style-rss":
-                                if (value != "")
-                                {
-                                    chan.StyleRss = value;
-                                    chan.SaveConfig();
-                                    irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, name }), chan.Name);
-                                    return;
-                                }
-                                irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
-                                return;
                         }
-                        if (!chan.suppress_warnings)
+                        bool exist = false;
+                        lock (Module.module)
+                        {
+                            foreach (Module curr in Module.module)
+                            {
+                                try
+                                {
+                                    if (curr.working)
+                                    {
+                                        if (curr.Hook_SetConfig(chan, invoker, name, value))
+                                        {
+                                            exist = true;
+                                        }
+                                    }
+                                }
+                                catch (Exception fail)
+                                {
+                                    Program.Log("Error on Hook_SetConfig module " + curr.Name);
+                                    core.handleException(fail);
+                                }
+                            }
+                        }
+                        if (!chan.suppress_warnings && !exist)
                         {
                             irc._SlowQueue.DeliverMessage(messages.get("configure-wrong", chan.Language), chan.Name);
                         }
@@ -937,6 +954,7 @@ namespace wmib
                         }
                         if (module.EndsWith(".bin"))
                         {
+                            module = "modules" + Path.DirectorySeparatorChar + module;
                             if (File.Exists(module))
                             {
                                 if (LoadMod(module))
@@ -950,59 +968,7 @@ namespace wmib
                             irc._SlowQueue.DeliverMessage("File not found " + module, chan.Name, IRC.priority.high);
                             return;
                         }
-                        switch (module)
-                        {
-                            case "LOGS":
-                                lock (Module.module)
-                                {
-                                    if (Module.module.Contains(plugin_logs))
-                                    {
-                                        Module.module.Remove(plugin_logs);
-                                    }
-                                }
-                                plugin_logs = new module_logs();
-                                break;
-                            case "Infobot core":
-                                lock (Module.module)
-                                {
-                                    if (Module.module.Contains(plugin_ib1))
-                                    {
-                                        Module.module.Remove(plugin_ib1);
-                                    }
-                                }
-                                plugin_ib1 = new module_infobot();
-                                break;
-                            case "Infobot DB":
-                                lock (Module.module)
-                                {
-                                    if (Module.module.Contains(plugin_ib2))
-                                    {
-                                        Module.module.Remove(plugin_ib2);
-                                    }
-                                }
-                                plugin_ib2 = new infobot_writer();
-                                break;
-                            case "RC":
-                                lock (Module.module)
-                                {
-                                    if (Module.module.Contains(plugin_recentchanges))
-                                    {
-                                        Module.module.Remove(plugin_recentchanges);
-                                    }
-                                }
-                                plugin_recentchanges = new module_rc();
-                                break;
-                            case "Feed":
-                                lock (Module.module)
-                                {
-                                    if (Module.module.Contains(plugin_feed))
-                                    {
-                                        Module.module.Remove(plugin_feed);
-                                    }
-                                }
-                                plugin_feed = new module_feed();
-                                break;
-                        }
+
                         irc._SlowQueue.DeliverMessage("Loaded module " + module, chan.Name, IRC.priority.high);
                         return;
                     }
@@ -1024,25 +990,6 @@ namespace wmib
                         return;
                     }
                     _m.Exit();
-                    // sort out static ones
-                    switch (module)
-                    {
-                        case "LOGS":
-                            //plugin_logs = null;
-                            break;
-                        case "Infobot core":
-                            plugin_ib1 = null;
-                            break;
-                        case "Infobot DB":
-                            plugin_ib2 = null;
-                            break;
-                        case "RC":
-                            plugin_recentchanges = null;
-                            break;
-                        case "Feed":
-                            plugin_feed = null;
-                            break;
-                    }
                     irc._SlowQueue.DeliverMessage("Unloaded module " + module, chan.Name, IRC.priority.high);
                 }
             }
@@ -1069,7 +1016,7 @@ namespace wmib
                     }
                     catch (Exception f)
                     {
-                        Program.Log("Hook exception in " + _Module.Name, true);
+                        core.Log("MODULE: exception at Hook_PRIV in " + _Module.Name, true);
                         core.handleException(f);
                     }
                 }
@@ -1099,43 +1046,31 @@ namespace wmib
 
         public static bool isModule(string name)
         {
-            switch (name)
-            {
-                case "LOGS":
-                case "Infobot core":
-                case "Infobot DB":
-                case "RC":
-                case "Feed":
-                    return true;
-            }
             return false;
         }
 
         public static void Connect()
         {
-            plugin_logs = new module_logs();
-            plugin_ib1 = new module_infobot();
-            plugin_ib2 = new infobot_writer();
-            plugin_recentchanges = new module_rc();
-            //plugin_seen = new module_seen();
-            plugin_feed = new module_feed();
-            // dynamic mods
-            foreach (string dll in Directory.GetFiles(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "*.bin"))
-            {
-                LoadMod(dll);
-            }
-            Program.Log("Modules loaded");
             irc = new IRC(config.network, config.username, config.name, config.name);
             irc.Connect();
         }
 
+        public static void SearchMods()
+        {
+            if (Directory.Exists(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
+                + Path.DirectorySeparatorChar + "modules"))
+            {
+                foreach (string dll in Directory.GetFiles(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
+                    + Path.DirectorySeparatorChar + "modules", "*.bin"))
+                {
+                    LoadMod(dll);
+                }
+            }
+            Program.Log("Modules loaded");
+        }
+
         public static void Kill()
         {
-            try
-            {
-                Statistics.db.Abort();
-            }
-            catch (Exception) { }
             irc.disabled = true;
             exit = true;
             irc.wd.Close();
@@ -1165,11 +1100,6 @@ namespace wmib
                 }
                 if (message.StartsWith("@"))
                 {
-                    if (curr.Info)
-                    {
-                        curr.Keys.Find(message, curr);
-                        curr.Keys.RSearch(message, curr);
-                    }
                     modifyRights(message, curr, nick, host);
                     addChannel(curr, nick, host, message);
                     partChannel(curr, nick, host, message);
@@ -1191,6 +1121,112 @@ namespace wmib
             return false;
         }
 
+        public static class Help
+        {
+            public static bool Register(string name, string text)
+            {
+                lock (HelpData)
+                {
+                    if (!HelpData.ContainsKey(name))
+                    {
+                        HelpData.Add(name, text);
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            public static void CreateHelp()
+            { 
+                Register("infobot-ignore-", null);
+                Register("infobot-ignore-", null);
+                Register("infobot-ignore+", null);
+                Register("trustdel", null);
+                Register("refresh", null);
+                Register("infobot-on", null);
+                Register("seen-on", null);
+                Register("seen", null);
+                Register("infobot-off", null);
+                Register("seen-off", null);
+                Register("channellist", null);
+                Register("trusted", null);
+                Register("trustadd", null);
+                Register("drop", null);
+                Register("part", null);
+                Register("language", null);
+                Register("whoami", null);
+                Register("suppress-on", null);
+                Register("infobot-detail", null);
+                Register("configure", null);
+                Register("add", null);
+                Register("reload", null);
+                Register("logon", null);
+                Register("logoff", null);
+                Register("recentchanges-on", null);
+                Register("recentchanges-off", null);
+                Register("rss-on", null);
+                Register("rss-off", null);
+                Register("rss+", null);
+                Register("rss-", null);
+                Register("statistics-reset", null);
+                Register("statistics-off", null);
+                Register("statistics-on", null);
+                Register("recentchanges-", null);
+                Register("recentchanges+", null);
+                Register("infobot-share-on", null);
+                Register("infobot-share-trust+", null);
+                Register("infobot-share-trust-", null);
+                Register("infobot-link", null);
+                Register("info", null);
+                Register("rc-", null);
+                Register("search", null);
+                Register("commands", null);
+                Register("regsearch", null);
+                Register("infobot-share-off", null);
+                Register("rc+", null);
+                Register("suppress-off", null);
+            }
+
+            public static bool Unregister(string name)
+            {
+                lock (HelpData)
+                {
+                    if (HelpData.ContainsKey(name))
+                    {
+                        HelpData.Remove(name);
+                        return true;
+
+                    }
+                }
+                return false;
+            }
+        }
+
+        public static class Host
+        {
+            public static string Host2Name(string host)
+            {
+                host = host.Replace("-", "_");
+                host = host.Replace("pdpc.professional.", "");
+                host = host.Replace("pdpc.active.", "");
+                if (host.StartsWith("wikimedia/"))
+                {
+                    host = host.Substring("wikipedia/".Length);
+                    return "https://meta.wikimedia.org/wiki/User:" + host;
+                }
+                else if (host.StartsWith("wikipedia/"))
+                {
+                    host = host.Substring("wikipedia/".Length);
+                    return "https://en.wikipedia.org/wiki/User:" + host;
+                }
+                else if (host.StartsWith("mediawiki/"))
+                {
+                    host = host.Substring("wikipedia/".Length);
+                    return "https://mediawiki.org/wiki/User:" + host;
+                }
+                return "";
+            }
+        }
 
         private static void showInfo(string name, string info, string channel)
         {
@@ -1203,56 +1239,18 @@ namespace wmib
             {
                 parameter = parameter.Substring(1);
             }
-            switch (parameter.ToLower())
+            lock (HelpData)
             {
-                case "infobot-ignore-":
-                case "infobot-ignore+":
-                case "trustdel":
-                case "refresh":
-                case "infobot-on":
-                case "seen-on":
-                case "seen":
-                case "infobot-off":
-                case "seen-off":
-                case "channellist":
-                case "trusted":
-                case "trustadd":
-                case "drop":
-                case "part":
-                case "language":
-                case "whoami":
-                case "suppress-on":
-                case "infobot-detail":
-                case "configure":
-                case "add":
-                case "reload":
-                case "logon":
-                case "logoff":
-                case "recentchanges-on":
-                case "recentchanges-off":
-                case "rss-on":
-                case "rss-off":
-                case "rss+":
-                case "rss-":
-                case "statistics-reset":
-                case "statistics-off":
-                case "statistics-on":
-                case "recentchanges-":
-                case "recentchanges+":
-                case "infobot-share-on":
-                case "infobot-share-trust+":
-                case "infobot-share-trust-":
-                case "infobot-link":
-                case "info":
-                case "rc-":
-                case "search":
-                case "commands":
-                case "regsearch":
-                case "infobot-share-off":
-                case "rc+":
-                case "suppress-off":
-                    showInfo(parameter, messages.get(parameter.ToLower(), channel.Language), channel.Name);
-                    return false;
+                if (HelpData.ContainsKey(parameter.ToLower()))
+                {
+                    if (HelpData[parameter] == null)
+                    {
+                        showInfo(parameter, messages.get(parameter.ToLower(), channel.Language), channel.Name);
+                        return true;
+                    }
+                    showInfo(parameter, HelpData[parameter], channel.Name);
+                    return true;
+                }
             }
             irc._SlowQueue.DeliverMessage("Unknown command type @commands for a list of all commands I know", channel.Name);
             return false;
@@ -1262,6 +1260,31 @@ namespace wmib
         {
             System.TimeSpan uptime = System.DateTime.Now - config.UpTime;
             return uptime.Days.ToString() + " days  " + uptime.Hours.ToString() + " hours since " + config.UpTime.ToString();
+        }
+
+        public static class HTML
+        {
+            /// <summary>
+            /// Insert another table row
+            /// </summary>
+            /// <param name="name"></param>
+            /// <param name="value"></param>
+            /// <returns></returns>
+            public static string AddLink(string name, string value)
+            {
+                return "<tr><td>" + System.Web.HttpUtility.HtmlEncode(name) + "</td><td><a href=\"#" + System.Web.HttpUtility.HtmlEncode(value) + "\">" + System.Web.HttpUtility.HtmlEncode(value) + "</a></td></tr>\n";
+            }
+
+            /// <summary>
+            /// Insert another table row
+            /// </summary>
+            /// <param name="name"></param>
+            /// <param name="value"></param>
+            /// <returns></returns>
+            public static string AddKey(string name, string value)
+            {
+                return "<tr id=\"" + System.Web.HttpUtility.HtmlEncode(name) + "\"><td>" + System.Web.HttpUtility.HtmlEncode(name) + "</td><td>" + System.Web.HttpUtility.HtmlEncode(value) + "</td></tr>\n";
+            }
         }
     }
 }

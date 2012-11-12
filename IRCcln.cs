@@ -239,6 +239,7 @@ namespace wmib
                     }
                     catch (Exception fail)
                     {
+                        core.Log("MODULE: exception at Hook_Quit in " + module.Name, true);
                         core.handleException(fail);
                     }
                 }
@@ -297,6 +298,7 @@ namespace wmib
                         }
                         catch (Exception fail)
                         {
+                            core.Log("MODULE: exception at Hook_Kick in " + module.Name, true);
                             core.handleException(fail);
                         }
                     }
@@ -349,10 +351,14 @@ namespace wmib
                     {
                         try
                         {
-                            module.Hook_Join(channel, _user);
+                            if (module.working)
+                            {
+                                module.Hook_Join(channel, _user);
+                            }
                         }
                         catch (Exception fail)
                         {
+                            core.Log("MODULE: exception at Hook_Join in " + module.Name, true);
                             core.handleException(fail);
                         }
                     }
@@ -734,7 +740,23 @@ namespace wmib
                 return true;
             }
             wd.WriteLine("PRIVMSG " + channel + " :" + message.Replace("\n", " "));
-            core.plugin_logs.chanLog(message, curr, config.username, "");
+            lock (Module.module)
+            {
+                foreach (Module module in Module.module)
+                {
+                    try
+                    {
+                        if (module.working)
+                        {
+                            module.Hook_OnSelf(curr, new User(config.username, "wikimedia/bot/wm-bot", "wmib"), message);
+                        }
+                    }
+                    catch (Exception fail)
+                    {
+                        core.handleException(fail);
+                    }
+                }
+            }
             wd.Flush();
             return true;
         }
@@ -1015,7 +1037,33 @@ namespace wmib
                                                 wd.Flush();
                                                 continue;
                                             }
-                                            Program.Log("Ignoring private message: (" + nick + ") " + message.Substring(1), false);
+                                            bool respond = true;
+                                            lock (Module.module)
+                                            {
+                                                foreach (Module module in Module.module)
+                                                {
+                                                    if (module.working)
+                                                    {
+                                                        try
+                                                        {
+
+                                                            if (module.Hook_OnPrivateFromUser(new User(nick, host, ident)))
+                                                            {
+                                                                respond = false;
+                                                            }
+                                                        }
+                                                        catch (Exception fail)
+                                                        {
+                                                            core.handleException(fail);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            if (respond)
+                                            {
+                                                _SlowQueue.DeliverMessage("Hi, I am robot, this command was not understood. Please bear in mind that every message you send to me will be logged for debuging purposes. See documentation at http://meta.wikimedia.org/wiki/WM-Bot for explanation of commands", nick, priority.low);
+                                                Program.Log("Ignoring private message: (" + nick + ") " + message.Substring(1), false);
+                                            }
                                             continue;
                                         }
                                     }

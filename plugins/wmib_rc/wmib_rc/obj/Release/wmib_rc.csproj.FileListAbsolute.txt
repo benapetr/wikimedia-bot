@@ -1,0 +1,7 @@
+C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_rc\wmib_rc\obj\Release\ResolveAssemblyReference.cache
+C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_rc\wmib_rc\bin\Release\wmib_rc.dll
+C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_rc\wmib_rc\bin\Release\wmib_rc.pdb
+C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_rc\wmib_rc\bin\Release\wmib.exe
+C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_rc\wmib_rc\bin\Release\wmib.pdb
+C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_rc\wmib_rc\obj\Release\wmib_rc.dll
+C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_rc\wmib_rc\obj\Release\wmib_rc.pdb
