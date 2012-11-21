@@ -19,7 +19,8 @@ namespace wmib
 {
     public static class config
     {
-        public class channel
+        [Serializable()]
+        public class channel : MarshalByRefObject
         {
             /// <summary>
             /// Channel name
@@ -395,7 +396,8 @@ namespace wmib
                         {
                             if (module.working)
                             {
-                                module.Hook_Channel(this);
+                                config.channel self = this;
+                                module.Hook_Channel(self);
                             }
                         }
                         catch (Exception fail)

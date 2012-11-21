@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Data;
+using System.Threading;
 using System.Xml;
 using System.Security.Cryptography.X509Certificates;
 using System.IO;
@@ -494,11 +495,12 @@ namespace wmib
         public override string Extension_DumpHtml(config.channel channel)
         {
             string HTML = "";
-            Feed list = (Feed)channel.RetrieveObject("Rss");
+            Feed list = (Feed)channel.RetrieveObject("rss");
             if (list == null)
             {
                 return "";
             }
+            HTML += "<h4>Rss feed</h4><br>";
             HTML += "\n<br>\n<h4>Rss</h4>\n<br>\n\n<table class=\"infobot\" width=100% border=1>";
             HTML += "<tr><th>Name</th><th>URL</th><th>Enabled</th></tr>";
             lock (list.Content)
@@ -534,12 +536,20 @@ namespace wmib
             return false;
         }
 
+        public override void Hook_Channel(config.channel channel)
+        {
+            if (channel.RetrieveObject("rss") == null)
+            {
+                channel.RegisterObject(new Feed(channel), "rss");
+            }
+        }
+
         public override bool Hook_OnRegister()
         {
             bool done = true;
             foreach (config.channel chan in config.channels)
             {
-                if (!chan.RegisterObject(new Feed(chan), "Rss"))
+                if (!chan.RegisterObject(new Feed(chan), "rss"))
                 {
                     done = false;
                 }
@@ -553,7 +563,7 @@ namespace wmib
             bool done = true;
             foreach (config.channel chan in config.channels)
             {
-                if (!chan.UnregisterObject("Rss"))
+                if (!chan.UnregisterObject("rss"))
                 {
                     done = false;
                 }
@@ -564,7 +574,8 @@ namespace wmib
 
         public override bool Construct()
         {
-            base.Create("Feed", true);
+            start = true;
+            Name = "Feed";
             Version = "1.0.0";
             return true;
         }
@@ -575,22 +586,33 @@ namespace wmib
             {
                 while (true)
                 {
+                    List<config.channel> chan = new List<config.channel>();
                     lock (config.channels)
                     {
-                        foreach (config.channel channel in config.channels)
+                        chan.AddRange(config.channels);
+                    }
+                        foreach (config.channel channel in chan)
                         {
-                            if (GetConfig(channel, "RSS.Enable", false))
+                            if (GetConfig(channel, "Rss.Enable", false))
                             {
                                 Feed feed = (Feed)channel.RetrieveObject("rss");
                                 if (feed != null)
                                 {
                                     feed.Recreate();
                                 }
+                                else
+                                {
+                                    core.Log("WARNING: Feed is enabled but object is not present in " + channel.Name, true);
+                                }
                             }
                         }
-                    }
+                        chan.Clear();
                     System.Threading.Thread.Sleep(10000);
                 }
+            }
+            catch (ThreadAbortException)
+            {
+                return;
             }
             catch (Exception fail)
             {
@@ -779,7 +801,7 @@ namespace wmib
                                         description = description.Substring(0, 200);
                                     }
 
-                                    string temp = owner.Extension_GetConfig("Feed.Style");
+                                    string temp = Module.GetConfig(owner, "Rss.Style", "[$name] $title: $description $link");
 
                                     if (curr.message != "")
                                     {

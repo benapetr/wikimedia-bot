@@ -27,8 +27,9 @@ namespace wmib
 
         public override bool Construct()
         {
-            base.Create(NAME, true, true);
-            Version = "1.0.2";
+            Name = NAME;
+            start = true;
+            Version = "1.0.22";
             return true;
         }
 
@@ -83,6 +84,14 @@ namespace wmib
             return HTML;
         }
 
+        public override void Hook_Channel(config.channel channel)
+        {
+            if (channel.RetrieveObject("Statistics") == null)
+            {
+                channel.RegisterObject(new Statistics(channel), NAME);
+            }
+        }
+
         public override bool Hook_OnUnload()
         {
             bool success = true;
@@ -90,7 +99,7 @@ namespace wmib
             {
                 foreach (config.channel xx in config.channels)
                 {
-                    if (!xx.UnregisterObject("Statistics"))
+                    if (!xx.UnregisterObject(NAME))
                     {
                         success = false;
                     }
@@ -101,38 +110,47 @@ namespace wmib
 
         public override void Load()
         {
-            while (true)
+            try
             {
-                try
+                while (true)
                 {
-                    foreach (config.channel chan in config.channels)
+                    try
                     {
-                        Statistics st = (Statistics)chan.RetrieveObject("Statistics");
-                        if (st != null)
+                        foreach (config.channel chan in config.channels)
                         {
-                            if (st.Stored == false)
+                            Statistics st = (Statistics)chan.RetrieveObject(NAME);
+                            if (st != null)
                             {
-                                st.Save();
+                                if (st.Stored == false)
+                                {
+                                    st.Save();
+                                }
+                                st.Stored = true;
+                                continue;
                             }
-                            st.Stored = true;
+                            core.Log("NULL pointer at statistics for " + chan.Name, true);
                         }
+                        Thread.Sleep(8000);
                     }
-                    Thread.Sleep(8000);
+                    catch (ThreadAbortException)
+                    {
+                        return;
+                    }
+                    catch (Exception f)
+                    {
+                        core.handleException(f);
+                    }
                 }
-                catch (ThreadAbortException)
-                {
-                    break;
-                }
-                catch (Exception f)
-                {
-                    core.handleException(f);
-                }
+            }
+            catch (ThreadAbortException)
+            {
+                return;
             }
         }
 
         public override void Hook_PRIV(config.channel channel, User invoker, string message)
         {
-            if (Module.GetConfig(channel, "Stat.Enabled", false))
+            if (Module.GetConfig(channel, "Statistics.Enabled", false))
             {
                 Statistics st = (Statistics)channel.RetrieveObject("Statistics");
                 if (st != null)
@@ -145,14 +163,14 @@ namespace wmib
             {
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
-                    if (!Module.GetConfig(channel, "Stat.Enabled", false))
+                    if (!Module.GetConfig(channel, "Statistics.Enabled", false))
                     {
                         core.irc._SlowQueue.DeliverMessage(messages.get("StatE2", channel.Language), channel.Name);
                         return;
                     }
                     else
                     {
-                        Module.SetConfig(channel, "Stat.Enabled", false);
+                        Module.SetConfig(channel, "Statistics.Enabled", false);
                         channel.SaveConfig();
                         core.irc._SlowQueue.DeliverMessage(messages.get("Stat-off", channel.Language), channel.Name);
                         return;
@@ -188,14 +206,14 @@ namespace wmib
             {
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
-                    if (Module.GetConfig(channel, "Stat.Enabled", false))
+                    if (Module.GetConfig(channel, "Statistics.Enabled", false))
                     {
                         core.irc._SlowQueue.DeliverMessage(messages.get("StatE1", channel.Language), channel.Name);
                         return;
                     }
                     else
                     {
-                        Module.SetConfig(channel, "Stat.Enabled", true);
+                        Module.SetConfig(channel, "Statistics.Enabled", true);
                         channel.SaveConfig();
                         core.irc._SlowQueue.DeliverMessage(messages.get("Stat-on", channel.Language), channel.Name);
                         return;
@@ -248,32 +266,36 @@ namespace wmib
 
         public void Stat(string nick, string message, string host)
         {
-            list user = null;
-            lock (data)
+            if (Module.GetConfig(channel, "Statistics.Enabled", false))
             {
-                foreach (list item in data)
-                {
-                    if (nick.ToUpper() == item.user.ToUpper())
-                    {
-                        user = item;
-                        break;
-                    }
-                }
-            }
-            if (user == null)
-            {
-                user = new list();
-                user.user = nick;
-                user.logging_since = DateTime.Now;
+                list user = null;
                 lock (data)
                 {
-                    data.Add(user);
+                    foreach (list item in data)
+                    {
+                        if (nick.ToUpper() == item.user.ToUpper())
+                        {
+                            user = item;
+                            break;
+                        }
+                    }
                 }
+                if (user == null)
+                {
+                    user = new list();
+                    user.user = nick;
+                    user.logging_since = DateTime.Now;
+                    lock (data)
+                    {
+                        data.Add(user);
+                    }
+                }
+                user.URL = core.Host.Host2Name(host);
+                user.messages++;
+                Module.SetConfig(channel, "HTML.Update", true);
+                changed = true;
+                Stored = false;
             }
-            user.URL = core.Host.Host2Name(host);
-            user.messages++;
-            changed = true;
-            Stored = false;
         }
 
         public void Delete()

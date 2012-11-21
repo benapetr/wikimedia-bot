@@ -21,22 +21,42 @@ namespace wmib
     {
         public override bool Construct()
         {
-            Version = "1.0.2";
-            base.Create("HTML", true);
+            Name = "Html dump";
+            Version = "1.0.8.1";
+            Reload = false;
+            start = true;
             return true;
         }
-        // This function is called on start of bot
-        public override void Load()
+
+        public override bool Hook_OnRegister()
         {
-            while (true)
+            lock (config.channels)
             {
                 foreach (config.channel chan in config.channels)
                 {
-                    if (GetConfig(chan, "HTML.Update", true))
+                    SetConfig(chan, "HTML.Update", true);
+                }
+            }
+            return true;
+        }
+
+        // This function is called on start of bot
+        public override void Load()
+        {
+            Thread.Sleep(10000);
+            while (true)
+            {
+                lock (config.channels)
+                {
+                    foreach (config.channel chan in config.channels)
                     {
-                        HtmlDump dump = new HtmlDump(chan);
-                        dump.Make();
-                        SetConfig(chan, "HTML.Update", false);
+                        if (GetConfig(chan, "HTML.Update", true))
+                        {
+                            HtmlDump dump = new HtmlDump(chan);
+                            dump.Make();
+                            core.Log("Making dump for " + chan.Name);
+                            SetConfig(chan, "HTML.Update", false);
+                        }
                     }
                 }
                 HtmlDump.Stat();
@@ -162,6 +182,7 @@ namespace wmib
         {
             try
             {
+                Thread.Sleep(2000);
                 string text = CreateHeader("System info");
                 text += "<h1>System data</h1><p class=info>List of channels:</p>\n";
                 text += "<table class=\"channels\">\n<tr><th>Channel name</th><th>Options</th></tr>\n";
@@ -178,24 +199,28 @@ namespace wmib
 
                 text += "</table>Uptime: " + core.getUptime() + " Memory usage: " + (System.Diagnostics.Process.GetCurrentProcess().VirtualMemorySize64 / 1024).ToString() + "kb Database size: " + getSize();
 
-                foreach (Module mm in Module.module)
+                lock (Module.module)
                 {
-                    mm.Hook_BeforeSysWeb(ref text);
-                }
-
-                text += "<br>Core version: " + config.version + "<br><h2>Plugins</h2><table class=\"modules\">";
-                foreach (Module module in Module.module)
-                {
-                    string status = "Terminated";
-                    if (module.working)
+                    foreach (Module mm in Module.module)
                     {
-                        status = "OK";
-                        if (module.Warning)
-                        {
-                            status += " - RECOVERING";
-                        }
+                        mm.Hook_BeforeSysWeb(ref text);
                     }
-                    text = text + "<tr><td>" + module.Name + " (" + module.Version + ")</td><td>" + status + " (startup date: " + module.Date.ToString() + ")</td></tr>\n";
+
+                    text += "<br>Core version: " + config.version + "<br><h2>Plugins</h2><table class=\"modules\">";
+
+                    foreach (Module module in Module.module)
+                    {
+                        string status = "Terminated";
+                        if (module.working)
+                        {
+                            status = "OK";
+                            if (module.Warning)
+                            {
+                                status += " - RECOVERING";
+                            }
+                        }
+                        text = text + "<tr><td>" + module.Name + " (" + module.Version + ")</td><td>" + status + " (startup date: " + module.Date.ToString() + ")</td></tr>\n";
+                    }
                 }
                 text += "</table>\n\n</body></html>";
                 File.WriteAllText(config.DumpDir + "/systemdata.htm", text);
@@ -215,26 +240,34 @@ namespace wmib
             try
             {
                 Dictionary<string, string> ModuleData = new Dictionary<string, string>();
-                foreach (Module xx in Module.module)
+                lock (Module.module)
                 {
-                    try
+                    foreach (Module xx in Module.module)
                     {
-                        if (xx.working)
+                        try
                         {
-                            ModuleData.Add(xx.Name, xx.Extension_DumpHtml(Channel));
+                            if (xx.working)
+                            {
+                                string html = xx.Extension_DumpHtml(Channel);
+                                if (html != null && html != "")
+                                {
+                                    ModuleData.Add(xx.Name.ToLower(), xx.Extension_DumpHtml(Channel));
+                                }
+                            }
                         }
-                    }catch (Exception fail)
-                    {
-                        core.Log ("Unable to retrieve web data", true);
-                        core.handleException(fail);
+                        catch (Exception fail)
+                        {
+                            core.Log("Unable to retrieve web data", true);
+                            core.handleException(fail);
+                        }
                     }
                 }
                 string text = CreateHeader(Channel.Name);
-                if (ModuleData.ContainsKey("Infobot"))
+                if (ModuleData.ContainsKey("infobot core"))
                 {
                     if (Module.GetConfig(Channel, "Infobot.Enabled", true))
                     {
-                        text = text + "<h4>Infobot</h4>\n";
+                        text += "<h4>Infobot</h4>\n";
                         if (Channel.shared != "" && Channel.shared != "local")
                         {
                             config.channel temp = core.getChannel(Channel.shared);
@@ -249,34 +282,34 @@ namespace wmib
                         }
                         else
                         {
-                            text += ModuleData["Infobot"];
+                            text += ModuleData["infobot core"];
                         }
                     }
-                    ModuleData.Remove("Infobot");
+                    ModuleData.Remove("infobot core");
                 }
-                if (ModuleData.ContainsKey("RC"))
+                if (ModuleData.ContainsKey("rc"))
                 {
                     if (Module.GetConfig(Channel, "RC.Enabled", false))
                     {
-                        text += "\n<h4>Recent changes</h4>";
-                        text += ModuleData["RC"];
-                        ModuleData.Remove("RC");
+                        text += "\n<br><h4>Recent changes</h4>";
+                        text += ModuleData["rc"];
+                        ModuleData.Remove("rc");
                     }
                 }
-                if (ModuleData.ContainsKey("Statistics"))
+                if (ModuleData.ContainsKey("statistics") && ModuleData["statistics"] != null)
                 {
                     if (Module.GetConfig(Channel, "Statistics.Enabled", false))
                     {
-                        text += ModuleData["Statistics"];
-                        ModuleData.Remove("Statistics");
+                        text += ModuleData["statistics"];
+                        ModuleData.Remove("statistics");
                     }
                 }
-                if (ModuleData.ContainsKey("Rss"))
+                if (ModuleData.ContainsKey("feed"))
                 {
-                    if (Module.GetConfig(Channel, "Rss.Enabled", false))
+                    if (Module.GetConfig(Channel, "Rss.Enable", false))
                     {
-                        text += ModuleData["Rss"];
-                        ModuleData.Remove("Rss");
+                        text += ModuleData["feed"];
+                        ModuleData.Remove("feed");
                     }
                 }
                 foreach (KeyValuePair<string, string> item in ModuleData)
@@ -286,7 +319,7 @@ namespace wmib
                         text += item.Value;
                     }
                 }
-                text = text + CreateFooter();
+                text += CreateFooter();
                 File.WriteAllText(dumpname, text);
             }
             catch (Exception b)

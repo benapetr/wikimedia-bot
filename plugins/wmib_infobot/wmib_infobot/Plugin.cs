@@ -54,16 +54,21 @@ namespace wmib
             return success;
         }
 
-        public string getDB(config.channel chan)
+        public string getDB(ref config.channel chan)
         {
             return Module.GetConfig(chan, "Infobot.Keydb", (string)variables.config + Path.DirectorySeparatorChar + chan.Name + ".db");
         }
 
         public override void Hook_Channel(config.channel channel)
         {
+            core.Log("Loading " + channel.Name);
+            if (channel == null)
+            {
+                core.Log("NULL");
+            }
             if (channel.RetrieveObject("Infobot") == null)
             {
-                channel.RegisterObject(new infobot_core(getDB(channel), channel.Name), "Infobot");
+                channel.RegisterObject(new infobot_core(getDB(ref channel), channel.Name), "Infobot");
             }
         }
 
@@ -71,11 +76,14 @@ namespace wmib
         {
             bool success = true;
             writer = new infobot_writer();
+            writer.Construct();
+            core.InitialiseMod(writer);
             lock (config.channels)
             {
                 foreach (config.channel channel in config.channels)
                 {
-                    if (!channel.RegisterObject(new infobot_core(getDB(channel), channel.Name), "Infobot"))
+                    config.channel curr = channel;
+                    if (!channel.RegisterObject(new infobot_core(getDB(ref curr), channel.Name), "Infobot"))
                     {
                         success = false;
                     }
@@ -548,8 +556,10 @@ namespace wmib
 
         public override bool Construct()
         {
+            Name = "Infobot core";
+            Reload = true;
+            start = true;
             Version = "1.0.2";
-            base.Create("Infobot core", true, true);
             return true;
         }
 
@@ -557,7 +567,7 @@ namespace wmib
         {
             if (chan.ExtensionObjects.ContainsKey("Infobot"))
             {
-                chan.ExtensionObjects["Infobot"] = new infobot_core(getDB(chan), chan.Name);
+                chan.ExtensionObjects["Infobot"] = new infobot_core(getDB(ref chan), chan.Name);
             }
         }
 
@@ -606,7 +616,9 @@ namespace wmib
         public override bool Construct()
         {
             Version = "1.0.0";
-            base.Create("Infobot DB", true, true);
+            Name ="Infobot DB";
+            start = true;
+            Reload = true;
             return true;
         }
 
@@ -1122,7 +1134,8 @@ namespace wmib
                 config.channel data = isAllowed(chan);
                 bool Allowed = (data != null);
                 name = name.Substring(1);
-                infobot_core infobot = (infobot_core)data.RetrieveObject("Infobot");
+                infobot_core infobot = null;
+                if (Allowed)                    infobot = (infobot_core)data.RetrieveObject("Infobot");
                 string ignore_test = name;
                 if (ignore_test.Contains(" "))
                 {

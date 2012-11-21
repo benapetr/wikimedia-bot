@@ -53,8 +53,10 @@ namespace wmib
         }
     }
 
-    public class core
+    [Serializable()]
+    public class core : MarshalByRefObject
     {
+        public static AppDomain domain = null;
         public static string LastText;
         public static bool disabled;
         public static bool exit = false;
@@ -63,6 +65,7 @@ namespace wmib
         private static List<user> User = new List<user>();
         private static Dictionary<string, string> HelpData = new Dictionary<string, string>();
 
+        [Serializable()]
         public class user
         {
             /// <summary>
@@ -85,6 +88,7 @@ namespace wmib
             }
         }
 
+        [Serializable()]
         public class RegexCheck
         {
             public string value;
@@ -147,20 +151,49 @@ namespace wmib
             return text.Replace("<separator>", "|");
         }
 
+        public static void InitialiseMod(Module module)
+        { 
+            if (module.Name == null || module.Name == "")
+            {
+                core.Log("This module has invalid name and was terminated to prevent troubles", true);
+                throw new Exception("Invalid name");
+            }
+            module.Date = DateTime.Now;
+            if (Module.Exist(module.Name))
+            {
+                core.Log("This module is already registered " + module.Name + " this new instance was terminated to prevent troubles", true);
+                throw new Exception("This module is already registered");
+            }
+            try
+            {
+                lock (module)
+                {
+                    core.Log("Loading module: " + module.Name);
+                    Module.module.Add(module);
+                }
+                if (module.start)
+                {
+                    module.Init();
+                }
+            }
+            catch (Exception fail)
+            {
+                module.working = false;
+                core.Log("Unable to create instance of " + module.Name);
+                core.handleException(fail);
+            }
+        }
+
         public static bool LoadMod(string path)
         {
             try
             {
                 if (File.Exists(path))
                 {
-                    System.Reflection.Assembly library = System.Reflection.Assembly.LoadFrom(path);
-                    AppDomainSetup setup = new AppDomainSetup();
-                    setup.ApplicationName = "DemoApp";
-                    setup.ApplicationBase = Environment.CurrentDirectory;
-                    setup.ShadowCopyDirectories = Environment.CurrentDirectory;
-                    setup.ShadowCopyFiles = "true";
-                    AppDomain domain = AppDomain.CreateDomain("extension$" + path, null, setup);
-                    if (library == null)
+                    //System.Reflection.Assembly library = System.Reflection.Assembly.LoadFrom(path);
+
+                    AppDomain domain = AppDomain.CreateDomain("$" + path);
+                    /* if (library == null)
                     {
                         Program.Log("Unable to load " + path + " because the file can't be read", true);
                         return false;
@@ -182,14 +215,28 @@ namespace wmib
                         return false;
                     }
 
-                    Module _plugin = domain.CreateInstanceFromAndUnwrap(path, "wmib.RegularModule") as Module;  //(Module)Activator.CreateInstance(pluginInfo);
+                     
+                    Module _plugin = (Module)Activator.CreateInstance(pluginInfo);
+                    */
+                    Module _plugin = domain.CreateInstanceFromAndUnwrap(path, "wmib.RegularModule") as Module;
+
+                    _plugin.ParentDomain = core.domain;
+                    if (!_plugin.Construct())
+                    {
+                        core.Log("Invalid module", true);
+                        _plugin.Exit();
+                        return false;
+                    }
 
                     lock (Domains)
                     {
                         Domains.Add(_plugin, domain);
                     }
+
+                    InitialiseMod(_plugin);
                     return true;
                 }
+                Program.Log("Unable to load " + path + " because the file can't be read", true);
             }
             catch (Exception fail)
             {
@@ -1109,7 +1156,8 @@ namespace wmib
                 {
                     if (message.StartsWith(config.username + ":"))
                     {
-                        if (System.DateTime.Now >= curr.last_msg.AddSeconds(curr.respond_wait))
+                        System.DateTime time = curr.last_msg;
+                        if (System.DateTime.Now >= time.AddSeconds(curr.respond_wait))
                         {
                             irc._SlowQueue.DeliverMessage(messages.get("hi", curr.Language, new List<string> { nick }), curr.Name);
                             curr.last_msg = System.DateTime.Now;

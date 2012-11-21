@@ -20,8 +20,17 @@ namespace wmib
 {
     public class RegularModule : Module
     {
+        public override void Hook_Channel(config.channel channel)
+        {
+            if (channel.RetrieveObject("RC") == null)
+            {
+                channel.RegisterObject(new RecentChanges(channel), "RC");
+            }
+        }
+
         public override bool Hook_OnRegister()
         {
+            RecentChanges.InsertSite();
             lock (config.channels)
             {
                 foreach (config.channel channel in config.channels)
@@ -80,7 +89,7 @@ namespace wmib
                         }
                         string wiki = a[1];
                         string Page = a[2];
-                        RecentChanges rc = (RecentChanges)channel.RetrieveObject("RecentChanges");
+                        RecentChanges rc = (RecentChanges)channel.RetrieveObject("RC");
                         if (rc != null)
                         {
                             rc.removeString(wiki, Page);
@@ -148,7 +157,7 @@ namespace wmib
                         }
                         string wiki = a[1];
                         string Page = a[2];
-                        RecentChanges rc = (RecentChanges)channel.RetrieveObject("RecentChanges");
+                        RecentChanges rc = (RecentChanges)channel.RetrieveObject("RC");
                         if (rc != null)
                         {
                             rc.insertString(wiki, Page);
@@ -251,101 +260,102 @@ namespace wmib
                 return;
             }
         }
+
         public override bool Construct()
         {
-            base.Create("RC", true);
-            Version = "1.0.8.1";
+            Name = "RC";
+            start = true;
+            Version = "1.1.0.60";
             return true;
         }
 
         public override void Load()
         {
-            RecentChanges.channels = new List<string>();
-            if (!File.Exists(RecentChanges.channeldata))
-            {
-                File.WriteAllText(RecentChanges.channeldata, "#mediawiki.wikipedia");
-            }
-            string message = "";
-            string laststep = "Open";
             try
             {
-                string[] list = System.IO.File.ReadAllLines(RecentChanges.channeldata);
-                core.Log("Loading feed");
-                lock (RecentChanges.channels)
+                RecentChanges.channels = new List<string>();
+                if (!File.Exists(RecentChanges.channeldata))
                 {
-                    foreach (string chan in list)
-                    {
-                        RecentChanges.channels.Add(chan);
-                    }
+                    File.WriteAllText(RecentChanges.channeldata, "#mediawiki.wikipedia");
                 }
-                laststep = "Connect";
-                RecentChanges.Connect();
-                core.Log("Loaded feed");
-                laststep = "Parse";
-                while (true)
+                string message = "";
+                try
                 {
-                    try
+                    string[] list = System.IO.File.ReadAllLines(RecentChanges.channeldata);
+                    core.Log("Loading feed");
+                    lock (RecentChanges.channels)
                     {
-                        if (RecentChanges.RD == null)
+                        foreach (string chan in list)
                         {
-                            laststep = "RD was null";
-                            return;
+                            RecentChanges.channels.Add(chan);
                         }
-                        laststep = "fetching stream";
-                        while (!RecentChanges.RD.EndOfStream)
+                    }
+                    RecentChanges.Connect();
+                    core.Log("Loaded feed");
+                    while (true)
+                    {
+                        try
                         {
-                            message = RecentChanges.RD.ReadLine();
-                            laststep = "reading line";
-                            Match Edit = RecentChanges.line.Match(message);
-                            if (RecentChanges.line.IsMatch(message) && Edit != null)
+                            if (RecentChanges.RD == null)
                             {
-                                laststep = "parsing line";
-                                string _channel = message.Substring(message.IndexOf("PRIVMSG"));
-                                _channel = _channel.Substring(_channel.IndexOf("#"));
-                                _channel = _channel.Substring(0, _channel.IndexOf(" "));
-                                if (Edit.Groups.Count > 7)
+                                return;
+                            }
+                            while (!RecentChanges.RD.EndOfStream)
+                            {
+                                message = RecentChanges.RD.ReadLine();
+                                Match Edit = RecentChanges.line.Match(message);
+                                if (RecentChanges.line.IsMatch(message) && Edit != null)
                                 {
-                                    string page = Edit.Groups[1].Value;
-                                    string link = Edit.Groups[4].Value;
-                                    string username = Edit.Groups[6].Value;
-                                    string change = Edit.Groups[7].Value;
-                                    string summary = Edit.Groups[8].Value;
-
-                                    laststep = "reading rc";
-
-                                    lock (RecentChanges.rc)
+                                    string _channel = message.Substring(message.IndexOf("PRIVMSG"));
+                                    _channel = _channel.Substring(_channel.IndexOf("#"));
+                                    _channel = _channel.Substring(0, _channel.IndexOf(" "));
+                                    if (Edit.Groups.Count > 7)
                                     {
-                                        foreach (RecentChanges curr in RecentChanges.rc)
+                                        string page = Edit.Groups[1].Value;
+                                        string link = Edit.Groups[4].Value;
+                                        string username = Edit.Groups[6].Value;
+                                        string change = Edit.Groups[7].Value;
+                                        string summary = Edit.Groups[8].Value;
+
+                                        lock (RecentChanges.rc)
                                         {
-                                            if (curr != null)
+                                            foreach (RecentChanges curr in RecentChanges.rc)
                                             {
-                                                if (GetConfig(curr.channel, "RC.Enabled", false))
+                                                if (curr != null)
                                                 {
-                                                    lock (curr.pages)
+                                                    if (GetConfig(curr.channel, "RC.Enabled", false))
                                                     {
-                                                        foreach (RecentChanges.IWatch w in curr.pages)
+                                                        lock (curr.pages)
                                                         {
-                                                            if (w != null)
+                                                            foreach (RecentChanges.IWatch w in curr.pages)
                                                             {
-                                                                if (w.Channel == _channel)
+                                                                if (w != null)
                                                                 {
-                                                                    if (page == w.Page)
+                                                                    if (w.Channel == _channel)
                                                                     {
-                                                                        core.irc._SlowQueue.DeliverMessage(
-                                                                            //messages.get("rfeedline1", curr.channel.Language) + "12" + w.URL.name + "" + messages.get("rfeedline2", curr.channel.Language) + "" + page +
-                                                                            //"" + messages.get("rfeedline3", curr.channel.Language) + "" + username +
-                                                                            //"" + messages.get("rfeedline4", curr.channel.Language) + w.URL.url + "?diff=" + link + messages.get("rfeedline5", curr.channel.Language) + summary, curr.channel.Name);
-                                                                            messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
-                                                                    }
-                                                                    else
-                                                                        if (w.Page.EndsWith("*"))
+                                                                        if (page == w.Page)
                                                                         {
-                                                                            if (page.StartsWith(w.Page.Replace("*", "")))
+                                                                            if (w.URL == null)
                                                                             {
-                                                                                core.irc._SlowQueue.DeliverMessage(
-                                                                                messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
+                                                                                core.Log("NULL pointer on idata 1", true);
                                                                             }
+                                                                            core.irc._SlowQueue.DeliverMessage(
+                                                                                messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
                                                                         }
+                                                                        else
+                                                                            if (w.Page.EndsWith("*"))
+                                                                            {
+                                                                                if (page.StartsWith(w.Page.Replace("*", "")))
+                                                                                {
+                                                                                    if (w.URL == null)
+                                                                                    {
+                                                                                        core.Log("NULL pointer on idata 2", true);
+                                                                                    }
+                                                                                    core.irc._SlowQueue.DeliverMessage(
+                                                                                    messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
+                                                                                }
+                                                                            }
+                                                                    }
                                                                 }
                                                             }
                                                         }
@@ -355,32 +365,40 @@ namespace wmib
                                         }
                                     }
                                 }
+                                Thread.Sleep(10);
                             }
-                            Thread.Sleep(10);
+                            Thread.Sleep(100);
                         }
-                        Thread.Sleep(100);
-                    }
-                    catch (ThreadAbortException)
-                    {
-                        return;
-                    }
-                    catch (IOException)
-                    {
-                        RecentChanges.Connect();
-                    }
-                    catch (Exception x)
-                    {
-                        core.Log("Exception while doing " + laststep, true);
-                        core.LastText = message;
-                        core.handleException(x);
+                        catch (ThreadAbortException)
+                        {
+                            return;
+                        }
+                        catch (IOException)
+                        {
+                            RecentChanges.Connect();
+                        }
+                        catch (Exception x)
+                        {
+                            //core.Log("Exception while doing " + laststep, true);
+                            core.LastText = message;
+                            core.handleException(x);
+                        }
                     }
                 }
+                catch (ThreadAbortException)
+                {
+                    return;
+                }
+                catch (Exception x)
+                {
+                    //core.Log("Exception while doing " + laststep, true);
+                    core.handleException(x);
+                    // abort
+                }
             }
-            catch (Exception x)
+            catch (ThreadAbortException)
             {
-                core.Log("Exception while doing " + laststep, true);
-                core.handleException(x);
-                // abort
+                return;
             }
         }
     }
@@ -666,6 +684,7 @@ namespace wmib
                     return curr;
                 }
             }
+            core.Log("There is no wiki " + Name + " known by me");
             return null;
         }
 
@@ -717,9 +736,10 @@ namespace wmib
                 File.WriteAllText(dbn, content);
                 File.Delete(config.tempName(dbn));
             }
-            catch (Exception)
+            catch (Exception er)
             {
                 core.Log("Error while saving to: " + channel.Name + ".list");
+                core.handleException(er);
                 core.recoverFile(dbn, channel.Name);
             }
         }
@@ -739,7 +759,7 @@ namespace wmib
             {
                 Thread.CurrentThread.Abort();
             }
-            catch (Exception)
+            catch (ThreadAbortException)
             {
             }
         }
@@ -809,6 +829,11 @@ namespace wmib
                         wikiinfo.Add(new wiki(values[0], values[1], values[2]));
                     }
                 }
+                core.Log("Loaded wiki " + content.Length.ToString());
+            }
+            else
+            {
+                core.Log("There is no sites file, skipping load", true);
             }
             wikiinfo.Add(new wiki("#mediawiki.wikipedia", "https://www.mediawiki.org/w/index.php", "mediawiki"));
             wikiinfo.Add(new wiki("#test.wikipedia", "https://test.wikipedia.org/w/index.php", "test_wikipedia"));

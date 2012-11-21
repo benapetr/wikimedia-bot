@@ -15,6 +15,7 @@ using System.Text;
 
 namespace wmib
 {
+    [Serializable()]
     public class IRCTrust
     {
         private List<core.user> GlobalUsers = new List<core.user>();

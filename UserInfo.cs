@@ -18,6 +18,7 @@ using System.Text.RegularExpressions;
 
 namespace wmib
 {
+    [Serializable()]
     public class User : IComparable
     {
         public string Host;

@@ -18,7 +18,7 @@ using System.Text;
 namespace wmib
 {
     [Serializable()]
-    public class Module
+    public abstract class Module : MarshalByRefObject
     {
         public static List<Module> module = new List<Module>();
         public string Name = "";
@@ -29,49 +29,12 @@ namespace wmib
         [NonSerialized()]
         public System.Threading.Thread thread;
         public bool working = false;
-
-        public void Create(string name, bool start = false, bool restart = false)
-        {
-            if (name == null || name == "")
-            {
-                core.Log("This module has invalid name and was terminated to prevent troubles", true);
-                throw new Exception("Invalid name");
-            }
-            Date = DateTime.Now;
-            if (Exist(name))
-            {
-                core.Log("This module is already registered " + name + " this new instance was terminated to prevent troubles", true);
-                throw new Exception("This module is already registered");
-            }
-            try
-            {
-                lock (module)
-                {
-                    core.Log("Loading module: " + name);
-                    Name = name;
-                    Reload = restart;
-                    module.Add(this);
-                }
-                if (start)
-                {
-                    Init();
-                }
-            }
-            catch (Exception fail)
-            {
-                working = false;
-                core.handleException(fail);
-            }
-        }
+        public AppDomain ParentDomain = null;
+        public bool start = false;
 
         public Module()
         {
-            if (Construct())
-            {
-                return;
-            }
-            core.Log("Invalid module", true);
-            throw new Exception("Invalid module");
+            
         }
 
         ~Module()
@@ -84,17 +47,20 @@ namespace wmib
                     module.Remove(this);
                 }
             }
+            if (core.Domains.ContainsKey(this) && core.Domains[this] != ParentDomain)
+            {
+                lock (core.Domains)
+                {
+                    AppDomain.Unload(core.Domains[this]);
+                    core.Domains.Remove(this);
+                }
+            }
             core.Log("Module was unloaded: " + this.Name);
         }
 
         public virtual bool Construct()
         {
             return false;
-        }
-
-        public Module(string name, bool start = false)
-        {
-            Create(name, start);
         }
 
         public void Init()
@@ -401,14 +367,6 @@ namespace wmib
                             Reload = false;
                         }
                         thread.Abort();
-                    }
-                }
-                lock (core.Domains)
-                {
-                    if (core.Domains.ContainsKey(this))
-                    {
-                        AppDomain.Unload(core.Domains[this]);
-                        core.Domains.Remove(this);
                     }
                 }
                 lock (module)

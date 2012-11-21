@@ -18,6 +18,7 @@ using System.Threading;
 
 namespace wmib
 {
+    [Serializable()]
     public class ProcessorIRC
     {
         public string text;
@@ -606,7 +607,8 @@ namespace wmib
 
         public SlowQueue _SlowQueue;
 
-        public class SlowQueue
+        [Serializable()]
+        public class SlowQueue : MarshalByRefObject
         {
             public SlowQueue(IRC _parent)
             {
@@ -1062,7 +1064,11 @@ namespace wmib
                                             if (respond)
                                             {
                                                 _SlowQueue.DeliverMessage("Hi, I am robot, this command was not understood. Please bear in mind that every message you send to me will be logged for debuging purposes. See documentation at http://meta.wikimedia.org/wiki/WM-Bot for explanation of commands", nick, priority.low);
-                                                Program.Log("Ignoring private message: (" + nick + ") " + message.Substring(1), false);
+                                                Program.Log("Ignoring private message: (" + nick + ") " + message.Substring(2), false);
+                                            }
+                                            else
+                                            {
+                                                Program.Log("Private message: (" + nick + ") " + message.Substring(2), false);
                                             }
                                             continue;
                                         }

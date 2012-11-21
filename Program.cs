@@ -65,6 +65,7 @@ namespace wmib
 
         private static void Main(string[] args)
         {
+            core.domain = AppDomain.CurrentDomain;
             Log("Loading...");
             config.UpTime = System.DateTime.Now;
             Console.CancelKeyPress += new ConsoleCancelEventHandler(myHandler);

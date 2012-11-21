@@ -151,7 +151,9 @@ namespace wmib
         /// <returns></returns>
         public override bool Construct()
         {
-            base.Create("LOGS", true, true);
+            Name = "LOGS";
+            start = true;
+            Reload = true;
             Version = "1.0.0";
             return true;
         }
