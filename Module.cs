@@ -51,7 +51,7 @@ namespace wmib
             {
                 lock (core.Domains)
                 {
-                    AppDomain.Unload(core.Domains[this]);
+                    //AppDomain.Unload(core.Domains[this]);
                     core.Domains.Remove(this);
                 }
             }
@@ -164,7 +164,7 @@ namespace wmib
             return true;
         }
 
-        public virtual void Hook_Quit(User user)
+        public virtual void Hook_Quit(User user, string Message)
         {
             return;
         }
@@ -185,6 +185,11 @@ namespace wmib
         public virtual void Hook_AfterSysWeb(ref string html)
         {
             return;
+        }
+
+        public virtual void Hook_Nick(config.channel channel, User Target, string OldNick)
+        { 
+            
         }
 
         public static int GetConfig(config.channel chan, string name, int invalid)
@@ -215,12 +220,12 @@ namespace wmib
                 string result = null;
                 if (chan != null)
                 {
-                    string value = chan.Extension_GetConfig(name);
+                    result = chan.Extension_GetConfig(name);
                     if (result == null)
                     {
-                        result = invalid;
+                        return invalid;
                     }
-                        return result;
+                    return result;
                 }
             }
             catch (Exception fail)

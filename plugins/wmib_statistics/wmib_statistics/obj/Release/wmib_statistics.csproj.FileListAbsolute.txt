@@ -1,7 +1,0 @@
-C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_statistics\wmib_statistics\obj\Release\ResolveAssemblyReference.cache
-C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_statistics\wmib_statistics\bin\Release\wmib_statistics.dll
-C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_statistics\wmib_statistics\bin\Release\wmib_statistics.pdb
-C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_statistics\wmib_statistics\bin\Release\wmib.exe
-C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_statistics\wmib_statistics\bin\Release\wmib.pdb
-C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_statistics\wmib_statistics\obj\Release\wmib_statistics.dll
-C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_statistics\wmib_statistics\obj\Release\wmib_statistics.pdb

@@ -1,7 +1,0 @@
-C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_rafeed\wmib_rafeed\bin\Release\wmib_rafeed.dll
-C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_rafeed\wmib_rafeed\bin\Release\wmib_rafeed.pdb
-C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_rafeed\wmib_rafeed\bin\Release\wmib.exe
-C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_rafeed\wmib_rafeed\bin\Release\wmib.pdb
-C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_rafeed\wmib_rafeed\obj\Release\ResolveAssemblyReference.cache
-C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_rafeed\wmib_rafeed\obj\Release\wmib_rafeed.dll
-C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\wmib_rafeed\wmib_rafeed\obj\Release\wmib_rafeed.pdb

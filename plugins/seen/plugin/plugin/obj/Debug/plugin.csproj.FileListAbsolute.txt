@@ -1,5 +1,0 @@
-C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\plugin_generic\plugin\plugin\bin\Debug\plugin.dll
-C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\plugin_generic\plugin\plugin\bin\Debug\plugin.pdb
-C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\plugin_generic\plugin\plugin\obj\Debug\ResolveAssemblyReference.cache
-C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\plugin_generic\plugin\plugin\obj\Debug\plugin.dll
-C:\Users\petr.bena\Documents\Visual Studio 2010\Projects\plugin_generic\plugin\plugin\obj\Debug\plugin.pdb

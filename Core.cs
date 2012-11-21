@@ -190,10 +190,10 @@ namespace wmib
             {
                 if (File.Exists(path))
                 {
-                    //System.Reflection.Assembly library = System.Reflection.Assembly.LoadFrom(path);
+                    System.Reflection.Assembly library = System.Reflection.Assembly.LoadFrom(path);
 
-                    AppDomain domain = AppDomain.CreateDomain("$" + path);
-                    /* if (library == null)
+                    //AppDomain domain = AppDomain.CreateDomain("$" + path);
+                    if (library == null)
                     {
                         Program.Log("Unable to load " + path + " because the file can't be read", true);
                         return false;
@@ -217,8 +217,8 @@ namespace wmib
 
                      
                     Module _plugin = (Module)Activator.CreateInstance(pluginInfo);
-                    */
-                    Module _plugin = domain.CreateInstanceFromAndUnwrap(path, "wmib.RegularModule") as Module;
+                    
+                    //Module _plugin = domain.CreateInstanceFromAndUnwrap(path, "wmib.RegularModule") as Module;
 
                     _plugin.ParentDomain = core.domain;
                     if (!_plugin.Construct())
@@ -230,7 +230,7 @@ namespace wmib
 
                     lock (Domains)
                     {
-                        Domains.Add(_plugin, domain);
+                        //Domains.Add(_plugin, domain);
                     }
 
                     InitialiseMod(_plugin);

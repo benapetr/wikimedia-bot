@@ -12,9 +12,9 @@ namespace wmib
 
         public override bool Construct()
         {
-            LoadData();
-            Version = "1.0.4";
-            base.Create("SEEN", true);
+            Name = "SEEN";
+            start = true;
+            Version = "2.0.0";
             return true;
         }
 
@@ -120,6 +120,12 @@ namespace wmib
             WriteStatus(user.Nick, user.Host, channel.Name, item.Action.Join);
         }
 
+        public override void Hook_Nick(config.channel channel, User Target, string OldNick)
+        {
+            WriteStatus(OldNick, Target.Host, channel.Name, item.Action.Nick, Target.Nick);
+            return;
+        }
+
         public override void Hook_Kick(config.channel channel, User source, User user)
         {
             WriteStatus(user.Nick, user.Host, channel.Name, item.Action.Kick);
@@ -130,9 +136,9 @@ namespace wmib
             WriteStatus(user.Nick, user.Host, channel.Name, item.Action.Part);
         }
 
-        public override void Hook_Quit(User user)
+        public override void Hook_Quit(User user, string Message)
         {
-            WriteStatus(user.Nick, user.Host, "N/A", item.Action.Exit);
+            WriteStatus(user.Nick, user.Host, "N/A", item.Action.Exit, "", Message);
         }
 
         public class ChannelRequest
@@ -157,16 +163,19 @@ namespace wmib
             public string lastplace;
             public DateTime LastSeen;
             public Action LastAc;
+            public string newnick;
+            public string quit;
             public enum Action
             {
                 Join,
                 Part,
                 Talk,
                 Kick,
-                Exit
+                Exit,
+                Nick
             }
 
-            public item(string Nick, string Host, string LastPlace, Action action, string Date = null)
+            public item(string Nick, string Host, string LastPlace, Action action, string Date = null, string NewNick = "", string reason = "")
             {
                 nick = Nick;
                 hostname = Host;
@@ -180,6 +189,8 @@ namespace wmib
                 {
                     LastSeen = DateTime.Now;
                 }
+                quit = reason;
+                newnick = NewNick;
             }
         }
 
@@ -196,6 +207,7 @@ namespace wmib
         {
             try
             {
+                LoadData();
                 while (true)
                 {
                     if (save)
@@ -223,7 +235,7 @@ namespace wmib
 
         public List<item> global = new List<item>();
 
-        public void WriteStatus(string nick, string host, string place, item.Action action)
+        public void WriteStatus(string nick, string host, string place, item.Action action, string newnick = "", string reason = "")
         {
             item user = null;
             lock (global)
@@ -238,7 +250,7 @@ namespace wmib
                 }
                 if (user == null)
                 {
-                    user = new item(nick, host, place, action);
+                    user = new item(nick, host, place, action, null, newnick, reason);
                     global.Add(user);
                 }
                 else
@@ -248,6 +260,8 @@ namespace wmib
                     user.LastSeen = DateTime.Now;
                     user.hostname = host;
                     user.lastplace = place;
+                    user.quit = reason;
+                    user.newnick = newnick;
                 }
             }
             save = true;
@@ -265,7 +279,7 @@ namespace wmib
                     bool multiple = false;
                     string results = "";
                     int cn = 0;
-                    string action = "quiting the network";
+                    string action = "quitting the network with reason " ;
                     foreach (item xx in global)
                     {
                         if (ex.IsMatch(xx.nick))
@@ -302,6 +316,35 @@ namespace wmib
                                 case item.Action.Kick:
                                     action = "kicked from the channel";
                                     break;
+                                case item.Action.Nick:
+                                    action = "changing the nickname to " + xx.newnick;
+                                    last = core.getChannel(xx.lastplace);
+                                    if (last.containsUser(xx.newnick))
+                                    {
+                                        action += " and " + xx.newnick + " is still in the channel";
+                                    }
+                                    else
+                                    {
+                                        action += ", but " + xx.newnick + " is no longer in channel";
+                                    }
+                                    item nick = getItem(xx.newnick);
+                                    if (nick != null)
+                                    {
+                                        TimeSpan span3 = DateTime.Now - nick.LastSeen;
+                                        switch (nick.LastAc)
+                                        { 
+                                            case item.Action.Exit:
+                                                action += " because he quitted the network " + span3.ToString() + " ago. The nick change was done in";
+                                                break;
+                                            case item.Action.Kick:
+                                                action += " because he was kicked from the channel " + span3.ToString() + " ago. The nick change was done in";
+                                                break;
+                                            case item.Action.Part:
+                                                action += " because he left the channel " + span3.ToString() + " ago. The nick change was done in";
+                                                break;
+                                        }
+                                    }
+                                    break;
                                 case item.Action.Part:
                                     action = "leaving the channel";
                                     break;
@@ -312,17 +355,32 @@ namespace wmib
                                     {
                                         if (last.containsUser(xx.nick))
                                         {
-                                            action += ", they are still in the channel";
+                                            action += ", they are still in the channel. It was in";
                                         }
                                         else
                                         {
-                                            action += ", but they are not in the channel now and I don't know why, in";
+                                            action += ", but they are not in the channel now and I don't know why. It was in";
                                         }
                                     }
                                     break;
+                                case item.Action.Exit:
+                                    string reason = xx.quit;
+                                    if (reason == "")
+                                    {
+                                        reason = "no reason was given";
+                                    }
+                                    action = "quitting the network with reason: " + reason;
+                                    break;
                             }
                             TimeSpan span2 = DateTime.Now - xx.LastSeen;
-                            response = "Last time I saw " + xx.nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString() + " (" + span2.ToString() + " ago)";
+                            if (xx.LastAc == item.Action.Exit)
+                            {
+                                response = "Last time I saw " + xx.nick + " they were " + action + " at " + xx.LastSeen.ToString() + " (" + span2.ToString() + " ago)";
+                            }
+                            else
+                            {
+                                response = "Last time I saw " + xx.nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString() + " (" + span2.ToString() + " ago)";
+                            }
                         }
                     }
                     if (temp_nick.ToUpper() == temp_source.ToUpper())
@@ -454,6 +512,19 @@ namespace wmib
             }
         }
 
+        public item getItem(string nick)
+        {
+            nick = nick.ToUpper();
+            foreach (item xx in global)
+            {
+                if (nick == xx.nick.ToUpper())
+                {
+                    return xx;
+                }
+            }
+            return null;
+        }
+
         public void RetrieveStatus2(string nick, config.channel channel, string source)
         {
             string response = "I have never seen " + nick;
@@ -485,6 +556,35 @@ namespace wmib
                         case item.Action.Kick:
                             action = "kicked from the channel";
                             break;
+                        case item.Action.Nick:
+                            action = "changing the nickname to " + xx.newnick;
+                            last = core.getChannel(xx.lastplace);
+                            if (last.containsUser(xx.newnick))
+                            {
+                                action += " and " + xx.newnick + " is still in the channel";
+                            }
+                            else
+                            {
+                                action += ", but " + xx.newnick + " is no longer in channel";
+                            }
+                            item nick2 = getItem(xx.newnick);
+                            if (nick2 != null)
+                            {
+                                TimeSpan span3 = DateTime.Now - nick2.LastSeen;
+                                switch (nick2.LastAc)
+                                {
+                                    case item.Action.Exit:
+                                        action += " because he quitted the network " + span3.ToString() + " ago. The nick change was done in";
+                                        break;
+                                    case item.Action.Kick:
+                                        action += " because he was kicked from the channel " + span3.ToString() + " ago. The nick change was done in";
+                                        break;
+                                    case item.Action.Part:
+                                        action += " because he left the channel " + span3.ToString() + " ago. The nick change was done in";
+                                        break;
+                                }
+                            }
+                            break;
                         case item.Action.Part:
                             action = "leaving the channel";
                             break;
@@ -503,8 +603,20 @@ namespace wmib
                                 }
                             }
                             break;
+                        case item.Action.Exit:
+                            string reason = xx.quit;
+                            if (reason == "")
+                            {
+                                reason = "no reason was given";
+                            }
+                            action = "quitting the network with reason: " + reason;
+                            break;
                     }
                     TimeSpan span = DateTime.Now - xx.LastSeen;
+                    if (xx.LastAc == item.Action.Exit)
+                    {
+                        response = "Last time I saw " + nick + " they were " + action + " at " + xx.LastSeen.ToString() + " (" + span.ToString() + " ago)";
+                    }
                     response = "Last time I saw " + nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString() + " (" + span.ToString() + " ago)";
                     break;
                 }
@@ -556,10 +668,20 @@ namespace wmib
                     last.Value = curr.lastplace;
                     XmlAttribute action = stat.CreateAttribute("action");
                     XmlAttribute date = stat.CreateAttribute("date");
+                    XmlAttribute newn = null;
+                    XmlAttribute quit = stat.CreateAttribute("reason");
+                    quit.Value = curr.quit;
+                    if (curr.newnick  != "")
+                    { 
+                        newn = stat.CreateAttribute("newnick");
+                    }
                     date.Value = curr.LastSeen.ToBinary().ToString();
                     action.Value = "Exit";
                     switch (curr.LastAc)
                     {
+                        case item.Action.Nick:
+                            action.Value = "Nick";
+                            break;
                         case item.Action.Join:
                             action.Value = "Join";
                             break;
@@ -579,6 +701,11 @@ namespace wmib
                     db.Attributes.Append(last);
                     db.Attributes.Append(action);
                     db.Attributes.Append(date);
+                    if (newn != null)
+                    {
+                        db.Attributes.Append(newn);
+                    }
+                    db.Attributes.Append(quit);
                     xmlnode.AppendChild(db);
                 }
             }
@@ -630,8 +757,31 @@ namespace wmib
                                         case "Kick":
                                             action = item.Action.Kick;
                                             break;
+                                        case "Nick":
+                                            action = item.Action.Nick;
+                                            break;
                                     }
-                                    item User = new item(user, curr.Attributes[1].Value, curr.Attributes[2].Value, action, curr.Attributes[4].Value);
+                                    string Newnick = "";
+                                    string Reason = "";
+                                    if (curr.Attributes.Count > 4)
+                                    {
+                                        if (curr.Attributes[4].Name == "newnick")
+                                        {
+                                            Newnick = curr.Attributes[4].Value;
+                                        }
+                                        else if (curr.Attributes[4].Name == "reason")
+                                        {
+                                            Reason = curr.Attributes[5].Value;
+                                        }
+                                    }
+                                    if (curr.Attributes.Count > 5)
+                                    {
+                                        if (curr.Attributes[5].Name == "reason")
+                                        {
+                                            Reason = curr.Attributes[5].Value;
+                                        }
+                                    }
+                                    item User = new item(user, curr.Attributes[1].Value, curr.Attributes[2].Value, action, curr.Attributes[4].Value, Newnick, Reason);
                                     global.Add(User);
                                 }
                                 catch (Exception fail)

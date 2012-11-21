@@ -133,6 +133,11 @@ namespace wmib
         private bool ProcessNick(string source, string parameters, string value)
         {
             string nick = source.Substring(0, source.IndexOf("!"));
+            string _ident;
+            string _host;
+            _host = source.Substring(source.IndexOf("@") + 1);
+            _ident = source.Substring(source.IndexOf("!") + 1);
+            _ident = _ident.Substring(0, _ident.IndexOf("@"));
             string _new = value;
             foreach (config.channel item in config.channels)
             {
@@ -142,6 +147,24 @@ namespace wmib
                     {
                         if (curr.Nick == nick)
                         {
+                            lock (Module.module)
+                            {
+                                foreach (Module xx in Module.module)
+                                {
+                                    try
+                                    {
+                                        if (xx.working)
+                                        {
+                                            xx.Hook_Nick(item, new User(_new, _host, _ident), nick);
+                                        }
+                                    }
+                                    catch (Exception er)
+                                    {
+                                        core.Log("Error on hook in " + xx.Name, true);
+                                        core.handleException(er);
+                                    }
+                                }
+                            }
                             curr.Nick = _new;
                         }
                     }
@@ -236,7 +259,7 @@ namespace wmib
                     }
                     try
                     {
-                        module.Hook_Quit(_user);
+                        module.Hook_Quit(_user, value);
                     }
                     catch (Exception fail)
                     {
@@ -731,35 +754,45 @@ namespace wmib
         /// <returns></returns>
         public bool Message(string message, string channel)
         {
-            config.channel curr = core.getChannel(channel);
-            if (curr == null)
+            try
             {
-                Program.Log("Attempt to send a message to non existing channel: " + channel + " " + message, true);
-                return true;
-            }
-            if (curr.suppress)
-            {
-                return true;
-            }
-            wd.WriteLine("PRIVMSG " + channel + " :" + message.Replace("\n", " "));
-            lock (Module.module)
-            {
-                foreach (Module module in Module.module)
+                config.channel curr = core.getChannel(channel);
+                if (curr == null && channel.StartsWith("#"))
                 {
-                    try
+                    Program.Log("Attempt to send a message to non existing channel: " + channel + " " + message, true);
+                    return true;
+                }
+                else if (curr != null)
+                {
+                    if (curr.suppress)
                     {
-                        if (module.working)
-                        {
-                            module.Hook_OnSelf(curr, new User(config.username, "wikimedia/bot/wm-bot", "wmib"), message);
-                        }
-                    }
-                    catch (Exception fail)
-                    {
-                        core.handleException(fail);
+                        return true;
                     }
                 }
+                wd.WriteLine("PRIVMSG " + channel + " :" + message.Replace("\n", " "));
+                lock (Module.module)
+                {
+                    foreach (Module module in Module.module)
+                    {
+                        try
+                        {
+                            if (module.working)
+                            {
+                                module.Hook_OnSelf(curr, new User(config.username, "wikimedia/bot/wm-bot", "wmib"), message);
+                            }
+                        }
+                        catch (Exception fail)
+                        {
+                            core.handleException(fail);
+                        }
+                    }
+                }
+                wd.Flush();
             }
-            wd.Flush();
+            catch (Exception fail)
+            {
+                core.handleException(fail);
+            }
             return true;
         }
 
