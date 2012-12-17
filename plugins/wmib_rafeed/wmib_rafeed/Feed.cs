@@ -576,7 +576,7 @@ namespace wmib
         {
             start = true;
             Name = "Feed";
-            Version = "1.0.0";
+            Version = "1.0.12";
             return true;
         }
 
@@ -617,6 +617,7 @@ namespace wmib
             catch (Exception fail)
             {
                 core.handleException(fail);
+                core.Log("RC feed is permanently down", true);
             }
         }
     }
@@ -684,17 +685,18 @@ namespace wmib
                             i.URL = xx.Attributes[1].Value;
                             try
                             {
-                                if (xx.Attributes.Count > 1)
+                                if (xx.Attributes.Count > 2)
                                 {
                                     i.disabled = bool.Parse(xx.Attributes[2].Value);
                                 }
-                                if (xx.Attributes.Count > 2)
+                                if (xx.Attributes.Count > 3)
                                 {
                                     i.message = xx.Attributes[3].Value;
                                 }
                             }
                             catch (Exception)
                             {
+                                core.Log("DEBUG: unable to load item for feed item name: " + i.name + " channel name " + owner.Name + " item was removed");
                                 i.disabled = false;
                             }
                             Content.Add(i);
@@ -774,12 +776,15 @@ namespace wmib
                             List<RssFeedItem> feed = RssManager.ReadFeed(curr.URL, curr, owner.Name);
                             if (feed == null)
                             {
-                                continue;
+                                //core.Log("DEBUG: NULL feed for " + curr.name);
+                                //continue;
                             }
                             if (feed.Count == 0)
                             {
+                                //core.Log("DEBUG: 0 items for " + curr.name);
                                 continue;
                             }
+                            //core.Log("DEBUG: there are " + feed.Count.ToString() + "feed:" + curr.name);
                             if (!RssManager.CompareLists(curr.data, feed))
                             {
                                 List<RssFeedItem> diff = new List<RssFeedItem>();
