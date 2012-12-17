@@ -637,12 +637,15 @@ namespace wmib
             {
                 Parent = _parent;
             }
+
             public struct Message
             {
                 public priority _Priority;
                 public string message;
                 public string channel;
             }
+
+            public bool running = true;
             public List<Message> messages = new List<Message>();
             public List<Message> newmessages = new List<Message>();
             public IRC Parent;
@@ -660,12 +663,30 @@ namespace wmib
                 }
             }
 
+            public void Exit()
+            {
+                running = false;
+                core.Log("Turning off the message queue with " + (newmessages.Count + messages.Count).ToString() + " untransfered data");
+                lock (messages)
+                {
+                    messages.Clear();
+                }
+                lock (newmessages)
+                {
+                    newmessages.Clear();
+                }
+            }
+
             public void Run()
             {
                 while (true)
                 {
                     try
                     {
+                        if (!running)
+                        {
+                            return;
+                        }
                         if (messages.Count > 0)
                         {
                             lock (messages)
@@ -678,54 +699,60 @@ namespace wmib
                         {
                             List<Message> Processed = new List<Message>();
                             priority highest = priority.low;
-                            while (newmessages.Count > 0)
+                            lock (newmessages)
                             {
-                                // we need to get all messages that have been scheduled to be send
-                                lock (messages)
+                                while (newmessages.Count > 0)
                                 {
-                                    if (messages.Count > 0)
+                                    // we need to get all messages that have been scheduled to be send
+                                    lock (messages)
                                     {
-                                        newmessages.AddRange(messages);
-                                        messages.Clear();
-                                    }
-                                }
-                                highest = priority.low;
-                                // we need to check the priority we need to handle first
-                                foreach (Message message in newmessages)
-                                {
-                                    if (message._Priority > highest)
-                                    {
-                                        highest = message._Priority;
-                                        if (message._Priority == priority.high)
+                                        if (messages.Count > 0)
                                         {
-                                            break;
+                                            newmessages.AddRange(messages);
+                                            messages.Clear();
                                         }
                                     }
-                                }
-                                // send highest priority first
-                                foreach (Message message in newmessages)
-                                {
-                                    if (message._Priority >= highest)
+                                    highest = priority.low;
+                                    // we need to check the priority we need to handle first
+                                    foreach (Message message in newmessages)
                                     {
-                                        Processed.Add(message);
-                                        Parent.Message(message.message, message.channel);
-                                        System.Threading.Thread.Sleep(1000);
-                                        if (highest != priority.high)
+                                        if (message._Priority > highest)
                                         {
-                                            break;
+                                            highest = message._Priority;
+                                            if (message._Priority == priority.high)
+                                            {
+                                                break;
+                                            }
                                         }
                                     }
-                                }
-                                foreach (Message message in Processed)
-                                {
-                                    if (newmessages.Contains(message))
+                                    // send highest priority first
+                                    foreach (Message message in newmessages)
                                     {
-                                        newmessages.Remove(message);
+                                        if (message._Priority >= highest)
+                                        {
+                                            Processed.Add(message);
+                                            Parent.Message(message.message, message.channel);
+                                            System.Threading.Thread.Sleep(1000);
+                                            if (highest != priority.high)
+                                            {
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    foreach (Message message in Processed)
+                                    {
+                                        if (newmessages.Contains(message))
+                                        {
+                                            newmessages.Remove(message);
+                                        }
                                     }
                                 }
                             }
                         }
-                        newmessages.Clear();
+                        lock (newmessages)
+                        {
+                            newmessages.Clear();
+                        }
                     }
                     catch (ThreadAbortException)
                     {

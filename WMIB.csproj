@@ -42,15 +42,10 @@
   <ItemGroup>
     <Compile Include="Config.cs" />
     <Compile Include="Core.cs" />
-    <Compile Include="DumpHtm.cs" />
-    <Compile Include="Feed.cs" />
-    <Compile Include="Infobot.cs" />
     <Compile Include="IRCcln.cs" />
     <Compile Include="Irctrust.cs" />
     <Compile Include="l10n.cs" />
-    <Compile Include="Logs.cs" />
     <Compile Include="Module.cs" />
-    <Compile Include="PluginSeen.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -58,7 +53,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="RClogs.cs" />
     <Compile Include="UserInfo.cs" />
   </ItemGroup>
   <ItemGroup>

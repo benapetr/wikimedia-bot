@@ -103,29 +103,44 @@ namespace wmib
             }
             private void Run()
             {
-                Regex c = new Regex(regex);
-                result = c.Match(value).Success;
-                searching = false;
+                try
+                {
+                    Regex c = new Regex(regex);
+                    result = c.Match(value).Success;
+                    searching = false;
+                }
+                catch (ThreadAbortException)
+                {
+                    searching = false;
+                    return;
+                }
             }
             public int IsMatch()
             {
-                Thread quick = new Thread(Run);
-                searching = true;
-                quick.Start();
-                int check = 0;
-                while (searching)
+                try
                 {
-                    check++;
-                    Thread.Sleep(10);
-                    if (check > 50)
+                    Thread quick = new Thread(Run);
+                    searching = true;
+                    quick.Start();
+                    int check = 0;
+                    while (searching)
                     {
-                        quick.Abort();
-                        return 2;
+                        check++;
+                        Thread.Sleep(10);
+                        if (check > 50)
+                        {
+                            quick.Abort();
+                            return 2;
+                        }
+                    }
+                    if (result)
+                    {
+                        return 1;
                     }
                 }
-                if (result)
+                catch (Exception fail)
                 {
-                    return 1;
+                    core.handleException(fail);
                 }
                 return 0;
             }
@@ -152,7 +167,7 @@ namespace wmib
         }
 
         public static void InitialiseMod(Module module)
-        { 
+        {
             if (module.Name == null || module.Name == "")
             {
                 core.Log("This module has invalid name and was terminated to prevent troubles", true);
@@ -203,7 +218,7 @@ namespace wmib
                     Type pluginInfo = null;
                     foreach (Type curr in types)
                     {
-                        if (curr.IsAssignableFrom(type))            
+                        if (curr.IsAssignableFrom(type))
                         {
                             pluginInfo = curr;
                             break;
@@ -215,9 +230,9 @@ namespace wmib
                         return false;
                     }
 
-                     
+
                     Module _plugin = (Module)Activator.CreateInstance(pluginInfo);
-                    
+
                     //Module _plugin = domain.CreateInstanceFromAndUnwrap(path, "wmib.RegularModule") as Module;
 
                     _plugin.ParentDomain = core.domain;
@@ -860,6 +875,21 @@ namespace wmib
                 return;
             }
 
+            if (message == "@restart")
+            {
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
+                {
+                    irc.Message("System is shutting down, requested by " + invoker.Nick + " from " + chan.Name, config.debugchan);
+                    Program.Log("System is shutting down, requested by " + invoker.Nick + " from " + chan.Name);
+                    Kill();
+                    return;
+                }
+                if (!chan.suppress_warnings)
+                {
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                }
+            }
+
             if (message == "@channellist")
             {
                 string channels = "";
@@ -1116,12 +1146,52 @@ namespace wmib
             Program.Log("Modules loaded");
         }
 
+        private static void Terminate()
+        {
+            List<Module> list = new List<Module>();
+            lock (Module.module)
+            {
+                list.AddRange(Module.module);
+            }
+            foreach (Module d in list)
+            {
+                try
+                {
+                    d.Exit();
+                }
+                catch (Exception fail)
+                {
+                    core.handleException(fail);
+                }
+            }
+        }
+
         public static void Kill()
         {
             irc.disabled = true;
             exit = true;
             irc.wd.Close();
             irc.rd.Close();
+            irc._SlowQueue.Exit();
+            Thread modules = new Thread(Terminate);
+            modules.Name = "Core helper shutdown thread";
+            modules.Start();
+            Program.Log("Giving grace time for all modules to finish ok");
+            int kill = 0;
+            while (kill < 20)
+            {
+                kill++;
+                if (Module.module.Count == 0)
+                {
+                    Program.Log("Terminated");
+                    System.Diagnostics.Process.GetCurrentProcess().Kill();
+                    break;
+                }
+                Thread.Sleep(1000);
+            }
+            Program.Log("There was problem shutting down " + Module.module.Count.ToString() + " modules, terminating process");
+            Program.Log("Terminated");
+            System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
 
         /// <summary>
@@ -1185,7 +1255,7 @@ namespace wmib
             }
 
             public static void CreateHelp()
-            { 
+            {
                 Register("infobot-ignore-", null);
                 Register("infobot-ignore-", null);
                 Register("infobot-ignore+", null);
