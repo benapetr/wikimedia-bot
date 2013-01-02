@@ -14,13 +14,35 @@ namespace wmib
         {
             Name = "SEEN";
             start = true;
-            Version = "2.0.0";
+            Version = "2.0.8";
             return true;
         }
 
         public override void Hook_ACTN(config.channel channel, User invoker, string message)
         {
             WriteStatus(invoker.Nick, invoker.Host, channel.Name, item.Action.Talk);
+        }
+
+        public override bool Hook_OnPrivateFromUser(string message, User user)
+        {
+            WriteStatus(user.Nick, user.Host, "<private message>", item.Action.Talk);
+            if (message.StartsWith("@seen "))
+            {
+                    string parameter = "";
+                        parameter = message.Substring(message.IndexOf(" ") + 1);
+                    if (parameter != "")
+                    {
+                        RetrieveStatus(parameter, null, user.Nick);
+                        return true;
+                    }
+            }
+
+            if (message.StartsWith("@seenrx "))
+            {
+                    core.irc._SlowQueue.DeliverMessage("Sorry but this command can be used in channels only (it's cpu expensive so it can be used on public by trusted users only)", user.Nick, IRC.priority.low);
+                    return true;
+            }
+            return false;
         }
 
         public override void Hook_PRIV(config.channel channel, User invoker, string message)
@@ -621,22 +643,30 @@ namespace wmib
                     break;
                 }
             }
+            string target = source;
+            if (channel != null)
+            {
+                target = channel.Name;
+            }
             if (nick.ToUpper() == source.ToUpper())
             {
                 response = "are you really looking for yourself?";
-                core.irc._SlowQueue.DeliverMessage(source + ": " + response, channel.Name, IRC.priority.normal);
+                core.irc._SlowQueue.DeliverMessage(source + ": " + response, target, IRC.priority.normal);
                 return;
             }
             if (nick.ToUpper() == config.username.ToUpper())
             {
                 response = "I am right here";
-                core.irc._SlowQueue.DeliverMessage(source + ": " + response, channel.Name, IRC.priority.normal);
+                core.irc._SlowQueue.DeliverMessage(source + ": " + response, target, IRC.priority.normal);
                 return;
             }
-            if (channel.containsUser(nick))
+            if (channel != null)
             {
-                response = nick + " is in here, right now";
-                found = true;
+                if (channel.containsUser(nick))
+                {
+                    response = nick + " is in here, right now";
+                    found = true;
+                }
             }
             if (!found)
             {
@@ -649,7 +679,7 @@ namespace wmib
                     }
                 }
             }
-            core.irc._SlowQueue.DeliverMessage(source + ": " + response, channel.Name, IRC.priority.normal);
+            core.irc._SlowQueue.DeliverMessage(source + ": " + response, target, IRC.priority.normal);
         }
 
         public void Save()
