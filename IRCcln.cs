@@ -663,6 +663,32 @@ namespace wmib
                 }
             }
 
+            public void DeliverMessage(string Message, User User, priority Pr = priority.low)
+            {
+                Message text = new Message();
+                text._Priority = Pr;
+                text.message = Message;
+                text.channel = User.Nick;
+                lock (messages)
+                {
+                    messages.Add(text);
+                    return;
+                }
+            }
+
+            public void DeliverMessage(string Message, config.channel Channel, priority Pr = priority.normal)
+            {
+                Message text = new Message();
+                text._Priority = Pr;
+                text.message = Message;
+                text.channel = Channel.Name;
+                lock (messages)
+                {
+                    messages.Add(text);
+                    return;
+                }
+            }
+
             public void Exit()
             {
                 running = false;
@@ -1100,6 +1126,7 @@ namespace wmib
                                                 continue;
                                             }
                                             bool respond = true;
+                                            string modules = "";
                                             lock (Module.module)
                                             {
                                                 foreach (Module module in Module.module)
@@ -1109,9 +1136,10 @@ namespace wmib
                                                         try
                                                         {
 
-                                                            if (module.Hook_OnPrivateFromUser(new User(nick, host, ident)))
+                                                            if (module.Hook_OnPrivateFromUser(message.Substring(2), new User(nick, host, ident)))
                                                             {
                                                                 respond = false;
+                                                                modules += module.Name + " ";
                                                             }
                                                         }
                                                         catch (Exception fail)
@@ -1128,7 +1156,7 @@ namespace wmib
                                             }
                                             else
                                             {
-                                                Program.Log("Private message: (" + nick + ") " + message.Substring(2), false);
+                                                Program.Log("Private message: (handled by " + modules + " from "  + nick + ") " + message.Substring(2), false);
                                             }
                                             continue;
                                         }

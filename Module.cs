@@ -338,7 +338,7 @@ namespace wmib
             }
         }
 
-        public virtual bool Hook_OnPrivateFromUser(User user)
+        public virtual bool Hook_OnPrivateFromUser(string message, User user)
         {
             return false;
         }
