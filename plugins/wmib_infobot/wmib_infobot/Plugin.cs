@@ -133,6 +133,21 @@ namespace wmib
                     {
                         success = false;
                     }
+                    if (Snapshots)
+                    {
+                        try
+                        {
+                            if (Directory.Exists(SnapshotsDirectory + Path.DirectorySeparatorChar + channel.Name) == false)
+                            {
+                                core.Log("Creating directory for infobot for " + channel.Name);
+                                Directory.CreateDirectory(SnapshotsDirectory + Path.DirectorySeparatorChar + channel.Name);
+                            }
+                        }
+                        catch (Exception fail)
+                        {
+                            core.handleException(fail);
+                        }
+                    }
                 }
             }
             if (!success)
@@ -238,6 +253,7 @@ namespace wmib
                         {
                             infobot.RecoverSnapshot(channel, name);
                         }
+                        return;
                     }
                     if (!channel.suppress_warnings)
                     {
@@ -260,6 +276,7 @@ namespace wmib
                         {
                             infobot.CreateSnapshot(channel, name);
                         }
+                        return;
                     }
                     if (!channel.suppress_warnings)
                     {
@@ -278,7 +295,7 @@ namespace wmib
                         name.Replace("*", "");
                         name.Replace("?", "");
                         if (name == "")
-                        { 
+                        {
                             core.irc._SlowQueue.DeliverMessage("You should specify a file name", channel.Name, IRC.priority.normal);
                             return;
                         }
@@ -300,31 +317,35 @@ namespace wmib
 
                 if (message == "@infobot-snapshot-ls")
                 {
-                        string files = "";
-                        DirectoryInfo di = new DirectoryInfo(SnapshotsDirectory + Path.DirectorySeparatorChar + channel.Name);
-                        FileInfo[] rgFiles = di.GetFiles("*");
-                        int curr = 0;
-                        int displaying = 0;
-                        foreach (FileInfo fi in rgFiles)
+                    string files = "";
+                    DirectoryInfo di = new DirectoryInfo(SnapshotsDirectory + Path.DirectorySeparatorChar + channel.Name);
+                    FileInfo[] rgFiles = di.GetFiles("*");
+                    int curr = 0;
+                    int displaying = 0;
+                    foreach (FileInfo fi in rgFiles)
+                    {
+                        curr++;
+                        if (files.Length < 200)
                         {
-                            curr++;
-                            if (files.Length < 200)
-                            {
-                                files += fi.Name + " ";
-                                displaying++;
-                            }
+                            files += fi.Name + " ";
+                            displaying++;
                         }
-                        string response = "";
-                        if (curr == displaying)
-                        {
-                            response = "There are " + displaying.ToString() + " files: " + files;
-                        }
-                        else
-                        { 
-                            response = "There are " + curr.ToString() + " files, but displaying only " + displaying.ToString() + " of them: " + files;
-                        }
-                        core.irc._SlowQueue.DeliverMessage(response, channel.Name, IRC.priority.normal);
-                        return;
+                    }
+                    string response = "";
+                    if (curr == displaying)
+                    {
+                        response = "There are " + displaying.ToString() + " files: " + files;
+                    }
+                    else
+                    {
+                        response = "There are " + curr.ToString() + " files, but displaying only " + displaying.ToString() + " of them: " + files;
+                    }
+                    if (curr == 0)
+                    {
+                        response = "There is no snapshot so far, create one!:)";
+                    }
+                    core.irc._SlowQueue.DeliverMessage(response, channel.Name, IRC.priority.normal);
+                    return;
                 }
             }
 
@@ -768,7 +789,7 @@ namespace wmib
         public override bool Construct()
         {
             Version = "1.0.0";
-            Name ="Infobot DB";
+            Name = "Infobot DB";
             start = true;
             Reload = true;
             return true;
@@ -1291,7 +1312,7 @@ namespace wmib
                 bool Allowed = (data != null);
                 name = name.Substring(1);
                 infobot_core infobot = null;
-                if (Allowed)                    infobot = (infobot_core)data.RetrieveObject("Infobot");
+                if (Allowed) infobot = (infobot_core)data.RetrieveObject("Infobot");
                 string ignore_test = name;
                 if (ignore_test.Contains(" "))
                 {
@@ -1874,7 +1895,7 @@ namespace wmib
                     lock (this.text)
                     {
                         core.Log("Recovering snapshot " + temporary_data);
-                        File.Copy(temporary_data, datafile_xml);
+                        File.Copy(temporary_data, datafile_xml, true);
                         this.text.Clear();
                         this.Alias.Clear();
                         core.Log("Loading snapshot of " + Channel);
@@ -1951,20 +1972,19 @@ namespace wmib
                     core.irc._SlowQueue.DeliverMessage("There is already another datafile operation running for this channel", chan.Name);
                     return;
                 }
-                lock (SnapshotManager)
+                locked = true;
+                string datafile = RegularModule.SnapshotsDirectory + Path.DirectorySeparatorChar + Channel + Path.DirectorySeparatorChar + name;
+                if (!File.Exists(datafile))
                 {
-                    string datafile = RegularModule.SnapshotsDirectory + Path.DirectorySeparatorChar + Channel + Path.DirectorySeparatorChar + name;
-                    if (!File.Exists(datafile))
-                    {
-                        core.irc._SlowQueue.DeliverMessage("The requested datafile " + name + " was not found", chan.Name, IRC.priority.low);
-                        return;
-                    }
-                    locked = true;
-                    SnapshotManager = new Thread(RecoverStart);
-                    temporary_data = datafile;
-                    SnapshotManager.Name = "Snapshot";
+                    core.irc._SlowQueue.DeliverMessage("The requested datafile " + name + " was not found", chan.Name, IRC.priority.low);
+                    return;
                 }
+
+                SnapshotManager = new Thread(RecoverStart);
+                temporary_data = datafile;
+                SnapshotManager.Name = "Snapshot";
                 SnapshotManager.Start();
+                RegularModule.SetConfig(chan, "HTML.Update", true);
             }
             catch (Exception fail)
             {
@@ -1995,19 +2015,16 @@ namespace wmib
                     core.irc._SlowQueue.DeliverMessage("There is already another datafile operation running for this channel", chan.Name);
                     return;
                 }
-                lock (SnapshotManager)
+                locked = true;
+                string datafile = RegularModule.SnapshotsDirectory + Path.DirectorySeparatorChar + Channel + Path.DirectorySeparatorChar + name;
+                if (File.Exists(datafile))
                 {
-                    string datafile = RegularModule.SnapshotsDirectory + Path.DirectorySeparatorChar + Channel + Path.DirectorySeparatorChar + name;
-                    if (File.Exists(datafile))
-                    {
-                        core.irc._SlowQueue.DeliverMessage("The requested snapshot " + name + " already exist", chan.Name, IRC.priority.low);
-                        return;
-                    }
-                    locked = true;
-                    SnapshotManager = new Thread(SnapshotStart);
-                    temporary_data = datafile;
-                    SnapshotManager.Name = "Snapshot";
+                    core.irc._SlowQueue.DeliverMessage("The requested snapshot " + name + " already exist", chan.Name, IRC.priority.low);
+                    return;
                 }
+                SnapshotManager = new Thread(SnapshotStart);
+                temporary_data = datafile;
+                SnapshotManager.Name = "Snapshot";
                 SnapshotManager.Start();
             }
             catch (Exception fail)
