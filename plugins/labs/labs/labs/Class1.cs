@@ -101,6 +101,13 @@ namespace wmib
             return null;
         }
 
+        public static string WildcardToRegex(string pattern)
+        {
+            return "^" + System.Text.RegularExpressions.Regex.Escape(pattern).
+                               Replace(@"\*", ".*").
+                               Replace(@"\?", ".") + "$";
+        }
+
         public static void deleteInstance(Instance instance)
         {
             try
@@ -726,6 +733,9 @@ namespace wmib
             core.Help.Unregister("labs-off");
             core.Help.Unregister("labs-resolve");
             core.Help.Unregister("labs-info");
+            core.Help.Unregister("labs-project-info");
+            core.Help.Unregister("labs-project-instances");
+            core.Help.Unregister("labs-project-users");
             core.Help.Unregister("labs-user");
             bool ok = true;
             return ok;
@@ -740,6 +750,9 @@ namespace wmib
                 core.Help.Register("labs-resolve", "Retrieve information about object");
                 core.Help.Register("labs-info", "Display all known info about the object");
                 core.Help.Register("labs-user", "Display information about user");
+                core.Help.Register("labs-project-info", "Display information about the project");
+                core.Help.Register("labs-project-instances", "List all instances in a project");
+                core.Help.Register("labs-project-users", "Display all users in a project");
 
                 while (true)
                 {
