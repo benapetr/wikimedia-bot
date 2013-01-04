@@ -340,7 +340,7 @@ namespace wmib
                                                                                 core.Log("NULL pointer on idata 1", true);
                                                                             }
                                                                             core.irc._SlowQueue.DeliverMessage(
-                                                                                messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
+                                                                                messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, "[" + change + "] " + summary }), curr.channel.Name, IRC.priority.low);
                                                                         }
                                                                         else
                                                                             if (w.Page.EndsWith("*"))
@@ -352,7 +352,7 @@ namespace wmib
                                                                                         core.Log("NULL pointer on idata 2", true);
                                                                                     }
                                                                                     core.irc._SlowQueue.DeliverMessage(
-                                                                                    messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
+                                                                                    messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, "["+ change +"] " + summary }), curr.channel.Name, IRC.priority.low);
                                                                                 }
                                                                             }
                                                                     }

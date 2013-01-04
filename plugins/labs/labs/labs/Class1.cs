@@ -465,7 +465,7 @@ namespace wmib
         {
             Name = "Labs";
             start = true;
-            Version = "1.2.8.0";
+            Version = "1.2.90.0";
             return true;
         }
 
@@ -685,7 +685,33 @@ namespace wmib
                         core.irc._SlowQueue.DeliverMessage(d, channel.Name);
                         return;
                     }
+                    string names = "";
+                    lock (ProjectList)
+                    {
+                        host = host.ToLower();
+                        foreach (Nova instance2 in ProjectList)
+                        {
+                            if (instance2.Name.ToLower().Contains(host))
+                            {
+                                names += instance2.Name + ", ";
+                                if (names.Length > 210)
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (names != "")
+                    {
+                        if (names.EndsWith(", "))
+                        {
+                            names = names.Substring(0, names.Length - 2);
+                        }
+                        core.irc._SlowQueue.DeliverMessage("I don't know this project, did you mean: " + names + "? I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", channel.Name);
+                        return;
+                    }
                     core.irc._SlowQueue.DeliverMessage("I don't know this project, sorry, try browsing the list by hand, but I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", channel.Name);
+                    return;
                 }
             }
         }
