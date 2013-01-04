@@ -1187,6 +1187,11 @@ namespace wmib
         /// </summary>
         public void Save()
         {
+            if (locked)
+            {
+                core.Log("Unable to save " + Channel + " because the db is locked by some module", true );
+                return;
+            }
             update = true;
             try
             {

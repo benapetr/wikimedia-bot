@@ -1148,46 +1148,62 @@ namespace wmib
 
         private static void Terminate()
         {
-            List<Module> list = new List<Module>();
-            lock (Module.module)
+            try
             {
-                list.AddRange(Module.module);
+                List<Module> list = new List<Module>();
+                lock (Module.module)
+                {
+                    list.AddRange(Module.module);
+                }
+                foreach (Module d in list)
+                {
+                    try
+                    {
+                        d.Exit();
+                    }
+                    catch (Exception fail)
+                    {
+                        core.handleException(fail);
+                    }
+                }
             }
-            foreach (Module d in list)
+            catch (Exception fail)
             {
-                try
-                {
-                    d.Exit();
-                }
-                catch (Exception fail)
-                {
-                    core.handleException(fail);
-                }
+                core.handleException(fail);
             }
         }
 
         public static void Kill()
         {
-            irc.disabled = true;
-            exit = true;
-            irc.wd.Close();
-            irc.rd.Close();
-            irc._SlowQueue.Exit();
-            Thread modules = new Thread(Terminate);
-            modules.Name = "Core helper shutdown thread";
-            modules.Start();
-            Program.Log("Giving grace time for all modules to finish ok");
-            int kill = 0;
-            while (kill < 20)
+            try
             {
-                kill++;
-                if (Module.module.Count == 0)
+                irc.disabled = true;
+                exit = true;
+                irc.wd.Close();
+                irc.rd.Close();
+                irc._SlowQueue.Exit();
+                Thread modules = new Thread(Terminate);
+                modules.Name = "Core helper shutdown thread";
+                modules.Start();
+                Program.Log("Giving grace time for all modules to finish ok");
+                int kill = 0;
+                while (kill < 20)
                 {
-                    Program.Log("Terminated");
-                    System.Diagnostics.Process.GetCurrentProcess().Kill();
-                    break;
+                    kill++;
+                    if (Module.module.Count == 0)
+                    {
+                        Program.Log("Modules are all down");
+                        Program.Log("Terminated");
+                        System.Diagnostics.Process.GetCurrentProcess().Kill();
+                        break;
+                    }
+                    Thread.Sleep(1000);
                 }
-                Thread.Sleep(1000);
+            }
+            catch (Exception fail)
+            {
+                core.handleException(fail);
+
             }
             Program.Log("There was problem shutting down " + Module.module.Count.ToString() + " modules, terminating process");
             Program.Log("Terminated");

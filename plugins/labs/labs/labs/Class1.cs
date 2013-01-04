@@ -521,7 +521,7 @@ namespace wmib
                 int list = getNumbers(user2);
                 if (result != "")
                 {
-                    core.irc._SlowQueue.DeliverMessage(user + " is member of " + list.ToString() + " projects: " + result, user);
+                    core.irc._SlowQueue.DeliverMessage(user2 + " is member of " + list.ToString() + " projects: " + result, user);
                     return true;
                 }
                 core.irc._SlowQueue.DeliverMessage("That user is not a member of any project", user);
@@ -1018,11 +1018,15 @@ namespace wmib
                 core.Help.Register("labs-project-instances", "List all instances in a project");
                 core.Help.Register("labs-project-users", "Display all users in a project");
 
-                while (true)
+                while (working)
                 {
                     JSON();
                     System.Threading.Thread.Sleep(200000);
                 }
+            }
+            catch (ThreadAbortException)
+            {
+                return;
             }
             catch (Exception f)
             {
