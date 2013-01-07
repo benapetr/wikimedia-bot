@@ -135,7 +135,12 @@ namespace wmib
                 }
                 catch (ThreadAbortException)
                 {
+                    if (jobs.Count != 0)
+                    {
+                        core.Log("Logging was requested to stop, but there is still " + jobs.Count.ToString() + " lines, writing now");
+                    }
                     WriteData();
+                    core.Log("There are no unsaved data, we can disable this module now");
                     break;
                 }
                 catch (Exception fail)
@@ -154,7 +159,7 @@ namespace wmib
             Name = "LOGS";
             start = true;
             Reload = true;
-            Version = "1.0.0";
+            Version = "1.0.10";
             return true;
         }
 
