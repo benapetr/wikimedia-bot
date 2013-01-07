@@ -29,7 +29,7 @@ namespace wmib
                 Console.Write("LOG ");
             }
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write("[" + DateTime.Now.ToShortTimeString() + "]");
+            Console.Write("[" + DateTime.Now.ToString() + "]");
             Console.ResetColor();
             Console.WriteLine(": " + msg);
             return false;
@@ -66,6 +66,7 @@ namespace wmib
         private static void Main(string[] args)
         {
             core.domain = AppDomain.CurrentDomain;
+            Log(config.version);
             Log("Loading...");
             config.UpTime = System.DateTime.Now;
             Console.CancelKeyPress += new ConsoleCancelEventHandler(myHandler);
