@@ -29,57 +29,60 @@ namespace wmib
         {
             Name = NAME;
             start = true;
-            Version = "1.0.22";
+            Version = "1.0.27";
             return true;
         }
 
         public override string Extension_DumpHtml(config.channel channel)
         {
             string HTML = "";
-            Statistics list = (Statistics)channel.RetrieveObject(NAME);
-            if (list != null)
+            if (Module.GetConfig(channel, "Statistics.Enabled", false))
             {
-                HTML += "\n<br>\n<h4>Most active users :)</h4>\n<br>\n\n<table class=\"infobot\" width=100% border=1>";
-                HTML += "<tr><td>N.</td><th>Nick</th><th>Messages (average / day)</th><th>Number of posted messages</th><th>Active since</th></tr>";
-                int id = 0;
-                int totalms = 0;
-                DateTime startime = DateTime.Now;
-                lock (list.data)
+                Statistics list = (Statistics)channel.RetrieveObject(NAME);
+                if (list != null)
                 {
-                    list.data.Sort();
-                    list.data.Reverse();
-                    foreach (Statistics.list user in list.data)
+                    HTML += "\n<br>\n<h4>Most active users :)</h4>\n<br>\n\n<table class=\"infobot\" width=100% border=1>";
+                    HTML += "<tr><td>N.</td><th>Nick</th><th>Messages (average / day)</th><th>Number of posted messages</th><th>Active since</th></tr>";
+                    int id = 0;
+                    int totalms = 0;
+                    DateTime startime = DateTime.Now;
+                    lock (list.data)
                     {
-                        id++;
-                        totalms += user.messages;
-                        if (id > 100)
+                        list.data.Sort();
+                        list.data.Reverse();
+                        foreach (Statistics.list user in list.data)
                         {
-                            continue;
+                            id++;
+                            totalms += user.messages;
+                            if (id > 100)
+                            {
+                                continue;
+                            }
+                            if (startime > user.logging_since)
+                            {
+                                startime = user.logging_since;
+                            }
+                            System.TimeSpan uptime = System.DateTime.Now - user.logging_since;
+                            float average = user.messages;
+                            average = ((float)user.messages / (float)(uptime.Days + 1));
+                            if (user.URL != "")
+                            {
+                                HTML += "<tr><td>" + id.ToString() + ".</td><td><a target=\"_blank\" href=\"" + user.URL + "\">" + user.user + "</a></td><td>" + average.ToString() + "</td><td>" + user.messages.ToString() + "</td><td>" + user.logging_since.ToString() + "</td></tr>";
+                            }
+                            else
+                            {
+                                HTML += "<tr><td>" + id.ToString() + ".</td><td>" + user.user + "</td><td>" + average.ToString() + "</td><td>" + user.messages.ToString() + "</td><td>" + user.logging_since.ToString() + "</td></tr>";
+                            }
+                            HTML += "  \n";
                         }
-                        if (startime > user.logging_since)
-                        {
-                            startime = user.logging_since;
-                        }
-                        System.TimeSpan uptime = System.DateTime.Now - user.logging_since;
-                        float average = user.messages;
-                        average = ((float)user.messages / (float)(uptime.Days + 1));
-                        if (user.URL != "")
-                        {
-                            HTML += "<tr><td>" + id.ToString() + ".</td><td><a target=\"_blank\" href=\"" + user.URL + "\">" + user.user + "</a></td><td>" + average.ToString() + "</td><td>" + user.messages.ToString() + "</td><td>" + user.logging_since.ToString() + "</td></tr>";
-                        }
-                        else
-                        {
-                            HTML += "<tr><td>" + id.ToString() + ".</td><td>" + user.user + "</td><td>" + average.ToString() + "</td><td>" + user.messages.ToString() + "</td><td>" + user.logging_since.ToString() + "</td></tr>";
-                        }
-                        HTML += "  \n";
                     }
+                    System.TimeSpan uptime_total = System.DateTime.Now - startime;
+                    float average2 = totalms;
+                    average2 = (float)totalms / (1 + uptime_total.Days);
+                    HTML += "<tr><td>N/A</td><th>Total:</th><th>" + average2.ToString() + "</th><th>" + totalms.ToString() + "</th><td>N/A</td></tr>";
+                    HTML += "  \n";
+                    HTML += "</table>";
                 }
-                System.TimeSpan uptime_total = System.DateTime.Now - startime;
-                float average2 = totalms;
-                average2 = (float)totalms / (1 + uptime_total.Days);
-                HTML += "<tr><td>N/A</td><th>Total:</th><th>" + average2.ToString() + "</th><th>" + totalms.ToString() + "</th><td>N/A</td></tr>";
-                HTML += "  \n";
-                HTML += "</table>";
             }
             return HTML;
         }
