@@ -59,11 +59,14 @@ namespace wmib
         
         public override bool Hook_OnUnload()
         {
+            RecentChanges.terminated = true;
+            Reload = false;
             bool ok = true;
             lock (config.channels)
             {
                 foreach (config.channel channel in config.channels)
                 {
+                    RecentChanges rc = (RecentChanges)channel.RetrieveObject("RC");
                     if (!channel.UnregisterObject("RC"))
                     {
                         ok = false;
@@ -371,15 +374,16 @@ namespace wmib
                         }
                         catch (ThreadAbortException)
                         {
+                            core.Log("Unloading RC thread");
                             return;
                         }
                         catch (IOException)
                         {
+                            core.Log("Disconnected from RC feed", true);
                             RecentChanges.Connect();
                         }
                         catch (Exception x)
                         {
-                            //core.Log("Exception while doing " + laststep, true);
                             core.LastText = message;
                             core.handleException(x);
                         }
@@ -387,6 +391,7 @@ namespace wmib
                 }
                 catch (ThreadAbortException)
                 {
+                    core.Log("Unloading RC thread");
                     return;
                 }
                 catch (Exception x)
@@ -398,6 +403,12 @@ namespace wmib
             }
             catch (ThreadAbortException)
             {
+                core.Log("Unloading RC thread");
+                return;
+            }
+            catch (Exception x)
+            {
+                core.handleException(x);
                 return;
             }
         }

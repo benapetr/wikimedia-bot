@@ -454,7 +454,6 @@ namespace wmib
                     else
                     {
                         SetConfig(channel, "Rss.Enable", false);
-                        //channel.EnableRss = false;
                         core.irc._SlowQueue.DeliverMessage(messages.get("Rss2", channel.Language), channel.Name);
                         channel.SaveConfig();
                         return;
@@ -499,6 +498,10 @@ namespace wmib
             if (list == null)
             {
                 return "";
+            }
+            if (GetConfig(channel, "Rss.Enable", false) != true)
+            {
+                return HTML;
             }
             HTML += "<h4>Rss feed</h4><br>";
             HTML += "\n<br>\n<h4>Rss</h4>\n<br>\n\n<table class=\"infobot\" width=100% border=1>";

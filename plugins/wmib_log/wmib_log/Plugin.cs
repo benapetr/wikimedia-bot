@@ -28,6 +28,8 @@ namespace wmib
             public config.channel ch;
         }
 
+        public bool Unloading = false;
+
         public List<Job> jobs = new List<Job>();
 
         public override void Hook_ACTN(config.channel channel, User invoker, string message)
@@ -124,30 +126,52 @@ namespace wmib
             return 2;
         }
 
+        public void Finish()
+        {
+            if (jobs.Count != 0)
+            {
+                core.Log("Logging was requested to stop, but there is still " + jobs.Count.ToString() + " lines, writing now");
+            }
+            WriteData();
+            core.Log("There are no unsaved data, we can disable this module now");
+            Unloading = false;
+        }
+
         public override void Load()
         {
-            while (true)
+            core.Log("DEBUG: Writer thread started");
+            int timer = 0;
+            while (!Unloading)
             {
                 try
                 {
+                    timer = 0;
                     WriteData();
-                    Thread.Sleep(20000);
+                    while (!Unloading)
+                    {
+                        timer++;
+                        if (timer > 20)
+                        {
+                            break;
+                        }
+                        Thread.Sleep(900);
+                    }
                 }
                 catch (ThreadAbortException)
                 {
-                    if (jobs.Count != 0)
-                    {
-                        core.Log("Logging was requested to stop, but there is still " + jobs.Count.ToString() + " lines, writing now");
-                    }
-                    WriteData();
-                    core.Log("There are no unsaved data, we can disable this module now");
-                    break;
+                    Finish();
+                    return;
                 }
                 catch (Exception fail)
                 {
                     core.handleException(fail);
                 }
             }
+            if (Unloading)
+            {
+                Finish();
+            }
+            core.Log("DEBUG: Writer thread stopped");
         }
 
         /// <summary>
@@ -159,7 +183,7 @@ namespace wmib
             Name = "LOGS";
             start = true;
             Reload = true;
-            Version = "1.0.10";
+            Version = "1.0.20";
             return true;
         }
 
@@ -395,6 +419,38 @@ namespace wmib
             {
                 // nothing
                 Console.WriteLine(er.Message);
+            }
+        }
+
+        public override bool Hook_OnUnload()
+        {
+            try
+            {
+                int wait = 0;
+                Unloading = true;
+                Reload = false;
+                core.Log("LOGS: Unloading log system, terminating the writer thread...");
+                if (this.thread.ThreadState == ThreadState.Running || this.thread.ThreadState == ThreadState.WaitSleepJoin)
+                {
+                    while (Unloading)
+                    {
+                        if (wait > 1000)
+                        {
+                            core.Log("LOGS: Writer thread didn't finish within grace time");
+                            return false;
+                        }
+                        wait++;
+                        Thread.Sleep(10);
+                    }
+                    core.Log("LOGS: Writer thread was unloaded OK");
+                    return true;
+                }
+                core.Log("LOGS: Writer thread is " + this.thread.ThreadState.ToString() + " - doing nothing");
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
 
