@@ -84,24 +84,26 @@ namespace wmib
             {
                 core.Log("NULL");
             }
-            if (channel.RetrieveObject("Infobot") == null)
+            if (Snapshots)
             {
-                if (Snapshots)
+                try
                 {
-                    try
+                    if (Directory.Exists(SnapshotsDirectory + Path.DirectorySeparatorChar + channel.Name) == false)
                     {
-                        if (Directory.Exists(SnapshotsDirectory + Path.DirectorySeparatorChar + channel.Name) == false)
-                        {
-                            core.Log("Creating directory for infobot for " + channel.Name);
-                            Directory.CreateDirectory(SnapshotsDirectory + Path.DirectorySeparatorChar + channel.Name);
-                        }
-                    }
-                    catch (Exception fail)
-                    {
-                        core.handleException(fail);
+                        core.Log("Creating directory for infobot for " + channel.Name);
+                        Directory.CreateDirectory(SnapshotsDirectory + Path.DirectorySeparatorChar + channel.Name);
                     }
                 }
-                channel.RegisterObject(new infobot_core(getDB(ref channel), channel.Name), "Infobot");
+                catch (Exception fail)
+                {
+                    core.handleException(fail);
+                }
+            }
+            if (channel.RetrieveObject("Infobot") == null)
+            {
+                // sensitivity
+                bool cs = Module.GetConfig(channel, "Infobot.Case", true);
+                channel.RegisterObject(new infobot_core(getDB(ref channel), channel.Name, cs), "Infobot");
             }
         }
 
@@ -129,7 +131,8 @@ namespace wmib
                 foreach (config.channel channel in config.channels)
                 {
                     config.channel curr = channel;
-                    if (!channel.RegisterObject(new infobot_core(getDB(ref curr), channel.Name), "Infobot"))
+                    bool cs = Module.GetConfig(curr, "Infobot.Case", true);
+                    if (!channel.RegisterObject(new infobot_core(getDB(ref curr), channel.Name, cs), "Infobot"))
                     {
                         success = false;
                     }
@@ -181,7 +184,7 @@ namespace wmib
                 {
                     foreach (infobot_core.InfobotKey Key in list)
                     {
-                        HTML += core.HTML.AddKey(Key.key, Key.text);
+                        HTML += core.HTML.AddKey(Key.Key, Key.Text);
                     }
                 }
                 HTML += "</table>\n";
@@ -285,6 +288,52 @@ namespace wmib
                     return;
                 }
 
+                if (message.StartsWith("@infobot-set-raw "))
+                {
+                    if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                    {
+                        string name = message.Substring("@infobot-set-raw ".Length);
+                        if (!GetConfig(channel, "Infobot.Enabled", true))
+                        {
+                            core.irc._SlowQueue.DeliverMessage("Infobot is not enabled in this channel", channel.Name, IRC.priority.low);
+                            return;
+                        }
+                        if (infobot != null)
+                        {
+                            infobot.setRaw(name, invoker.Nick, channel);
+                            return;
+                        }
+                    }
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                    return;
+                }
+
+                if (message.StartsWith("@infobot-unset-raw "))
+                {
+                    if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                    {
+                        string name = message.Substring("@infobot-unset-raw ".Length);
+                        if (!GetConfig(channel, "Infobot.Enabled", true))
+                        {
+                            core.irc._SlowQueue.DeliverMessage("Infobot is not enabled in this channel", channel.Name, IRC.priority.low);
+                            return;
+                        }
+                        if (infobot != null)
+                        {
+                            infobot.unsetRaw(name, invoker.Nick, channel);
+                            return;
+                        }
+                    }
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                    return;
+                }
+
                 if (message.StartsWith("@infobot-snapshot-rm "))
                 {
                     if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
@@ -292,6 +341,7 @@ namespace wmib
                         string name = message.Substring("@infobot-snapshot-rm ".Length);
                         name.Replace(".", "");
                         name.Replace("/", "");
+                        name.Replace("\\", "");
                         name.Replace("*", "");
                         name.Replace("?", "");
                         if (name == "")
@@ -723,6 +773,21 @@ namespace wmib
                     }
                     core.irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
                     return true;
+                case "infobot-case":
+                    if (bool.TryParse(value, out _temp_a))
+                    {
+                        Module.SetConfig(chan, "Infobot.Case", _temp_a);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
+                        chan.SaveConfig();
+                        infobot_core infobot = (infobot_core)chan.RetrieveObject("Infobot");
+                        if (infobot != null)
+                        {
+                            infobot.Sensitive = _temp_a;
+                        }
+                        return true;
+                    }
+                    core.irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
+                    return true;
             }
             return false;
         }
@@ -732,7 +797,7 @@ namespace wmib
             Name = "Infobot core";
             Reload = true;
             start = true;
-            Version = "1.0.2";
+            Version = "1.2.0";
             return true;
         }
 

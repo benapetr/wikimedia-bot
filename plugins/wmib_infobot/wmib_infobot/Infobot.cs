@@ -16,7 +16,9 @@ namespace wmib
         public string datafile_raw = "";
         public string datafile_xml = "";
         public string temporary_data = "";
+        public bool Sensitive = true;
         public bool stored = true;
+        public static readonly string prefix = "!";
 
         [NonSerialized()]
         private Thread Th;
@@ -41,18 +43,20 @@ namespace wmib
             /// <summary>
             /// Text
             /// </summary>
-            public string text;
+            public string Text;
 
             /// <summary>
             /// Key
             /// </summary>
-            public string key;
+            public string Key;
 
             public string user;
 
             public string locked;
 
             public DateTime created;
+
+            public bool Raw;
 
             public int Displayed = 0;
 
@@ -65,12 +69,13 @@ namespace wmib
             /// <param name="Text">Text of the key</param>
             /// <param name="User">User who created the key</param>
             /// <param name="Lock">If key is locked or not</param>
-            public InfobotKey(string Key, string Text, string User, string Lock = "false", string date = "", string time = "", int Number = 0)
+            public InfobotKey(string key, string text, string User, string Lock = "false", string date = "", string time = "", int Number = 0, bool RAW = false)
             {
-                text = Text;
-                key = Key;
+                Text = text;
+                Key = key;
                 locked = Lock;
                 user = User;
+                Raw = RAW;
                 Displayed = Number;
                 if (time == "")
                 {
@@ -178,6 +183,90 @@ namespace wmib
             return true;
         }
 
+        public bool AliasExist(string name, bool sensitive = true)
+        {
+            if (sensitive)
+            {
+                lock (Keys)
+                {
+                    foreach (InfobotAlias key in Alias)
+                    {
+                        if (key.Key == name)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            if (!sensitive)
+            {
+                name = name.ToLower();
+                lock (Keys)
+                {
+                    foreach (InfobotAlias key in Alias)
+                    {
+                        if (key.Key.ToLower() == name)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        public bool KeyExist(string name, bool sensitive = true)
+        {
+            if (!sensitive)
+            {
+                name = name.ToLower();
+                foreach (InfobotKey key in Keys)
+                {
+                    if (key.Key.ToLower() == name)
+                    {
+                        return true;
+                    }
+                }
+            }
+            if (sensitive)
+            {
+                foreach (InfobotKey key in Keys)
+                {
+                    if (key.Key == name)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public InfobotKey GetKey(string name, bool sensitive = true)
+        {
+            if (!sensitive)
+            {
+                name = name.ToLower();
+                foreach (InfobotKey key in Keys)
+                {
+                    if (key.Key.ToLower() == name)
+                    {
+                        return key;
+                    }
+                }
+            }
+            if (sensitive)
+            {
+                foreach (InfobotKey key in Keys)
+                {
+                    if (key.Key == name)
+                    {
+                        return key;
+                    }
+                }
+            }
+            return null;
+        }
+
         public bool LoadData()
         {
             Keys.Clear();
@@ -219,8 +308,13 @@ namespace wmib
                                 Alias.Add(_Alias);
                                 continue;
                             }
+                            bool raw = false;
+                            if (xx.Attributes.Count > 6)
+                            {
+                                raw = bool.Parse(xx.Attributes[6].Value);
+                            }
                             InfobotKey _key = new InfobotKey(xx.Attributes[0].Value, xx.Attributes[1].Value, xx.Attributes[2].Value, "false", xx.Attributes[3].Value,
-                            xx.Attributes[4].Value, int.Parse(xx.Attributes[5].Value));
+                            xx.Attributes[4].Value, int.Parse(xx.Attributes[5].Value), raw);
                             Keys.Add(_key);
                         }
                     }
@@ -237,7 +331,7 @@ namespace wmib
         {
             foreach (InfobotKey CV in Keys)
             {
-                if (CV.key == key)
+                if (CV.Key == key)
                 {
                     string created = "N/A";
                     string last = "N/A";
@@ -277,14 +371,14 @@ namespace wmib
                     List<string> Name = new List<string>();
                     foreach (InfobotKey curr in OriginalList)
                     {
-                        Name.Add(curr.key);
+                        Name.Add(curr.Key);
                     }
                     Name.Sort();
                     foreach (string f in Name)
                     {
                         foreach (InfobotKey g in OriginalList)
                         {
-                            if (f == g.key)
+                            if (f == g.Key)
                             {
                                 Item.Add(g);
                                 break;
@@ -306,25 +400,34 @@ namespace wmib
         /// </summary>
         /// <param name="database"></param>
         /// <param name="channel"></param>
-        public infobot_core(string database, string channel)
+        public infobot_core(string database, string channel, bool sensitive = true)
         {
+            Sensitive = sensitive;
             datafile_xml = database + ".xml";
             datafile_raw = database;
             Channel = channel;
             LoadData();
         }
 
-        public static string parseInfo(string key, string[] pars)
+        public static string parseInfo(string key, string[] pars, string original, InfobotKey Key)
         {
             string keyv = key;
+            bool raw = false;
+            if (Key != null)
+            {
+                raw = Key.Raw;
+            }
             if (pars.Length > 1)
             {
                 string keys = "";
                 int curr = 1;
                 while (pars.Length > curr)
                 {
-                    keyv = keyv.Replace("$" + curr.ToString(), pars[curr]);
-                    keyv = keyv.Replace("$url_encoded_" + curr.ToString(), System.Web.HttpUtility.UrlEncode(pars[curr]));
+                    if (!raw)
+                    {
+                        keyv = keyv.Replace("$" + curr.ToString(), pars[curr]);
+                        keyv = keyv.Replace("$url_encoded_" + curr.ToString(), System.Web.HttpUtility.UrlEncode(pars[curr]));
+                    }
                     if (keys == "")
                     {
                         keys = pars[curr];
@@ -335,8 +438,8 @@ namespace wmib
                     }
                     curr++;
                 }
-                keyv = keyv.Replace("$*", keys);
-                keyv = keyv.Replace("$url_encoded_*", System.Web.HttpUtility.UrlEncode(keys));
+                keyv = keyv.Replace("$*", original);
+                keyv = keyv.Replace("$url_encoded_*", System.Web.HttpUtility.UrlEncode(original));
             }
             return keyv;
         }
@@ -404,9 +507,9 @@ namespace wmib
                     foreach (InfobotKey key in Keys)
                     {
                         System.Xml.XmlAttribute name = data.CreateAttribute("key_name");
-                        name.Value = key.key;
+                        name.Value = key.Key;
                         System.Xml.XmlAttribute kk = data.CreateAttribute("data");
-                        kk.Value = key.text;
+                        kk.Value = key.Text;
                         System.Xml.XmlAttribute created = data.CreateAttribute("created_date");
                         created.Value = key.created.ToBinary().ToString();
                         System.Xml.XmlAttribute nick = data.CreateAttribute("nickname");
@@ -415,6 +518,8 @@ namespace wmib
                         last.Value = key.lasttime.ToBinary().ToString();
                         System.Xml.XmlAttribute triggered = data.CreateAttribute("triggered");
                         triggered.Value = key.Displayed.ToString();
+                        XmlAttribute k = data.CreateAttribute("raw");
+                        k.Value = key.Raw.ToString();
                         System.Xml.XmlNode db = data.CreateElement("key");
                         db.Attributes.Append(name);
                         db.Attributes.Append(kk);
@@ -422,6 +527,7 @@ namespace wmib
                         db.Attributes.Append(created);
                         db.Attributes.Append(last);
                         db.Attributes.Append(triggered);
+                        db.Attributes.Append(k);
                         xmlnode.AppendChild(db);
                     }
                 }
@@ -460,14 +566,29 @@ namespace wmib
         /// <returns></returns>
         public string getValue(string key)
         {
+            if (Sensitive)
+            {
+                foreach (InfobotKey data in Keys)
+                {
+                    if (data.Key == key)
+                    {
+                        data.lasttime = DateTime.Now;
+                        data.Displayed++;
+                        stored = false;
+                        return data.Text;
+                    }
+                }
+                return "";
+            }
+            string key2 = key.ToLower();
             foreach (InfobotKey data in Keys)
             {
-                if (data.key == key)
+                if (data.Key.ToLower() == key2)
                 {
                     data.lasttime = DateTime.Now;
                     data.Displayed++;
                     stored = false;
-                    return data.text;
+                    return data.Text;
                 }
             }
             return "";
@@ -485,15 +606,24 @@ namespace wmib
         {
             try
             {
-                if (!name.StartsWith("!"))
+                // check if it starts with the prefix
+                if (!name.StartsWith(prefix))
                 {
                     return true;
                 }
+                // check if this channel is allowed to access the db
                 config.channel data = isAllowed(chan);
                 bool Allowed = (data != null);
+                // handle prefix
                 name = name.Substring(1);
                 infobot_core infobot = null;
-                if (Allowed) infobot = (infobot_core)data.RetrieveObject("Infobot");
+
+                if (Allowed)
+                {
+                    infobot = (infobot_core)data.RetrieveObject("Infobot");
+                }
+
+                // check if key is ignored
                 string ignore_test = name;
                 if (ignore_test.Contains(" "))
                 {
@@ -503,21 +633,28 @@ namespace wmib
                 {
                     return true;
                 }
+
+                // check if key has some parameters or command
                 if (name.Contains(" "))
                 {
+                    // split by parameters so we can easily get the arguments user provided
                     string[] parm = name.Split(' ');
+                    // someone want to create a new key
                     if (parm[1] == "is")
                     {
+                        // check if they are approved to do that
                         if (chan.Users.isApproved(user, host, "info"))
                         {
                             if (!Allowed)
                             {
+                                // check if we can deliver error message
                                 if (!chan.suppress_warnings)
                                 {
                                     core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), chan.Name);
                                 }
                                 return true;
                             }
+                            // they can but there is only 1 parameter and we need at least 2
                             if (parm.Length < 3)
                             {
                                 if (!chan.suppress_warnings)
@@ -526,7 +663,9 @@ namespace wmib
                                 }
                                 return true;
                             }
+                            // get a key name
                             string key = name.Substring(name.IndexOf(" is") + 4);
+                            // check if there is pipe symbol in the key, which is not a valid symbol
                             if (parm[0].Contains("|"))
                             {
                                 if (!chan.suppress_warnings)
@@ -549,8 +688,14 @@ namespace wmib
                         }
                         return false;
                     }
-                    if (parm[1] == "alias")
+                    // alias
+                    bool force = false;
+                    if (parm[1] == "alias" || parm[1] == "force-alias")
                     {
+                        if (parm[1] == "force-alias")
+                        {
+                            force = true;
+                        }
                         if (chan.Users.isApproved(user, host, "info"))
                         {
                             if (!Allowed)
@@ -571,7 +716,8 @@ namespace wmib
                             }
                             if (infobot != null)
                             {
-                                infobot.aliasKey(name.Substring(name.IndexOf(" alias") + 7), parm[0], "", chan);
+                                infobot.aliasKey(name.Substring(name.IndexOf(" alias") + 7), parm[0], "", chan, force);
+                                return true;
                             }
                         }
                         else
@@ -619,6 +765,7 @@ namespace wmib
                         }
                         return false;
                     }
+                    // remove key
                     if (parm[1] == "del")
                     {
                         if (chan.Users.isApproved(user, host, "info"))
@@ -648,6 +795,11 @@ namespace wmib
                     return true;
                 }
                 string User = "";
+                string original = name;
+                if (original.Contains(" "))
+                {
+                    original = original.Substring(original.IndexOf(" ") + 1);
+                }
                 if (name.Contains("|"))
                 {
                     User = name.Substring(name.IndexOf("|") + 1);
@@ -677,9 +829,17 @@ namespace wmib
                 {
                     keyv = infobot.getValue(p[0]);
                 }
+                InfobotKey _key = GetKey(p[0]);
+                bool raw = false;
+                if (_key != null)
+                {
+                    raw = _key.Raw;
+                    name = original;
+                    User = "";
+                }
                 if (keyv != "")
                 {
-                    keyv = parseInfo(keyv, p);
+                    keyv = parseInfo(keyv, p, original, _key);
                     if (User == "")
                     {
                         core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
@@ -694,21 +854,44 @@ namespace wmib
                 {
                     foreach (InfobotAlias b in infobot.Alias)
                     {
-                        if (b.Name == p[0])
+                        if (Sensitive)
                         {
-                            keyv = infobot.getValue(b.Key);
-                            if (keyv != "")
+                            if (b.Name == p[0])
                             {
-                                keyv = parseInfo(keyv, p);
-                                if (User == "")
+                                keyv = infobot.getValue(b.Key);
+                                if (keyv != "")
                                 {
-                                    core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
+                                    keyv = parseInfo(keyv, p, original, _key);
+                                    if (User == "")
+                                    {
+                                        core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
+                                    }
+                                    else
+                                    {
+                                        core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
+                                    }
+                                    return true;
                                 }
-                                else
+                            }
+                        }
+                        else
+                        {
+                            if (b.Name.ToLower() == p[0].ToLower())
+                            {
+                                keyv = infobot.getValue(b.Key);
+                                if (keyv != "")
                                 {
-                                    core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
+                                    keyv = parseInfo(keyv, p, original, _key);
+                                    if (User == "")
+                                    {
+                                        core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
+                                    }
+                                    else
+                                    {
+                                        core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
+                                    }
+                                    return true;
                                 }
-                                return true;
                             }
                         }
                     }
@@ -720,9 +903,9 @@ namespace wmib
                         List<string> results = new List<string>();
                         foreach (InfobotKey f in infobot.Keys)
                         {
-                            if (!results.Contains(f.key) && f.key.StartsWith(p[0]))
+                            if (!results.Contains(f.Key) && f.Key.StartsWith(p[0]))
                             {
-                                results.Add(f.key);
+                                results.Add(f.Key);
                             }
                         }
                         foreach (InfobotAlias f in infobot.Alias)
@@ -738,7 +921,7 @@ namespace wmib
                             keyv = infobot.getValue(results[0]);
                             if (keyv != "")
                             {
-                                keyv = parseInfo(keyv, p);
+                                keyv = parseInfo(keyv, p, original, _key);
                                 if (User == "")
                                 {
                                     core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
@@ -756,7 +939,7 @@ namespace wmib
                                     keyv = infobot.getValue(alias.Key);
                                     if (keyv != "")
                                     {
-                                        keyv = parseInfo(keyv, p);
+                                        keyv = parseInfo(keyv, p, original, _key);
                                         if (User == "")
                                         {
                                             core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
@@ -794,9 +977,9 @@ namespace wmib
                     p[0] = p[0].ToLower();
                     foreach (InfobotKey f in infobot.Keys)
                     {
-                        if (!Sugg.Contains(f.key) && (f.text.Contains(p[0]) || f.key.ToLower().Contains(p[0])))
+                        if (!Sugg.Contains(f.Key) && (f.Text.Contains(p[0]) || f.Key.ToLower().Contains(p[0])))
                         {
-                            Sugg.Add(f.key);
+                            Sugg.Add(f.Key);
                         }
                     }
 
@@ -833,10 +1016,10 @@ namespace wmib
             {
                 foreach (InfobotKey data in Keys)
                 {
-                    if (data.key == search_key || value.Match(data.text).Success)
+                    if (data.Key == search_key || value.Match(data.Text).Success)
                     {
                         count++;
-                        results = results + data.key + ", ";
+                        results = results + data.Key + ", ";
                     }
                 }
             }
@@ -940,9 +1123,9 @@ namespace wmib
             {
                 foreach (InfobotKey Data in infobot.Keys)
                 {
-                    if (Data.key == key || Data.text.Contains(key))
+                    if (Data.Key == key || Data.Text.Contains(key))
                     {
-                        results = results + Data.key + ", ";
+                        results = results + Data.Key + ", ";
                         count++;
                     }
                 }
@@ -989,6 +1172,40 @@ namespace wmib
             return null;
         }
 
+        public void setRaw(string key, string user, config.channel chan)
+        {
+            while (locked)
+            {
+                Thread.Sleep(200);
+            }
+            InfobotKey Key = GetKey(key, Sensitive);
+            if (Key == null)
+            {
+                core.irc._SlowQueue.DeliverMessage("There is no such a key, " + user, chan.Name);
+                return;
+            }
+            Key.Raw = true;
+            core.irc._SlowQueue.DeliverMessage("This key will be displayed with no extra styling, variables and will ignore all symbols", chan.Name);
+            stored = false;
+        }
+
+        public void unsetRaw(string key, string user, config.channel chan)
+        {
+            while (locked)
+            {
+                Thread.Sleep(200);
+            }
+            InfobotKey Key = GetKey(key, Sensitive);
+            if (Key == null)
+            {
+                core.irc._SlowQueue.DeliverMessage("There is no such a key, " + user, chan.Name);
+                return;
+            }
+            Key.Raw = false;
+            core.irc._SlowQueue.DeliverMessage("This key will be displayed normally", chan.Name);
+            stored = false;
+        }
+
         /// <summary>
         /// Save a new key
         /// </summary>
@@ -1006,16 +1223,13 @@ namespace wmib
                 config.channel ch = core.getChannel(Channel);
                 try
                 {
-                    foreach (InfobotKey data in Keys)
+                    if (KeyExist(key, Sensitive))
                     {
-                        if (data.key == key)
+                        if (!chan.suppress_warnings)
                         {
-                            if (!chan.suppress_warnings)
-                            {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("Error3", chan.Language), chan.Name);
-                            }
-                            return;
+                            core.irc._SlowQueue.DeliverMessage(messages.get("Error3", chan.Language), chan.Name);
                         }
+                        return;
                     }
                     Keys.Add(new InfobotKey(key, Text, user, "false"));
                     core.irc.Message(messages.get("infobot6", chan.Language), chan.Name);
@@ -1221,7 +1435,7 @@ namespace wmib
         /// <param name="key">Key</param>
         /// <param name="al">Alias</param>
         /// <param name="user">User</param>
-        public void aliasKey(string key, string al, string user, config.channel chan)
+        public void aliasKey(string key, string al, string user, config.channel chan, bool enforced = false)
         {
             config.channel ch = core.getChannel(Channel);
             if (ch == null)
@@ -1238,6 +1452,19 @@ namespace wmib
                         {
                             core.irc._SlowQueue.DeliverMessage(messages.get("infobot7", chan.Language), chan.Name);
                         }
+                        return;
+                    }
+                }
+                if (!KeyExist(key))
+                {
+                    if (!enforced)
+                    {
+                        if (AliasExist(key))
+                        {
+                            core.irc._SlowQueue.DeliverMessage("Unable to create alias for " + key + " because the target is alias, but not a key, if you really want to create this broken alias do !" + al + " force-alias " + key, chan.Name);
+                            return;
+                        }
+                        core.irc._SlowQueue.DeliverMessage("Unable to create alias for " + key + " because there is no such key, if you really want to create this broken alias do !" + al + " force-alias " + key, chan.Name);
                         return;
                     }
                 }
@@ -1258,7 +1485,7 @@ namespace wmib
             {
                 foreach (InfobotKey keys in Keys)
                 {
-                    if (keys.key == key)
+                    if (keys.Key == key)
                     {
                         Keys.Remove(keys);
                         core.irc._SlowQueue.DeliverMessage(messages.get("infobot9", _ch.Language) + key, _ch.Name);
