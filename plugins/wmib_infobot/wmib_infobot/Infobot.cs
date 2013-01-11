@@ -191,7 +191,7 @@ namespace wmib
                 {
                     foreach (InfobotAlias key in Alias)
                     {
-                        if (key.Key == name)
+                        if (key.Name == name)
                         {
                             return true;
                         }
@@ -205,7 +205,7 @@ namespace wmib
                 {
                     foreach (InfobotAlias key in Alias)
                     {
-                        if (key.Key.ToLower() == name)
+                        if (key.Name.ToLower() == name)
                         {
                             return true;
                         }
@@ -833,9 +833,12 @@ namespace wmib
                 bool raw = false;
                 if (_key != null)
                 {
-                    raw = _key.Raw;
-                    name = original;
-                    User = "";
+                    if (_key.Raw)
+                    {
+                        raw = _key.Raw;
+                        name = original;
+                        User = "";
+                    }
                 }
                 if (keyv != "")
                 {
