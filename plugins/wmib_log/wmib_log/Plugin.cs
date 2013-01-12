@@ -120,7 +120,10 @@ namespace wmib
                 // write to disk
                 foreach (Job curr in line)
                 {
-                    writeLog(curr.message, curr.HTML, curr.ch, curr.time);
+                    while (!writeLog(curr.message, curr.HTML, curr.ch, curr.time))
+                    {
+                        Thread.Sleep(2000);
+                    }
                 }
             }
             return 2;
@@ -183,22 +186,25 @@ namespace wmib
             Name = "LOGS";
             start = true;
             Reload = true;
-            Version = "1.0.20";
+            Version = "1.8.0";
             return true;
         }
 
-        private void writeLog(string message, string html, config.channel channel, System.DateTime _datetime)
+        private bool writeLog(string message, string html, config.channel channel, System.DateTime _datetime)
         {
             try
             {
                 System.IO.File.AppendAllText(config.path_txt + channel.LogDir + _datetime.Year + timedateToString(_datetime.Month) + timedateToString(_datetime.Day) + ".txt", message);
                 System.IO.File.AppendAllText(config.path_htm + channel.LogDir + _datetime.Year + timedateToString(_datetime.Month) + timedateToString(_datetime.Day) + ".htm", html);
+                return true;
             }
             catch (Exception er)
             {
                 // nothing
+                core.Log("Unable to write to log files, delaying write!", true);
                 Console.WriteLine(er.Message);
             }
+            return false;
         }
 
         public int positionSeparator(string data)
