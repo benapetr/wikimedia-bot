@@ -329,8 +329,12 @@ namespace wmib
 
         public void Info(string key, config.channel chan)
         {
-            foreach (InfobotKey CV in Keys)
+            InfobotKey CV = GetKey(key, Sensitive);
+            if (CV == null)
             {
+                core.irc._SlowQueue.DeliverMessage("There is no such a key", chan.Name, IRC.priority.low);
+                return;
+            }
                 if (CV.Key == key)
                 {
                     string created = "N/A";
@@ -349,12 +353,15 @@ namespace wmib
                     {
                         name = CV.user;
                     }
+                    string type = " this key is normal";
+                    if (CV.Raw)
+                    {
+                        type = " this key is raw";
+                    }
                     core.irc._SlowQueue.DeliverMessage(messages.get("infobot-data", chan.Language, new List<string> {key, name, created, CV.Displayed.ToString(),
-                        last }), chan.Name, IRC.priority.low);
+                        last + type }), chan.Name, IRC.priority.low);
                     return;
                 }
-            }
-            core.irc._SlowQueue.DeliverMessage("There is no such a key", chan.Name, IRC.priority.low);
         }
 
         public List<InfobotKey> SortedItem()
@@ -803,7 +810,7 @@ namespace wmib
                 if (name.Contains("|"))
                 {
                     User = name.Substring(name.IndexOf("|") + 1);
-                    if (Module.GetConfig(chan, "Infobot.Trim-whitespace-in-name", false))
+                    if (Module.GetConfig(chan, "Infobot.Trim-white-space-in-name", true))
                     {
                         if (User.EndsWith(" "))
                         {
@@ -1488,12 +1495,25 @@ namespace wmib
             {
                 foreach (InfobotKey keys in Keys)
                 {
-                    if (keys.Key == key)
+                    if (Sensitive)
                     {
-                        Keys.Remove(keys);
-                        core.irc._SlowQueue.DeliverMessage(messages.get("infobot9", _ch.Language) + key, _ch.Name);
-                        stored = false;
-                        return;
+                        if (keys.Key == key)
+                        {
+                            Keys.Remove(keys);
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot9", _ch.Language) + key, _ch.Name);
+                            stored = false;
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        if (keys.Key.ToLower() == key.ToLower())
+                        {
+                            Keys.Remove(keys);
+                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot9", _ch.Language) + key, _ch.Name);
+                            stored = false;
+                            return;
+                        }
                     }
                 }
             }
