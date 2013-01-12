@@ -79,6 +79,8 @@ namespace wmib
 				return;
 			}
             core.Help.CreateHelp();
+            core.WriterThread = new System.Threading.Thread(StorageWriter.Core);
+            core.WriterThread.Start();
             Log("Loading modules");
             core.SearchMods();
             Log("Connecting");

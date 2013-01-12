@@ -663,6 +663,19 @@ namespace wmib
                 }
             }
 
+            public void DeliverAct(string Message, string Channel, priority Pr = priority.normal)
+            {
+                Message text = new Message();
+                text._Priority = Pr;
+                text.message = Message;
+                text.channel = Channel;
+                lock (messages)
+                {
+                    messages.Add(text);
+                    return;
+                }
+            }
+
             public void DeliverMessage(string Message, User User, priority Pr = priority.low)
             {
                 Message text = new Message();
@@ -822,7 +835,7 @@ namespace wmib
                         return true;
                     }
                 }
-                wd.WriteLine("PRIVMSG " + channel + " :" + message.Replace("\n", " "));
+                SendData("PRIVMSG " + channel + " :" + message.Replace("\n", " "));
                 lock (Module.module)
                 {
                     foreach (Module module in Module.module)
@@ -853,7 +866,7 @@ namespace wmib
         {
             if (Channel != null)
             {
-                wd.WriteLine("JOIN " + Channel.Name);
+                SendData("JOIN " + Channel.Name);
                 wd.Flush();
                 return true;
             }
@@ -872,14 +885,14 @@ namespace wmib
                     System.Threading.Thread.Sleep(20000);
                     if (!config.serverIO)
                     {
-                        wd.WriteLine("PING :" + config.network);
+                        SendData("PING :" + config.network);
                         wd.Flush();
                     }
                     foreach (config.channel dd in config.channels)
                     {
                         if (!dd.FreshList)
                         {
-                            wd.WriteLine("WHO " + dd.Name);
+                            SendData("WHO " + dd.Name);
                             Program.Log("requesting user list for" + dd.Name);
                             wd.Flush();
                             Thread.Sleep(2000);
@@ -909,8 +922,8 @@ namespace wmib
             }
             rd = new StreamReader(data, System.Text.Encoding.UTF8);
             wd = new StreamWriter(data);
-            wd.WriteLine("USER " + username + " 8 * :" + ident);
-            wd.WriteLine("NICK " + nickname);
+            SendData("USER " + username + " 8 * :" + ident);
+            SendData("NICK " + nickname);
             Authenticate();
             _Queue = new System.Threading.Thread(_SlowQueue.Run);
             foreach (config.channel ch in config.channels)
@@ -925,11 +938,17 @@ namespace wmib
             return false;
         }
 
+        public void SendData(string text)
+        {
+            wd.WriteLine(text);
+            core.TrafficLog("MAIN>>>>>>" + text);
+        }
+
         public bool Authenticate()
         {
             if (config.password != "")
             {
-                wd.WriteLine("PRIVMSG nickserv :identify " + config.login + " " + config.password);
+                SendData("PRIVMSG nickserv :identify " + config.login + " " + config.password);
                 wd.Flush();
                 System.Threading.Thread.Sleep(4000);
             }
@@ -961,7 +980,7 @@ namespace wmib
 
                 if (config.serverIO)
                 {
-                    wd.WriteLine("CONTROL: STATUS");
+                    SendData("CONTROL: STATUS");
                     wd.Flush();
                     Console.WriteLine("CACHE: Waiting for buffer");
                     bool done = true;
@@ -976,7 +995,7 @@ namespace wmib
                         else if (response == "CONTROL: FALSE")
                         {
                             done = false;
-                            wd.WriteLine("CONTROL: CREATE");
+                            SendData("CONTROL: CREATE");
                             wd.Flush();
                         }
                     }
@@ -989,8 +1008,8 @@ namespace wmib
 
                 if (Auth)
                 {
-                    wd.WriteLine("USER " + username + " 8 * :" + ident);
-                    wd.WriteLine("NICK " + nickname);
+                    SendData("USER " + username + " 8 * :" + ident);
+                    SendData("NICK " + nickname);
                 }
 
                 _Queue.Start();
@@ -1024,22 +1043,24 @@ namespace wmib
                         while (!rd.EndOfStream && !core.exit)
                         {
                             text = rd.ReadLine();
+                            core.TrafficLog("MAIN<<<<<<" + text);
                             if (config.serverIO)
                             {
                                 if (text.StartsWith("CONTROL: "))
                                 {
                                     if (text == "CONTROL: DC")
                                     {
-                                        wd.WriteLine("CONTROL: CREATE");
+                                        SendData("CONTROL: CREATE");
                                         wd.Flush();
                                         Console.WriteLine("CACHE: Lost connection to remote, reconnecting");
                                         bool connected = false;
                                         while (!connected)
                                         {
                                             System.Threading.Thread.Sleep(800);
-                                            wd.WriteLine("CONTROL: STATUS");
+                                            SendData("CONTROL: STATUS");
                                             wd.Flush();
                                             string response = rd.ReadLine();
+                                            core.TrafficLog("MAIN<<<<<<" + response);
                                             if (response == "CONTROL: OK")
                                             {
                                                 Reconnect();
@@ -1103,25 +1124,25 @@ namespace wmib
                                             // private message
                                             if (message.StartsWith(" :" + delimiter.ToString() + "FINGER"))
                                             {
-                                                wd.WriteLine("NOTICE " + nick + " :" + delimiter.ToString() + "FINGER" + " I am a bot don't finger me");
+                                                SendData("NOTICE " + nick + " :" + delimiter.ToString() + "FINGER" + " I am a bot don't finger me");
                                                 wd.Flush();
                                                 continue;
                                             }
                                             if (message.StartsWith(" :" + delimiter.ToString() + "TIME"))
                                             {
-                                                wd.WriteLine("NOTICE " + nick + " :" + delimiter.ToString() + "TIME " + System.DateTime.Now.ToString());
+                                                SendData("NOTICE " + nick + " :" + delimiter.ToString() + "TIME " + System.DateTime.Now.ToString());
                                                 wd.Flush();
                                                 continue;
                                             }
                                             if (message.StartsWith(" :" + delimiter.ToString() + "PING"))
                                             {
-                                                wd.WriteLine("NOTICE " + nick + " :" + delimiter.ToString() + "PING" + message.Substring(message.IndexOf(delimiter.ToString() + "PING") + 5));
+                                                SendData("NOTICE " + nick + " :" + delimiter.ToString() + "PING" + message.Substring(message.IndexOf(delimiter.ToString() + "PING") + 5));
                                                 wd.Flush();
                                                 continue;
                                             }
                                             if (message.StartsWith(" :" + delimiter.ToString() + "VERSION"))
                                             {
-                                                wd.WriteLine("NOTICE " + nick + " :" + delimiter.ToString() + "VERSION " + config.version);
+                                                SendData("NOTICE " + nick + " :" + delimiter.ToString() + "VERSION " + config.version);
                                                 wd.Flush();
                                                 continue;
                                             }
@@ -1163,7 +1184,7 @@ namespace wmib
                                     }
                                     if (command.Contains("PING "))
                                     {
-                                        wd.WriteLine("PONG " + text.Substring(text.IndexOf("PING ") + 5));
+                                        SendData("PONG " + text.Substring(text.IndexOf("PING ") + 5));
                                         wd.Flush();
                                         Console.WriteLine(command);
                                     }

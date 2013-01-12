@@ -20,6 +20,127 @@ using System.IO;
 
 namespace wmib
 {
+    public class STI
+    {
+        public bool DelayedWrite;
+        public string line;
+        public string file;
+        public STI(string Line, string Name, bool delayed = true)
+        {
+            DelayedWrite = delayed;
+            file = Name;
+            line = Line;
+        }
+    }
+
+    public class StorageWriter
+    {
+        public static List<STI> Data = new List<STI>();
+        public static bool running = true;
+
+        private static bool Write(STI item)
+        {
+            try
+            {
+                System.IO.File.AppendAllText(item.file, item.line);
+                return true;
+            }
+            catch (Exception crashed)
+            {
+                core.Log("Unable to write data into " + item.file + " skipping this", true);
+                Console.WriteLine(crashed.ToString());
+                return false;
+            }
+        }
+
+        public static void InsertLine(string File, string Text, bool Delayed = true)
+        {
+            try
+            {
+                lock (Data)
+                {
+                    Data.Add(new STI(Text, File, Delayed));
+                }
+            }
+            catch (Exception crashed)
+            {
+                core.handleException(crashed);
+            }
+        }
+
+        private static void WriteData()
+        {
+            List<STI> jobs = new List<STI>();
+            lock (Data)
+            {
+                jobs.AddRange(Data);
+                Data.Clear();
+            }
+            foreach (STI item in jobs)
+            {
+                if (item.DelayedWrite)
+                {
+                    while (!Write(item))
+                    {
+                        core.Log("Unable to write data, delaying write", true);
+                        Thread.Sleep(6000);
+                    }
+                }
+                else
+                {
+                    Write(item);
+                }
+            }
+        }
+
+        public static void Core()
+        {
+            try
+            {
+                core.Log("KERNEL: loaded writer thread");
+                while (running)
+                {
+                    try
+                    {
+                        Thread.Sleep(2000);
+                        if (Data.Count > 0)
+                        {
+                            WriteData();
+                        }
+                    }
+                    catch (ThreadAbortException)
+                    {
+                        running = false;
+                        break;
+                    }
+                    catch (Exception fail)
+                    {
+                        core.handleException(fail);
+                    }
+                }
+                if (Data.Count > 0)
+                {
+                    core.Log("KERNEL: Writer thread was requested to stop, but there is still some data to write");
+                    WriteData();
+                    core.Log("No remaining data, stopping writer thread");
+                    return;
+                }
+                else
+                {
+                    core.Log("No remaining data, stopping writer thread");
+                    return;
+                }
+            }
+            catch (Exception fail)
+            {
+                core.handleException(fail);
+                core.Log("KERNEL: The writer thread was terminated", true);
+                return;
+            }
+        }
+    }
+
+
     public class variables
     {
         /// <summary>
@@ -61,6 +182,7 @@ namespace wmib
         public static bool disabled;
         public static bool exit = false;
         public static IRC irc;
+        public static Thread WriterThread = null;
         public static Dictionary<Module, AppDomain> Domains = new Dictionary<Module, AppDomain>();
         private static List<user> User = new List<user>();
         private static Dictionary<string, string> HelpData = new Dictionary<string, string>();
@@ -143,6 +265,14 @@ namespace wmib
                     core.handleException(fail);
                 }
                 return 0;
+            }
+        }
+
+        public static void TrafficLog(string text)
+        {
+            if (config.Logging)
+            { 
+                StorageWriter.InsertLine("trafficlog.dat", DateTime.Now.ToString() + ": " + text, false);
             }
         }
 
@@ -531,7 +661,7 @@ namespace wmib
                                 config.channels.Add(new config.channel(channel));
                             }
                             config.Save();
-                            irc.wd.WriteLine("JOIN " + channel);
+                            irc.SendData("JOIN " + channel);
                             irc.wd.Flush();
                             Thread.Sleep(100);
                             config.channel Chan = getChannel(channel);
@@ -573,7 +703,7 @@ namespace wmib
                 {
                     if (chan.Users.isApproved(user, host, "admin"))
                     {
-                        irc.wd.WriteLine("PART " + chan.Name + " :" + "dropped by " + user + " from " + origin);
+                        irc.SendData("PART " + chan.Name + " :" + "dropped by " + user + " from " + origin);
                         Program.Log("Dropped " + chan.Name + " dropped by " + user + " from " + origin);
                         Thread.Sleep(100);
                         irc.wd.Flush();
@@ -637,7 +767,7 @@ namespace wmib
                 {
                     if (chan.Users.isApproved(user, host, "admin"))
                     {
-                        irc.wd.WriteLine("PART " + chan.Name + " :" + "removed by " + user + " from " + origin);
+                        irc.SendData("PART " + chan.Name + " :" + "removed by " + user + " from " + origin);
                         Program.Log("Removed " + chan.Name + " removed by " + user + " from " + origin);
                         Thread.Sleep(100);
                         irc.wd.Flush();
@@ -873,6 +1003,34 @@ namespace wmib
                 }
                 irc._SlowQueue.DeliverMessage(messages.get("usr1", chan.Language, new List<string> { current.level, current.name }), chan.Name);
                 return;
+            }
+
+            if (message == "@traffic-off")
+            {
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
+                {
+                    config.Logging = false;
+                    irc._SlowQueue.DeliverMessage("Logging stopped", chan.Name);
+                    return;
+                }
+                if (!chan.suppress_warnings)
+                {
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                }
+            }
+
+            if (message == "@traffic-on")
+            {
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
+                {
+                    config.Logging = true;
+                    irc._SlowQueue.DeliverMessage("Logging traf", chan.Name);
+                    return;
+                }
+                if (!chan.suppress_warnings)
+                {
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                }
             }
 
             if (message == "@restart")
@@ -1182,8 +1340,9 @@ namespace wmib
                 irc.wd.Close();
                 irc.rd.Close();
                 irc._SlowQueue.Exit();
+                StorageWriter.running = false;
                 Thread modules = new Thread(Terminate);
-                modules.Name = "Core helper shutdown thread";
+                modules.Name = "KERNEL: Core helper shutdown thread";
                 modules.Start();
                 Program.Log("Giving grace time for all modules to finish ok");
                 int kill = 0;
@@ -1192,8 +1351,26 @@ namespace wmib
                     kill++;
                     if (Module.module.Count == 0)
                     {
-                        Program.Log("Modules are all down");
-                        Program.Log("Terminated");
+                        Program.Log("KERNEL: Modules are all down");
+                        if (WriterThread.ThreadState == ThreadState.Running || WriterThread.ThreadState == ThreadState.WaitSleepJoin)
+                        {
+                            Log("KERNEL: Writer thread didn't shut down gracefully, waiting 2 seconds", true);
+                            Thread.Sleep(2000);
+                            if (WriterThread.ThreadState == ThreadState.Running || WriterThread.ThreadState == ThreadState.WaitSleepJoin)
+                            {
+                                Log("KERNEL: Writer thread didn't shut down gracefully, killing", true);
+                                WriterThread.Abort();
+                            }
+                            else
+                            {
+                                Log("KERNEL: Writer thread is shut down", true);
+                            }
+                        }
+                        else
+                        {
+                            Log("KERNEL: Writer thread is down ok");
+                        }
+                        Program.Log("KERNEL: Terminated");
                         System.Diagnostics.Process.GetCurrentProcess().Kill();
                         break;
                     }

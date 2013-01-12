@@ -595,13 +595,14 @@ namespace wmib
 
         public static string path_txt = "log";
 
+        public static bool Logging = false;
 
         public static string path_htm = "html";
 
         /// <summary>
         /// Version
         /// </summary>
-        public static string version = "wikimedia bot v. 1.10.6.0";
+        public static string version = "wikimedia bot v. 1.10.6.8";
 
         /// <summary>
         /// Separator
