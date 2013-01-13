@@ -42,7 +42,7 @@ namespace wmib
         {
             try
             {
-                System.IO.File.AppendAllText(item.file, item.line);
+                System.IO.File.AppendAllText(item.file, item.line + "\n");
                 return true;
             }
             catch (Exception crashed)
