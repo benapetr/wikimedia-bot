@@ -505,12 +505,12 @@ namespace wmib
             }
             HTML += "<h4>Rss feed</h4><br>";
             HTML += "\n<br>\n<h4>Rss</h4>\n<br>\n\n<table class=\"infobot\" width=100% border=1>";
-            HTML += "<tr><th>Name</th><th>URL</th><th>Enabled</th></tr>";
+            HTML += "<tr><th>Name</th><th>URL</th><th>Text</th><th>Enabled</th></tr>";
             lock (list.Content)
             {
                 foreach (Feed.item feed in list.Content)
                 {
-                    HTML += "\n<tr><td>" + feed.name + "</td><td><a href=\"" + feed.URL + "\">" + feed.URL + "</a></td><td>" + (!feed.disabled).ToString() + "</td></tr>";
+                    HTML += "\n<tr><td>" + feed.name + "</td><td><a href=\"" + feed.URL + "\">" + feed.URL + "</a></td><td>" + feed.message + "</td><td>" + (!feed.disabled).ToString() + "</td></tr>";
                 }
             }
             HTML += "</table>\n";
@@ -868,7 +868,7 @@ namespace wmib
                 {
                     rm.message = temp;
                     Save();
-                    core.irc._SlowQueue.DeliverMessage("Item now has a different style you can restore default style by removing this value", owner.Name);
+                    core.irc._SlowQueue.DeliverMessage("Item now has a different style you can restore the default style by removing this value", owner.Name);
                     return;
                 }
             }
