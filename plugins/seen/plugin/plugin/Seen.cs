@@ -14,7 +14,7 @@ namespace wmib
         {
             Name = "SEEN";
             start = true;
-            Version = "2.0.8";
+            Version = "2.1.6";
             return true;
         }
 
@@ -547,6 +547,11 @@ namespace wmib
             return null;
         }
 
+        public override void Hook_AfterSysWeb(ref string html)
+        {
+            html += "<br><p>Seen data: " + global.Count.ToString() + "</p>";
+        }
+
         public void RetrieveStatus2(string nick, config.channel channel, string source)
         {
             string response = "I have never seen " + nick;
@@ -704,6 +709,7 @@ namespace wmib
                     if (curr.newnick  != "")
                     { 
                         newn = stat.CreateAttribute("newnick");
+                        stat.Value = curr.newnick;
                     }
                     date.Value = curr.LastSeen.ToBinary().ToString();
                     action.Value = "Exit";

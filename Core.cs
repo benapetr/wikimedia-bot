@@ -1475,10 +1475,6 @@ namespace wmib
                 Register("logoff", null);
                 Register("recentchanges-on", null);
                 Register("recentchanges-off", null);
-                Register("rss-on", null);
-                Register("rss-off", null);
-                Register("rss+", null);
-                Register("rss-", null);
                 Register("statistics-reset", null);
                 Register("statistics-off", null);
                 Register("statistics-on", null);
