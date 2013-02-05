@@ -709,7 +709,7 @@ namespace wmib
                     if (curr.newnick  != "")
                     { 
                         newn = stat.CreateAttribute("newnick");
-                        stat.Value = curr.newnick;
+                        newn.Value = curr.newnick;
                     }
                     date.Value = curr.LastSeen.ToBinary().ToString();
                     action.Value = "Exit";
