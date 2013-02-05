@@ -14,7 +14,7 @@ namespace wmib
         {
             Name = "SEEN";
             start = true;
-            Version = "2.1.6";
+            Version = "2.1.8";
             return true;
         }
 
@@ -547,7 +547,7 @@ namespace wmib
             return null;
         }
 
-        public override void Hook_AfterSysWeb(ref string html)
+        public override void Hook_BeforeSysWeb(ref string html)
         {
             html += "<br><p>Seen data: " + global.Count.ToString() + "</p>";
         }

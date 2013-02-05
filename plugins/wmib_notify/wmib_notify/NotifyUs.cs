@@ -117,6 +117,11 @@ namespace wmib
                         core.irc._SlowQueue.DeliverMessage("I doubt that anyone could have such a nick '" + parameter + "'", user.Nick, IRC.priority.low);
                         return true;
                     }
+                    if (Notification.Contains(parameter, user.Nick))
+                    {
+                        core.irc._SlowQueue.DeliverMessage("You already requested this user to be watched", user.Nick, IRC.priority.low);
+                        return true;
+                    }
                     lock (config.channels)
                     {
                         foreach (config.channel item in config.channels)
@@ -124,6 +129,10 @@ namespace wmib
                             if (item.containsUser(parameter))
                             {
                                 core.irc._SlowQueue.DeliverMessage("This user is now online in " + item.Name + " so I will let you know when they show some activity (talk etc)", user.Nick, IRC.priority.low);
+                                lock (Notification.NotificationList)
+                                {
+                                    Notification.NotificationList.Add(new Notification(parameter, user.Nick, user.Host));
+                                }
                                 return true;
                             }
                         }
@@ -137,6 +146,11 @@ namespace wmib
                 }
             }
             return false;
+        }
+
+        public override void Hook_BeforeSysWeb(ref string html)
+        {
+            html += "<br>\nNotifications: " + Notification.NotificationList.Count.ToString() + "<br>\n";
         }
 
         public static bool isValid(string name)

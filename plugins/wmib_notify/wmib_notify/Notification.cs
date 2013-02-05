@@ -11,8 +11,8 @@
 // Created by Petr Bena
 
 using System;
+using System.IO;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace wmib
@@ -31,10 +31,6 @@ namespace wmib
             Source_Host = Host;
             Source_Name = Source;
             Expiry = DateTime.Now.AddDays(20);
-            lock (NotificationList)
-            {
-                NotificationList.Add(this);
-            }
         }
 
         public static Notification RetrieveTarget(string Target)
@@ -51,6 +47,26 @@ namespace wmib
                 }
             }
             return null;
+        }
+
+        public static bool Contains(string Target, string Source)
+        {
+            Target = Target.ToUpper();
+            Source = Source.ToUpper();
+            lock (NotificationList)
+            {
+                foreach (Notification x in NotificationList)
+                {
+                    if (x._User.ToUpper() == Target)
+                    {
+                        if (Source == x.Source_Name.ToUpper())
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         public static void RemoveOld()
