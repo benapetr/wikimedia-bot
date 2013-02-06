@@ -23,7 +23,7 @@ namespace wmib
         {
             Name = "Notifications";
             start = true;
-            Version = "1.0.0.0";
+            Version = "1.0.12.0";
             return true;
         }
 
@@ -63,6 +63,15 @@ namespace wmib
                 }
                 result = Notification.RetrieveTarget(OldNick);
             }
+            if (Target.Nick.ToLower() != OldNick.ToLower())
+            {
+                result = Notification.RetrieveSource(OldNick);
+                while (result != null)
+                {
+                    result.Source_Name = Target.Nick;
+                    result = Notification.RetrieveSource(OldNick);
+                }
+            }
         }
 
         public override void Hook_Kick(config.channel channel, User source, User user)
@@ -90,6 +99,62 @@ namespace wmib
                     Notification.NotificationList.Remove(result);
                 }
                 result = Notification.RetrieveTarget(invoker.Nick);
+            }
+
+            if (message.StartsWith("@notify "))
+            {
+                string parameter = "";
+                parameter = message.Substring(message.IndexOf(" ") + 1);
+                if (parameter != "")
+                {
+                    if (!isValid(parameter))
+                    {
+                        core.irc._SlowQueue.DeliverMessage("I doubt that anyone could have such a nick '" + parameter + "'", channel, IRC.priority.low);
+                        return;
+                    }
+                    if (Notification.Contains(parameter, invoker.Nick))
+                    {
+                        core.irc._SlowQueue.DeliverMessage("You already requested this user to be watched", channel, IRC.priority.low);
+                        return;
+                    }
+                    lock (config.channels)
+                    {
+                        foreach (config.channel item in config.channels)
+                        {
+                            if (item.containsUser(parameter))
+                            {
+                                core.irc._SlowQueue.DeliverMessage("This user is now online in " + item.Name + " so I will let you know when they show some activity (talk etc)", channel, IRC.priority.low);
+                                lock (Notification.NotificationList)
+                                {
+                                    Notification.NotificationList.Add(new Notification(parameter, invoker.Nick, invoker.Host));
+                                }
+                                return;
+                            }
+                        }
+                    }
+                    lock (Notification.NotificationList)
+                    {
+                        Notification.NotificationList.Add(new Notification(parameter, invoker.Nick, invoker.Host));
+                    }
+                    core.irc._SlowQueue.DeliverMessage("I will notify you, when I see " + parameter + " around here", channel, IRC.priority.low);
+                    return;
+                }
+            }
+        }
+
+        public override void Hook_Quit(User user, string Message)
+        {
+            Notification result = Notification.RetrieveSource(user.Nick);
+            while (result != null)
+            {
+                lock (Notification.NotificationList)
+                {
+                    if (Notification.NotificationList.Contains(result))
+                    { 
+                        Notification.NotificationList.Remove(result);
+                    }
+                }
+                result = Notification.RetrieveSource(user.Nick);
             }
         }
 
@@ -150,7 +215,7 @@ namespace wmib
 
         public override void Hook_BeforeSysWeb(ref string html)
         {
-            html += "<br>\nNotifications: " + Notification.NotificationList.Count.ToString() + "<br>\n";
+            html += "<br>\nNotifications: " + Notification.NotificationList.Count.ToString() + "\n";
         }
 
         public static bool isValid(string name)

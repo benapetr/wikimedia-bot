@@ -49,6 +49,22 @@ namespace wmib
             return null;
         }
 
+        public static Notification RetrieveSource(string Source)
+        {
+            string target = Source.ToLower();
+            lock (NotificationList)
+            {
+                foreach (Notification x in NotificationList)
+                {
+                    if (x.Source_Name.ToLower() == target)
+                    {
+                        return x;
+                    }
+                }
+            }
+            return null;
+        }
+
         public static bool Contains(string Target, string Source)
         {
             Target = Target.ToUpper();
