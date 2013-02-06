@@ -27,6 +27,12 @@ namespace wmib
             return true;
         }
 
+        public override bool Hook_OnUnload()
+        {
+            core.Help.Unregister("notify");
+            return true;
+        }
+
         public override void Hook_Join(config.channel channel, User user)
         {
             Notification result = Notification.RetrieveTarget(user.Nick);
@@ -228,6 +234,12 @@ namespace wmib
             {
                 return false;
             }
+            return true;
+        }
+
+        public override bool Hook_OnRegister()
+        {
+            core.Help.Register("notify", "inform you when specified user become active or join some channel in private message");
             return true;
         }
 
