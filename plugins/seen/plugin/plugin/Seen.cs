@@ -14,7 +14,7 @@ namespace wmib
         {
             Name = "SEEN";
             start = true;
-            Version = "2.1.8";
+            Version = "2.2.0.6";
             return true;
         }
 
@@ -486,6 +486,10 @@ namespace wmib
             {
                 return;
             }
+            catch (Exception fail)
+            {
+                core.handleException(fail);
+            }
         }
 
         public void RegEx2(string nick, config.channel channel, string source)
@@ -584,6 +588,11 @@ namespace wmib
                             action = "kicked from the channel";
                             break;
                         case item.Action.Nick:
+                            if (xx.newnick == null)
+                            {
+                                action = "error NULL pointer at record";
+                                break;
+                            }
                             action = "changing the nickname to " + xx.newnick;
                             last = core.getChannel(xx.lastplace);
                             if (last.containsUser(xx.newnick))
