@@ -317,7 +317,7 @@ namespace wmib
                                 continue;
                             }
                             found = true;
-                            config.channel last;
+                            config.channel last = null;
                             switch (xx.LastAc)
                             {
                                 case item.Action.Join:
@@ -402,6 +402,10 @@ namespace wmib
                                     break;
                             }
                             TimeSpan span2 = DateTime.Now - xx.LastSeen;
+                            if (xx.lastplace == null)
+                            {
+                                xx.lastplace = "N/A";
+                            }
                             if (xx.LastAc == item.Action.Exit)
                             {
                                 response = "Last time I saw " + xx.nick + " they were " + action + " at " + xx.LastSeen.ToString() + " (" + span2.ToString() + " ago)";
