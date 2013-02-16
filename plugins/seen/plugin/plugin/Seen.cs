@@ -14,7 +14,7 @@ namespace wmib
         {
             Name = "SEEN";
             start = true;
-            Version = "2.2.0.6";
+            Version = "2.2.1.9";
             return true;
         }
 
@@ -342,33 +342,35 @@ namespace wmib
                                     if (xx.newnick == null)
                                     {
                                         action = "error NULL pointer at record";
-                                        break;
-                                    }
-                                    action = "changing the nickname to " + xx.newnick;
-                                    last = core.getChannel(xx.lastplace);
-                                    if (last.containsUser(xx.newnick))
-                                    {
-                                        action += " and " + xx.newnick + " is still in the channel";
                                     }
                                     else
                                     {
-                                        action += ", but " + xx.newnick + " is no longer in channel";
-                                    }
-                                    item nick = getItem(xx.newnick);
-                                    if (nick != null)
-                                    {
-                                        TimeSpan span3 = DateTime.Now - nick.LastSeen;
-                                        switch (nick.LastAc)
-                                        { 
-                                            case item.Action.Exit:
-                                                action += " because he quitted the network " + span3.ToString() + " ago. The nick change was done in";
-                                                break;
-                                            case item.Action.Kick:
-                                                action += " because he was kicked from the channel " + span3.ToString() + " ago. The nick change was done in";
-                                                break;
-                                            case item.Action.Part:
-                                                action += " because he left the channel " + span3.ToString() + " ago. The nick change was done in";
-                                                break;
+                                        action = "changing the nickname to " + xx.newnick;
+                                        last = core.getChannel(xx.lastplace);
+                                        if (last.containsUser(xx.newnick))
+                                        {
+                                            action += " and " + xx.newnick + " is still in the channel";
+                                        }
+                                        else
+                                        {
+                                            action += ", but " + xx.newnick + " is no longer in channel";
+                                        }
+                                        item nick = getItem(xx.newnick);
+                                        if (nick != null)
+                                        {
+                                            TimeSpan span3 = DateTime.Now - nick.LastSeen;
+                                            switch (nick.LastAc)
+                                            {
+                                                case item.Action.Exit:
+                                                    action += " because he quitted the network " + span3.ToString() + " ago. The nick change was done in";
+                                                    break;
+                                                case item.Action.Kick:
+                                                    action += " because he was kicked from the channel " + span3.ToString() + " ago. The nick change was done in";
+                                                    break;
+                                                case item.Action.Part:
+                                                    action += " because he left the channel " + span3.ToString() + " ago. The nick change was done in";
+                                                    break;
+                                            }
                                         }
                                     }
                                     break;
@@ -729,7 +731,7 @@ namespace wmib
                         XmlAttribute newn = null;
                         XmlAttribute quit = stat.CreateAttribute("reason");
                         quit.Value = curr.quit;
-                        if (curr.newnick != "")
+                        if (curr.newnick != null && curr.newnick != "")
                         {
                             newn = stat.CreateAttribute("newnick");
                             newn.Value = curr.newnick;
@@ -760,7 +762,7 @@ namespace wmib
                         db.Attributes.Append(last);
                         db.Attributes.Append(action);
                         db.Attributes.Append(date);
-                        if (newn != null)
+                        if (newn != null && curr.newnick != "")
                         {
                             db.Attributes.Append(newn);
                         }
