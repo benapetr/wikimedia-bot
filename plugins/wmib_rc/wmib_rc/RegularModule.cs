@@ -333,7 +333,7 @@ namespace wmib
                                         string link = Edit.Groups[4].Value;
                                         string username = Edit.Groups[6].Value;
                                         string change = Edit.Groups[7].Value;
-                                        string summary = Edit.Groups[8].Value;
+                                        string summary = "[" + change + "] " + Edit.Groups[8].Value;
 
                                         lock (RecentChanges.rc)
                                         {
@@ -425,15 +425,20 @@ namespace wmib
             switch (config)
             {
                 case "recent-changes-template":
-                    if (value != "")
+                    if (value != "null")
                     {
                         Module.SetConfig(chan, "RC.Template", value);
                         core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
                         chan.SaveConfig();
                         return true;
                     }
-                    core.irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
-                    return true;
+                    else
+                    {
+                        Module.SetConfig(chan, "RC.Template", "");
+                        core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { "null", config }), chan.Name);
+                        chan.SaveConfig();
+                        return true;
+                    }
             }
             return false;
         }
