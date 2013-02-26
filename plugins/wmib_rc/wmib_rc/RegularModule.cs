@@ -273,8 +273,18 @@ namespace wmib
         {
             Name = "RC";
             start = true;
-            Version = "1.1.0.60";
+            Version = "1.1.2.0";
             return true;
+        }
+
+        public string Format(string name_url, string url, string page, string username, string link, string summary, config.channel chan)
+        { 
+            if (GetConfig(chan, "RC.Template", "") == "")
+            {
+                return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "" + username + "", url + "?diff=" + link, summary });
+            }
+
+            return GetConfig(chan, "RC.Template", "").Replace("$wiki", name_url).Replace("$url", url).Replace("$link", link).Replace("$username", username).Replace("$page", page).Replace("$summary", summary);
         }
 
         public override void Load()
@@ -348,7 +358,7 @@ namespace wmib
                                                                                 core.Log("NULL pointer on idata 1", true);
                                                                             }
                                                                             core.irc._SlowQueue.DeliverMessage(
-                                                                                messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
+                                                                               Format(w.URL.name, w.URL.url, page, username, link, summary, curr.channel), curr.channel.Name, IRC.priority.low);
                                                                         }
                                                                         else
                                                                             if (w.Page.EndsWith("*"))
@@ -360,7 +370,7 @@ namespace wmib
                                                                                         core.Log("NULL pointer on idata 2", true);
                                                                                     }
                                                                                     core.irc._SlowQueue.DeliverMessage(
-                                                                                    messages.get("fl", curr.channel.Language, new List<string> { "12" + w.URL.name + "", "" + page + "", "" + username + "", w.URL.url + "?diff=" + link, summary }), curr.channel.Name, IRC.priority.low);
+                                                                                    Format(w.URL.name, w.URL.url, page, username, link, summary, curr.channel), curr.channel.Name, IRC.priority.low);
                                                                                 }
                                                                             }
                                                                     }
@@ -408,6 +418,24 @@ namespace wmib
             {
                 return;
             }
+        }
+
+        public override bool Hook_SetConfig(config.channel chan, User invoker, string config, string value)
+        {
+            switch (config)
+            {
+                case "recent-changes-template":
+                    if (value != "")
+                    {
+                        Module.SetConfig(chan, "RC.Template", value);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
+                        chan.SaveConfig();
+                        return true;
+                    }
+                    core.irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
+                    return true;
+            }
+            return false;
         }
     }
 }
