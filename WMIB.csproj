@@ -41,10 +41,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\Admin.cs" />
-    <Compile Include="Channels_Core.cs" />
+    <Compile Include="System\Channels_Core.cs" />
     <Compile Include="Commands\Permissions.cs" />
     <Compile Include="Config.cs" />
-    <Compile Include="Core.cs" />
+    <Compile Include="System\Core.cs" />
     <Compile Include="IRCcln.cs" />
     <Compile Include="Irctrust.cs" />
     <Compile Include="l10n.cs" />
@@ -57,8 +57,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Regex_Core.cs" />
-    <Compile Include="StorageWriter.cs" />
+    <Compile Include="System\Regex_Core.cs" />
+    <Compile Include="System\StorageWriter.cs" />
     <Compile Include="UserInfo.cs" />
   </ItemGroup>
   <ItemGroup>
