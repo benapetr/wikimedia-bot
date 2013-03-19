@@ -26,9 +26,17 @@ namespace wmib
             /// Channel name
             /// </summary>
             public string Name;
+
+            /// <summary>
+            /// Language
+            /// </summary>
             public string Language;
 
-            public List<User> ul = new List<User>();
+            /// <summary>
+            /// List of users
+            /// </summary>
+            public List<User> UserList = new List<User>();
+            
             public bool FreshList = false;
 
             /// <summary>
@@ -36,20 +44,38 @@ namespace wmib
             /// </summary>
             public string LogDir;
 
+            /// <summary>
+            /// List of channels that have shared infobot db
+            /// </summary>
             public List<string> SharedChans = new List<string>();
 
             public Dictionary<string, object> ExtensionObjects = new Dictionary<string, object>();
 
             private Dictionary<string, string> ExtensionData = new Dictionary<string, string>();
 
-            public bool suppress;
+            /// <summary>
+            /// If messages aren't sent
+            /// </summary>
+            public bool suppress = false;
 
+            /// <summary>
+            /// List of ignored names for infobot
+            /// </summary>
             public List<string> Infobot_IgnoredNames = new List<string>();
 
+            /// <summary>
+            /// Wait time between responses to users who try to speak to the bot
+            /// </summary>
             public int respond_wait = 120;
 
+            /// <summary>
+            /// Whether bot should respond to users who think that the bot is user and speak to him
+            /// </summary>
             public bool respond_message = false;
 
+            /// <summary>
+            /// Time of last message received in channel
+            /// </summary>
             public System.DateTime last_msg = System.DateTime.Now;
 			
             /// <summary>
@@ -62,18 +88,24 @@ namespace wmib
             /// <summary>
             /// Configuration text
             /// </summary>
-            private string conf;
+            private string conf = null;
 
             public bool ignore_unknown = false;
 
-            public string shared;
+            /// <summary>
+            /// Target db of shared infobot - deprecated
+            /// </summary>
+            public string shared = null;
 
-            public List<config.channel> sharedlink;
+            /// <summary>
+            /// List of channels we share db with
+            /// </summary>
+            public List<config.channel> sharedlink = null;
 
             /// <summary>
             /// Users
             /// </summary>
-            public IRCTrust Users;
+            public IRCTrust Users = null;
 
             /// <summary>
             /// Add a line to config
@@ -325,7 +357,7 @@ namespace wmib
             public bool containsUser(string name)
             {
                 name = name.ToUpper();
-                foreach (User us in ul)
+                foreach (User us in UserList)
                 {
                     if (name == us.Nick.ToUpper())
                     {
@@ -602,7 +634,7 @@ namespace wmib
         /// <summary>
         /// Version
         /// </summary>
-        public static string version = "wikimedia bot v. 1.10.6.8";
+        public static string version = "wikimedia bot v. 1.10.6.10";
 
         /// <summary>
         /// Separator

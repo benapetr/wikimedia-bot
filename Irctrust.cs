@@ -18,11 +18,11 @@ namespace wmib
     [Serializable()]
     public class IRCTrust
     {
-        private List<core.user> GlobalUsers = new List<core.user>();
+        private List<core.SystemUser> GlobalUsers = new List<core.SystemUser>();
         /// <summary>
         /// List of all users in a channel
         /// </summary>
-        private List<core.user> Users = new List<core.user>();
+        private List<core.SystemUser> Users = new List<core.SystemUser>();
 
         /// <summary>
         /// Channel this class belong to
@@ -63,7 +63,7 @@ namespace wmib
                     string[] info = x.Split(Char.Parse(config.separator));
                     string level = info[1];
                     string name = core.decode2(info[0]);
-                    Users.Add(new core.user(level, name));
+                    Users.Add(new core.SystemUser(level, name));
                 }
             }
             string[] dba = System.IO.File.ReadAllLines(variables.config + "/" + "admins");
@@ -75,7 +75,7 @@ namespace wmib
                     string[] info = x.Split(Char.Parse(config.separator));
                     string level = info[1];
                     string name = core.decode2(info[0]);
-                    GlobalUsers.Add(new core.user(level, name));
+                    GlobalUsers.Add(new core.SystemUser(level, name));
                 }
             }
         }
@@ -90,7 +90,7 @@ namespace wmib
             try
             {
                 System.IO.File.WriteAllText(File, "");
-                foreach (core.user u in Users)
+                foreach (core.SystemUser u in Users)
                 {
                     System.IO.File.AppendAllText(File, core.encode2(u.name) + config.separator + u.level + "\n");
                 }
@@ -123,14 +123,14 @@ namespace wmib
             {
                 return false;
             }
-            foreach (core.user u in Users)
+            foreach (core.SystemUser u in Users)
             {
                 if (u.name == user)
                 {
                     return false;
                 }
             }
-            Users.Add(new core.user(level, user));
+            Users.Add(new core.SystemUser(level, user));
             Save();
             return true;
         }
@@ -140,7 +140,7 @@ namespace wmib
         /// </summary>
         /// <param name="user">Regex</param>
         /// <returns>bool</returns>
-        public bool delUser(core.user trusted, string user)
+        public bool delUser(core.SystemUser trusted, string user)
         {
             config.channel channel = core.getChannel(_Channel);
             if (channel == null)
@@ -148,7 +148,7 @@ namespace wmib
                 core.irc._SlowQueue.DeliverMessage("Error: unable to get pointer of current channel", _Channel);
                 return false;
             }
-            foreach (core.user u in Users)
+            foreach (core.SystemUser u in Users)
             {
                 if (u.name == user)
                 {
@@ -197,11 +197,11 @@ namespace wmib
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public core.user getUser(string user)
+        public core.SystemUser getUser(string user)
         {
-            core.user lv = new core.user("null", "");
+            core.SystemUser lv = new core.SystemUser("null", "");
             int current = 0;
-            foreach (core.user b in GlobalUsers)
+            foreach (core.SystemUser b in GlobalUsers)
             {
                 core.RegexCheck id = new core.RegexCheck(b.name, user);
                 if (id.IsMatch() == 1)
@@ -213,7 +213,7 @@ namespace wmib
                     }
                 }
             }
-            foreach (core.user b in Users)
+            foreach (core.SystemUser b in Users)
             {
                 core.RegexCheck id = new core.RegexCheck(b.name, user);
                 if (id.IsMatch() == 1)
@@ -240,7 +240,7 @@ namespace wmib
                 return;
             }
             string users_ok = "";
-            foreach (core.user b in Users)
+            foreach (core.SystemUser b in Users)
             {
                 users_ok += " " + b.name + " (2" + b.level + ")" + ",";
             }
@@ -279,7 +279,7 @@ namespace wmib
         /// <returns></returns>
         public bool isApproved(string User, string Host, string command)
         {
-            core.user current = getUser(User + "!@" + Host);
+            core.SystemUser current = getUser(User + "!@" + Host);
             if (current.level == "null")
             {
                 return false;

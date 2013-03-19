@@ -56,7 +56,7 @@ namespace wmib
                 config.channel channel = core.getChannel(code[3]);
                 if (channel != null)
                 {
-                    Program.Log("Finished parsing for " + channel.Name + " parsed totaly: " + channel.ul.Count.ToString());
+                    Program.Log("Finished parsing for " + channel.Name + " parsed totaly: " + channel.UserList.Count.ToString());
                     channel.FreshList = true;
                 }
             }
@@ -82,10 +82,10 @@ namespace wmib
                     if (!channel.containsUser(nick))
                     {
                         User _user = new User(nick, host, ident);
-                        channel.ul.Add(_user);
+                        channel.UserList.Add(_user);
                         return true;
                     }
-                    foreach (User u in channel.ul)
+                    foreach (User u in channel.UserList)
                     {
                         if (u.Nick == nick)
                         {
@@ -112,9 +112,9 @@ namespace wmib
                     {
                         if (!channel.containsUser(user) && user != "")
                         {
-                            lock (channel.ul)
+                            lock (channel.UserList)
                             {
-                                channel.ul.Add(new User(user, "", ""));
+                                channel.UserList.Add(new User(user, "", ""));
                             }
                         }
                     }
@@ -141,9 +141,9 @@ namespace wmib
             string _new = value;
             foreach (config.channel item in config.channels)
             {
-                lock (item.ul)
+                lock (item.UserList)
                 {
-                    foreach (User curr in item.ul)
+                    foreach (User curr in item.UserList)
                     {
                         if (curr.Nick == nick)
                         {
@@ -213,9 +213,9 @@ namespace wmib
                 User delete = null;
                 if (channel.containsUser(user))
                 {
-                    lock (channel.ul)
+                    lock (channel.UserList)
                     {
-                        foreach (User User in channel.ul)
+                        foreach (User User in channel.UserList)
                         {
                             if (User.Nick == user)
                             {
@@ -223,7 +223,7 @@ namespace wmib
                                 break;
                             }
                         }
-                        channel.ul.Remove(delete);
+                        channel.UserList.Remove(delete);
                     }
                     return true;
                 }
@@ -271,9 +271,9 @@ namespace wmib
             foreach (config.channel item in config.channels)
             {
                 User target = null;
-                lock (item.ul)
+                lock (item.UserList)
                 {
-                    foreach (User curr in item.ul)
+                    foreach (User curr in item.UserList)
                     {
                         if (curr.Nick == user)
                         {
@@ -284,9 +284,9 @@ namespace wmib
                 }
                 if (target != null)
                 {
-                    lock (item.ul)
+                    lock (item.UserList)
                     {
-                        item.ul.Remove(target);
+                        item.UserList.Remove(target);
                     }
                 }
             }
@@ -330,9 +330,9 @@ namespace wmib
                 if (channel.containsUser(user))
                 {
                     User delete = null;
-                    lock (channel.ul)
+                    lock (channel.UserList)
                     {
-                        foreach (User _user in channel.ul)
+                        foreach (User _user in channel.UserList)
                         {
                             if (_user.Nick == user)
                             {
@@ -342,7 +342,7 @@ namespace wmib
                         }
                         if (delete != null)
                         {
-                            channel.ul.Remove(delete);
+                            channel.UserList.Remove(delete);
                         }
                     }
                 }
@@ -389,9 +389,9 @@ namespace wmib
                 }
                 if (!channel.containsUser(user))
                 {
-                    lock (channel.ul)
+                    lock (channel.UserList)
                     {
-                        channel.ul.Add(new User(user, _host, _ident));
+                        channel.UserList.Add(new User(user, _host, _ident));
                     }
                 }
                 return true;
