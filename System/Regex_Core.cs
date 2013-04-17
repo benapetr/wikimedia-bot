@@ -19,7 +19,6 @@ using System.IO;
 
 namespace wmib
 {
-    [Serializable()]
     public partial class core : MarshalByRefObject
     {
         public class RegexCheck
