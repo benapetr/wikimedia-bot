@@ -19,7 +19,12 @@ namespace wmib
 
         public string WaitingTime()
         {
-            return (DateTime.Now - time).TotalMinutes.ToString() + " minutes";
+            string text = (DateTime.Now - time).TotalMinutes.ToString();
+            if (text.Contains("."))
+            {
+                text = text.Substring(0, text.IndexOf("."));
+            }
+            return text + " minutes";
         }
     }
 
@@ -43,6 +48,18 @@ namespace wmib
             return null;
         }
 
+        public RequestLabs getUser(string user, ref List<RequestLabs> list)
+        {
+            foreach (RequestLabs r in list)
+            {
+                if (r.user == user)
+                {
+                    return r;
+                }
+            }
+            return null;
+        }
+
         public override bool Construct()
         {
             Name = "Requests";
@@ -61,13 +78,13 @@ namespace wmib
                 foreach (RequestLabs u in DB)
                 {
                     displayed++;
-                    info += u.user + "(waiting " + u.WaitingTime() + ") ";
+                    info += u.user + " (waiting " + u.WaitingTime() + ") ";
                     if (info.Length > 160)
                     {
                         break;
                     }
                 }
-                info = "Warning: There are " + requestCount.ToString() + " users waiting for shell requests, displaying last " + displayed.ToString() + ": " + info;
+                info = "Warning: There are " + requestCount.ToString() + " users waiting for shell, displaying last " + displayed.ToString() + ": " + info;
                 core.irc._SlowQueue.DeliverMessage(info, "#wikimedia-labs");
             }
         }
@@ -83,7 +100,14 @@ namespace wmib
                     {
                         DisplayWaiting();
                     }
-                    Thread.Sleep(200000);
+                    if (DB.Count > 0)
+                    {
+                        Thread.Sleep(800000);
+                    }
+                    else
+                    {
+                        Thread.Sleep(20000);
+                    }
                 }
             }
             catch (ThreadAbortException)
@@ -101,10 +125,17 @@ namespace wmib
             try
             {
                 RequestCache.Load();
+                notifications = new Thread(Run);
+                notifications.Start();
                 while (true)
                 {
                     try
                     {
+                        List<RequestLabs> delete = new List<RequestLabs>();
+                        lock (DB)
+                        {
+                            delete.AddRange(DB);
+                        }
                         Site wikitech = new Site("https://wikitech.wikimedia.org", "wmib", "");
                         PageList requests = new PageList(wikitech);
                         requests.FillAllFromCategory("Shell Access Requests");
@@ -116,7 +147,7 @@ namespace wmib
                                 continue;
                             }
                             page.Load();
-                            if (!page.text.Contains("|Completed=No"))
+                            if (!(page.text.Contains("|Completed=No") || page.text.Contains("|Completed=false")))
                             {
                                 RequestCache.Insert(title);
                                 lock (DB)
@@ -133,12 +164,28 @@ namespace wmib
                             {
                                 lock (DB)
                                 {
+                                    // we don't want to remove request that is still active
+                                    RequestLabs xx = getUser(title, ref delete);
+                                    if (xx != null)
+                                    {
+                                        delete.Remove(xx);
+                                    }
                                     if (Contains(title) == null)
                                     {
                                         DB.Add(new RequestLabs(title));
                                     }
                                 }
-                                core.Log("request inserted: " + title);
+                            }
+                            // now we need to remove all processed requests that were in a list
+                            lock (DB)
+                            {
+                                foreach (RequestLabs r in delete)
+                                {
+                                    if (DB.Contains(r))
+                                    {
+                                        DB.Remove(r);
+                                    }
+                                }
                             }
                         }
                         Thread.Sleep(60000);

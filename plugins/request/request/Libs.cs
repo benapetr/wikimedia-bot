@@ -479,15 +479,12 @@ namespace DotNetWikiBot
 
         public void GetPaths()
         {
-
+            ServicePointManager.ServerCertificateValidationCallback = delegate
+            { return true; }; // WARNING: accepts all SSL certificates
             if (!site.StartsWith("http"))
-
                 site = "http://" + site;
-
             if (Bot.CountMatches(site, "/", false) == 3 && site.EndsWith("/"))
-
                 site = site.Substring(0, site.Length - 1);
-
             string filePathName = "Cache" + Path.DirectorySeparatorChar +
 
                 HttpUtility.UrlEncode(site.Replace("://", ".").Replace("/", ".")) + ".dat";
@@ -521,15 +518,10 @@ namespace DotNetWikiBot
             }
 
             Console.WriteLine(Bot.Msg("Logging in..."));
-
             HttpWebRequest webReq = (HttpWebRequest)WebRequest.Create(site);
-
             webReq.Proxy.Credentials = CredentialCache.DefaultCredentials;
-
             webReq.UseDefaultCredentials = true;
-
             webReq.ContentType = Bot.webContentType;
-
             webReq.UserAgent = Bot.botVer;
 
             if (Bot.unsafeHttpHeaderParsingUsed == 0)
@@ -567,8 +559,6 @@ namespace DotNetWikiBot
 
                             throw;
 
-                        Console.Error.WriteLine(message + " " + Bot.Msg("Retrying in 60 seconds."));
-
                         Thread.Sleep(60000);
 
                     }
@@ -586,8 +576,6 @@ namespace DotNetWikiBot
 
                     else
                     {
-
-                        Console.Error.WriteLine(Bot.Msg("Can't access the site.") + " " + message);
 
                         throw;
 
@@ -779,7 +767,6 @@ namespace DotNetWikiBot
 
             }
 
-            Console.WriteLine(Bot.Msg("Updating MediaWiki messages dump. Please, wait..."));
 
             PageList pl = new PageList(this);
 
@@ -1166,8 +1153,6 @@ namespace DotNetWikiBot
 
                 RegexOptions.Compiled);
 
-            Console.WriteLine(Bot.Msg("Site: {0} ({1})"), name, generator);
-
             string botQueryUriStr = site + indexPath + "api.php?version";
 
             string respStr;
@@ -1367,19 +1352,19 @@ namespace DotNetWikiBot
 				"bat-smg", "zh", "zh-tw", "zh-cn"
 			};
 
-            iwikiLinksOrderByLatinFW = new string[] {
-				"ace", "af", "ak", "als", "am", "ang", "ab", "ar", "an", "arc",
-				"roa-rup", "frp", "arz", "as", "ast", "gn", "av", "ay", "az", "id",
-				"ms", "bg", "bm", "zh-min-nan", "nan", "map-bms", "jv", "su", "ba",
-				"be", "be-x-old", "bh", "bcl", "bi", "bn", "bo", "bar", "bs", "bpy",
-				"br", "bug", "bxr", "ca", "ceb", "ch", "cbk-zam", "sn", "tum", "ny",
-				"cho", "chr", "co", "cy", "cv", "cs", "da", "dk", "pdc", "de", "nv",
-				"dsb", "na", "dv", "dz", "mh", "et", "el", "eml", "en", "myv", "es",
-				"eo", "ext", "eu", "ee", "fa", "hif", "fo", "fr", "fy", "ff", "fur",
-				"ga", "gv", "sm", "gd", "gl", "gan", "ki", "glk", "got", "gu", "ha",
-				"hak", "xal", "haw", "he", "hi", "ho", "hsb", "hr", "hy", "io",
-				"ig", "ii", "ilo", "ia", "ie", "iu", "ik", "os", "xh", "zu", "is",
-				"it", "ja", "ka", "kl", "kr", "pam", "krc", "csb", "kk", "kw", "rw",
+            iwikiLinksOrderByLatinFW = new string[] {
+				"ace", "af", "ak", "als", "am", "ang", "ab", "ar", "an", "arc",
+				"roa-rup", "frp", "arz", "as", "ast", "gn", "av", "ay", "az", "id",
+				"ms", "bg", "bm", "zh-min-nan", "nan", "map-bms", "jv", "su", "ba",
+				"be", "be-x-old", "bh", "bcl", "bi", "bn", "bo", "bar", "bs", "bpy",
+				"br", "bug", "bxr", "ca", "ceb", "ch", "cbk-zam", "sn", "tum", "ny",
+				"cho", "chr", "co", "cy", "cv", "cs", "da", "dk", "pdc", "de", "nv",
+				"dsb", "na", "dv", "dz", "mh", "et", "el", "eml", "en", "myv", "es",
+				"eo", "ext", "eu", "ee", "fa", "hif", "fo", "fr", "fy", "ff", "fur",
+				"ga", "gv", "sm", "gd", "gl", "gan", "ki", "glk", "got", "gu", "ha",
+				"hak", "xal", "haw", "he", "hi", "ho", "hsb", "hr", "hy", "io",
+				"ig", "ii", "ilo", "ia", "ie", "iu", "ik", "os", "xh", "zu", "is",
+				"it", "ja", "ka", "kl", "kr", "pam", "krc", "csb", "kk", "kw", "rw",
 				"ky", "rn", "sw", "km", "kn", "ko", "kv", "kg", "ht", "ks", "ku",
 				"kj", "lad", "lbe", "la", "lv", "to", "lb", "lt", "lij", "li", "ln",
 				"lo", "jbo", "lg", "lmo", "hu", "mk", "mg", "mt", "mi", "cdo",
@@ -1425,7 +1410,7 @@ namespace DotNetWikiBot
         /// <summary>Logs in and retrieves cookies.</summary>
         public void LogIn()
         {
-            Console.WriteLine(Bot.Msg("Logged in as {0}."), userName);
+            
         }
 
 
@@ -1433,7 +1418,7 @@ namespace DotNetWikiBot
         /// <summary>Logs in via api.php and retrieves cookies.</summary>
         public void LogInViaApi()
         {
-            Console.WriteLine(Bot.Msg("Logged in as {0}."), userName);
+            
         }
 
 
@@ -2594,7 +2579,6 @@ namespace DotNetWikiBot
                 if (message.Contains(": (404) "))
                 {		// Not Found
 
-                    Console.Error.WriteLine(Bot.Msg("Page \"{0}\" doesn't exist."), title);
 
                     text = "";
 
@@ -2607,8 +2591,6 @@ namespace DotNetWikiBot
                     throw;
 
             }
-
-            Console.WriteLine(Bot.Msg("Page \"{0}\" loaded successfully."), title);
 
         }
 
@@ -2655,7 +2637,6 @@ namespace DotNetWikiBot
             if (doc.GetElementsByTagName("page").Count == 0)
             {
 
-                Console.Error.WriteLine(Bot.Msg("Page \"{0}\" doesn't exist."), title);
 
                 return;
 
@@ -2697,10 +2678,6 @@ namespace DotNetWikiBot
             if (string.IsNullOrEmpty(title))
 
                 title = doc.GetElementsByTagName("title")[0].InnerText;
-
-            else
-
-                Console.WriteLine(Bot.Msg("Page \"{0}\" loaded successfully."), title);
 
         }
 
@@ -5954,11 +5931,6 @@ namespace DotNetWikiBot
 
             }
 
-            Console.WriteLine(
-
-                Bot.Msg("Getting {0} page titles from \"Special:Allpages\" MediaWiki page..."),
-
-                quantity);
 
             int count = pages.Count;
 
@@ -6046,9 +6018,6 @@ namespace DotNetWikiBot
 
                     Bot.Msg("Quantity must be positive."));
 
-            Console.WriteLine(Bot.Msg("Getting {0} page titles from \"Special:{1}\" page..."),
-
-                quantity, pageTitle);
 
             string res = site.site + site.indexPath + "index.php?title=Special:" +
 
@@ -6115,9 +6084,6 @@ namespace DotNetWikiBot
 
                     Bot.Msg("Quantity must be positive."));
 
-            Console.WriteLine(Bot.Msg("Getting {0} page titles from \"Special:{1}\" page..."),
-
-                quantity, pageTitle);
 
             string res = site.site + site.indexPath + "index.php?title=Special:" +
 
@@ -6188,9 +6154,6 @@ namespace DotNetWikiBot
 
                     Bot.Msg("Quantity must be positive."));
 
-            Console.WriteLine(Bot.Msg("Getting {0} page titles from \"{1}\" log..."),
-
-                quantity.ToString(), logType);
 
             string res = site.site + site.indexPath + "index.php?title=Special:Log&type=" +
 
@@ -6401,10 +6364,6 @@ namespace DotNetWikiBot
 
                     Bot.Msg("Number of days must be positive."));
 
-            Console.WriteLine(Bot.Msg("Getting {0} page titles from " +
-
-                "\"Special:Recentchanges\" page..."), limit);
-
             string uri = string.Format("{0}{1}index.php?title=Special:Recentchanges&" +
 
                 "hideminor={2}&hideBots={3}&hideAnons={4}&hideliu={5}&hidemyself={6}&" +
@@ -6524,7 +6483,6 @@ namespace DotNetWikiBot
 
             categoryName = site.namespaces["14"] + ":" + categoryName;
 
-            Console.WriteLine(Bot.Msg("Getting category \"{0}\" contents..."), categoryName);
 
             //RemoveAll();
 
