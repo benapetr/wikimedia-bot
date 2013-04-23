@@ -86,7 +86,14 @@ namespace wmib
                         break;
                     }
                 }
-                info = "Warning: There are " + requestCount.ToString() + " users waiting for shell, displaying last " + displayed.ToString() + ": " + info;
+                if (displayed == 1)
+                {
+                    info = "Warning: There is " + requestCount.ToString() + " user waiting for shell: " + info;
+                }
+                else
+                {
+                    info = "Warning: There are " + requestCount.ToString() + " users waiting for shell, displaying last " + displayed.ToString() + ": " + info;
+                }
                 core.irc._SlowQueue.DeliverMessage(info, "#wikimedia-labs");
             }
         }
@@ -159,6 +166,7 @@ namespace wmib
                                 RequestCache.Insert(title);
                                 lock (DB)
                                 {
+                                    // this one was already processed
                                     RequestLabs previous = Contains(title);
                                     if (previous != null)
                                     {
@@ -182,7 +190,7 @@ namespace wmib
                                 }
                             }
                             // now we need to remove all processed requests that were in a list
-                            List<RequestLabs> tr = new List<RequestLabs>();
+                            /*List<RequestLabs> tr = new List<RequestLabs>();
                             lock (DB)
                             {
                                 foreach (RequestLabs x in DB)
@@ -197,7 +205,7 @@ namespace wmib
                                 {
                                     DB.Remove(x);
                                 }
-                            }
+                            } */
                         }
                         Thread.Sleep(60000);
                     }
