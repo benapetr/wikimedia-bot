@@ -11,6 +11,7 @@ namespace wmib
     {
         public string user = null;
         public DateTime time;
+
         public RequestLabs(string us)
         {
             time = DateTime.Now;
@@ -32,6 +33,7 @@ namespace wmib
     {
         public static List<RequestLabs> DB = new List<RequestLabs>();
         public Thread notifications = null;
+        public config.channel ch = null;
 
         public RequestLabs Contains(string user)
         {
@@ -48,7 +50,7 @@ namespace wmib
             return null;
         }
 
-        public RequestLabs getUser(string user, ref List<RequestLabs> list)
+        public RequestLabs getUser(string user, List<RequestLabs> list)
         {
             foreach (RequestLabs r in list)
             {
@@ -64,7 +66,7 @@ namespace wmib
         {
             Name = "Requests";
             start = true;
-            Version = "1.0.2";
+            Version = "1.0.8";
             return true;
         }
 
@@ -96,9 +98,12 @@ namespace wmib
                 Thread.Sleep(60000);
                 while (true)
                 {
-                    lock (DB)
+                    if (GetConfig(ch, "Requests.Enabled", false))
                     {
-                        DisplayWaiting();
+                        lock (DB)
+                        {
+                            DisplayWaiting();
+                        }
                     }
                     if (DB.Count > 0)
                     {
@@ -124,6 +129,12 @@ namespace wmib
         {
             try
             {
+                ch = core.getChannel("#wikimedia-labs");
+                if (ch == null)
+                {
+                    core.Log("CRITICAL: the bot isn't in #wikimedia-labs unloading requests");
+                    return;
+                }
                 RequestCache.Load();
                 notifications = new Thread(Run);
                 notifications.Start();
@@ -131,11 +142,7 @@ namespace wmib
                 {
                     try
                     {
-                        List<RequestLabs> delete = new List<RequestLabs>();
-                        lock (DB)
-                        {
-                            delete.AddRange(DB);
-                        }
+                        List<string> list = new List<string>();
                         Site wikitech = new Site("https://wikitech.wikimedia.org", "wmib", "");
                         PageList requests = new PageList(wikitech);
                         requests.FillAllFromCategory("Shell Access Requests");
@@ -162,14 +169,12 @@ namespace wmib
                             }
                             else
                             {
+                                if (!list.Contains(title))
+                                {
+                                    list.Add(title);
+                                }
                                 lock (DB)
                                 {
-                                    // we don't want to remove request that is still active
-                                    RequestLabs xx = getUser(title, ref delete);
-                                    if (xx != null)
-                                    {
-                                        delete.Remove(xx);
-                                    }
                                     if (Contains(title) == null)
                                     {
                                         DB.Add(new RequestLabs(title));
@@ -177,14 +182,20 @@ namespace wmib
                                 }
                             }
                             // now we need to remove all processed requests that were in a list
+                            List<RequestLabs> tr = new List<RequestLabs>();
                             lock (DB)
                             {
-                                foreach (RequestLabs r in delete)
+                                foreach (RequestLabs x in DB)
                                 {
-                                    if (DB.Contains(r))
+                                    if (!list.Contains(x.user))
                                     {
-                                        DB.Remove(r);
+                                        tr.Add(x);
                                     }
+                                }
+
+                                foreach (RequestLabs x in tr)
+                                {
+                                    DB.Remove(x);
                                 }
                             }
                         }
