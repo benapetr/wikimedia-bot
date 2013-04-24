@@ -62,7 +62,6 @@ namespace wmib
                             }
                             config.Save();
                             irc.SendData("JOIN " + channel);
-                            irc.wd.Flush();
                             Thread.Sleep(100);
                             config.channel Chan = getChannel(channel);
                             if (!existing)
@@ -91,6 +90,7 @@ namespace wmib
         /// <param name="user">User</param>
         /// <param name="host">Host</param>
         /// <param name="message">Message</param>
+        /// <param name="origin"></param>
         public static void partChannel(config.channel chan, string user, string host, string message, string origin = "NULL")
         {
             try
@@ -106,7 +106,6 @@ namespace wmib
                         irc.SendData("PART " + chan.Name + " :" + "dropped by " + user + " from " + origin);
                         Program.Log("Dropped " + chan.Name + " dropped by " + user + " from " + origin);
                         Thread.Sleep(100);
-                        irc.wd.Flush();
                         try
                         {
                             if (Directory.Exists(chan.LogDir))
@@ -170,7 +169,6 @@ namespace wmib
                         irc.SendData("PART " + chan.Name + " :" + "removed by " + user + " from " + origin);
                         Program.Log("Removed " + chan.Name + " removed by " + user + " from " + origin);
                         Thread.Sleep(100);
-                        irc.wd.Flush();
                         config.channels.Remove(chan);
                         config.Save();
                         return;

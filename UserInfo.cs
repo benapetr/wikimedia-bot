@@ -18,19 +18,43 @@ using System.Text.RegularExpressions;
 
 namespace wmib
 {
+    /// <summary>
+    /// Network user
+    /// </summary>
     [Serializable()]
     public class User : IComparable
     {
+        /// <summary>
+        /// Hostname
+        /// </summary>
         public string Host;
+        /// <summary>
+        /// Ident
+        /// </summary>
         public string Ident;
+        /// <summary>
+        /// Nickname
+        /// </summary>
         public string Nick;
-        public User(string _Nick, string host, string ident)
+
+        /// <summary>
+        /// Creates a new instance of user
+        /// </summary>
+        /// <param name="nick"></param>
+        /// <param name="host"></param>
+        /// <param name="ident"></param>
+        public User(string nick, string host, string ident)
         {
-            Nick = _Nick;
+            Nick = nick;
             Ident = ident;
             Host = host;
         }
 
+        /// <summary>
+        /// Internal function
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public int CompareTo(object obj)
         {
             if (obj is User)

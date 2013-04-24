@@ -17,8 +17,14 @@ using System.Xml;
 
 namespace wmib
 {
+    /// <summary>
+    /// Configuration
+    /// </summary>
     public static class config
     {
+        /// <summary>
+        /// Represent a channel
+        /// </summary>
         [Serializable()]
         public class channel : MarshalByRefObject
         {
@@ -37,6 +43,9 @@ namespace wmib
             /// </summary>
             public List<User> UserList = new List<User>();
             
+            /// <summary>
+            /// Whether the channel contains a fresh user list
+            /// </summary>
             public bool FreshList = false;
 
             /// <summary>
@@ -49,6 +58,9 @@ namespace wmib
             /// </summary>
             public List<string> SharedChans = new List<string>();
 
+            /// <summary>
+            /// Objects created by extensions
+            /// </summary>
             public Dictionary<string, object> ExtensionObjects = new Dictionary<string, object>();
 
             private Dictionary<string, string> ExtensionData = new Dictionary<string, string>();
@@ -83,13 +95,14 @@ namespace wmib
             /// </summary>
 			public bool suppress_warnings = false;
 
-            public bool logs_no_write_data = false;
-
             /// <summary>
             /// Configuration text
             /// </summary>
             private string conf = null;
 
+            /// <summary>
+            /// Whether unknown users should be ignored or not
+            /// </summary>
             public bool ignore_unknown = false;
 
             /// <summary>
@@ -117,6 +130,11 @@ namespace wmib
                 conf += "\n" + a + "=" + b + ";";
             }
 
+            /// <summary>
+            /// Returns true if this channel is already existing in memory
+            /// </summary>
+            /// <param name="_Channel"></param>
+            /// <returns></returns>
             public static bool channelExist(string _Channel)
             {
                 string conf_file = variables.config + "/" + _Channel + ".setting";
@@ -127,6 +145,11 @@ namespace wmib
                 return false;
             }
 
+            /// <summary>
+            /// Change the config
+            /// </summary>
+            /// <param name="name"></param>
+            /// <param name="data"></param>
             public void Extension_SetConfig(string name, string data)
             {
                 lock (ExtensionData)
@@ -140,6 +163,11 @@ namespace wmib
                 ExtensionData.Add(name, data);
             }
 
+            /// <summary>
+            /// Retrieve a config
+            /// </summary>
+            /// <param name="key"></param>
+            /// <returns></returns>
             public string Extension_GetConfig(string key)
             {
                 lock (ExtensionData)
@@ -152,6 +180,11 @@ namespace wmib
                 return null;
             }
 
+            /// <summary>
+            /// Get an object created by extension of name
+            /// </summary>
+            /// <param name="name"></param>
+            /// <returns></returns>
             public object RetrieveObject(string name)
             {
                 try
@@ -171,6 +204,11 @@ namespace wmib
                 return null;
             }
 
+            /// <summary>
+            /// Remove object from memory
+            /// </summary>
+            /// <param name="Nm">Name of object</param>
+            /// <returns></returns>
             public bool UnregisterObject(string Nm)
             {
                 try
@@ -192,6 +230,12 @@ namespace wmib
                 return false;
             }
 
+            /// <summary>
+            /// Register a new object in memory
+            /// </summary>
+            /// <param name="Ob">Data</param>
+            /// <param name="Nm">Name</param>
+            /// <returns></returns>
             public bool RegisterObject(object Ob, string Nm)
             {
                 try
@@ -354,6 +398,11 @@ namespace wmib
                 }
             }
 
+            /// <summary>
+            /// Return true if user is present in channel
+            /// </summary>
+            /// <param name="name"></param>
+            /// <returns></returns>
             public bool containsUser(string name)
             {
                 name = name.ToUpper();
@@ -367,6 +416,10 @@ namespace wmib
                 return false;
             }
 
+            /// <summary>
+            /// Return number of channels that infobot share db with
+            /// </summary>
+            /// <returns></returns>
             public int Shares()
             {
                 foreach (string x in SharedChans)
@@ -389,7 +442,7 @@ namespace wmib
             /// <summary>
             /// Constructor
             /// </summary>
-            /// <param name="Name">Channel</param>
+            /// <param name="name">Channel</param>
             public channel(string name)
             {
                 Name = name;
@@ -442,7 +495,105 @@ namespace wmib
             }
         }
 
-        // Configuration is down, bellow are functions
+        /// <summary>
+        /// This is a temporary string containing the configuration data
+        /// </summary>
+        private static string text = null;
+
+        /// <summary>
+        /// Network the bot is connecting to
+        /// </summary>
+        public static string network = "irc.freenode.net";
+
+        /// <summary>
+        /// Nick name
+        /// </summary>
+        public static string username = "wm-bot";
+
+        /// <summary>
+        /// Uptime
+        /// </summary>
+        public static System.DateTime UpTime;
+
+        /// <summary>
+        /// Debug channel (doesn't need to exist)
+        /// </summary>
+        public static string debugchan = null;
+
+        /// <summary>
+        /// Link to css
+        /// </summary>
+        public static string css;
+
+        /// <summary>
+        /// Login name
+        /// </summary>
+        public static string login = "";
+
+        /// <summary>
+        /// Login pw
+        /// </summary>
+        public static string password = "";
+
+        /// <summary>
+        /// Whether the bot is using external network module
+        /// </summary>
+        public static bool serverIO = false;
+
+        /// <summary>
+        /// The webpages url
+        /// </summary>
+        public static string url = "";
+
+        /// <summary>
+        /// Dump
+        /// </summary>
+        public static string DumpDir = "dump";
+
+        /// <summary>
+        /// This is a log where network log is dumped to
+        /// </summary>
+        public static string TransactionLog = "transaction.dat";
+
+        /// <summary>
+        /// Path to txt logs
+        /// </summary>
+        public static string path_txt = "log";
+
+        /// <summary>
+        /// Network traffic is logged
+        /// </summary>
+        public static bool Logging = false;
+
+        /// <summary>
+        /// Path to html which is generated by this process
+        /// </summary>
+        public static string path_htm = "html";
+
+        /// <summary>
+        /// Version
+        /// </summary>
+        public static string version = "wikimedia bot v. 1.10.8.0";
+
+        /// <summary>
+        /// Separator for system db
+        /// </summary>
+        public static string separator = "|";
+
+        /// <summary>
+        /// User name
+        /// </summary>
+        public static string name = "wm-bot";
+
+        /// <summary>
+        /// List of channels the bot is in
+        /// </summary>
+        public static List<channel> channels = new List<channel>();
+
+        /// <summary>
+        /// This is a string which commands are prefixed with
+        /// </summary>
+        public const string CommandPrefix = "@";
 
         /// <summary>
         /// Add line to the config file
@@ -454,6 +605,9 @@ namespace wmib
             text = text + "\n" + a + "=" + b + ";";
         }
 
+        /// <summary>
+        /// Save a channel config
+        /// </summary>
         public static void Save()
         {
             text = "";
@@ -475,6 +629,7 @@ namespace wmib
             }
             text = text + ";";
             File.WriteAllText(variables.config + "/wmib", text);
+            text = null;
         }
 
         /// <summary>
@@ -498,6 +653,11 @@ namespace wmib
             return "";
         }
 
+        /// <summary>
+        /// Return a temporary name
+        /// </summary>
+        /// <param name="file">File you need to have temp for</param>
+        /// <returns></returns>
         public static string tempName(string file)
         {
             return (file + "~");
@@ -577,78 +737,5 @@ namespace wmib
             }
             return 0;
         }
-
-        public static string text;
-
-        /// <summary>
-        /// Network
-        /// </summary>
-
-        public static string network = "irc.freenode.net";
-
-        /// <summary>
-        /// Nick name
-        /// </summary>
-
-        public static string username = "wm-bot";
-
-        /// <summary>
-        /// Uptime
-        /// </summary>
-        public static System.DateTime UpTime;
-
-        public static string debugchan = null;
-
-        public static string css;
-
-        /// <summary>
-        /// Login name
-        /// </summary>
-        public static string login = "";
-
-        /// <summary>
-        /// Login pw
-        /// </summary>
-        public static string password = "";
-
-        public static bool serverIO = false;
-
-        /// <summary>
-        /// The webpages url
-        /// </summary>
-        public static string url = "";
-
-        /// <summary>
-        /// Dump
-        /// </summary>
-        public static string DumpDir = "dump";
-
-        public static string TransactionLog = "transaction.dat";
-
-        public static string path_txt = "log";
-
-        public static bool Logging = false;
-
-        public static string path_htm = "html";
-
-        /// <summary>
-        /// Version
-        /// </summary>
-        public static string version = "wikimedia bot v. 1.10.6.10";
-
-        /// <summary>
-        /// Separator
-        /// </summary>
-        public static string separator = "|";
-
-        /// <summary>
-        /// User name
-        /// </summary>
-        public static string name = "wm-bot";
-
-        /// <summary>
-        /// Channels
-        /// </summary>
-        public static List<channel> channels = new List<channel>();
     }
 }

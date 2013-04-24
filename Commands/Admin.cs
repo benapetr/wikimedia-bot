@@ -31,7 +31,7 @@ namespace wmib
         public static void admin(config.channel chan, string user, string host, string message)
         {
             User invoker = new User(user, host, "");
-            if (message == "@reload")
+            if (message == config.CommandPrefix + "reload")
             {
                 if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
@@ -60,15 +60,11 @@ namespace wmib
                 irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
                 return;
             }
-            if (message == "@refresh")
+            if (message == config.CommandPrefix + "refresh")
             {
                 if (chan.Users.isApproved(invoker.Nick, host, "flushcache"))
                 {
-                    irc._Queue.Abort();
-                    irc._SlowQueue.newmessages.Clear();
-                    irc._Queue = new System.Threading.Thread(new System.Threading.ThreadStart(irc._SlowQueue.Run));
-                    irc._SlowQueue.messages.Clear();
-                    irc._Queue.Start();
+                    irc.RestartIRCMessageDelivery();
                     irc.Message(messages.get("MessageQueueWasReloaded", chan.Language), chan.Name);
                     return;
                 }
@@ -79,13 +75,13 @@ namespace wmib
                 return;
             }
 
-            if (message == ("@info"))
+            if (message == config.CommandPrefix + "info")
             {
                 irc._SlowQueue.DeliverMessage(config.url + config.DumpDir + "/" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm", chan.Name);
                 return;
             }
 
-            if (message.StartsWith("@part "))
+            if (message.StartsWith(config.CommandPrefix + "part "))
             {
                 string channel = message.Substring(6);
                 if (channel != "")
@@ -103,7 +99,7 @@ namespace wmib
                 return;
             }
 
-            if (message.StartsWith("@drop "))
+            if (message.StartsWith(config.CommandPrefix + "drop "))
             {
                 string channel = message.Substring(6);
                 if (channel != "")
@@ -121,7 +117,7 @@ namespace wmib
                 return;
             }
 
-            if (message.StartsWith("@language"))
+            if (message.StartsWith(config.CommandPrefix + "language"))
             {
                 if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
@@ -161,7 +157,7 @@ namespace wmib
                 }
             }
 
-            if (message.StartsWith("@help"))
+            if (message.StartsWith(config.CommandPrefix + "help"))
             {
                 string parameter = "";
                 if (message.Contains(" "))
@@ -180,7 +176,7 @@ namespace wmib
                 }
             }
 
-            if (message == "@suppress-off")
+            if (message == config.CommandPrefix + "suppress-off")
             {
                 if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
@@ -205,7 +201,7 @@ namespace wmib
                 return;
             }
 
-            if (message == "@suppress-on")
+            if (message == config.CommandPrefix + "suppress-on")
             {
                 if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
@@ -229,7 +225,7 @@ namespace wmib
                 return;
             }
 
-            if (message == "@whoami")
+            if (message == config.CommandPrefix + "whoami")
             {
                 SystemUser current = chan.Users.getUser(user + "!@" + host);
                 if (current.level == "null")
@@ -241,7 +237,7 @@ namespace wmib
                 return;
             }
 
-            if (message == "@traffic-off")
+            if (message == config.CommandPrefix + "traffic-off")
             {
                 if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
                 {
@@ -255,7 +251,7 @@ namespace wmib
                 }
             }
 
-            if (message == "@traffic-on")
+            if (message == config.CommandPrefix + "traffic-on")
             {
                 if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
                 {
@@ -269,7 +265,7 @@ namespace wmib
                 }
             }
 
-            if (message == "@restart")
+            if (message == config.CommandPrefix + "restart")
             {
                 if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
                 {
@@ -284,7 +280,7 @@ namespace wmib
                 }
             }
 
-            if (message == "@channellist")
+            if (message == config.CommandPrefix + "channellist")
             {
                 string channels = "";
                 foreach (config.channel a in config.channels)
@@ -295,7 +291,7 @@ namespace wmib
                 return;
             }
 
-            if (message.StartsWith("@configure "))
+            if (message.StartsWith(config.CommandPrefix + "configure "))
             {
                 if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
@@ -317,15 +313,6 @@ namespace wmib
                                     chan.ignore_unknown = _temp_a;
                                     irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, name }), chan.Name);
                                     chan.SaveConfig();
-                                    return;
-                                }
-                                irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
-                                return;
-                            case "logs-no-write-data":
-                                if (bool.TryParse(value, out _temp_a))
-                                {
-                                    chan.logs_no_write_data = _temp_a;
-                                    irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, name }), chan.Name);
                                     return;
                                 }
                                 irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { name, value }), chan.Name);
@@ -409,7 +396,7 @@ namespace wmib
                 }
             }
 
-            if (message.StartsWith("@system-lm "))
+            if (message.StartsWith(config.CommandPrefix + "system-lm "))
             {
                 if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
                 {
@@ -449,7 +436,7 @@ namespace wmib
                 }
             }
 
-            if (message.StartsWith("@system-rm "))
+            if (message.StartsWith(config.CommandPrefix + "system-rm "))
             {
                 if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
                 {
@@ -465,7 +452,7 @@ namespace wmib
                 }
             }
 
-            if (message.StartsWith("@join "))
+            if (message.StartsWith(config.CommandPrefix + "join "))
             {
                 if (chan.Users.isApproved(invoker.Nick, invoker.Host, "reconnect"))
                 {
@@ -493,7 +480,7 @@ namespace wmib
                 }
             }
 
-            if (message == "@commands")
+            if (message == config.CommandPrefix + "commands")
             {
                 irc._SlowQueue.DeliverMessage("Commands: there is too many commands to display on one line, see http://meta.wikimedia.org/wiki/wm-bot for a list of commands and help", chan.Name);
                 return;

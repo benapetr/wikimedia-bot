@@ -19,6 +19,9 @@ using System.IO;
 
 namespace wmib
 {
+    /// <summary>
+    /// Kernel
+    /// </summary>
     public partial class core
     {
         /// <summary>
@@ -33,7 +36,7 @@ namespace wmib
         {
             try
             {
-                if (message.StartsWith("@trustadd"))
+                if (message.StartsWith(config.CommandPrefix + "trustadd"))
                 {
                     string[] rights_info = message.Split(' ');
                     if (channel.Users.isApproved(user, host, "trustadd"))
@@ -68,12 +71,12 @@ namespace wmib
                         return 0;
                     }
                 }
-                if (message.StartsWith("@trusted"))
+                if (message.StartsWith(config.CommandPrefix + "trusted"))
                 {
                     channel.Users.listAll();
                     return 0;
                 }
-                if (message.StartsWith("@trustdel"))
+                if (message.StartsWith(config.CommandPrefix + "trustdel"))
                 {
                     string[] rights_info = message.Split(' ');
                     if (rights_info.Length > 1)

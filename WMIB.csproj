@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\wmib.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -32,6 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\wmib.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -41,11 +43,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\Admin.cs" />
+    <Compile Include="IRC\ProcessorIRC.cs" />
     <Compile Include="System\Channels_Core.cs" />
     <Compile Include="Commands\Permissions.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="System\Core.cs" />
-    <Compile Include="IRCcln.cs" />
+    <Compile Include="IRC\IRCcln.cs" />
     <Compile Include="Irctrust.cs" />
     <Compile Include="l10n.cs" />
     <Compile Include="Modules\Module.cs" />

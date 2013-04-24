@@ -19,16 +19,28 @@ using System.IO;
 
 namespace wmib
 {
+    /// <summary>
+    /// variables
+    /// </summary>
     public class variables
     {
         /// <summary>
         /// Configuration directory
         /// </summary>
         public static readonly string config = "configuration";
+        /// <summary>
+        /// Prefix for a log directory
+        /// </summary>
         public static readonly string prefix_logdir = "log";
-        public static string bold = ((char)002).ToString();
+        /// <summary>
+        /// This string represent a character that changes text to bold
+        /// </summary>
+        public static readonly string bold = ((char)002).ToString();
     }
 
+    /// <summary>
+    /// misc
+    /// </summary>
     public class misc
     {
         /// <summary>
@@ -55,16 +67,35 @@ namespace wmib
     [Serializable()]
     public partial class core : MarshalByRefObject
     {
+        /// <summary>
+        /// Domain in which the core is running
+        /// </summary>
         public static AppDomain domain = null;
+        /// <summary>
+        /// Last line of text received on irc
+        /// </summary>
         public static string LastText = null;
-        public static bool disabled = false;
+        /// <summary>
+        /// Whether the core is supposed to exit
+        /// </summary>
         public static bool exit = false;
-        public static IRC irc;
+        /// <summary>
+        /// irc
+        /// </summary>
+        public static IRC irc = null;
+        /// <summary>
+        /// Thread which is writing the system data to files
+        /// </summary>
         public static Thread WriterThread = null;
+        /// <summary>
+        /// Domains available in core
+        /// </summary>
         public static Dictionary<Module, AppDomain> Domains = new Dictionary<Module, AppDomain>();
-        private static List<SystemUser> User = new List<SystemUser>();
         private static Dictionary<string, string> HelpData = new Dictionary<string, string>();
 
+        /// <summary>
+        /// System user
+        /// </summary>
         [Serializable()]
         public class SystemUser
         {
@@ -88,6 +119,10 @@ namespace wmib
             }
         }
 
+        /// <summary>
+        /// Store a traffic log to a file
+        /// </summary>
+        /// <param name="text"></param>
         public static void TrafficLog(string text)
         {
             if (config.Logging)
@@ -116,13 +151,18 @@ namespace wmib
             return text.Replace("<separator>", "|");
         }
 
+        /// <summary>
+        /// Write a system log
+        /// </summary>
+        /// <param name="text">Text of log</param>
+        /// <param name="error">Should be considered warning</param>
         public static void Log(string text, bool error = false)
         {
             Program.Log(text, error);
         }
 
         /// <summary>
-        /// Exceptions :o
+        /// Exception handler
         /// </summary>
         /// <param name="ex">Exception pointer</param>
         /// <param name="chan">Channel name</param>
@@ -196,12 +236,40 @@ namespace wmib
             return false;
         }
 
+        /// <summary>
+        /// Return true in case the filename is valid
+        /// </summary>
+        /// <param name="name">Name</param>
+        /// <returns></returns>
         public static bool validFile(string name)
         {
             return !(name.Contains(" ") || name.Contains("?") || name.Contains("|") || name.Contains("/")
                 || name.Contains("\\") || name.Contains(">") || name.Contains("<") || name.Contains("*"));
         }
 
+        /// <summary>
+        /// Recover a file that had a backup and remove it
+        /// </summary>
+        /// <param name="FileName">Name of file</param>
+        /// <returns></returns>
+        public static bool backupRecovery(string FileName)
+        {
+            if (File.Exists(config.tempName(FileName)))
+            {
+                string temp = System.IO.Path.GetTempFileName();
+                File.Copy(config.tempName(FileName), temp, true);
+                Program.Log("Unfinished transaction from " + FileName + "~ was stored as " + temp);
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Recover a file that had a backup and remove it
+        /// </summary>
+        /// <param name="name">Name of file</param>
+        /// <returns></returns>
+        [Obsolete]
         public static bool backupRecovery(string name, string ch = "unknown object")
         {
             if (File.Exists(config.tempName(name)))
@@ -240,6 +308,12 @@ namespace wmib
             return true;
         }
 
+        /// <summary>
+        /// Recover a file that was previously stored
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="ch"></param>
+        /// <returns></returns>
         public static bool recoverFile(string name, string ch = "unknown object")
         {
             try
@@ -268,6 +342,9 @@ namespace wmib
             }
         }
 
+        /// <summary>
+        /// Connect to network
+        /// </summary>
         public static void Connect()
         {
             irc = new IRC(config.network, config.username, config.name, config.name);
@@ -301,14 +378,15 @@ namespace wmib
             }
         }
 
+        /// <summary>
+        /// This will disable bot and close this process
+        /// </summary>
         public static void Kill()
         {
             try
             {
-                irc.disabled = true;
+                irc.Disconnect();
                 exit = true;
-                irc.wd.Close();
-                irc.rd.Close();
                 irc._SlowQueue.Exit();
                 StorageWriter.running = false;
                 Thread modules = new Thread(Terminate);
@@ -402,8 +480,17 @@ namespace wmib
             return false;
         }
 
+        /// <summary>
+        /// Help
+        /// </summary>
         public static class Help
         {
+            /// <summary>
+            /// Register a new item
+            /// </summary>
+            /// <param name="name">Name</param>
+            /// <param name="text">Text</param>
+            /// <returns></returns>
             public static bool Register(string name, string text)
             {
                 lock (HelpData)
@@ -417,6 +504,9 @@ namespace wmib
                 return false;
             }
 
+            /// <summary>
+            /// Initialise help
+            /// </summary>
             public static void CreateHelp()
             {
                 Register("infobot-ignore-", null);
@@ -464,6 +554,11 @@ namespace wmib
                 Register("suppress-off", null);
             }
 
+            /// <summary>
+            /// Remove a help
+            /// </summary>
+            /// <param name="name"></param>
+            /// <returns></returns>
             public static bool Unregister(string name)
             {
                 lock (HelpData)
@@ -479,8 +574,16 @@ namespace wmib
             }
         }
 
+        /// <summary>
+        /// This is a helper class that convert some special cloaks
+        /// </summary>
         public static class Host
         {
+            /// <summary>
+            /// Change the freenode special cloaks
+            /// </summary>
+            /// <param name="host">Host</param>
+            /// <returns></returns>
             public static string Host2Name(string host)
             {
                 host = host.Replace("-", "_");
@@ -533,12 +636,19 @@ namespace wmib
             return false;
         }
 
+        /// <summary>
+        /// Return uptime
+        /// </summary>
+        /// <returns></returns>
         public static string getUptime()
         {
             System.TimeSpan uptime = System.DateTime.Now - config.UpTime;
             return uptime.Days.ToString() + " days  " + uptime.Hours.ToString() + " hours since " + config.UpTime.ToString();
         }
 
+        /// <summary>
+        /// This class allow you to do some elementar operations with web pages
+        /// </summary>
         public static class HTML
         {
             /// <summary>

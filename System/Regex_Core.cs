@@ -21,18 +21,40 @@ namespace wmib
 {
     public partial class core : MarshalByRefObject
     {
+        /// <summary>
+        /// This is a class that check if regex matches value while it doesn't affect the system thread
+        /// </summary>
         public class RegexCheck
         {
+            /// <summary>
+            /// Value which is this regex compared with
+            /// </summary>
             public string value;
+            /// <summary>
+            /// Regex
+            /// </summary>
             public string regex;
-            public bool searching;
-            public bool result = false;
+            /// <summary>
+            /// Whether it is currently searching
+            /// </summary>
+            private bool searching = false;
+            private bool result = false;
+
+            /// <summary>
+            /// Creates a new instance of regex check
+            /// </summary>
+            /// <param name="Regex"></param>
+            /// <param name="Data"></param>
             public RegexCheck(string Regex, string Data)
             {
                 result = false;
                 value = Data;
                 regex = Regex;
             }
+
+            /// <summary>
+            /// Start check
+            /// </summary>
             private void Run()
             {
                 try
@@ -47,6 +69,11 @@ namespace wmib
                     return;
                 }
             }
+
+            /// <summary>
+            /// Return 1 in case that regex match, 0 if it doesn't, 2 if it timed out, and 800 error
+            /// </summary>
+            /// <returns></returns>
             public int IsMatch()
             {
                 try
@@ -73,6 +100,7 @@ namespace wmib
                 catch (Exception fail)
                 {
                     core.handleException(fail);
+                    return 800;
                 }
                 return 0;
             }

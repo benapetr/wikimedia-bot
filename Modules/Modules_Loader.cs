@@ -21,6 +21,10 @@ namespace wmib
 {
     public partial class core
     {
+        /// <summary>
+        /// Intialise module
+        /// </summary>
+        /// <param name="module"></param>
         public static void InitialiseMod(Module module)
         {
             if (module.Name == null || module.Name == "")
@@ -54,6 +58,11 @@ namespace wmib
             }
         }
 
+        /// <summary>
+        /// Load a binary module
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         public static bool LoadMod(string path)
         {
             try
@@ -115,6 +124,9 @@ namespace wmib
             return false;
         }
 
+        /// <summary>
+        /// Search and load the modules in modules folder
+        /// </summary>
         public static void SearchMods()
         {
             if (Directory.Exists(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
@@ -129,6 +141,11 @@ namespace wmib
             Program.Log("Modules loaded");
         }
 
+        /// <summary>
+        /// Retrieve a module from name
+        /// </summary>
+        /// <param name="name">Name of module</param>
+        /// <returns></returns>
         public static Module getModule(string name)
         {
             lock (Module.module)

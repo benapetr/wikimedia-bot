@@ -17,26 +17,65 @@ using System.Text;
 
 namespace wmib
 {
+    /// <summary>
+    /// Module
+    /// </summary>
     [Serializable()]
     public abstract class Module : MarshalByRefObject
     {
+        /// <summary>
+        /// List of all modules loaded in kernel
+        /// </summary>
         public static List<Module> module = new List<Module>();
+        /// <summary>
+        /// Name of module
+        /// </summary>
         public string Name = "";
+        /// <summary>
+        /// Version
+        /// </summary>
         public string Version = "unknown";
+        /// <summary>
+        /// Time when it was loaded to system
+        /// </summary>
         public DateTime Date = DateTime.Now;
+        /// <summary>
+        /// Whether it should be reloaded on crash
+        /// </summary>
         public bool Reload = false;
+        /// <summary>
+        /// If the module is in warning mode
+        /// </summary>
         public bool Warning = false;
+        /// <summary>
+        /// Thread associated to this module
+        /// </summary>
         [NonSerialized()]
         public System.Threading.Thread thread;
+        /// <summary>
+        /// Whether it is working
+        /// </summary>
         public bool working = false;
+        /// <summary>
+        /// Parent domain of this module
+        /// </summary>
         public AppDomain ParentDomain = null;
+        /// <summary>
+        /// Whether it has started or not
+        /// </summary>
         public bool start = false;
 
+        /// <summary>
+        /// Creates a new instance of module
+        /// </summary>
         public Module()
         {
-            
+            thread = null;
         }
 
+        /// <summary>
+        /// Called when module is unloaded from memory
+        /// </summary>
         ~Module()
         {
             Exit();
@@ -58,11 +97,18 @@ namespace wmib
             core.Log("Module was unloaded: " + this.Name);
         }
 
+        /// <summary>
+        /// This function is called during load of module
+        /// </summary>
+        /// <returns></returns>
         public virtual bool Construct()
         {
             return false;
         }
 
+        /// <summary>
+        /// Create a thread and load the module
+        /// </summary>
         public void Init()
         {
             try
@@ -294,7 +340,7 @@ namespace wmib
             }
         }
 
-        public void Exec()
+        private void Exec()
         {
             try
             {
@@ -351,6 +397,9 @@ namespace wmib
             return;
         }
 
+        /// <summary>
+        /// Disable module
+        /// </summary>
         public void Exit()
         {
             core.Log("Unloading module: " + Name);
@@ -388,6 +437,11 @@ namespace wmib
             }
         }
 
+        /// <summary>
+        /// Return true if this module is already loaded
+        /// </summary>
+        /// <param name="Name"></param>
+        /// <returns></returns>
         public static bool Exist(string Name)
         {
             try

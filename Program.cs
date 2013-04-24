@@ -57,7 +57,7 @@ namespace wmib
             }
             catch (Exception)
             {
-                core.irc.disabled = true;
+                core.irc.Disconnect();
                 core.exit = true;
             }
             Log("Terminated");
@@ -70,9 +70,7 @@ namespace wmib
             Log("Loading...");
             config.UpTime = System.DateTime.Now;
             Console.CancelKeyPress += new ConsoleCancelEventHandler(myHandler);
-			messages.data.Add ("cs", new messages.container("cs"));
-			messages.data.Add ("en", new messages.container("en"));
-            messages.data.Add ("zh", new messages.container("zh"));
+            messages.LoadLD();
             if ( config.Load() != 0)
 			{
                 Log("Error while loading the config file, exiting", true);
@@ -83,6 +81,7 @@ namespace wmib
             core.WriterThread.Start();
             Log("Loading modules");
             core.SearchMods();
+            IRCTrust.Global();
             Log("Connecting");
             core.Connect();
         }
