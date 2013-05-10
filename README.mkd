@@ -1,0 +1,10 @@
+# wm-bot
+
+This repository contains the source code for **wm-bot**, an IRC bot that is
+used on a number of Wikimedia IRC channels.
+
+The bot is written in C#. To compile the bot, you'll need a suitable compiler.
+Visual Studio and MonoDevelop are recommended.
+
+For further help and usage instructions, please consult the [documentation on
+Meta-Wiki](http://meta.wikimedia.org/wiki/Wm-bot).
