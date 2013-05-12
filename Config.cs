@@ -93,7 +93,7 @@ namespace wmib
             /// <summary>
             /// Doesn't send any warnings on error
             /// </summary>
-			public bool suppress_warnings = false;
+            public bool suppress_warnings = false;
 
             /// <summary>
             /// Configuration text
@@ -523,7 +523,7 @@ namespace wmib
         /// <summary>
         /// Link to css
         /// </summary>
-        public static string css;
+        public static string css = null;
 
         /// <summary>
         /// Login name
