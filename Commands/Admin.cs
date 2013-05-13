@@ -237,6 +237,15 @@ namespace wmib
                 return;
             }
 
+            if (message == config.CommandPrefix + "system-relog")
+            {
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
+                {
+                    core.irc.Authenticate();
+                    return;
+                }
+            }
+
             if (message == config.CommandPrefix + "traffic-off")
             {
                 if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
