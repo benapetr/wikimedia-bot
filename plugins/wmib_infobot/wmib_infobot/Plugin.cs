@@ -168,8 +168,7 @@ namespace wmib
             {
                 HTML += "\n<table border=1 class=\"infobot\" width=100%>\n<tr><th width=10%>Key</th><th>Value</th></tr>\n";
                 List<infobot_core.InfobotKey> list = new List<infobot_core.InfobotKey>();
-                info.locked = true;
-                lock (info.Keys)
+                lock (info)
                 {
                     if (Module.GetConfig(channel, "Infobot.Sorted", false) != false)
                     {
@@ -189,7 +188,7 @@ namespace wmib
                 }
                 HTML += "</table>\n";
                 HTML += "<h4>Aliases</h4>\n<table class=\"infobot\" border=1 width=100%>\n";
-                lock (info.Alias)
+                lock (info)
                 {
                     foreach (infobot_core.InfobotAlias data in info.Alias)
                     {
@@ -197,7 +196,6 @@ namespace wmib
                     }
                 }
                 HTML += "</table><br>\n";
-                info.locked = false;
             }
             return HTML;
         }

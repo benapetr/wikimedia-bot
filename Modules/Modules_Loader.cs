@@ -71,7 +71,6 @@ namespace wmib
                 {
                     System.Reflection.Assembly library = System.Reflection.Assembly.LoadFrom(path);
 
-                    //AppDomain domain = AppDomain.CreateDomain("$" + path);
                     if (library == null)
                     {
                         Program.Log("Unable to load " + path + " because the file can't be read", true);
@@ -82,7 +81,7 @@ namespace wmib
                     Type pluginInfo = null;
                     foreach (Type curr in types)
                     {
-                        if (curr.IsAssignableFrom(type))
+                        if (curr.IsAssignableFrom(type) || curr.BaseType == typeof(Module))
                         {
                             pluginInfo = curr;
                             break;
@@ -94,10 +93,7 @@ namespace wmib
                         return false;
                     }
 
-
                     Module _plugin = (Module)Activator.CreateInstance(pluginInfo);
-
-                    //Module _plugin = domain.CreateInstanceFromAndUnwrap(path, "wmib.RegularModule") as Module;
 
                     _plugin.ParentDomain = core.domain;
                     if (!_plugin.Construct())
@@ -105,11 +101,6 @@ namespace wmib
                         core.Log("Invalid module", true);
                         _plugin.Exit();
                         return false;
-                    }
-
-                    lock (Domains)
-                    {
-                        //Domains.Add(_plugin, domain);
                     }
 
                     InitialiseMod(_plugin);

@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("wmib_infobot")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Accenture")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("wmib_infobot")]
-[assembly: AssemblyCopyright("Copyright © Accenture 2012")]
+[assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

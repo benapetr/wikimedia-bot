@@ -29,11 +29,6 @@ namespace wmib
         // if we need to update dump
         public bool update = true;
 
-        /// <summary>
-        /// Locked
-        /// </summary>
-        public bool locked = false;
-
         public static config.channel ReplyChan = null;
 
         public static DateTime NA = DateTime.MaxValue;
@@ -395,14 +390,12 @@ namespace wmib
         {
             List<InfobotKey> OriginalList = new List<InfobotKey>();
             List<InfobotKey> Item = new List<InfobotKey>();
-            locked = true;
             int keycount;
             lock (this)
             {
                 keycount = Keys.Count;
                 OriginalList.AddRange(Keys);
             }
-            locked = false;
             try
             {
                 if (keycount > 0)
@@ -429,7 +422,6 @@ namespace wmib
             catch (Exception)
             {
                 core.Log("Exception while creating list for html");
-                locked = false;
             }
             return Item;
         }
@@ -505,11 +497,6 @@ namespace wmib
         /// </summary>
         public void Save()
         {
-            if (locked)
-            {
-                core.Log("Unable to save " + Channel + " because the db is locked by some module", true);
-                return;
-            }
             update = true;
             try
             {
@@ -1231,10 +1218,6 @@ namespace wmib
 
         public void setRaw(string key, string user, config.channel chan)
         {
-            while (locked)
-            {
-                Thread.Sleep(200);
-            }
             InfobotKey Key = GetKey(key, Sensitive);
             if (Key == null)
             {
@@ -1248,10 +1231,6 @@ namespace wmib
 
         public void unsetRaw(string key, string user, config.channel chan)
         {
-            while (locked)
-            {
-                Thread.Sleep(200);
-            }
             InfobotKey Key = GetKey(key, Sensitive);
             if (Key == null)
             {
@@ -1271,10 +1250,6 @@ namespace wmib
         /// <param name="user">User who created it</param>
         public void setKey(string Text, string key, string user, config.channel chan)
         {
-            while (locked)
-            {
-                Thread.Sleep(200);
-            }
             lock (this)
             {
                 config.channel ch = core.getChannel(Channel);
@@ -1313,13 +1288,11 @@ namespace wmib
                 {
                     Thread.Sleep(100);
                 }
-                locked = true;
                 lock (this)
                 {
                     DateTime creationdate = DateTime.Now;
                     core.Log("Creating snapshot " + temporary_data);
                     File.Copy(datafile_xml, temporary_data);
-                    locked = false;
                     core.irc._SlowQueue.DeliverMessage("Snapshot " + temporary_data + " was created for current database as of " + creationdate.ToString(), Channel);
                 }
             }
@@ -1338,18 +1311,16 @@ namespace wmib
                 {
                     Thread.Sleep(100);
                 }
-                locked = true;
-                    lock (this)
-                    {
-                        core.Log("Recovering snapshot " + temporary_data);
-                        File.Copy(temporary_data, datafile_xml, true);
-                        this.Keys.Clear();
-                        this.Alias.Clear();
-                        core.Log("Loading snapshot of " + Channel);
-                        LoadData();
-                        locked = false;
-                        core.irc._SlowQueue.DeliverMessage("Snapshot " + temporary_data + " was loaded and previous database was permanently deleted", Channel);
-                    }
+                lock (this)
+                {
+                    core.Log("Recovering snapshot " + temporary_data);
+                    File.Copy(temporary_data, datafile_xml, true);
+                    this.Keys.Clear();
+                    this.Alias.Clear();
+                    core.Log("Loading snapshot of " + Channel);
+                    LoadData();
+                    core.irc._SlowQueue.DeliverMessage("Snapshot " + temporary_data + " was loaded and previous database was permanently deleted", Channel);
+                }
             }
             catch (Exception fail)
             {
@@ -1400,42 +1371,38 @@ namespace wmib
         {
             try
             {
-                if (!isValid(name))
+                lock (this)
                 {
-                    core.irc._SlowQueue.DeliverMessage("This is not a valid name for tsnapsho, you can only use a-zA-Z and 0-9 chars", chan.Name);
-                    return;
-                }
-                if (SnapshotManager != null)
-                {
-                    if (SnapshotManager.ThreadState == ThreadState.Running)
+                    if (!isValid(name))
                     {
-                        core.irc._SlowQueue.DeliverMessage("There is already another snapshot operation running for this channel", chan.Name);
+                        core.irc._SlowQueue.DeliverMessage("This is not a valid name for tsnapsho, you can only use a-zA-Z and 0-9 chars", chan.Name);
                         return;
                     }
-                }
-                if (locked)
-                {
-                    core.irc._SlowQueue.DeliverMessage("There is already another datafile operation running for this channel", chan.Name);
-                    return;
-                }
-                locked = true;
-                string datafile = RegularModule.SnapshotsDirectory + Path.DirectorySeparatorChar + Channel + Path.DirectorySeparatorChar + name;
-                if (!File.Exists(datafile))
-                {
-                    core.irc._SlowQueue.DeliverMessage("The requested datafile " + name + " was not found", chan.Name, IRC.priority.low);
-                    return;
-                }
+                    if (SnapshotManager != null)
+                    {
+                        if (SnapshotManager.ThreadState == ThreadState.Running)
+                        {
+                            core.irc._SlowQueue.DeliverMessage("There is already another snapshot operation running for this channel", chan.Name);
+                            return;
+                        }
+                    }
+                    string datafile = RegularModule.SnapshotsDirectory + Path.DirectorySeparatorChar + Channel + Path.DirectorySeparatorChar + name;
+                    if (!File.Exists(datafile))
+                    {
+                        core.irc._SlowQueue.DeliverMessage("The requested datafile " + name + " was not found", chan.Name, IRC.priority.low);
+                        return;
+                    }
 
-                SnapshotManager = new Thread(RecoverStart);
-                temporary_data = datafile;
-                SnapshotManager.Name = "Snapshot";
-                SnapshotManager.Start();
-                RegularModule.SetConfig(chan, "HTML.Update", true);
+                    SnapshotManager = new Thread(RecoverStart);
+                    temporary_data = datafile;
+                    SnapshotManager.Name = "Snapshot";
+                    SnapshotManager.Start();
+                    RegularModule.SetConfig(chan, "HTML.Update", true);
+                }
             }
             catch (Exception fail)
             {
                 core.handleException(fail);
-                locked = false;
             }
         }
 
@@ -1456,12 +1423,6 @@ namespace wmib
                         return;
                     }
                 }
-                if (locked)
-                {
-                    core.irc._SlowQueue.DeliverMessage("There is already another datafile operation running for this channel", chan.Name);
-                    return;
-                }
-                locked = true;
                 string datafile = RegularModule.SnapshotsDirectory + Path.DirectorySeparatorChar + Channel + Path.DirectorySeparatorChar + name;
                 if (File.Exists(datafile))
                 {
@@ -1476,7 +1437,6 @@ namespace wmib
             catch (Exception fail)
             {
                 core.handleException(fail);
-                locked = false;
             }
         }
 
@@ -1528,10 +1488,6 @@ namespace wmib
         public void rmKey(string key, string user, config.channel _ch)
         {
             config.channel ch = core.getChannel(Channel);
-            while (locked)
-            {
-                Thread.Sleep(200);
-            }
             lock (this)
             {
                 foreach (InfobotKey keys in Keys)
