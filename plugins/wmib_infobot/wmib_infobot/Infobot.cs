@@ -497,23 +497,22 @@ namespace wmib
             update = true;
             try
             {
-                core.DebugLog("Saving database of infobot");
+                core.DebugLog("Saving database of infobot", 2);
+                if (File.Exists(datafile_xml))
+                {
+                    core.backupData(datafile_xml);
+                    if (!File.Exists(config.tempName(datafile_xml)))
+                    {
+                        core.Log("Unable to create backup file for " + this.Channel);
+                    }
+                }
+
+                core.DebugLog("Generating xml document", 4);
+
+                System.Xml.XmlDocument data = new System.Xml.XmlDocument();
+                System.Xml.XmlNode xmlnode = data.CreateElement("database");
                 lock (this)
                 {
-                    if (File.Exists(datafile_xml))
-                    {
-                        core.backupData(datafile_xml);
-                        if (!File.Exists(config.tempName(datafile_xml)))
-                        {
-                            core.Log("Unable to create backup file for " + this.Channel);
-                        }
-                    }
-
-                    core.DebugLog("Generating xml document", 4);
-
-                    System.Xml.XmlDocument data = new System.Xml.XmlDocument();
-                    System.Xml.XmlNode xmlnode = data.CreateElement("database");
-
                     foreach (InfobotAlias key in Alias)
                     {
                         System.Xml.XmlAttribute name = data.CreateAttribute("alias_key_name");
@@ -555,16 +554,15 @@ namespace wmib
                         db.Attributes.Append(k);
                         xmlnode.AppendChild(db);
                     }
-
                     data.AppendChild(xmlnode);
-                    core.DebugLog("Writing xml document to a file");
-                    data.Save(datafile_xml);
-                    core.DebugLog("Checking the previous file", 6);
-                    if (File.Exists(config.tempName(datafile_xml)))
-                    {
-                        core.DebugLog("Removing temp file", 6);
-                        File.Delete(config.tempName(datafile_xml));
-                    }
+                }
+                core.DebugLog("Writing xml document to a file");
+                data.Save(datafile_xml);
+                core.DebugLog("Checking the previous file", 6);
+                if (File.Exists(config.tempName(datafile_xml)))
+                {
+                    core.DebugLog("Removing temp file", 6);
+                    File.Delete(config.tempName(datafile_xml));
                 }
             }
             catch (Exception b)
@@ -708,6 +706,7 @@ namespace wmib
                             if (infobot != null)
                             {
                                 infobot.setKey(key, parm[0], user, chan);
+                                return true;
                             }
                         }
                         else

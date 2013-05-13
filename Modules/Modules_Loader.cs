@@ -81,12 +81,25 @@ namespace wmib
                     Type pluginInfo = null;
                     foreach (Type curr in types)
                     {
-                        if (curr.IsAssignableFrom(type) || curr.BaseType == typeof(Module))
+                        if (curr.IsAssignableFrom(type))
                         {
                             pluginInfo = curr;
                             break;
                         }
                     }
+
+                    if (pluginInfo == null)
+                    {
+                        foreach (Type curr in types)
+                        {
+                            if (curr.BaseType == typeof(Module))
+                            {
+                                pluginInfo = curr;
+                                break;
+                            }
+                        }
+                    }
+
                     if (pluginInfo == null)
                     {
                         Program.Log("Unable to load " + path + " because the library contains no module", true);
