@@ -42,7 +42,7 @@ namespace wmib
             {
                 lock (module)
                 {
-                    core.Log("Loading module: " + module.Name);
+                    core.Log("Loading module: " + module.Name + " v" + module.Version);
                     Module.module.Add(module);
                 }
                 if (module.start)

@@ -797,7 +797,7 @@ namespace wmib
             Name = "Infobot core";
             Reload = true;
             start = true;
-            Version = "1.2.0";
+            Version = "1.6.0";
             return true;
         }
 
