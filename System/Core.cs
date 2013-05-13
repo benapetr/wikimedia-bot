@@ -76,9 +76,9 @@ namespace wmib
         /// </summary>
         public static string LastText = null;
         /// <summary>
-        /// Whether the core is supposed to exit
+        /// Status
         /// </summary>
-        public static bool exit = false;
+        public static Status _Status = Status.OK;
         /// <summary>
         /// irc
         /// </summary>
@@ -162,6 +162,19 @@ namespace wmib
         }
 
         /// <summary>
+        /// Debug log
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="verbosity"></param>
+        public static void DebugLog(string text, int verbosity = 1)
+        {
+            if (config.SelectedVerbosity >= verbosity)
+            {
+                Log("DEBUG: " + text);
+            }
+        }
+
+        /// <summary>
         /// Exception handler
         /// </summary>
         /// <param name="ex">Exception pointer</param>
@@ -172,7 +185,7 @@ namespace wmib
             {
                 if (config.debugchan != null && config.debugchan != "")
                 {
-                    irc._SlowQueue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText + " I feel crushed, uh :|", config.debugchan);
+                    irc._SlowQueue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText, config.debugchan);
                 }
                 Program.Log("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace, true);
             }
@@ -385,10 +398,15 @@ namespace wmib
         {
             try
             {
+                if (_Status == Status.ShuttingDown)
+                {
+                    DebugLog("Attempt to kill bot while it's already being killed", 2);
+                    return;
+                }
+                _Status = Status.ShuttingDown;
                 irc.Disconnect();
-                exit = true;
                 irc._SlowQueue.Exit();
-                StorageWriter.running = false;
+                StorageWriter.isRunning = false;
                 Thread modules = new Thread(Terminate);
                 modules.Name = "KERNEL: Core helper shutdown thread";
                 modules.Start();
@@ -672,6 +690,21 @@ namespace wmib
             {
                 return "<tr id=\"" + System.Web.HttpUtility.HtmlEncode(name) + "\"><td>" + System.Web.HttpUtility.HtmlEncode(name) + "</td><td>" + System.Web.HttpUtility.HtmlEncode(value) + "</td></tr>\n";
             }
+        }
+
+        /// <summary>
+        /// Status of bot
+        /// </summary>
+        public enum Status
+        {
+            /// <summary>
+            /// OK
+            /// </summary>
+            OK,
+            /// <summary>
+            /// System is being killed
+            /// </summary>
+            ShuttingDown,
         }
     }
 }

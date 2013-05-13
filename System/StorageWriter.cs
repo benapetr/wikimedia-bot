@@ -20,8 +20,11 @@ namespace wmib
 {
     public class StorageWriter
     {
-        public static List<STI> Data = new List<STI>();
-        public static bool running = true;
+        /// <summary>
+        /// List of all data to write
+        /// </summary>
+        private static List<STI> Data = new List<STI>();
+        public static bool isRunning = true;
 
         private static bool Write(STI item)
         {
@@ -83,7 +86,7 @@ namespace wmib
             try
             {
                 core.Log("KERNEL: loaded writer thread");
-                while (running)
+                while (isRunning)
                 {
                     try
                     {
@@ -95,7 +98,7 @@ namespace wmib
                     }
                     catch (ThreadAbortException)
                     {
-                        running = false;
+                        isRunning = false;
                         break;
                     }
                     catch (Exception fail)

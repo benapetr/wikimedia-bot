@@ -58,32 +58,65 @@ namespace wmib
             catch (Exception)
             {
                 core.irc.Disconnect();
-                core.exit = true;
+                core._Status = core.Status.ShuttingDown;
             }
             Log("Terminated");
         }
 
+        private static bool processVerbosity(string[] gs)
+        {
+            foreach (string item in gs)
+            {
+                if (item.StartsWith("-v"))
+                {
+                    foreach (char x in item)
+                    {
+                        if (x == 'v')
+                        {
+                            config.SelectedVerbosity++;
+                        }
+                    }
+                }
+            }
+            if (config.SelectedVerbosity >= 1)
+            {
+                core.DebugLog("System verbosity: " + config.SelectedVerbosity.ToString());
+            }
+            return false;
+        }
+
         private static void Main(string[] args)
         {
-            core.domain = AppDomain.CurrentDomain;
-            Log(config.version);
-            Log("Loading...");
-            config.UpTime = System.DateTime.Now;
-            Console.CancelKeyPress += new ConsoleCancelEventHandler(myHandler);
-            messages.LoadLD();
-            if ( config.Load() != 0)
-			{
-                Log("Error while loading the config file, exiting", true);
-				return;
-			}
-            core.Help.CreateHelp();
-            core.WriterThread = new System.Threading.Thread(StorageWriter.Core);
-            core.WriterThread.Start();
-            Log("Loading modules");
-            core.SearchMods();
-            IRCTrust.Global();
-            Log("Connecting");
-            core.Connect();
+            try
+            {
+                core.domain = AppDomain.CurrentDomain;
+                Log(config.version);
+                Log("Loading...");
+                config.UpTime = System.DateTime.Now;
+                processVerbosity(args);
+                Console.CancelKeyPress += new ConsoleCancelEventHandler(myHandler);
+                messages.LoadLD();
+                if (config.Load() != 0)
+                {
+                    Log("Error while loading the config file, exiting", true);
+                    return;
+                }
+                core.Help.CreateHelp();
+                core.WriterThread = new System.Threading.Thread(StorageWriter.Core);
+                core.WriterThread.Start();
+                Log("Loading modules");
+                core.SearchMods();
+                IRCTrust.Global();
+                Log("Connecting");
+                core.Connect();
+            }
+            catch (Exception fatal)
+            {
+                Log("ERROR: bot crashed, bellow is debugging information");
+                Console.WriteLine("------------------------------------------------------------------------");
+                Console.WriteLine("Description: " + fatal.Message);
+                Console.WriteLine("Stack trace: " + fatal.StackTrace);
+            }
         }
     }
 }

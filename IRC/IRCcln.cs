@@ -584,7 +584,7 @@ namespace wmib
                 {
                     try
                     {
-                        while (!streamReader.EndOfStream && !core.exit)
+                        while (!streamReader.EndOfStream && core._Status == core.Status.OK)
                         {
                             text = streamReader.ReadLine();
                             core.TrafficLog("MAIN<<<<<<" + text);

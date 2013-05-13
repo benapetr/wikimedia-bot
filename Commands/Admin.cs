@@ -436,6 +436,27 @@ namespace wmib
                 }
             }
 
+            if (message == config.CommandPrefix + "verbosity--")
+            {
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
+                {
+                    if (config.SelectedVerbosity > 0)
+                    {
+                        config.SelectedVerbosity--;
+                    }
+                    irc._SlowQueue.DeliverMessage("Verbosity: " + config.SelectedVerbosity.ToString(), chan.Name, IRC.priority.high);
+                }
+            }
+
+            if (message == config.CommandPrefix + "verbosity++")
+            {
+                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
+                {
+                    config.SelectedVerbosity++;
+                    irc._SlowQueue.DeliverMessage("Verbosity: " + config.SelectedVerbosity.ToString(), chan.Name, IRC.priority.high);
+                }
+            }
+
             if (message.StartsWith(config.CommandPrefix + "system-rm "))
             {
                 if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))

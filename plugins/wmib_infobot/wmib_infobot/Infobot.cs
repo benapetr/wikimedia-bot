@@ -500,19 +500,20 @@ namespace wmib
             update = true;
             try
             {
-                if (File.Exists(datafile_xml))
-                {
-                    core.backupData(datafile_xml);
-                    if (!File.Exists(config.tempName(datafile_xml)))
-                    {
-                        core.Log("Unable to create backup file for " + this.Channel);
-                    }
-                }
-                System.Xml.XmlDocument data = new System.Xml.XmlDocument();
-                System.Xml.XmlNode xmlnode = data.CreateElement("database");
-
                 lock (this)
                 {
+                    if (File.Exists(datafile_xml))
+                    {
+                        core.backupData(datafile_xml);
+                        if (!File.Exists(config.tempName(datafile_xml)))
+                        {
+                            core.Log("Unable to create backup file for " + this.Channel);
+                        }
+                    }
+
+                    System.Xml.XmlDocument data = new System.Xml.XmlDocument();
+                    System.Xml.XmlNode xmlnode = data.CreateElement("database");
+
                     foreach (InfobotAlias key in Alias)
                     {
                         System.Xml.XmlAttribute name = data.CreateAttribute("alias_key_name");
@@ -527,9 +528,6 @@ namespace wmib
                         db.Attributes.Append(created);
                         xmlnode.AppendChild(db);
                     }
-                }
-                lock (this)
-                {
                     foreach (InfobotKey key in Keys)
                     {
                         System.Xml.XmlAttribute name = data.CreateAttribute("key_name");
@@ -556,13 +554,13 @@ namespace wmib
                         db.Attributes.Append(k);
                         xmlnode.AppendChild(db);
                     }
-                }
 
-                data.AppendChild(xmlnode);
-                data.Save(datafile_xml);
-                if (File.Exists(config.tempName(datafile_xml)))
-                {
-                    File.Delete(config.tempName(datafile_xml));
+                    data.AppendChild(xmlnode);
+                    data.Save(datafile_xml);
+                    if (File.Exists(config.tempName(datafile_xml)))
+                    {
+                        File.Delete(config.tempName(datafile_xml));
+                    }
                 }
             }
             catch (Exception b)

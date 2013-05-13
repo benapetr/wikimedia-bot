@@ -17,9 +17,12 @@ using System.Threading;
 
 namespace wmib
 {
+    /// <summary>
+    /// Processor
+    /// </summary>
     public class ProcessorIRC
     {
-        public string text;
+        private string text;
 
         private void Ping()
         {

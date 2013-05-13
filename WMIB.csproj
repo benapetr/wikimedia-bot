@@ -42,6 +42,7 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Channel.cs" />
     <Compile Include="Commands\Admin.cs" />
     <Compile Include="IRC\ProcessorIRC.cs" />
     <Compile Include="System\Channels_Core.cs" />

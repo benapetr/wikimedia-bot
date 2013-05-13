@@ -125,21 +125,44 @@ namespace wmib
             }
         }
 
+        /// <summary>
+        /// This is a private hook of html extension, each module can return a string that is a part of status page for each channel
+        /// the content of the page is unsorted so this string will be randomly on end of html source
+        /// </summary>
+        /// <param name="html"></param>
+        /// <param name="channel"></param>
         public virtual void Hook_AfterChannelWeb(ref string html, config.channel channel)
         {
             return;
         }
 
+        /// <summary>
+        /// Someone is kicked
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <param name="source"></param>
+        /// <param name="user"></param>
         public virtual void Hook_Kick(config.channel channel, User source, User user)
         {
             return;
         }
 
+        /// <summary>
+        /// This is a private hook of html extension, each module can return a string that is a part of status page for each channel
+        /// the content of the page is unsorted so this string will be randomly inside of html source
+        /// </summary>
+        /// <param name="html"></param>
+        /// <param name="channel"></param>
         public virtual void Hook_ChannelWeb(ref string html, config.channel channel)
         {
             return;
         }
 
+        /// <summary>
+        /// Someone join
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <param name="user"></param>
         public virtual void Hook_Join(config.channel channel, User user)
         {
             return;
@@ -156,36 +179,74 @@ namespace wmib
             return;
         }
 
+        /// <summary>
+        /// When someone is using action
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <param name="invoker"></param>
+        /// <param name="message"></param>
         public virtual void Hook_ACTN(config.channel channel, User invoker, string message)
         {
             return;
         }
 
+        /// <summary>
+        /// When a configuration of channel is being changed
+        /// </summary>
+        /// <param name="chan"></param>
+        /// <param name="invoker"></param>
+        /// <param name="config"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public virtual bool Hook_SetConfig(config.channel chan, User invoker, string config, string value)
         {
             return false;
         }
 
+        /// <summary>
+        /// When a config of channel is being reload
+        /// </summary>
+        /// <param name="chan"></param>
         public virtual void Hook_ReloadConfig(config.channel chan)
         {
             return;
         }
 
+        /// <summary>
+        /// When a channel is removed from operating memory
+        /// </summary>
+        /// <param name="chan"></param>
         public virtual void Hook_ChannelDrop(config.channel chan)
         {
             return;
         }
 
+        /// <summary>
+        /// Event that happen when user part
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <param name="user"></param>
         public virtual void Hook_Part(config.channel channel, User user)
         {
             return;
         }
 
+        /// <summary>
+        /// Event that happens when the bot talk
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <param name="self"></param>
+        /// <param name="message"></param>
         public virtual void Hook_OnSelf(config.channel channel, User self, string message)
         {
             return;
         }
 
+        /// <summary>
+        /// This is a private hook of html extension, each module can have a block of text in system page
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <returns></returns>
         public virtual string Extension_DumpHtml(config.channel channel)
         {
             return null;
@@ -200,16 +261,29 @@ namespace wmib
             return;
         }
 
+        /// <summary>
+        /// When the module is loaded
+        /// </summary>
+        /// <returns></returns>
         public virtual bool Hook_OnUnload()
         {
             return true;
         }
 
+        /// <summary>
+        /// When the module is being registered in memory
+        /// </summary>
+        /// <returns></returns>
         public virtual bool Hook_OnRegister()
         {
             return true;
         }
 
+        /// <summary>
+        /// User quit
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="Message"></param>
         public virtual void Hook_Quit(User user, string Message)
         {
             return;
@@ -233,11 +307,24 @@ namespace wmib
             return;
         }
 
+        /// <summary>
+        /// Someone changes the nick
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <param name="Target"></param>
+        /// <param name="OldNick"></param>
         public virtual void Hook_Nick(config.channel channel, User Target, string OldNick)
         { 
             
         }
 
+        /// <summary>
+        /// Get a config
+        /// </summary>
+        /// <param name="chan"></param>
+        /// <param name="name"></param>
+        /// <param name="invalid"></param>
+        /// <returns></returns>
         public static int GetConfig(config.channel chan, string name, int invalid)
         {
             try
@@ -259,6 +346,13 @@ namespace wmib
             return invalid;
         }
 
+        /// <summary>
+        /// Get config
+        /// </summary>
+        /// <param name="chan"></param>
+        /// <param name="name"></param>
+        /// <param name="invalid"></param>
+        /// <returns></returns>
         public static string GetConfig(config.channel chan, string name, string invalid)
         {
             try
@@ -384,6 +478,12 @@ namespace wmib
             }
         }
 
+        /// <summary>
+        /// This is called only when a bot receive a private message, if it return true the message is considered handled
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
         public virtual bool Hook_OnPrivateFromUser(string message, User user)
         {
             return false;
