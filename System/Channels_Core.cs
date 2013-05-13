@@ -154,6 +154,7 @@ namespace wmib
                         }
                         lock (config.channels)
                         {
+                            chan.Remove();
                             config.channels.Remove(chan);
                         }
                         config.Save();

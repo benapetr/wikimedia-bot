@@ -24,12 +24,16 @@ namespace wmib
                 while (true)
                 {
                     SaveData();
-                    Thread.Sleep(2000);
+                    Thread.Sleep(20000);
                 }
             }
             catch (ThreadAbortException)
             {
                 SaveData();
+            }
+            catch (Exception fail)
+            {
+                core.handleException(fail);
             }
         }
 

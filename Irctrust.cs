@@ -21,6 +21,7 @@ namespace wmib
     [Serializable()]
     public class IRCTrust
     {
+        public static System.IO.FileSystemWatcher fs = new System.IO.FileSystemWatcher();
         private static List<core.SystemUser> GlobalUsers = new List<core.SystemUser>();
         /// <summary>
         /// List of all users in a channel
@@ -64,6 +65,32 @@ namespace wmib
             }
         }
 
+        private static void GlobalLoad()
+        {
+            string[] dba = System.IO.File.ReadAllLines(variables.config + System.IO.Path.DirectorySeparatorChar + "admins");
+            lock (GlobalUsers)
+            {
+                GlobalUsers.Clear();
+                foreach (string x in dba)
+                {
+                    if (x.Contains(config.separator))
+                    {
+                        string[] info = x.Split(Char.Parse(config.separator));
+                        string level = info[1];
+                        string name = core.decode2(info[0]);
+                        GlobalUsers.Add(new core.SystemUser(level, name));
+                        core.DebugLog("Registered global user ("+ level +"): " + name, 2);
+                    }
+                }
+            }
+        }
+
+        private static void GlobalChanged(object sender, EventArgs e)
+        {
+            core.Log("Global user list has been changed");
+            GlobalLoad();
+        }
+
         /// <summary>
         /// Load a global list
         /// </summary>
@@ -75,17 +102,13 @@ namespace wmib
                 Program.Log("Creating user file for admins");
                 System.IO.File.WriteAllText(variables.config + System.IO.Path.DirectorySeparatorChar + "admins", "");
             }
-            string[] dba = System.IO.File.ReadAllLines(variables.config + System.IO.Path.DirectorySeparatorChar + "admins");
-            foreach (string x in dba)
-            {
-                if (x.Contains(config.separator))
-                {
-                    string[] info = x.Split(Char.Parse(config.separator));
-                    string level = info[1];
-                    string name = core.decode2(info[0]);
-                    GlobalUsers.Add(new core.SystemUser(level, name));
-                }
-            }
+            GlobalLoad();
+            core.DebugLog("Registering fs watcher");
+            fs.Path = variables.config;
+            fs.Changed += new System.IO.FileSystemEventHandler(GlobalChanged);
+            fs.Created += new System.IO.FileSystemEventHandler(GlobalChanged);
+            fs.Filter = "admins";
+            fs.EnableRaisingEvents = true;
         }
 
         /// <summary>
@@ -94,6 +117,7 @@ namespace wmib
         /// <returns></returns>
         public bool Save()
         {
+            core.DebugLog("Saving user file of " + ChannelName);
             core.backupData(File);
             try
             {
@@ -218,27 +242,33 @@ namespace wmib
         {
             core.SystemUser lv = new core.SystemUser("null", "");
             int current = 0;
-            foreach (core.SystemUser b in GlobalUsers)
+            lock (GlobalUsers)
             {
-                core.RegexCheck id = new core.RegexCheck(b.name, user);
-                if (id.IsMatch() == 1)
+                foreach (core.SystemUser b in GlobalUsers)
                 {
-                    if (getLevel(b.level) > current)
+                    core.RegexCheck id = new core.RegexCheck(b.name, user);
+                    if (id.IsMatch() == 1)
                     {
-                        current = getLevel(b.level);
-                        lv = b;
+                        if (getLevel(b.level) > current)
+                        {
+                            current = getLevel(b.level);
+                            lv = b;
+                        }
                     }
                 }
             }
-            foreach (core.SystemUser b in Users)
+            lock (Users)
             {
-                core.RegexCheck id = new core.RegexCheck(b.name, user);
-                if (id.IsMatch() == 1)
+                foreach (core.SystemUser b in Users)
                 {
-                    if (getLevel(b.level) > current)
+                    core.RegexCheck id = new core.RegexCheck(b.name, user);
+                    if (id.IsMatch() == 1)
                     {
-                        current = getLevel(b.level);
-                        lv = b;
+                        if (getLevel(b.level) > current)
+                        {
+                            current = getLevel(b.level);
+                            lv = b;
+                        }
                     }
                 }
             }
@@ -257,9 +287,12 @@ namespace wmib
                 return;
             }
             string users_ok = "";
-            foreach (core.SystemUser b in Users)
+            lock (Users)
             {
-                users_ok += " " + b.name + " (2" + b.level + ")" + ",";
+                foreach (core.SystemUser b in Users)
+                {
+                    users_ok += " " + b.name + " (2" + b.level + ")" + ",";
+                }
             }
             core.irc._SlowQueue.DeliverMessage(messages.get("TrustedUserList", Channel.Language) + users_ok, ChannelName);
         }

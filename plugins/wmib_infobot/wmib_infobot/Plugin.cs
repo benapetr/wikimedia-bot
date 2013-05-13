@@ -425,13 +425,16 @@ namespace wmib
                             core.irc._SlowQueue.DeliverMessage(messages.get("db8", channel.Language), channel.Name);
                             return;
                         }
-                        if (channel.sharedlink.Contains(guest))
+                        if (channel.SharedLinkedChan.Contains(guest))
                         {
                             core.irc._SlowQueue.DeliverMessage(messages.get("db14", channel.Language), channel.Name);
                             return;
                         }
                         core.irc._SlowQueue.DeliverMessage(messages.get("db1", channel.Language, new List<string> { name }), channel.Name);
-                        channel.sharedlink.Add(guest);
+                        lock (channel.SharedLinkedChan)
+                        {
+                            channel.SharedLinkedChan.Add(guest);
+                        }
                         channel.SaveConfig();
                         return;
                     }
@@ -544,9 +547,9 @@ namespace wmib
                             core.irc._SlowQueue.DeliverMessage(messages.get("db8", channel.Language), channel.Name);
                             return;
                         }
-                        if (channel.sharedlink.Contains(target))
+                        if (channel.SharedLinkedChan.Contains(target))
                         {
-                            channel.sharedlink.Remove(target);
+                            channel.SharedLinkedChan.Remove(target);
                             core.irc._SlowQueue.DeliverMessage(messages.get("db2", channel.Language, new List<string> { name }), channel.Name);
                             channel.SaveConfig();
                             return;

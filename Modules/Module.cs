@@ -375,6 +375,12 @@ namespace wmib
             return invalid;
         }
 
+        /// <summary>
+        /// Set config
+        /// </summary>
+        /// <param name="chan"></param>
+        /// <param name="name"></param>
+        /// <param name="data"></param>
         public static void SetConfig(config.channel chan, string name, bool data)
         {
             try
@@ -390,6 +396,12 @@ namespace wmib
             }
         }
 
+        /// <summary>
+        /// Set config
+        /// </summary>
+        /// <param name="chan"></param>
+        /// <param name="name"></param>
+        /// <param name="data"></param>
         public static void SetConfig(config.channel chan, string name, string data)
         {
             try
@@ -489,6 +501,9 @@ namespace wmib
             return false;
         }
 
+        /// <summary>
+        /// Start
+        /// </summary>
         public virtual void Load()
         { 
             core.Log("Module " + Name + " is missing core thread, terminated", true);

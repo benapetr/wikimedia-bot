@@ -66,7 +66,7 @@ namespace wmib
         /// <summary>
         /// Queue of all messages that should be delivered to network
         /// </summary>
-        public SlowQueue _SlowQueue;
+        public SlowQueue _SlowQueue = null;
         private bool connected = false;
         /// <summary>
         /// If network is connected
@@ -364,7 +364,6 @@ namespace wmib
                         }
                     }
                 }
-                streamWriter.Flush();
             }
             catch (Exception fail)
             {
@@ -383,14 +382,13 @@ namespace wmib
             if (Channel != null)
             {
                 SendData("JOIN " + Channel.Name);
-                streamWriter.Flush();
                 return true;
             }
             return false;
         }
 
         /// <summary>
-        /// Restart
+        /// Restart a message delivery
         /// </summary>
         public void RestartIRCMessageDelivery()
         {
@@ -414,21 +412,35 @@ namespace wmib
                     if (!config.serverIO)
                     {
                         SendData("PING :" + config.network);
-                        streamWriter.Flush();
                     }
-                    foreach (config.channel dd in config.channels)
+                    List<string> channels = new List<string>();
+                    // check if there is some channel which needs an update of user list
+                    lock (config.channels)
                     {
-                        if (!dd.FreshList)
+                        foreach (config.channel dd in config.channels)
                         {
-                            SendData("WHO " + dd.Name);
-                            Program.Log("requesting user list for" + dd.Name);
-                            streamWriter.Flush();
-                            Thread.Sleep(2000);
+                            if (!dd.FreshList)
+                            {
+                                channels.Add(dd.Name);
+                            }
                         }
                     }
+
+                    foreach (string xx in channels)
+                    {
+                        SendData("WHO " + xx);
+                        Program.Log("requesting user list for" + xx);
+                        Thread.Sleep(2000);
+                    }
                 }
-                catch (Exception)
-                { }
+                catch (ThreadAbortException)
+                {
+                    return;
+                }
+                catch (Exception fail)
+                {
+                    core.handleException(fail);
+                }
             }
         }
 
@@ -462,7 +474,6 @@ namespace wmib
             }
             _SlowQueue.newmessages.Clear();
             _SlowQueue.messages.Clear();
-            streamWriter.Flush();
             _Queue.Start();
             return false;
         }
@@ -475,9 +486,12 @@ namespace wmib
         {
             if (IsConnected)
             {
-                streamWriter.WriteLine(text);
-                streamWriter.Flush();
-                core.TrafficLog("MAIN>>>>>>" + text);
+                lock (this)
+                {
+                    streamWriter.WriteLine(text);
+                    streamWriter.Flush();
+                    core.TrafficLog("MAIN>>>>>>" + text);
+                }
             }
             else
             {
@@ -494,7 +508,6 @@ namespace wmib
             if (config.password != "")
             {
                 SendData("PRIVMSG nickserv :identify " + config.login + " " + config.password);
-                streamWriter.Flush();
                 System.Threading.Thread.Sleep(4000);
             }
             return true;
@@ -526,7 +539,6 @@ namespace wmib
                 if (config.serverIO)
                 {
                     SendData("CONTROL: STATUS");
-                    streamWriter.Flush();
                     Console.WriteLine("CACHE: Waiting for buffer");
                     bool done = true;
                     while (done)
@@ -602,7 +614,6 @@ namespace wmib
                                         {
                                             System.Threading.Thread.Sleep(800);
                                             SendData("CONTROL: STATUS");
-                                            streamWriter.Flush();
                                             string response = streamReader.ReadLine();
                                             core.TrafficLog("MAIN<<<<<<" + response);
                                             if (response == "CONTROL: OK")
@@ -669,25 +680,21 @@ namespace wmib
                                             if (message.StartsWith(" :" + delimiter.ToString() + "FINGER"))
                                             {
                                                 SendData("NOTICE " + nick + " :" + delimiter.ToString() + "FINGER" + " I am a bot don't finger me");
-                                                streamWriter.Flush();
                                                 continue;
                                             }
                                             if (message.StartsWith(" :" + delimiter.ToString() + "TIME"))
                                             {
                                                 SendData("NOTICE " + nick + " :" + delimiter.ToString() + "TIME " + System.DateTime.Now.ToString());
-                                                streamWriter.Flush();
                                                 continue;
                                             }
                                             if (message.StartsWith(" :" + delimiter.ToString() + "PING"))
                                             {
                                                 SendData("NOTICE " + nick + " :" + delimiter.ToString() + "PING" + message.Substring(message.IndexOf(delimiter.ToString() + "PING") + 5));
-                                                streamWriter.Flush();
                                                 continue;
                                             }
                                             if (message.StartsWith(" :" + delimiter.ToString() + "VERSION"))
                                             {
                                                 SendData("NOTICE " + nick + " :" + delimiter.ToString() + "VERSION " + config.version);
-                                                streamWriter.Flush();
                                                 continue;
                                             }
                                             bool respond = true;
@@ -729,7 +736,6 @@ namespace wmib
                                     if (command.Contains("PING "))
                                     {
                                         SendData("PONG " + text.Substring(text.IndexOf("PING ") + 5));
-                                        streamWriter.Flush();
                                         Console.WriteLine(command);
                                     }
                                     if (command.Contains("KICK"))
@@ -780,7 +786,7 @@ namespace wmib
             }
             catch (Exception)
             {
-                Console.WriteLine("IRC: Connection error");
+                core.Log("IRC: Connection error");
                 connected = false;
             }
         }
@@ -796,9 +802,10 @@ namespace wmib
                 connected = false;
                 try
                 {
-                    streamWriter.Flush();
+                    core.DebugLog("Closing");
                     streamWriter.Close();
                     streamReader.Close();
+                    networkStream.Close();
                 }
                 catch (Exception fail)
                 {

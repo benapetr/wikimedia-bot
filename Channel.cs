@@ -28,12 +28,12 @@ namespace wmib
             /// <summary>
             /// Channel name
             /// </summary>
-            public string Name;
+            public string Name = null;
 
             /// <summary>
             /// Language
             /// </summary>
-            public string Language;
+            public string Language = null;
 
             /// <summary>
             /// List of users
@@ -46,9 +46,9 @@ namespace wmib
             public bool FreshList = false;
 
             /// <summary>
-            /// Deprecated
+            /// Directory where logs are being stored
             /// </summary>
-            public string LogDir;
+            public string LogDir = null;
 
             /// <summary>
             /// List of channels that have shared infobot db
@@ -103,19 +103,20 @@ namespace wmib
             public bool ignore_unknown = false;
 
             /// <summary>
-            /// Target db of shared infobot - deprecated
+            /// Target db of shared infobot
             /// </summary>
             public string shared = null;
 
             /// <summary>
             /// List of channels we share db with
             /// </summary>
-            public List<config.channel> sharedlink = null;
+            public List<config.channel> SharedLinkedChan = null;
 
             /// <summary>
             /// Users
             /// </summary>
             public IRCTrust Users = null;
+            private bool isRemoved = false;
 
             /// <summary>
             /// Add a line to config
@@ -353,9 +354,9 @@ namespace wmib
                     InsertData("suppress-warnings", this.suppress_warnings.ToString(), ref data, ref xmlnode);
                     InsertData("respond_wait", respond_wait.ToString(), ref data, ref xmlnode);
                     InsertData("sharedinfo", this.shared, ref data, ref xmlnode);
-                    if (!(sharedlink.Count < 1))
+                    if (!(SharedLinkedChan.Count < 1))
                     {
-                        foreach (channel current in sharedlink)
+                        foreach (channel current in SharedLinkedChan)
                         {
                             InsertData("name", current.Name, ref data, ref xmlnode, "sharedch");
                         }
@@ -396,6 +397,31 @@ namespace wmib
             }
 
             /// <summary>
+            /// Remove all refs
+            /// </summary>
+            public void Remove()
+            {
+                if (isRemoved)
+                {
+                    core.DebugLog("Channel is already removed");
+                    return;
+                }
+                Users = null;
+                lock (ExtensionData)
+                {
+                    ExtensionData.Clear();
+                }
+                lock (ExtensionObjects)
+                {
+                    ExtensionObjects.Clear();
+                }
+
+                shared = null;
+                SharedChans.Clear();
+                SharedLinkedChan.Clear();
+            }
+
+            /// <summary>
             /// Return true if user is present in channel
             /// </summary>
             /// <param name="name"></param>
@@ -426,9 +452,9 @@ namespace wmib
                     {
                         if (core.getChannel(name) != null)
                         {
-                            if (sharedlink.Contains(core.getChannel(name)) == false)
+                            if (SharedLinkedChan.Contains(core.getChannel(name)) == false)
                             {
-                                sharedlink.Add(core.getChannel(name));
+                                SharedLinkedChan.Add(core.getChannel(name));
                             }
                         }
                     }
@@ -444,13 +470,10 @@ namespace wmib
             {
                 Name = name;
                 conf = "";
-                //Info = true;
                 Language = "en";
-                sharedlink = new List<channel>();
+                SharedLinkedChan = new List<channel>();
                 shared = "";
                 suppress = false;
-                //Feed = false;
-                //Logged = false;
                 LoadConfig();
                 if (!Directory.Exists(config.path_txt))
                 {

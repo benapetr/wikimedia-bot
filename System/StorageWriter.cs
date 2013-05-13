@@ -130,8 +130,17 @@ namespace wmib
 
     public class STI
     {
+        /// <summary>
+        /// Delayed write
+        /// </summary>
         public bool DelayedWrite;
+        /// <summary>
+        /// Line
+        /// </summary>
         public string line;
+        /// <summary>
+        /// File
+        /// </summary>
         public string file;
         public STI(string Line, string Name, bool delayed = true)
         {

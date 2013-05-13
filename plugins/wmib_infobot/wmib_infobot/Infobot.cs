@@ -313,9 +313,6 @@ namespace wmib
                 lock (this)
                 {
                     Keys.Clear();
-                }
-                lock (this)
-                {
                     Alias.Clear();
                 }
                 foreach (System.Xml.XmlNode xx in data.ChildNodes[0].ChildNodes)
@@ -323,7 +320,7 @@ namespace wmib
                     if (xx.Name == "alias")
                     {
                         InfobotAlias _Alias = new InfobotAlias(xx.Attributes[0].Value, xx.Attributes[1].Value);
-                        lock (Alias)
+                        lock (this)
                         {
                             Alias.Add(_Alias);
                         }
@@ -485,7 +482,7 @@ namespace wmib
             {
                 return false;
             }
-            if (host.sharedlink.Contains(guest))
+            if (host.SharedLinkedChan.Contains(guest))
             {
                 return true;
             }
@@ -500,6 +497,7 @@ namespace wmib
             update = true;
             try
             {
+                core.DebugLog("Saving database of infobot");
                 lock (this)
                 {
                     if (File.Exists(datafile_xml))
@@ -510,6 +508,8 @@ namespace wmib
                             core.Log("Unable to create backup file for " + this.Channel);
                         }
                     }
+
+                    core.DebugLog("Generating xml document", 4);
 
                     System.Xml.XmlDocument data = new System.Xml.XmlDocument();
                     System.Xml.XmlNode xmlnode = data.CreateElement("database");
@@ -528,6 +528,7 @@ namespace wmib
                         db.Attributes.Append(created);
                         xmlnode.AppendChild(db);
                     }
+
                     foreach (InfobotKey key in Keys)
                     {
                         System.Xml.XmlAttribute name = data.CreateAttribute("key_name");
@@ -556,9 +557,12 @@ namespace wmib
                     }
 
                     data.AppendChild(xmlnode);
+                    core.DebugLog("Writing xml document to a file");
                     data.Save(datafile_xml);
+                    core.DebugLog("Checking the previous file", 6);
                     if (File.Exists(config.tempName(datafile_xml)))
                     {
+                        core.DebugLog("Removing temp file", 6);
                         File.Delete(config.tempName(datafile_xml));
                     }
                 }
