@@ -347,6 +347,21 @@ namespace wmib
         }
 
         /// <summary>
+        /// Debug log
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="verbosity"></param>
+        public void DebugLog(string text, int verbosity = 1)
+        {
+            core.DebugLog(text, verbosity);
+        }
+
+        public void Log(string text, bool warning)
+        {
+            core.Log(Name + ": " + text, warning);
+        }
+
+        /// <summary>
         /// Get config
         /// </summary>
         /// <param name="chan"></param>

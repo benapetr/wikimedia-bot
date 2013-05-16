@@ -31,15 +31,16 @@ namespace wmib
 
     public class RegularModule : Module
     {
-        public static List<RequestLabs> DB = new List<RequestLabs>();
+        public static List<RequestLabs> Shell = new List<RequestLabs>();
+        public static List<RequestLabs> Tools = new List<RequestLabs>();
         public Thread notifications = null;
         public config.channel ch = null;
 
         public RequestLabs Contains(string user)
         {
-            lock (DB)
+            lock (Shell)
             {
-                foreach (RequestLabs r in DB)
+                foreach (RequestLabs r in Shell)
                 {
                     if (r.user == user)
                     {
@@ -49,6 +50,8 @@ namespace wmib
             }
             return null;
         }
+
+        
 
         public RequestLabs getUser(string user, List<RequestLabs> list)
         {
@@ -66,18 +69,33 @@ namespace wmib
         {
             Name = "Requests";
             start = true;
-            Version = "1.0.8";
+            Version = "1.10.0";
             return true;
+        }
+
+        public RequestLabs ContainsLabs(string user)
+        {
+            lock (Tools)
+            {
+                foreach (RequestLabs r in Tools)
+                {
+                    if (r.user == user)
+                    {
+                        return r;
+                    }
+                }
+            }
+            return null;
         }
 
         public void DisplayWaiting()
         {
-            if (DB.Count > 0)
+            if (Shell.Count > 0)
             {
-                int requestCount = DB.Count;
+                int requestCount = Shell.Count;
                 int displayed = 0;
                 string info = "";
-                foreach (RequestLabs u in DB)
+                foreach (RequestLabs u in Shell)
                 {
                     displayed++;
                     info += u.user + " (waiting " + u.WaitingTime() + ") ";
@@ -96,6 +114,31 @@ namespace wmib
                 }
                 core.irc._SlowQueue.DeliverMessage(info, "#wikimedia-labs");
             }
+
+            if (Tools.Count > 0)
+            {
+                int requestCount = Tools.Count;
+                int displayed = 0;
+                string info = "";
+                foreach (RequestLabs u in Tools)
+                {
+                    displayed++;
+                    info += u.user + " (waiting " + u.WaitingTime() + ") ";
+                    if (info.Length > 160)
+                    {
+                        break;
+                    }
+                }
+                if (displayed == 1)
+                {
+                    info = "Warning: There is " + requestCount.ToString() + " user waiting for access to tools project: " + info;
+                }
+                else
+                {
+                    info = "Warning: There are " + requestCount.ToString() + " users waiting for access to tools project, displaying last " + displayed.ToString() + ": " + info;
+                }
+                core.irc._SlowQueue.DeliverMessage(info, "#wikimedia-labs");
+            }
         }
 
         public void Run()
@@ -107,12 +150,12 @@ namespace wmib
                 {
                     if (GetConfig(ch, "Requests.Enabled", false))
                     {
-                        lock (DB)
+                        lock (Shell)
                         {
                             DisplayWaiting();
                         }
                     }
-                    if (DB.Count > 0)
+                    if (Shell.Count > 0 || Tools.Count > 0)
                     {
                         Thread.Sleep(800000);
                     }
@@ -132,6 +175,15 @@ namespace wmib
             }
         }
 
+        public bool Matches(string text)
+        {
+            if (text.Contains("|Completed=No") || text.Contains("|Completed=false") || text.Contains("|Completed=no") || text.Contains("|Completed=False"))
+            {
+                return true;
+            }
+            return false;
+        }
+
         public override void Load()
         {
             try
@@ -145,12 +197,13 @@ namespace wmib
                 RequestCache.Load();
                 notifications = new Thread(Run);
                 notifications.Start();
+                Site wikitech = new Site("https://wikitech.wikimedia.org", "wmib", "");
                 while (true)
                 {
                     try
                     {
-                        List<string> list = new List<string>();
-                        Site wikitech = new Site("https://wikitech.wikimedia.org", "wmib", "");
+                        List<string> shell = new List<string>();
+                        List<string> tooldata = new List<string>();
                         PageList requests = new PageList(wikitech);
                         requests.FillAllFromCategory("Shell Access Requests");
                         foreach (Page page in requests)
@@ -161,51 +214,74 @@ namespace wmib
                                 continue;
                             }
                             page.Load();
-                            if (!(page.text.Contains("|Completed=No") || page.text.Contains("|Completed=false")))
+                            if (!Matches(page.text))
                             {
                                 RequestCache.Insert(title);
-                                lock (DB)
+                                lock (Shell)
                                 {
                                     // this one was already processed
                                     RequestLabs previous = Contains(title);
                                     if (previous != null)
                                     {
-                                        DB.Remove(previous);
+                                        Shell.Remove(previous);
                                     }
                                 }
                                 continue;
                             }
                             else
                             {
-                                if (!list.Contains(title))
+                                if (!shell.Contains(title))
                                 {
-                                    list.Add(title);
+                                    shell.Add(title);
                                 }
-                                lock (DB)
+                                lock (Shell)
                                 {
                                     if (Contains(title) == null)
                                     {
-                                        DB.Add(new RequestLabs(title));
+                                        Shell.Add(new RequestLabs(title));
                                     }
                                 }
                             }
-                            // now we need to remove all processed requests that were in a list
-                            /*List<RequestLabs> tr = new List<RequestLabs>();
-                            lock (DB)
+                        }
+
+                        requests = new PageList(wikitech);
+                        requests.FillAllFromCategory("Tools_Access_Requests");
+                        foreach (Page page in requests)
+                        {
+                            string title = page.title.Replace("Nova Resource:Tools/Access Request/", "");
+                            if (RequestCache.ContainsLabs(title))
                             {
-                                foreach (RequestLabs x in DB)
+                                continue;
+                            }
+                            page.Load();
+                            if (!(Matches(page.text)))
+                            {
+                                RequestCache.InsertLabs(title);
+                                lock (Tools)
                                 {
-                                    if (!list.Contains(x.user))
+                                    // this one was already processed
+                                    RequestLabs previous = ContainsLabs(title);
+                                    if (previous != null)
                                     {
-                                        tr.Add(x);
+                                        Tools.Remove(previous);
                                     }
                                 }
-
-                                foreach (RequestLabs x in tr)
+                                continue;
+                            }
+                            else
+                            {
+                                if (!tooldata.Contains(title))
                                 {
-                                    DB.Remove(x);
+                                    tooldata.Add(title);
                                 }
-                            } */
+                                lock (Tools)
+                                {
+                                    if (ContainsLabs(title) == null)
+                                    {
+                                        Tools.Add(new RequestLabs(title));
+                                    }
+                                }
+                            }
                         }
                         Thread.Sleep(60000);
                     }
@@ -280,9 +356,9 @@ namespace wmib
 
             if (message == "@requests")
             {
-                lock (DB)
+                lock (Shell)
                 {
-                    if (DB.Count > 0)
+                    if (Shell.Count > 0 || Tools.Count > 0)
                     {
                         DisplayWaiting();
                     }
