@@ -141,7 +141,7 @@ namespace wmib
             }
             catch (Exception r)
             {
-                core.handleException(r);
+                core.handleException(r, "Labs");
             }
         }
 
@@ -180,7 +180,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                core.handleException(fail, "Labs");
             }
             return false;
         }
@@ -199,7 +199,7 @@ namespace wmib
                     {
                         if (!silent)
                         {
-                            core.Log("JSON returned property when I requested value", true);
+                            core.DebugLog("JSON returned property when I requested value", 6);
                         }
                         return "{unknown}";
                     }
@@ -250,7 +250,7 @@ namespace wmib
                         {
                             if (b.Value == null)
                             {
-                                core.Log("DEBUG: null at value");
+                                core.DebugLog("null at value");
                                 continue;
                             }
                             string value = b.Value.ToString();
@@ -279,7 +279,7 @@ namespace wmib
                                     }
                                     catch (Exception)
                                     {
-                                        core.Log("Debug: can't resolve" + resource);
+                                        core.DebugLog("can't resolve" + resource);
                                     }
                                     instance = new Instance(resource, name, host, ip, type, true);
                                     instance.fqdn = fqdn;
@@ -362,7 +362,7 @@ namespace wmib
                 }
                 else
                 {
-                    core.Log("Failed to download db file", true);
+                    core.Log("Labs: Failed to download db file", true);
                 }
                 URL = "https://labsconsole.wikimedia.org/wiki/Special:Ask/-5B-5BResource-20Type::project-5D-5D/-3F/-3FMember/-3FDescription/mainlabel%3D-2D/searchlabel%3Dprojects/offset%3D0/limit%3D500/format%3Djson";
                 temp = System.IO.Path.GetTempFileName();
@@ -462,7 +462,7 @@ namespace wmib
             catch (Exception t)
             {
                 core.Log(t.Data + t.StackTrace);
-                core.handleException(t);
+                core.handleException(t, "Labs");
             }
         }
 
@@ -1030,7 +1030,7 @@ namespace wmib
             }
             catch (Exception f)
             {
-                core.handleException(f);
+                core.handleException(f, "Labs");
             }
         }
 

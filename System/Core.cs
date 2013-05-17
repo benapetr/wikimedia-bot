@@ -179,7 +179,26 @@ namespace wmib
         /// </summary>
         /// <param name="ex">Exception pointer</param>
         /// <param name="chan">Channel name</param>
-        public static void handleException(Exception ex, string chan = "")
+        public static void handleException(Exception ex, string module)
+        {
+            try
+            {
+                if (config.debugchan != null && config.debugchan != "")
+                {
+                    irc._SlowQueue.DeliverMessage("DEBUG Exception in module " + module + ": " + ex.Message + " last input was " + LastText, config.debugchan);
+                }
+                Program.Log("DEBUG Exception in module " + module + ": " + ex.Message + ex.Source + ex.StackTrace, true);
+            }
+            catch (Exception) // exception happened while we tried to handle another one, ignore that (probably issue with logging)
+            { }
+        }
+
+        /// <summary>
+        /// Exception handler
+        /// </summary>
+        /// <param name="ex">Exception pointer</param>
+        /// <param name="chan">Channel name</param>
+        public static void handleException(Exception ex)
         {
             try
             {

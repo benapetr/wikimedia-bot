@@ -100,7 +100,7 @@ namespace wmib
         /// <summary>
         /// Version
         /// </summary>
-        public static string version = "wikimedia bot v. 1.10.8.0";
+        public static string version = "wikimedia bot v. 1.10.8.10";
 
         /// <summary>
         /// Separator for system db

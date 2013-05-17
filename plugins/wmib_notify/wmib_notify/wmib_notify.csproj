@@ -35,8 +35,10 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="wmib">
-      <HintPath>..\..\..\bin\Debug\wmib.exe</HintPath>
+    <Reference Include="wmib, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <ExecutableExtension>.exe</ExecutableExtension>
+      <HintPath>..\..\..\bin\Release\wmib.exe</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

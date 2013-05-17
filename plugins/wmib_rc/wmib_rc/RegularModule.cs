@@ -300,7 +300,7 @@ namespace wmib
                 try
                 {
                     string[] list = System.IO.File.ReadAllLines(RecentChanges.channeldata);
-                    core.Log("Loading feed");
+                    Log("Loading feed", false);
                     lock (RecentChanges.channels)
                     {
                         foreach (string chan in list)
@@ -309,7 +309,7 @@ namespace wmib
                         }
                     }
                     RecentChanges.Connect();
-                    core.Log("Loaded feed");
+                    Log("Loaded feed", false);
                     while (true)
                     {
                         try
@@ -355,7 +355,7 @@ namespace wmib
                                                                         {
                                                                             if (w.URL == null)
                                                                             {
-                                                                                core.Log("NULL pointer on idata 1", true);
+                                                                                DebugLog("NULL pointer on idata 1", 2);
                                                                             }
                                                                             core.irc._SlowQueue.DeliverMessage(
                                                                                Format(w.URL.name, w.URL.url, page, username, link, summary, curr.channel), curr.channel.Name, IRC.priority.low);
@@ -367,7 +367,7 @@ namespace wmib
                                                                                 {
                                                                                     if (w.URL == null)
                                                                                     {
-                                                                                        core.Log("NULL pointer on idata 2", true);
+                                                                                        DebugLog("NULL pointer on idata 2", 2);
                                                                                     }
                                                                                     core.irc._SlowQueue.DeliverMessage(
                                                                                     Format(w.URL.name, w.URL.url, page, username, link, summary, curr.channel), curr.channel.Name, IRC.priority.low);
@@ -395,11 +395,10 @@ namespace wmib
                         {
                             RecentChanges.Connect();
                         }
-                        catch (Exception x)
+                        catch (Exception fail)
                         {
-                            //core.Log("Exception while doing " + laststep, true);
                             core.LastText = message;
-                            core.handleException(x);
+                            handleException(fail);
                         }
                     }
                 }
@@ -407,16 +406,19 @@ namespace wmib
                 {
                     return;
                 }
-                catch (Exception x)
+                catch (Exception fail)
                 {
-                    //core.Log("Exception while doing " + laststep, true);
-                    core.handleException(x);
+                    handleException(fail);
                     // abort
                 }
             }
             catch (ThreadAbortException)
             {
                 return;
+            }
+            catch (Exception fail)
+            {
+                handleException(fail);
             }
         }
 

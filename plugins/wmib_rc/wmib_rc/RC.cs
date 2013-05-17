@@ -107,7 +107,7 @@ namespace wmib
             }
             catch (Exception er)
             {
-                core.handleException(er);
+                core.handleException(er, "RC");
             }
         }
 
@@ -128,8 +128,9 @@ namespace wmib
                 }
                 return output;
             }
-            catch (Exception)
+            catch (Exception fail)
             {
+                core.handleException(fail, "RC");
                 writable = true;
                 return "";
             }
@@ -200,7 +201,7 @@ namespace wmib
             }
             catch (Exception f)
             {
-                core.handleException(f);
+                core.handleException(f, "RC");
             }
             return true;
         }
@@ -250,7 +251,7 @@ namespace wmib
             }
             catch (Exception f)
             {
-                core.handleException(f);
+                core.handleException(f, "RC");
             }
             return true;
         }
@@ -285,9 +286,9 @@ namespace wmib
                     core.Log("Connected to feed - OK");
                     Loaded = true;
                 }
-                catch (Exception)
+                catch (Exception fail)
                 {
-                    Console.WriteLine("error in Feed.Connect() call");
+                    core.handleException(fail, "RC");
                 }
             }
         }
@@ -361,7 +362,7 @@ namespace wmib
             catch (Exception er)
             {
                 core.Log("Error while saving to: " + channel.Name + ".list");
-                core.handleException(er);
+                core.handleException(er, "RC");
                 core.recoverFile(dbn, channel.Name);
             }
         }
@@ -383,6 +384,11 @@ namespace wmib
             }
             catch (ThreadAbortException)
             {
+                return;
+            }
+            catch (Exception fail)
+            {
+                core.handleException(fail, "RC");
             }
         }
 

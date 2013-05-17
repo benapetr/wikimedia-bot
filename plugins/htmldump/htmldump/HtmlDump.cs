@@ -54,7 +54,7 @@ namespace wmib
                         {
                             HtmlDump dump = new HtmlDump(chan);
                             dump.Make();
-                            core.Log("Making dump for " + chan.Name);
+                            core.DebugLog("Making dump for " + chan.Name);
                             SetConfig(chan, "HTML.Update", false);
                         }
                     }

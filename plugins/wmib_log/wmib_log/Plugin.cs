@@ -100,18 +100,6 @@ namespace wmib
                     line.AddRange(jobs);
                     jobs.Clear();
                 }
-                // clean all logs that can't be written to disk
-                foreach (Job curr in line)
-                {
-                    if (curr.ch.logs_no_write_data)
-                    {
-                        lock (jobs)
-                        {
-                            jobs.Add(curr);
-                            tr.Add(curr);
-                        }
-                    }
-                }
                 // remove them from queue
                 foreach (Job curr in tr)
                 {
@@ -142,7 +130,7 @@ namespace wmib
 
         public override void Load()
         {
-            core.Log("DEBUG: Writer thread started");
+            Log("Writer thread started");
             int timer = 0;
             while (!Unloading)
             {
@@ -167,14 +155,14 @@ namespace wmib
                 }
                 catch (Exception fail)
                 {
-                    core.handleException(fail);
+                    handleException(fail);
                 }
             }
             if (Unloading)
             {
                 Finish();
             }
-            core.Log("DEBUG: Writer thread stopped");
+            Log("Writer thread stopped");
         }
 
         /// <summary>
@@ -201,7 +189,7 @@ namespace wmib
             catch (Exception er)
             {
                 // nothing
-                core.Log("Unable to write to log files, delaying write!", true);
+                Log("Unable to write to log files, delaying write!", true);
                 Console.WriteLine(er.Message);
             }
             return false;
@@ -261,7 +249,7 @@ namespace wmib
                     {
                         if (curr > 10000)
                         {
-                            core.Log("Maximal cpu on updateBold(" + html + ") aborted call");
+                            Log("Maximal cpu on updateBold(" + html + ") aborted call");
                             html = original;
                             return;
                         }
@@ -315,7 +303,7 @@ namespace wmib
                     {
                         if (curr > 10000)
                         {
-                            core.Log("Maximal cpu on updateHttp(" + html + ") aborted call");
+                            Log("Maximal cpu on updateHttp(" + html + ") aborted call");
                             html = original;
                             return;
                         }
@@ -341,7 +329,7 @@ namespace wmib
                 }
                 catch (Exception er)
                 {
-                    core.handleException(er);
+                    handleException(er);
                     html = original;
                 }
             }
@@ -424,7 +412,7 @@ namespace wmib
             catch (Exception er)
             {
                 // nothing
-                Console.WriteLine(er.Message);
+                handleException(er);
             }
         }
 
@@ -435,27 +423,28 @@ namespace wmib
                 int wait = 0;
                 Unloading = true;
                 Reload = false;
-                core.Log("LOGS: Unloading log system, terminating the writer thread...");
+                Log("Unloading log system, terminating the writer thread...");
                 if (this.thread.ThreadState == ThreadState.Running || this.thread.ThreadState == ThreadState.WaitSleepJoin)
                 {
                     while (Unloading)
                     {
                         if (wait > 1000)
                         {
-                            core.Log("LOGS: Writer thread didn't finish within grace time");
+                            Log("Writer thread didn't finish within grace time");
                             return false;
                         }
                         wait++;
                         Thread.Sleep(10);
                     }
-                    core.Log("LOGS: Writer thread was unloaded OK");
+                    Log("Writer thread was unloaded OK");
                     return true;
                 }
-                core.Log("LOGS: Writer thread is " + this.thread.ThreadState.ToString() + " - doing nothing");
+                Log("Writer thread is " + this.thread.ThreadState.ToString() + " - doing nothing");
                 return true;
             }
-            catch (Exception)
+            catch (Exception fail)
             {
+                handleException(fail);
                 return false;
             }
         }

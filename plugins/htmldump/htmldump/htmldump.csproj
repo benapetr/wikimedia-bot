@@ -37,7 +37,7 @@
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
     <Reference Include="wmib">
-      <HintPath>..\..\..\..\..\wmib\bin\Debug\wmib.exe</HintPath>
+      <HintPath>..\..\..\bin\Release\wmib.exe</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

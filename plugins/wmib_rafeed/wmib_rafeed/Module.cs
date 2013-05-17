@@ -285,7 +285,7 @@ namespace wmib
                             }
                             else
                             {
-                                core.Log("WARNING: Feed is enabled but object is not present in " + channel.Name, true);
+                                Log("WARNING: Feed is enabled but object is not present in " + channel.Name, true);
                             }
                         }
                     }
@@ -299,8 +299,8 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
-                core.Log("RC feed is permanently down", true);
+                handleException(fail);
+                Log("RC feed is permanently down", true);
             }
         }
     }

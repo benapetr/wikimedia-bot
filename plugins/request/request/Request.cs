@@ -171,7 +171,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                handleException(fail);
             }
         }
 
@@ -191,7 +191,7 @@ namespace wmib
                 ch = core.getChannel("#wikimedia-labs");
                 if (ch == null)
                 {
-                    core.Log("CRITICAL: the bot isn't in #wikimedia-labs unloading requests");
+                    Log("CRITICAL: the bot isn't in #wikimedia-labs unloading requests", true);
                     return;
                 }
                 RequestCache.Load();
@@ -292,13 +292,13 @@ namespace wmib
                     }
                     catch (Exception fail)
                     {
-                        core.handleException(fail);
+                        handleException(fail);
                     }
                 }
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                handleException(fail);
                 notifications.Abort();
             }
         }

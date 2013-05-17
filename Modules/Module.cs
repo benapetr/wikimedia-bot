@@ -356,7 +356,12 @@ namespace wmib
             core.DebugLog(text, verbosity);
         }
 
-        public void Log(string text, bool warning)
+        /// <summary>
+        /// System log
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="warning"></param>
+        public void Log(string text, bool warning = false)
         {
             core.Log(Name + ": " + text, warning);
         }
@@ -409,6 +414,25 @@ namespace wmib
             {
                 core.handleException(fail);
             }
+        }
+
+        /// <summary>
+        /// Exception handler
+        /// </summary>
+        /// <param name="ex">Exception pointer</param>
+        /// <param name="chan">Channel name</param>
+        public void handleException(Exception ex, string chan = "")
+        {
+            try
+            {
+                if (config.debugchan != null && config.debugchan != "")
+                {
+                    core.irc._SlowQueue.DeliverMessage("DEBUG Exception in plugin " + Name + ": " + ex.Message + " last input was " + core.LastText, config.debugchan);
+                }
+                Program.Log("DEBUG Exception in module " + Name + ": " + ex.Message + ex.Source + ex.StackTrace, true);
+            }
+            catch (Exception) // exception happened while we tried to handle another one, ignore that (probably issue with logging)
+            { }
         }
 
         /// <summary>

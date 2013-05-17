@@ -130,7 +130,7 @@ namespace wmib
                             }
                             catch (Exception)
                             {
-                                core.Log("DEBUG: unable to load item for feed item name: " + i.name + " channel name " + owner.Name + " item was removed");
+                                core.DebugLog("unable to load item for feed item name: " + i.name + " channel name " + owner.Name + " item was removed");
                                 i.disabled = false;
                             }
                             Content.Add(i);
@@ -140,7 +140,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                core.handleException(fail, "Feed");
             }
         }
 
@@ -188,7 +188,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                core.handleException(fail, "Feed");
             }
         }
 
@@ -210,15 +210,15 @@ namespace wmib
                             List<RssFeedItem> feed = RssManager.ReadFeed(curr.URL, curr, owner.Name);
                             if (feed == null)
                             {
-                                //core.Log("DEBUG: NULL feed for " + curr.name);
-                                //continue;
+                                core.DebugLog("NULL feed for " + curr.name, 6);
+                                continue;
                             }
                             if (feed.Count == 0)
                             {
-                                //core.Log("DEBUG: 0 items for " + curr.name);
+                                core.DebugLog("0 items for " + curr.name, 6);
                                 continue;
                             }
-                            //core.Log("DEBUG: there are " + feed.Count.ToString() + "feed:" + curr.name);
+                            core.DebugLog("there are " + feed.Count.ToString() + "feed:" + curr.name, 6);
                             if (!RssManager.CompareLists(curr.data, feed))
                             {
                                 List<RssFeedItem> diff = new List<RssFeedItem>();
@@ -272,7 +272,7 @@ namespace wmib
             catch (Exception fail)
             {
                 core.Log("Unable to handle rss in " + owner.Name, true);
-                core.handleException(fail);
+                core.handleException(fail, "Feed");
             }
             return true;
         }

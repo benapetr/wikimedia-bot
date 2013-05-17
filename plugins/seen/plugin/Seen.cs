@@ -251,7 +251,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                handleException(fail);
             }
         }
 
@@ -460,7 +460,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                handleException(fail);
                 Working = false;
             }
         }
@@ -499,7 +499,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                handleException(fail);
             }
         }
 
@@ -529,7 +529,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                handleException(fail);
             }
         }
 
@@ -710,7 +710,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                handleException(fail);
             }
         }
 
@@ -787,7 +787,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                handleException(fail);
             }
         }
 
@@ -856,7 +856,7 @@ namespace wmib
                                 }
                                 catch (Exception fail)
                                 {
-                                    core.handleException(fail);
+                                    handleException(fail);
                                 }
                             }
                         }
@@ -865,7 +865,7 @@ namespace wmib
             }
             catch (Exception f)
             {
-                core.handleException(f);
+                handleException(f);
             }
         }
     }

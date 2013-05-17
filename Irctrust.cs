@@ -21,6 +21,9 @@ namespace wmib
     [Serializable()]
     public class IRCTrust
     {
+        /// <summary>
+        /// Filesystem
+        /// </summary>
         public static System.IO.FileSystemWatcher fs = new System.IO.FileSystemWatcher();
         private static List<core.SystemUser> GlobalUsers = new List<core.SystemUser>();
         /// <summary>

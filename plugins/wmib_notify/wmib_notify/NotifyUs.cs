@@ -259,7 +259,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                handleException(fail);
             }
         }
     }

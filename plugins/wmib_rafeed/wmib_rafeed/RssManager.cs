@@ -160,7 +160,7 @@ namespace wmib
                                                 }
                                                 catch (Exception fail)
                                                 {
-                                                    core.Log("RAFEED: " + fail.Message + fail.StackTrace);
+                                                    core.Log("RAFEED: " + fail.Message + fail.StackTrace, true);
                                                 }
                                             }
                                             break;
@@ -289,7 +289,7 @@ namespace wmib
             catch (Exception fail)
             {
                 core.Log("Unable to parse feed from " + url + " I will try to do that again " + item.retries.ToString() + " times", true);
-                core.handleException(fail);
+                core.handleException(fail, "Feed");
                 if (item.retries < 1)
                 {
                     item.disabled = true;

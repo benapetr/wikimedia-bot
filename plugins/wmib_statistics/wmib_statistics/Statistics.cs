@@ -29,7 +29,7 @@ namespace wmib
         {
             Name = NAME;
             start = true;
-            Version = "1.0.27";
+            Version = "1.0.28";
             return true;
         }
 
@@ -131,7 +131,7 @@ namespace wmib
                                 st.Stored = true;
                                 continue;
                             }
-                            core.Log("NULL pointer at statistics for " + chan.Name, true);
+                            Log("NULL pointer at statistics for " + chan.Name, true);
                         }
                         Thread.Sleep(8000);
                     }
@@ -141,7 +141,7 @@ namespace wmib
                     }
                     catch (Exception f)
                     {
-                        core.handleException(f);
+                        handleException(f);
                     }
                 }
             }
