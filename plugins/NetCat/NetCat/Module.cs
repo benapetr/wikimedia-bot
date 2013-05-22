@@ -9,7 +9,7 @@ namespace wmib
 {
     public class NetCat : Module
     {
-        public readonly int Port = 65834;
+        public readonly int Port = 64834;
         public override bool Construct()
         {
             Name = "NetCat";
@@ -45,7 +45,7 @@ namespace wmib
                         continue;
                     }
                     string channel = text.Substring(0, text.IndexOf(" "));
-                    string value = text.Substring(text.IndexOf(" "));
+                    string value = text.Substring(text.IndexOf(" ") + 1);
                     DebugLog("Request to send text to channel " + channel + " text: " + value, 4);
                     config.channel ch = core.getChannel(channel);
                     if (ch == null)
@@ -79,16 +79,23 @@ namespace wmib
                 server.Start();
                 while (true)
                 {
-                    System.Net.Sockets.TcpClient connection = server.AcceptTcpClient();
-                    Thread _client = new Thread(Client);
-                    //threads.Add(_client);
-                    _client.Start(connection);
-                    System.Threading.Thread.Sleep(200);
+                    try
+                    {
+                        System.Net.Sockets.TcpClient connection = server.AcceptTcpClient();
+                        Thread _client = new Thread(Client);
+                        //threads.Add(_client);
+                        _client.Start(connection);
+                        System.Threading.Thread.Sleep(200);
+                    }
+                    catch (ThreadAbortException)
+                    {
+                        return;
+                    }
+                    catch (Exception fail)
+                    {
+                        handleException(fail);
+                    }
                 }
-            }
-            catch (ThreadAbortException)
-            {
-                return;
             }
             catch (Exception fail)
             {
@@ -122,7 +129,7 @@ namespace wmib
                 return;
             }
 
-            if (message == config.CommandPrefix + "@relay-on")
+            if (message == config.CommandPrefix + "relay-on")
             {
                 if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
                 {
