@@ -51,13 +51,13 @@ namespace wmib
                     if (ch == null)
                     {
                         DebugLog("Nonexistent channel " + channel + " message was rejected");
-                        SendMessage(ref _StreamWriter, "ERROR2 (invalid channel " + channel + "): " + text);
+                        SendMessage(ref _StreamWriter, "ERROR2 (invalid channel " + channel + "): " + value);
                         continue;
                     }
                     if (!GetConfig(ch, "NetCat.Enabled", false))
                     {
                         DebugLog("Channel doesn't allow relay " + channel + " message was rejected");
-                        SendMessage(ref _StreamWriter, "ERROR3 (disallowed): " + channel + " :" + text);
+                        SendMessage(ref _StreamWriter, "ERROR3 (disallowed): " + channel + " :" + value);
                         continue;
                     }
                     DebugLog("Relaying message from " + IP + " to " + channel + ":" + value, 2);
