@@ -32,7 +32,7 @@ namespace wmib
         /// <param name="user">User</param>
         /// <param name="host">Host</param>
         /// <returns></returns>
-        public static int modifyRights(string message, config.channel channel, string user, string host)
+        public static int ModifyRights(string message, config.channel channel, string user, string host)
         {
             try
             {

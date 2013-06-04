@@ -24,7 +24,7 @@ namespace wmib
         /// <summary>
         /// Filesystem
         /// </summary>
-        public static System.IO.FileSystemWatcher fs = new System.IO.FileSystemWatcher();
+        private static System.IO.FileSystemWatcher fs = new System.IO.FileSystemWatcher();
         private static List<core.SystemUser> GlobalUsers = new List<core.SystemUser>();
         /// <summary>
         /// List of all users in a channel
@@ -82,7 +82,7 @@ namespace wmib
                         string level = info[1];
                         string name = core.decode2(info[0]);
                         GlobalUsers.Add(new core.SystemUser(level, name));
-                        core.DebugLog("Registered global user ("+ level +"): " + name, 2);
+                        core.DebugLog("Registered global user (" + level + "): " + name, 2);
                     }
                 }
             }

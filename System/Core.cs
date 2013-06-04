@@ -495,11 +495,11 @@ namespace wmib
                 }
                 if (message.StartsWith("@"))
                 {
-                    modifyRights(message, curr, nick, host);
+                    ModifyRights(message, curr, nick, host);
                     addChannel(curr, nick, host, message);
                     partChannel(curr, nick, host, message);
                 }
-                admin(curr, nick, host, message);
+                ParseAdmin(curr, nick, host, message);
                 if (curr.respond_message)
                 {
                     if (message.StartsWith(config.username + ":"))

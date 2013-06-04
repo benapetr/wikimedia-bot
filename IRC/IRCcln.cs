@@ -409,7 +409,7 @@ namespace wmib
                 try
                 {
                     System.Threading.Thread.Sleep(20000);
-                    if (!config.serverIO)
+                    if (!config.UsingNetworkIOLayer)
                     {
                         SendData("PING :" + config.network);
                     }
@@ -452,7 +452,7 @@ namespace wmib
         {
             _Queue.Abort();
             string _s = Server;
-            if (config.serverIO)
+            if (config.UsingNetworkIOLayer)
             {
                 networkStream = new System.Net.Sockets.TcpClient("127.0.0.1", 6667).GetStream();
             }
@@ -521,7 +521,7 @@ namespace wmib
         {
             try
             {
-                if (!config.serverIO)
+                if (!config.UsingNetworkIOLayer)
                 {
                     networkStream = new System.Net.Sockets.TcpClient(Server, 6667).GetStream();
                 }
@@ -536,7 +536,7 @@ namespace wmib
 
                 bool Auth = true;
 
-                if (config.serverIO)
+                if (config.UsingNetworkIOLayer)
                 {
                     SendData("CONTROL: STATUS");
                     Console.WriteLine("CACHE: Waiting for buffer");
@@ -600,7 +600,7 @@ namespace wmib
                         {
                             text = streamReader.ReadLine();
                             core.TrafficLog("MAIN<<<<<<" + text);
-                            if (config.serverIO)
+                            if (config.UsingNetworkIOLayer)
                             {
                                 if (text.StartsWith("CONTROL: "))
                                 {

@@ -28,7 +28,7 @@ namespace wmib
         /// <param name="user">User name</param>
         /// <param name="host">Host</param>
         /// <param name="message">Message</param>
-        public static void admin(config.channel chan, string user, string host, string message)
+        public static void ParseAdmin(config.channel chan, string user, string host, string message)
         {
             User invoker = new User(user, host, "");
             if (message == config.CommandPrefix + "reload")
@@ -77,7 +77,7 @@ namespace wmib
 
             if (message == config.CommandPrefix + "info")
             {
-                irc._SlowQueue.DeliverMessage(config.url + config.DumpDir + "/" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm", chan.Name);
+                irc._SlowQueue.DeliverMessage(config.WebpageURL + config.DumpDir + "/" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm", chan.Name);
                 return;
             }
 

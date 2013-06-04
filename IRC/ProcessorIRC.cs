@@ -466,6 +466,10 @@ namespace wmib
                                     return true;
                                 }
                                 break;
+                            case "439":
+                            case "707":
+                                core.Log("Unable to send data to irc: " + text, true);
+                                break;
                             case "PONG":
                                 Ping();
                                 return true;

@@ -65,12 +65,12 @@ namespace wmib
         /// <summary>
         /// Whether the bot is using external network module
         /// </summary>
-        public static bool serverIO = false;
+        public static bool UsingNetworkIOLayer = false;
 
         /// <summary>
         /// The webpages url
         /// </summary>
-        public static string url = "";
+        public static string WebpageURL = "";
 
         /// <summary>
         /// Dump
@@ -100,7 +100,7 @@ namespace wmib
         /// <summary>
         /// Version
         /// </summary>
-        public static string version = "wikimedia bot v. 1.10.8.10";
+        public static string version = "wikimedia bot v. 1.10.8.12";
 
         /// <summary>
         /// Separator for system db
@@ -145,8 +145,8 @@ namespace wmib
             text = "";
             AddConfig("username", username);
             AddConfig("password", password);
-            AddConfig("web", url);
-            AddConfig("serverIO", serverIO.ToString());
+            AddConfig("web", WebpageURL);
+            AddConfig("serverIO", UsingNetworkIOLayer.ToString());
             AddConfig("debug", debugchan);
             AddConfig("network", network);
             AddConfig("style_html_file", css);
@@ -214,7 +214,7 @@ namespace wmib
                 bool _serverIO;
                 if (bool.TryParse(parseConfig(text, "serverIO"), out _serverIO))
                 {
-                    serverIO = _serverIO;
+                    UsingNetworkIOLayer = _serverIO;
                 }
                 foreach (string x in parseConfig(text, "channels").Replace("\n", "").Split(','))
                 {
@@ -240,7 +240,7 @@ namespace wmib
                 login = parseConfig(text, "nick");
                 debugchan = parseConfig(text, "debug");
                 css = parseConfig(text, "style_html_file");
-                url = parseConfig(text, "web");
+                WebpageURL = parseConfig(text, "web");
                 password = parseConfig(text, "password");
                 if (login == "")
                 {
