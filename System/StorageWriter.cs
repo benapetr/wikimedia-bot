@@ -18,12 +18,18 @@ using System.IO;
 
 namespace wmib
 {
+    /// <summary>
+    /// StorageWriter
+    /// </summary>
     public class StorageWriter
     {
         /// <summary>
         /// List of all data to write
         /// </summary>
         private static List<STI> Data = new List<STI>();
+        /// <summary>
+        /// Whether storage is running
+        /// </summary>
         public static bool isRunning = true;
 
         private static bool Write(STI item)
@@ -41,6 +47,12 @@ namespace wmib
             }
         }
 
+        /// <summary>
+        /// Insert a line to storage writer
+        /// </summary>
+        /// <param name="File"></param>
+        /// <param name="Text"></param>
+        /// <param name="Delayed"></param>
         public static void InsertLine(string File, string Text, bool Delayed = true)
         {
             try
@@ -81,6 +93,9 @@ namespace wmib
             }
         }
 
+        /// <summary>
+        /// Thread
+        /// </summary>
         public static void Core()
         {
             try
@@ -128,6 +143,9 @@ namespace wmib
         }
     }
 
+    /// <summary>
+    /// Storage Item
+    /// </summary>
     public class STI
     {
         /// <summary>
@@ -142,6 +160,13 @@ namespace wmib
         /// File
         /// </summary>
         public string file;
+
+        /// <summary>
+        /// Creates a new instance of STI
+        /// </summary>
+        /// <param name="Line"></param>
+        /// <param name="Name"></param>
+        /// <param name="delayed"></param>
         public STI(string Line, string Name, bool delayed = true)
         {
             DelayedWrite = delayed;

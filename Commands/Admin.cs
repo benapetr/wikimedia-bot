@@ -33,7 +33,7 @@ namespace wmib
             User invoker = new User(user, host, "");
             if (message == config.CommandPrefix + "reload")
             {
-                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                if (chan.Users.IsApproved(invoker, "admin"))
                 {
                     chan.LoadConfig();
                     lock (Module.module)
@@ -62,7 +62,7 @@ namespace wmib
             }
             if (message == config.CommandPrefix + "refresh")
             {
-                if (chan.Users.isApproved(invoker.Nick, host, "flushcache"))
+                if (chan.Users.IsApproved(invoker, "flushcache"))
                 {
                     irc.RestartIRCMessageDelivery();
                     irc.Message(messages.get("MessageQueueWasReloaded", chan.Language), chan.Name);
@@ -119,7 +119,7 @@ namespace wmib
 
             if (message.StartsWith(config.CommandPrefix + "language"))
             {
-                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                if (chan.Users.IsApproved(invoker, "admin"))
                 {
                     string parameter = "";
                     if (message.Contains(" "))
@@ -178,7 +178,7 @@ namespace wmib
 
             if (message == config.CommandPrefix + "suppress-off")
             {
-                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                if (chan.Users.IsApproved(invoker, "admin"))
                 {
                     if (!chan.suppress)
                     {
@@ -203,7 +203,7 @@ namespace wmib
 
             if (message == config.CommandPrefix + "suppress-on")
             {
-                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                if (chan.Users.IsApproved(invoker, "admin"))
                 {
                     if (chan.suppress)
                     {
@@ -239,7 +239,7 @@ namespace wmib
 
             if (message == config.CommandPrefix + "system-relog")
             {
-                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
+                if (chan.Users.IsApproved(invoker, "root"))
                 {
                     core.irc.Authenticate();
                     return;
@@ -248,7 +248,7 @@ namespace wmib
 
             if (message == config.CommandPrefix + "traffic-off")
             {
-                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
+                if (chan.Users.IsApproved(invoker, "root"))
                 {
                     config.Logging = false;
                     irc._SlowQueue.DeliverMessage("Logging stopped", chan.Name);
@@ -262,7 +262,7 @@ namespace wmib
 
             if (message == config.CommandPrefix + "traffic-on")
             {
-                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
+                if (chan.Users.IsApproved(invoker, "root"))
                 {
                     config.Logging = true;
                     irc._SlowQueue.DeliverMessage("Logging traf", chan.Name);
@@ -276,7 +276,7 @@ namespace wmib
 
             if (message == config.CommandPrefix + "restart")
             {
-                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
+                if (chan.Users.IsApproved(invoker, "root"))
                 {
                     irc.Message("System is shutting down, requested by " + invoker.Nick + " from " + chan.Name, config.debugchan);
                     Program.Log("System is shutting down, requested by " + invoker.Nick + " from " + chan.Name);
@@ -302,7 +302,7 @@ namespace wmib
 
             if (message.StartsWith(config.CommandPrefix + "configure "))
             {
-                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                if (chan.Users.IsApproved(invoker, "admin"))
                 {
                     string text = message.Substring("@configure ".Length);
                     if (text == "")

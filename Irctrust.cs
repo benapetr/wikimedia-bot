@@ -329,7 +329,7 @@ namespace wmib
         /// <param name="Host">Hostname</param>
         /// <param name="command">Approved for specified object / request</param>
         /// <returns></returns>
-        public bool isApproved(string User, string Host, string command)
+        public bool IsApproved(string User, string Host, string command)
         {
             core.SystemUser current = getUser(User + "!@" + Host);
             if (current.level == "null")
@@ -359,6 +359,30 @@ namespace wmib
                     return matchLevel(65535, current.level);
             }
             return false;
+        }
+
+        /// <summary>
+        /// Check if user is approved to do operation requested
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        public bool IsApproved(User user, string command)
+        {
+            return IsApproved(user.Nick, user.Host, command);
+        }
+
+        /// <summary>
+        /// Check if user is approved to do operation requested
+        /// </summary>
+        /// <param name="User">Username</param>
+        /// <param name="Host">Hostname</param>
+        /// <param name="command">Approved for specified object / request</param>
+        /// <returns></returns>
+        [Obsolete]
+        public bool isApproved(string User, string Host, string command)
+        {
+            return IsApproved(User, Host, command);
         }
     }
 }

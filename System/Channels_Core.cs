@@ -34,7 +34,7 @@ namespace wmib
             {
                 if (message.StartsWith("@add"))
                 {
-                    if (chan.Users.isApproved(user, host, "admin"))
+                    if (chan.Users.IsApproved(user, host, "admin"))
                     {
                         if (message.Contains(" "))
                         {
@@ -101,7 +101,7 @@ namespace wmib
                 }
                 if (message == "@drop")
                 {
-                    if (chan.Users.isApproved(user, host, "admin"))
+                    if (chan.Users.IsApproved(user, host, "admin"))
                     {
                         irc.SendData("PART " + chan.Name + " :" + "dropped by " + user + " from " + origin);
                         Program.Log("Dropped " + chan.Name + " dropped by " + user + " from " + origin);
@@ -165,7 +165,7 @@ namespace wmib
                 }
                 if (message == "@part")
                 {
-                    if (chan.Users.isApproved(user, host, "admin"))
+                    if (chan.Users.IsApproved(user, host, "admin"))
                     {
                         irc.SendData("PART " + chan.Name + " :" + "removed by " + user + " from " + origin);
                         Program.Log("Removed " + chan.Name + " removed by " + user + " from " + origin);

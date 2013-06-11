@@ -178,7 +178,7 @@ namespace wmib
         /// Exception handler
         /// </summary>
         /// <param name="ex">Exception pointer</param>
-        /// <param name="chan">Channel name</param>
+        /// <param name="module">Channel name</param>
         public static void handleException(Exception ex, string module)
         {
             try
@@ -197,7 +197,6 @@ namespace wmib
         /// Exception handler
         /// </summary>
         /// <param name="ex">Exception pointer</param>
-        /// <param name="chan">Channel name</param>
         public static void handleException(Exception ex)
         {
             try
@@ -300,6 +299,7 @@ namespace wmib
         /// Recover a file that had a backup and remove it
         /// </summary>
         /// <param name="name">Name of file</param>
+        /// <param name="ch"></param>
         /// <returns></returns>
         [Obsolete]
         public static bool backupRecovery(string name, string ch = "unknown object")
@@ -488,7 +488,7 @@ namespace wmib
             {
                 if (curr.ignore_unknown)
                 {
-                    if (!curr.Users.isApproved(nick, host, "trust"))
+                    if (!curr.Users.IsApproved(nick, host, "trust"))
                     {
                         return false;
                     }
