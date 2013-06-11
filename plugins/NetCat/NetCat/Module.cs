@@ -10,6 +10,7 @@ namespace wmib
     public class NetCat : Module
     {
         public readonly int Port = 64834;
+
         public override bool Construct()
         {
             Name = "NetCat";
@@ -28,6 +29,7 @@ namespace wmib
         {
             try
             {
+                // #channel token message goes here and needs a newline on end
                 DebugLog("Accepted connection");
                 System.Net.Sockets.TcpClient client = (System.Net.Sockets.TcpClient)data;
                 string IP = client.Client.RemoteEndPoint.ToString();
@@ -59,6 +61,24 @@ namespace wmib
                         DebugLog("Channel doesn't allow relay " + channel + " message was rejected");
                         SendMessage(ref _StreamWriter, "ERROR3 (disallowed): " + channel + " :" + value);
                         continue;
+                    }
+                    if (GetConfig(ch, "NetCat.Token", false))
+                    {
+                        DebugLog("Channel requires the token for relay " + channel, 6);
+                        if (!value.Contains(" "))
+                        {
+                            DebugLog("Invalid token from " + IP + " to " + channel);
+                            SendMessage(ref _StreamWriter, "ERROR4 (invalid token): " + channel + " :" + value);
+                            continue;
+                        }
+                        string token = value.Substring(0, value.IndexOf(" "));
+                        value = value.Substring(value.IndexOf(" ") + 1);
+                        if (token != GetConfig(ch, "NetCat.TokenData", "<invalid>"))
+                        {
+                            DebugLog("Channel requires the token for relay " + channel, 6);
+                            SendMessage(ref _StreamWriter, "ERROR4 (invalid token): " + channel + " :" + value);
+                            continue;
+                        }
                     }
                     DebugLog("Relaying message from " + IP + " to " + channel + ":" + value, 2);
                     core.irc._SlowQueue.DeliverMessage(value, ch, IRC.priority.low);
@@ -103,6 +123,20 @@ namespace wmib
             }
         }
 
+        public static string GenerateToken()
+        {
+            Random random = new Random((int)DateTime.Now.Ticks);
+            StringBuilder builder = new StringBuilder();
+            char ch;
+            for (int i = 0; i < 40; i++)
+            {
+                ch = Convert.ToChar(Convert.ToInt32(Math.Floor(26 * random.NextDouble() + 65)));
+                builder.Append(ch);
+            }
+
+            return builder.ToString();
+        }
+
         public override void Hook_PRIV(config.channel channel, User invoker, string message)
         {
             if (message == config.CommandPrefix + "relay-off")
@@ -117,6 +151,70 @@ namespace wmib
                     SetConfig(channel, "NetCat.Enabled", false);
                     channel.SaveConfig();
                     core.irc._SlowQueue.DeliverMessage("Relay was disabled", channel.Name);
+                    return;
+                }
+                else
+                {
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                }
+                return;
+            }
+
+            if (message == config.CommandPrefix + "token-on")
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                {
+                    string token = GenerateToken();
+                    SetConfig(channel, "NetCat.Token", true);
+                    SetConfig(channel, "NetCat.TokenData", token);
+                    channel.SaveConfig();
+                    core.irc._SlowQueue.DeliverMessage("New token was generated for this channel, and it was sent to you in a private message", channel.Name);
+                    core.irc._SlowQueue.DeliverMessage("Token for " + channel.Name + " is: " + token, invoker.Nick, IRC.priority.normal);
+                    return;
+                }
+                else
+                {
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                }
+                return;
+            }
+
+            if (message == config.CommandPrefix + "token-off")
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                {
+                    SetConfig(channel, "NetCat.Token", false);
+                    channel.SaveConfig();
+                    core.irc._SlowQueue.DeliverMessage("This channel will no longer require a token in order to relay messages into it", channel.Name);
+                    return;
+                }
+                else
+                {
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                }
+                return;
+            }
+
+            if (message == config.CommandPrefix + "token-remind")
+            {
+                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                {
+                    if (!GetConfig(channel, "NetCat.Token", false))
+                    {
+                        core.irc._SlowQueue.DeliverMessage("This channel doesn't require a token", channel.Name);
+                        return;
+                    }
+                    string token = GetConfig(channel, "NetCat.TokenData", "<invalid>");
+                    core.irc._SlowQueue.DeliverMessage("Token for " + channel.Name + " is: " + token, invoker.Nick, IRC.priority.normal);
                     return;
                 }
                 else
