@@ -11,15 +11,12 @@
 // Created by Petr Bena
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Text.RegularExpressions;
-using System.Net;
-using System.IO;
 
 namespace wmib
 {
-    public partial class core : MarshalByRefObject
+    public partial class core
     {
         /// <summary>
         /// This is a class that check if regex matches value while it doesn't affect the system thread
@@ -37,8 +34,8 @@ namespace wmib
             /// <summary>
             /// Whether it is currently searching
             /// </summary>
-            private bool searching = false;
-            private bool result = false;
+            private bool searching;
+            private bool result;
 
             /// <summary>
             /// Creates a new instance of regex check
@@ -66,7 +63,6 @@ namespace wmib
                 catch (ThreadAbortException)
                 {
                     searching = false;
-                    return;
                 }
             }
 
@@ -99,7 +95,7 @@ namespace wmib
                 }
                 catch (Exception fail)
                 {
-                    core.handleException(fail);
+                    handleException(fail);
                     return 800;
                 }
                 return 0;

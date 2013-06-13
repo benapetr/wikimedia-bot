@@ -11,9 +11,6 @@
 // Created by Petr Bena
 
 using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Threading;
 
 namespace wmib
 {
@@ -355,15 +352,13 @@ namespace wmib
         {
             string chan = parameters;
             chan = chan.Replace(" ", "");
-            if (chan == "")
+            if (string.IsNullOrEmpty(chan))
             {
                 chan = value;
             }
             string user = source.Substring(0, source.IndexOf("!"));
-            string _ident;
-            string _host;
-            _host = source.Substring(source.IndexOf("@") + 1);
-            _ident = source.Substring(source.IndexOf("!") + 1);
+            string _host = source.Substring(source.IndexOf("@") + 1);
+            string _ident = source.Substring(source.IndexOf("!") + 1);
             _ident = _ident.Substring(0, _ident.IndexOf("@"));
             config.channel channel = core.getChannel(chan);
             User _user = new User(user, _host, _ident);
@@ -399,11 +394,15 @@ namespace wmib
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public bool Result()
         {
             try
             {
-                if (text == null || text == "")
+                if (string.IsNullOrEmpty(text))
                 {
                     return false;
                 }
@@ -414,12 +413,9 @@ namespace wmib
                     {
                         string command = "";
                         string parameters = "";
-                        string command2 = "";
-                        string source;
-                        string _value;
-                        source = text.Substring(1);
+                        string source = text.Substring(1);
                         source = source.Substring(0, source.IndexOf(" "));
-                        command2 = text.Substring(1);
+                        string command2 = text.Substring(1);
                         command2 = command2.Substring(source.Length + 1);
                         if (command2.Contains(" :"))
                         {
@@ -443,7 +439,7 @@ namespace wmib
                                 parameters = parameters.Substring(0, parameters.Length - 1);
                             }
                         }
-                        _value = "";
+                        string _value = "";
                         if (text.Length > 3 + command2.Length + source.Length)
                         {
                             _value = text.Substring(3 + command2.Length + source.Length);

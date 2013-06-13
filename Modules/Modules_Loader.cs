@@ -11,10 +11,6 @@
 // Created by Petr Bena
 
 using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Text.RegularExpressions;
-using System.Net;
 using System.IO;
 
 namespace wmib
@@ -27,15 +23,15 @@ namespace wmib
         /// <param name="module"></param>
         public static void InitialiseMod(Module module)
         {
-            if (module.Name == null || module.Name == "")
+            if (string.IsNullOrEmpty(module.Name))
             {
-                core.Log("This module has invalid name and was terminated to prevent troubles", true);
+                Log("This module has invalid name and was terminated to prevent troubles", true);
                 throw new Exception("Invalid name");
             }
             module.Date = DateTime.Now;
             if (Module.Exist(module.Name))
             {
-                core.Log("This module is already registered " + module.Name + " this new instance was terminated to prevent troubles", true);
+                Log("This module is already registered " + module.Name + " this new instance was terminated to prevent troubles", true);
                 throw new Exception("This module is already registered");
             }
             try

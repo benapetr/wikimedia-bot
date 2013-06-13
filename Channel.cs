@@ -22,7 +22,7 @@ namespace wmib
         /// <summary>
         /// Represent a channel
         /// </summary>
-        [Serializable()]
+        [Serializable]
         public class channel : MarshalByRefObject
         {
             /// <summary>
@@ -60,7 +60,7 @@ namespace wmib
             /// </summary>
             public Dictionary<string, object> ExtensionObjects = new Dictionary<string, object>();
 
-            private Dictionary<string, string> ExtensionData = new Dictionary<string, string>();
+            private readonly Dictionary<string, string> ExtensionData = new Dictionary<string, string>();
 
             /// <summary>
             /// If messages aren't sent
@@ -85,7 +85,7 @@ namespace wmib
             /// <summary>
             /// Time of last message received in channel
             /// </summary>
-            public System.DateTime last_msg = System.DateTime.Now;
+            public DateTime last_msg = DateTime.Now;
 			
             /// <summary>
             /// Doesn't send any warnings on error
@@ -95,7 +95,10 @@ namespace wmib
             /// <summary>
             /// Configuration text
             /// </summary>
-            private string conf = null;
+            /// <remarks>
+            /// Unused
+            /// </remarks>
+            private string conf;
 
             /// <summary>
             /// Whether unknown users should be ignored or not
@@ -110,7 +113,7 @@ namespace wmib
             /// <summary>
             /// List of channels we share db with
             /// </summary>
-            public List<config.channel> SharedLinkedChan = null;
+            public List<channel> SharedLinkedChan = null;
 
             /// <summary>
             /// Users
@@ -136,11 +139,7 @@ namespace wmib
             public static bool channelExist(string _Channel)
             {
                 string conf_file = variables.config + "/" + _Channel + ".setting";
-                if (File.Exists(conf_file))
-                {
-                    return true;
-                }
-                return false;
+                return File.Exists(conf_file);
             }
 
             /// <summary>
@@ -264,14 +263,14 @@ namespace wmib
                 core.recoverFile(conf_file, Name);
                 try
                 {
-                    System.Xml.XmlDocument data = new System.Xml.XmlDocument();
+                    XmlDocument data = new XmlDocument();
                     if (!File.Exists(conf_file))
                     {
                         SaveConfig();
                         return;
                     }
                     data.Load(conf_file);
-                    foreach (System.Xml.XmlNode xx in data.ChildNodes[0].ChildNodes)
+                    foreach (XmlNode xx in data.ChildNodes[0].ChildNodes)
                     {
                         switch (xx.Name)
                         { 
@@ -296,25 +295,25 @@ namespace wmib
                         switch (xx.Attributes[0].Value)
                         { 
                             case "talkmode":
-                                this.suppress = bool.Parse(xx.Attributes[1].Value);
+                                suppress = bool.Parse(xx.Attributes[1].Value);
                                 break;
                             case "langcode":
-                                this.Language = xx.Attributes[1].Value;
+                                Language = xx.Attributes[1].Value;
                                 break;
                             case "respond_message":
-                                this.respond_message = bool.Parse(xx.Attributes[1].Value);
+                                respond_message = bool.Parse(xx.Attributes[1].Value);
                                 break;
                             case "ignore-unknown":
-                                this.ignore_unknown = bool.Parse(xx.Attributes[1].Value);
+                                ignore_unknown = bool.Parse(xx.Attributes[1].Value);
                                 break;
                             case "suppress-warnings":
-                                this.suppress_warnings = bool.Parse(xx.Attributes[1].Value);
+                                suppress_warnings = bool.Parse(xx.Attributes[1].Value);
                                 break;
                             case "respond_wait":
-                                this.respond_wait = int.Parse(xx.Attributes[1].Value);
+                                respond_wait = int.Parse(xx.Attributes[1].Value);
                                 break;
                             case "sharedinfo":
-                                this.shared = xx.Attributes[1].Value;
+                                shared = xx.Attributes[1].Value;
                                 break;
                         }
                     }
@@ -330,9 +329,9 @@ namespace wmib
             {
                 XmlAttribute name = document.CreateAttribute("key");
                 name.Value = key;
-                System.Xml.XmlAttribute kk = document.CreateAttribute("value");
+                XmlAttribute kk = document.CreateAttribute("value");
                 kk.Value = value;
-                System.Xml.XmlNode db = document.CreateElement(Name);
+                XmlNode db = document.CreateElement(Name);
                 db.Attributes.Append(name);
                 db.Attributes.Append(kk);
                 node.AppendChild(db);
@@ -345,15 +344,15 @@ namespace wmib
             {
                 try
                 {
-                    System.Xml.XmlDocument data = new System.Xml.XmlDocument();
-                    System.Xml.XmlNode xmlnode = data.CreateElement("channel");
+                    XmlDocument data = new XmlDocument();
+                    XmlNode xmlnode = data.CreateElement("channel");
                     InsertData("talkmode", suppress.ToString(), ref data, ref xmlnode);
-                    InsertData("langcode", this.Language, ref data, ref xmlnode);
-                    InsertData("respond_message", this.respond_message.ToString(), ref data, ref xmlnode);
-                    InsertData("ignore-unknown", this.ignore_unknown.ToString(), ref data, ref xmlnode);
-                    InsertData("suppress-warnings", this.suppress_warnings.ToString(), ref data, ref xmlnode);
+                    InsertData("langcode", Language, ref data, ref xmlnode);
+                    InsertData("respond_message", respond_message.ToString(), ref data, ref xmlnode);
+                    InsertData("ignore-unknown", ignore_unknown.ToString(), ref data, ref xmlnode);
+                    InsertData("suppress-warnings", suppress_warnings.ToString(), ref data, ref xmlnode);
                     InsertData("respond_wait", respond_wait.ToString(), ref data, ref xmlnode);
-                    InsertData("sharedinfo", this.shared, ref data, ref xmlnode);
+                    InsertData("sharedinfo", shared, ref data, ref xmlnode);
                     if (!(SharedLinkedChan.Count < 1))
                     {
                         foreach (channel current in SharedLinkedChan)
@@ -378,16 +377,16 @@ namespace wmib
                     if (File.Exists(variables.config + "/" + Name + ".setting"))
                     {
                         core.backupData(variables.config + "/" + Name + ".setting");
-                        if (!File.Exists(config.tempName(variables.config + "/" + Name + ".setting")))
+                        if (!File.Exists(tempName(variables.config + "/" + Name + ".setting")))
                         {
                             core.Log("Unable to create backup file for " + Name);
                         }
                     }
                     data.AppendChild(xmlnode);
                     data.Save(variables.config + "/" + Name + ".setting");
-                    if (File.Exists(config.tempName(variables.config + "/" + Name + ".setting")))
+                    if (File.Exists(tempName(variables.config + "/" + Name + ".setting")))
                     {
-                        File.Delete(config.tempName(variables.config + "/" + Name + ".setting"));
+                        File.Delete(tempName(variables.config + "/" + Name + ".setting"));
                     }
                 }
                 catch (Exception)
@@ -475,21 +474,21 @@ namespace wmib
                 shared = "";
                 suppress = false;
                 LoadConfig();
-                if (!Directory.Exists(config.path_txt))
+                if (!Directory.Exists(path_txt))
                 {
-                    Directory.CreateDirectory(config.path_txt);
+                    Directory.CreateDirectory(path_txt);
                 }
-                if (!Directory.Exists(config.path_txt + "/" + Name))
+                if (!Directory.Exists(path_txt + "/" + Name))
                 {
-                    Directory.CreateDirectory(config.path_txt + "/" + Name);
+                    Directory.CreateDirectory(path_txt + "/" + Name);
                 }
-                if (!Directory.Exists(config.path_htm))
+                if (!Directory.Exists(path_htm))
                 {
-                    Directory.CreateDirectory(config.path_htm);
+                    Directory.CreateDirectory(path_htm);
                 }
-                if (!Directory.Exists(config.path_htm + Path.DirectorySeparatorChar + Name))
+                if (!Directory.Exists(path_htm + Path.DirectorySeparatorChar + Name))
                 {
-                    Directory.CreateDirectory(config.path_htm + Path.DirectorySeparatorChar + Name);
+                    Directory.CreateDirectory(path_htm + Path.DirectorySeparatorChar + Name);
                 }
                 LogDir = Path.DirectorySeparatorChar + Name + Path.DirectorySeparatorChar;
                 Users = new IRCTrust(Name);
@@ -501,7 +500,7 @@ namespace wmib
                         {
                             if (module.working)
                             {
-                                config.channel self = this;
+                                channel self = this;
                                 module.Hook_Channel(self);
                             }
                         }

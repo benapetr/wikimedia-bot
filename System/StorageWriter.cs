@@ -13,8 +13,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Text.RegularExpressions;
-using System.IO;
 
 namespace wmib
 {
@@ -26,7 +24,8 @@ namespace wmib
         /// <summary>
         /// List of all data to write
         /// </summary>
-        private static List<STI> Data = new List<STI>();
+        private static readonly List<STI> Data = new List<STI>();
+
         /// <summary>
         /// Whether storage is running
         /// </summary>
