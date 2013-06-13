@@ -46,15 +46,15 @@ namespace wmib
         /// <summary>
         /// Socket
         /// </summary>
-        private static System.Net.Sockets.NetworkStream networkStream = null;
+        private static System.Net.Sockets.NetworkStream networkStream;
         /// <summary>
         /// Socket Reader
         /// </summary>
-        private System.IO.StreamReader streamReader = null;
+        private System.IO.StreamReader streamReader;
         /// <summary>
         /// Writer
         /// </summary>
-        private System.IO.StreamWriter streamWriter = null;
+        private System.IO.StreamWriter streamWriter;
         /// <summary>
         /// Pinger
         /// </summary>
@@ -67,7 +67,7 @@ namespace wmib
         /// Queue of all messages that should be delivered to network
         /// </summary>
         public SlowQueue _SlowQueue = null;
-        private bool connected = false;
+        private bool connected;
         /// <summary>
         /// If network is connected
         /// </summary>
@@ -122,7 +122,7 @@ namespace wmib
             /// List of new messages
             /// </summary>
             public List<Message> newmessages = new List<Message>();
-            private IRC Parent = null;
+            private IRC Parent;
 
             /// <summary>
             /// Deliver a message
@@ -132,14 +132,10 @@ namespace wmib
             /// <param name="Pr">Priority</param>
             public void DeliverMessage(string Message, string Channel, priority Pr = priority.normal)
             {
-                Message text = new Message();
-                text._Priority = Pr;
-                text.message = Message;
-                text.channel = Channel;
+                Message text = new Message {_Priority = Pr, message = Message, channel = Channel};
                 lock (messages)
                 {
                     messages.Add(text);
-                    return;
                 }
             }
 
@@ -151,14 +147,10 @@ namespace wmib
             /// <param name="Pr">Priority</param>
             public void DeliverAct(string Message, string Channel, priority Pr = priority.normal)
             {
-                Message text = new Message();
-                text._Priority = Pr;
-                text.message = Message;
-                text.channel = Channel;
+                Message text = new Message {_Priority = Pr, message = Message, channel = Channel};
                 lock (messages)
                 {
                     messages.Add(text);
-                    return;
                 }
             }
 
@@ -170,14 +162,10 @@ namespace wmib
             /// <param name="Pr">Priority</param>
             public void DeliverMessage(string Message, User User, priority Pr = priority.low)
             {
-                Message text = new Message();
-                text._Priority = Pr;
-                text.message = Message;
-                text.channel = User.Nick;
+                Message text = new Message {_Priority = Pr, message = Message, channel = User.Nick};
                 lock (messages)
                 {
                     messages.Add(text);
-                    return;
                 }
             }
 
@@ -189,14 +177,10 @@ namespace wmib
             /// <param name="Pr">Priority</param>
             public void DeliverMessage(string Message, config.channel Channel, priority Pr = priority.normal)
             {
-                Message text = new Message();
-                text._Priority = Pr;
-                text.message = Message;
-                text.channel = Channel.Name;
+                Message text = new Message {_Priority = Pr, message = Message, channel = Channel.Name};
                 lock (messages)
                 {
                     messages.Add(text);
-                    return;
                 }
             }
 
@@ -339,12 +323,9 @@ namespace wmib
                     Program.Log("Attempt to send a message to non existing channel: " + channel + " " + message, true);
                     return true;
                 }
-                else if (curr != null)
+                if (curr != null && curr.suppress)
                 {
-                    if (curr.suppress)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
                 SendData("PRIVMSG " + channel + " :" + message.Replace("\n", " "));
                 lock (Module.module)
@@ -451,25 +432,17 @@ namespace wmib
         public bool Reconnect()
         {
             _Queue.Abort();
-            string _s = Server;
-            if (config.UsingNetworkIOLayer)
-            {
-                networkStream = new System.Net.Sockets.TcpClient("127.0.0.1", 6667).GetStream();
-            }
-            else
-            {
-                networkStream = new System.Net.Sockets.TcpClient(Server, 6667).GetStream();
-            }
+            networkStream = config.UsingNetworkIOLayer ? new System.Net.Sockets.TcpClient("127.0.0.1", 6667).GetStream() : new System.Net.Sockets.TcpClient(Server, 6667).GetStream();
             connected = true;
             streamReader = new StreamReader(networkStream, System.Text.Encoding.UTF8);
             streamWriter = new StreamWriter(networkStream);
             SendData("USER " + UserName + " 8 * :" + Ident);
             SendData("NICK " + NickName);
             Authenticate();
-            _Queue = new System.Threading.Thread(_SlowQueue.Run);
+            _Queue = new Thread(_SlowQueue.Run);
             foreach (config.channel ch in config.channels)
             {
-                System.Threading.Thread.Sleep(2000);
+                Thread.Sleep(2000);
                 this.Join(ch);
             }
             _SlowQueue.newmessages.Clear();
@@ -581,16 +554,14 @@ namespace wmib
                         if (ch.Name != "")
                         {
                             this.Join(ch);
-                            System.Threading.Thread.Sleep(2000);
+                            Thread.Sleep(2000);
                         }
                     }
                 }
-                string text = "";
                 string nick = "";
                 string host = "";
-                string message = "";
                 string channel = "";
-                char delimiter = (char)001;
+                const char delimiter = (char)001;
 
                 while (IsConnected)
                 {
@@ -598,7 +569,7 @@ namespace wmib
                     {
                         while (!streamReader.EndOfStream && core._Status == core.Status.OK)
                         {
-                            text = streamReader.ReadLine();
+                            string text = streamReader.ReadLine();
                             core.TrafficLog("MAIN<<<<<<" + text);
                             if (config.UsingNetworkIOLayer)
                             {
@@ -637,25 +608,23 @@ namespace wmib
                                 else
                                 {
                                     string command = "";
-                                    string[] part;
                                     if (text.Contains(" :"))
                                     {
-                                        part = text.Split(':');
                                         command = text.Substring(1);
                                         command = command.Substring(0, command.IndexOf(" :"));
                                     }
                                     if (command.Contains("PRIVMSG"))
                                     {
                                         string info = text.Substring(1, text.IndexOf(" :", 1) - 1);
-                                        string info_host;
                                         // we got a message here :)
                                         if (text.Contains("!") && text.Contains("@"))
                                         {
                                             nick = info.Substring(0, info.IndexOf("!"));
                                             host = info.Substring(info.IndexOf("@") + 1, info.IndexOf(" ", info.IndexOf("@")) - 1 - info.IndexOf("@"));
                                         }
-                                        info_host = info.Substring(info.IndexOf("PRIVMSG "));
+                                        string info_host = info.Substring(info.IndexOf("PRIVMSG "));
 
+                                        string message;
                                         if (info_host.Contains("#"))
                                         {
                                             channel = info_host.Substring(info_host.IndexOf("#"));
@@ -666,72 +635,66 @@ namespace wmib
                                                 core.getAction(message.Replace(delimiter.ToString() + "ACTION", ""), channel, host, nick);
                                                 continue;
                                             }
-                                            else
-                                            {
-                                                core.getMessage(channel, nick, host, message);
-                                                continue;
-                                            }
+                                            core.getMessage(channel, nick, host, message);
+                                            continue;
                                         }
-                                        else
+                                        message = text.Substring(text.IndexOf("PRIVMSG"));
+                                        message = message.Substring(message.IndexOf(" :"));
+                                        // private message
+                                        if (message.StartsWith(" :" + delimiter.ToString() + "FINGER"))
                                         {
-                                            message = text.Substring(text.IndexOf("PRIVMSG"));
-                                            message = message.Substring(message.IndexOf(" :"));
-                                            // private message
-                                            if (message.StartsWith(" :" + delimiter.ToString() + "FINGER"))
+                                            SendData("NOTICE " + nick + " :" + delimiter.ToString() + "FINGER" + " I am a bot don't finger me");
+                                            continue;
+                                        }
+                                        if (message.StartsWith(" :" + delimiter.ToString() + "TIME"))
+                                        {
+                                            SendData("NOTICE " + nick + " :" + delimiter.ToString() + "TIME " + System.DateTime.Now.ToString());
+                                            continue;
+                                        }
+                                        if (message.StartsWith(" :" + delimiter.ToString() + "PING"))
+                                        {
+                                            SendData("NOTICE " + nick + " :" + delimiter.ToString() + "PING" + message.Substring(message.IndexOf(delimiter.ToString() + "PING") + 5));
+                                            continue;
+                                        }
+                                        if (message.StartsWith(" :" + delimiter.ToString() + "VERSION"))
+                                        {
+                                            SendData("NOTICE " + nick + " :" + delimiter.ToString() + "VERSION " + config.version);
+                                            continue;
+                                        }
+                                        bool respond = true;
+                                        string modules = "";
+                                        lock (Module.module)
+                                        {
+                                            foreach (Module module in Module.module)
                                             {
-                                                SendData("NOTICE " + nick + " :" + delimiter.ToString() + "FINGER" + " I am a bot don't finger me");
-                                                continue;
-                                            }
-                                            if (message.StartsWith(" :" + delimiter.ToString() + "TIME"))
-                                            {
-                                                SendData("NOTICE " + nick + " :" + delimiter.ToString() + "TIME " + System.DateTime.Now.ToString());
-                                                continue;
-                                            }
-                                            if (message.StartsWith(" :" + delimiter.ToString() + "PING"))
-                                            {
-                                                SendData("NOTICE " + nick + " :" + delimiter.ToString() + "PING" + message.Substring(message.IndexOf(delimiter.ToString() + "PING") + 5));
-                                                continue;
-                                            }
-                                            if (message.StartsWith(" :" + delimiter.ToString() + "VERSION"))
-                                            {
-                                                SendData("NOTICE " + nick + " :" + delimiter.ToString() + "VERSION " + config.version);
-                                                continue;
-                                            }
-                                            bool respond = true;
-                                            string modules = "";
-                                            lock (Module.module)
-                                            {
-                                                foreach (Module module in Module.module)
+                                                if (module.working)
                                                 {
-                                                    if (module.working)
+                                                    try
                                                     {
-                                                        try
-                                                        {
 
-                                                            if (module.Hook_OnPrivateFromUser(message.Substring(2), new User(nick, host, Ident)))
-                                                            {
-                                                                respond = false;
-                                                                modules += module.Name + " ";
-                                                            }
-                                                        }
-                                                        catch (Exception fail)
+                                                        if (module.Hook_OnPrivateFromUser(message.Substring(2), new User(nick, host, Ident)))
                                                         {
-                                                            core.handleException(fail);
+                                                            respond = false;
+                                                            modules += module.Name + " ";
                                                         }
+                                                    }
+                                                    catch (Exception fail)
+                                                    {
+                                                        core.handleException(fail);
                                                     }
                                                 }
                                             }
-                                            if (respond)
-                                            {
-                                                _SlowQueue.DeliverMessage("Hi, I am robot, this command was not understood. Please bear in mind that every message you send to me will be logged for debuging purposes. See documentation at http://meta.wikimedia.org/wiki/WM-Bot for explanation of commands", nick, priority.low);
-                                                Program.Log("Ignoring private message: (" + nick + ") " + message.Substring(2), false);
-                                            }
-                                            else
-                                            {
-                                                Program.Log("Private message: (handled by " + modules + " from "  + nick + ") " + message.Substring(2), false);
-                                            }
-                                            continue;
                                         }
+                                        if (respond)
+                                        {
+                                            _SlowQueue.DeliverMessage("Hi, I am robot, this command was not understood. Please bear in mind that every message you send to me will be logged for debuging purposes. See documentation at http://meta.wikimedia.org/wiki/WM-Bot for explanation of commands", nick, priority.low);
+                                            Program.Log("Ignoring private message: (" + nick + ") " + message.Substring(2), false);
+                                        }
+                                        else
+                                        {
+                                            Program.Log("Private message: (handled by " + modules + " from "  + nick + ") " + message.Substring(2), false);
+                                        }
+                                        continue;
                                     }
                                     if (command.Contains("PING "))
                                     {
@@ -740,14 +703,12 @@ namespace wmib
                                     }
                                     if (command.Contains("KICK"))
                                     {
-                                        string user;
-                                        string _channel;
                                         string temp = command.Substring(command.IndexOf("KICK"));
                                         string[] parts = temp.Split(' ');
                                         if (parts.Length > 1)
                                         {
-                                            _channel = parts[1];
-                                            user = parts[2];
+                                            string _channel = parts[1];
+                                            string user = parts[2];
                                             if (user == NickName)
                                             {
                                                 config.channel chan = core.getChannel(_channel);

@@ -14,7 +14,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Text.RegularExpressions;
-using System.Net;
 using System.IO;
 
 namespace wmib
@@ -50,7 +49,7 @@ namespace wmib
         /// <returns></returns>
         public static bool IsValidRegex(string pattern)
         {
-            if (pattern == null) return false;
+            if (string.IsNullOrEmpty(pattern)) return false;
 
             try
             {
@@ -64,7 +63,7 @@ namespace wmib
         }
     }
 
-    [Serializable()]
+    [Serializable]
     public partial class core : MarshalByRefObject
     {
         /// <summary>
@@ -91,12 +90,12 @@ namespace wmib
         /// Domains available in core
         /// </summary>
         public static Dictionary<Module, AppDomain> Domains = new Dictionary<Module, AppDomain>();
-        private static Dictionary<string, string> HelpData = new Dictionary<string, string>();
+        private static readonly Dictionary<string, string> HelpData = new Dictionary<string, string>();
 
         /// <summary>
         /// System user
         /// </summary>
-        [Serializable()]
+        [Serializable]
         public class SystemUser
         {
             /// <summary>
@@ -183,7 +182,7 @@ namespace wmib
         {
             try
             {
-                if (config.debugchan != null && config.debugchan != "")
+                if (!string.IsNullOrEmpty(config.debugchan))
                 {
                     irc._SlowQueue.DeliverMessage("DEBUG Exception in module " + module + ": " + ex.Message + " last input was " + LastText, config.debugchan);
                 }
@@ -201,7 +200,7 @@ namespace wmib
         {
             try
             {
-                if (config.debugchan != null && config.debugchan != "")
+                if (!string.IsNullOrEmpty(config.debugchan))
                 {
                     irc._SlowQueue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText, config.debugchan);
                 }
@@ -352,17 +351,14 @@ namespace wmib
             {
                 if (File.Exists(config.tempName(name)))
                 {
-                    if (!Program.Temp(name))
-                    {
-                        Program.Log("Unfinished transaction could not be restored! DB of " + name + " is probably broken", true);
-                        return false;
-                    }
-                    else
+                    if (Program.Temp(name))
                     {
                         Program.Log("Restoring unfinished transaction of " + ch + " for db_" + name);
                         File.Copy(config.tempName(name), name, true);
                         return true;
+                        
                     }
+                    Program.Log("Unfinished transaction could not be restored! DB of " + name + " is probably broken", true);
                 }
                 return false;
             }
@@ -426,8 +422,7 @@ namespace wmib
                 irc.Disconnect();
                 irc._SlowQueue.Exit();
                 StorageWriter.isRunning = false;
-                Thread modules = new Thread(Terminate);
-                modules.Name = "KERNEL: Core helper shutdown thread";
+                Thread modules = new Thread(Terminate) {Name = "KERNEL: Core helper shutdown thread"};
                 modules.Start();
                 Program.Log("Giving grace time for all modules to finish ok");
                 int kill = 0;
@@ -631,12 +626,12 @@ namespace wmib
                     host = host.Substring("wikipedia/".Length);
                     return "https://meta.wikimedia.org/wiki/User:" + host;
                 }
-                else if (host.StartsWith("wikipedia/"))
+                if (host.StartsWith("wikipedia/"))
                 {
                     host = host.Substring("wikipedia/".Length);
                     return "https://en.wikipedia.org/wiki/User:" + host;
                 }
-                else if (host.StartsWith("mediawiki/"))
+                if (host.StartsWith("mediawiki/"))
                 {
                     host = host.Substring("wikipedia/".Length);
                     return "https://mediawiki.org/wiki/User:" + host;

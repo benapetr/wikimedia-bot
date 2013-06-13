@@ -11,17 +11,13 @@
 // Created by Petr Bena <benapetr@gmail.com>
 
 using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Xml;
-using System.Text.RegularExpressions;
 
 namespace wmib
 {
     /// <summary>
     /// Network user
     /// </summary>
-    [Serializable()]
+    [Serializable]
     public class User : IComparable
     {
         /// <summary>
@@ -59,7 +55,7 @@ namespace wmib
         {
             if (obj is User)
             {
-                return this.Nick.CompareTo((obj as User).Nick);
+                return Nick.CompareTo((obj as User).Nick);
             }
             return 0;
         }

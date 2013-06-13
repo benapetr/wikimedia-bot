@@ -12,9 +12,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Text.RegularExpressions;
-using System.Net;
 using System.IO;
 
 namespace wmib
@@ -50,7 +47,7 @@ namespace wmib
                             catch (Exception fail)
                             {
                                 Program.Log("Crash on Hook_Reload in " + xx.Name);
-                                core.handleException(fail);
+                                handleException(fail);
                             }
                         }
                     }
@@ -141,20 +138,14 @@ namespace wmib
                         }
                         return;
                     }
-                    else
-                    {
-                        irc._SlowQueue.DeliverMessage(messages.get("LanguageInfo", chan.Language), chan.Name);
-                        return;
-                    }
-                }
-                else
-                {
-                    if (!chan.suppress_warnings)
-                    {
-                        irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
-                    }
+                    irc._SlowQueue.DeliverMessage(messages.get("LanguageInfo", chan.Language), chan.Name);
                     return;
                 }
+                if (!chan.suppress_warnings)
+                {
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                }
+                return;
             }
 
             if (message.StartsWith(config.CommandPrefix + "help"))
@@ -169,11 +160,8 @@ namespace wmib
                     ShowHelp(parameter, chan);
                     return;
                 }
-                else
-                {
-                    irc._SlowQueue.DeliverMessage("Type @commands for list of commands. This bot is running http://meta.wikimedia.org/wiki/WM-Bot version " + config.version + " source code licensed under GPL and located at https://github.com/benapetr/wikimedia-bot", chan.Name);
-                    return;
-                }
+                irc._SlowQueue.DeliverMessage("Type @commands for list of commands. This bot is running http://meta.wikimedia.org/wiki/WM-Bot version " + config.version + " source code licensed under GPL and located at https://github.com/benapetr/wikimedia-bot", chan.Name);
+                return;
             }
 
             if (message == config.CommandPrefix + "suppress-off")
@@ -185,14 +173,11 @@ namespace wmib
                         irc._SlowQueue.DeliverMessage(messages.get("Silence1", chan.Language), chan.Name);
                         return;
                     }
-                    else
-                    {
-                        chan.suppress = false;
-                        irc._SlowQueue.DeliverMessage(messages.get("Silence2", chan.Language), chan.Name);
-                        chan.SaveConfig();
-                        config.Save();
-                        return;
-                    }
+                    chan.suppress = false;
+                    irc._SlowQueue.DeliverMessage(messages.get("Silence2", chan.Language), chan.Name);
+                    chan.SaveConfig();
+                    config.Save();
+                    return;
                 }
                 if (!chan.suppress_warnings)
                 {
@@ -210,13 +195,10 @@ namespace wmib
                         //Message("Channel had already quiet mode disabled", chan.name);
                         return;
                     }
-                    else
-                    {
-                        irc.Message(messages.get("SilenceBegin", chan.Language), chan.Name);
-                        chan.suppress = true;
-                        chan.SaveConfig();
-                        return;
-                    }
+                    irc.Message(messages.get("SilenceBegin", chan.Language), chan.Name);
+                    chan.suppress = true;
+                    chan.SaveConfig();
+                    return;
                 }
                 if (!chan.suppress_warnings)
                 {
@@ -305,7 +287,7 @@ namespace wmib
                 if (chan.Users.IsApproved(invoker, "admin"))
                 {
                     string text = message.Substring("@configure ".Length);
-                    if (text == "")
+                    if (string.IsNullOrEmpty(text))
                     {
                         return;
                     }
@@ -395,14 +377,11 @@ namespace wmib
                     }
                     return;
                 }
-                else
+                if (!chan.suppress_warnings)
                 {
-                    if (!chan.suppress_warnings)
-                    {
-                        irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
-                    }
-                    return;
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                 }
+                return;
             }
 
             if (message.StartsWith(config.CommandPrefix + "system-lm "))
@@ -412,8 +391,7 @@ namespace wmib
                     string module = message.Substring("@system-lm ".Length);
                     if (module.EndsWith(".bin"))
                     {
-                        Module _m = null;
-                        _m = getModule(module);
+                        Module _m = getModule(module);
                         if (_m != null)
                         {
                             irc._SlowQueue.DeliverMessage("This module was already loaded and you can't load one module twice, module will be reloaded now", chan.Name, IRC.priority.high);
@@ -513,7 +491,6 @@ namespace wmib
             if (message == config.CommandPrefix + "commands")
             {
                 irc._SlowQueue.DeliverMessage("Commands: there is too many commands to display on one line, see http://meta.wikimedia.org/wiki/wm-bot for a list of commands and help", chan.Name);
-                return;
             }
         }
     }

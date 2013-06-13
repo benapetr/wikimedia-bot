@@ -13,7 +13,6 @@
 using System;
 using System.Threading;
 using System.Collections.Generic;
-using System.Text;
 
 namespace wmib
 {
@@ -113,8 +112,7 @@ namespace wmib
         {
             try
             {
-                thread = new System.Threading.Thread(Exec);
-                thread.Name = "Module " + Name;
+                thread = new Thread(Exec) {Name = "Module " + Name};
                 working = true;
                 Hook_OnRegister();
                 thread.Start();
@@ -377,10 +375,9 @@ namespace wmib
         {
             try
             {
-                string result = null;
                 if (chan != null)
                 {
-                    result = chan.Extension_GetConfig(name);
+                    string result = chan.Extension_GetConfig(name);
                     if (result == null)
                     {
                         return invalid;
@@ -425,7 +422,7 @@ namespace wmib
         {
             try
             {
-                if (config.debugchan != null && config.debugchan != "")
+                if (!string.IsNullOrEmpty(config.debugchan))
                 {
                     core.irc._SlowQueue.DeliverMessage("DEBUG Exception in plugin " + Name + ": " + ex.Message + " last input was " + core.LastText, config.debugchan);
                 }

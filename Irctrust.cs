@@ -18,22 +18,22 @@ namespace wmib
     /// <summary>
     /// Permissions system
     /// </summary>
-    [Serializable()]
+    [Serializable]
     public class IRCTrust
     {
         /// <summary>
         /// Filesystem
         /// </summary>
-        private static System.IO.FileSystemWatcher fs = new System.IO.FileSystemWatcher();
-        private static List<core.SystemUser> GlobalUsers = new List<core.SystemUser>();
+        private static readonly System.IO.FileSystemWatcher fs = new System.IO.FileSystemWatcher();
+        private static readonly List<core.SystemUser> GlobalUsers = new List<core.SystemUser>();
         /// <summary>
         /// List of all users in a channel
         /// </summary>
-        private List<core.SystemUser> Users = new List<core.SystemUser>();
+        private readonly List<core.SystemUser> Users = new List<core.SystemUser>();
         /// <summary>
         /// Channel this class belong to
         /// </summary>
-        private string ChannelName = null;
+        private readonly string ChannelName;
         /// <summary>
         /// File where data are stored
         /// </summary>
@@ -108,8 +108,8 @@ namespace wmib
             GlobalLoad();
             core.DebugLog("Registering fs watcher");
             fs.Path = variables.config;
-            fs.Changed += new System.IO.FileSystemEventHandler(GlobalChanged);
-            fs.Created += new System.IO.FileSystemEventHandler(GlobalChanged);
+            fs.Changed += GlobalChanged;
+            fs.Created += GlobalChanged;
             fs.Filter = "admins";
             fs.EnableRaisingEvents = true;
         }
