@@ -110,7 +110,7 @@ namespace wmib
             if (message.StartsWith("@notify "))
             {
                 string parameter = "";
-                parameter = message.Substring(message.IndexOf(" ") + 1);
+                parameter = message.Substring(message.IndexOf(" ") + 1).Trim();
                 if (parameter != "")
                 {
                     if (!isValid(parameter))
