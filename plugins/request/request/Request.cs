@@ -11,6 +11,7 @@ namespace wmib
     {
         public string user = null;
         public DateTime time;
+        public static readonly string RequestCh = "#wikimedia-labs-requests";
 
         public RequestLabs(string us)
         {
@@ -112,7 +113,7 @@ namespace wmib
                 {
                     info = "Warning: There are " + requestCount.ToString() + " users waiting for shell, displaying last " + displayed.ToString() + ": " + info;
                 }
-                core.irc._SlowQueue.DeliverMessage(info, "#wikimedia-labs");
+                core.irc._SlowQueue.DeliverMessage(info, RequestLabs.RequestCh);
             }
 
             if (Tools.Count > 0)
@@ -137,7 +138,7 @@ namespace wmib
                 {
                     info = "Warning: There are " + requestCount.ToString() + " users waiting for access to tools project, displaying last " + displayed.ToString() + ": " + info;
                 }
-                core.irc._SlowQueue.DeliverMessage(info, "#wikimedia-labs");
+                core.irc._SlowQueue.DeliverMessage(info, RequestLabs.RequestCh);
             }
         }
 
@@ -188,10 +189,10 @@ namespace wmib
         {
             try
             {
-                ch = core.getChannel("#wikimedia-labs");
+                ch = core.getChannel(RequestLabs.RequestCh);
                 if (ch == null)
                 {
-                    Log("CRITICAL: the bot isn't in #wikimedia-labs unloading requests", true);
+                    Log("CRITICAL: the bot isn't in " + RequestLabs.RequestCh + " unloading requests", true);
                     return;
                 }
                 RequestCache.Load();
@@ -305,13 +306,14 @@ namespace wmib
 
         public override void Hook_PRIV(config.channel channel, User invoker, string message)
         {
-            if (channel.Name != "#wikimedia-labs")
+            if (channel.Name != RequestLabs.RequestCh)
             {
                 return;
             }
+            
             if (message == "@requests-off")
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                if (channel.Users.IsApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (!GetConfig(channel, "Requests.Enabled", false))
                     {
@@ -335,7 +337,7 @@ namespace wmib
 
             if (message == "@requests-on")
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                if (channel.Users.IsApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (GetConfig(channel, "Requests.Enabled", false))
                     {
