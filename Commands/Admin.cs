@@ -389,7 +389,7 @@ namespace wmib
 
             if (message.StartsWith(config.CommandPrefix + "system-lm "))
             {
-                if (chan.Users.IsApproved(invoker.Nick, "root"))
+                if (chan.Users.IsApproved(invoker, "root"))
                 {
                     string module = message.Substring("@system-lm ".Length);
                     if (module.EndsWith(".bin"))
