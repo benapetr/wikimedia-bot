@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace wmib
 {
@@ -23,6 +21,7 @@ namespace wmib
             /// Name of language
             /// </summary>
             public string language;
+
             /// <summary>
             /// Data
             /// </summary>
@@ -39,24 +38,23 @@ namespace wmib
             }
         }
 
-        private static Dictionary<string, container> data = new Dictionary<string, container>();
+        private static readonly Dictionary<string, container> data = new Dictionary<string, container>();
 
         /// <summary>
         /// Load all language data
         /// </summary>
         public static void LoadLD()
         {
-            messages.data.Add("cs", new messages.container("cs"));
-            messages.data.Add("en", new messages.container("en"));
-            messages.data.Add("zh", new messages.container("zh"));
+            data.Add("cs", new container("cs"));
+            data.Add("en", new container("en"));
+            data.Add("zh", new container("zh"));
         }
 
         private static string parse(string text, string name)
         {
             if (text.Contains(name + "="))
             {
-                string x = text;
-                x = text.Substring(text.IndexOf(name + "=")).Replace(name + "=", "");
+                string x = text.Substring(text.IndexOf(name + "=")).Replace(name + "=", "");
                 x = x.Substring(0, x.IndexOf(";"));
                 return x;
             }
@@ -118,29 +116,27 @@ namespace wmib
             switch (language)
             { 
                 case "en":
-                        text = wmib.Properties.Resources.english;
+                        text = Properties.Resources.english;
                         break;
                 case "cs":
-                        text = wmib.Properties.Resources.cs_czech;
+                        text = Properties.Resources.cs_czech;
                         break;
                 case "zh":
-                        text = wmib.Properties.Resources.zh_chinese;
+                        text = Properties.Resources.zh_chinese;
                         break;
                 default:
                         return "invalid language: " + language;
             }
             string value = parse(text, item);
-            if (value == "")
+            if (string.IsNullOrEmpty(value))
             {
                 if (Language != language)
                 {
                     return get(item, null, va);
-                } else
-                {
-                    return "[" + item + "]";
                 }
+                return "[" + item + "]";
             }
-            
+
             data[language].Cache.Add(item, value);
             return finalize(value, va);
         }

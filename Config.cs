@@ -13,7 +13,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Xml;
 
 namespace wmib
 {
@@ -25,7 +24,7 @@ namespace wmib
         /// <summary>
         /// This is a temporary string containing the configuration data
         /// </summary>
-        private static string text = null;
+        private static string text;
 
         /// <summary>
         /// Network the bot is connecting to
@@ -40,7 +39,7 @@ namespace wmib
         /// <summary>
         /// Uptime
         /// </summary>
-        public static System.DateTime UpTime;
+        public static DateTime UpTime;
 
         /// <summary>
         /// Debug channel (doesn't need to exist)
@@ -142,7 +141,6 @@ namespace wmib
         /// </summary>
         public static void Save()
         {
-            text = "";
             AddConfig("username", username);
             AddConfig("password", password);
             AddConfig("web", WebpageURL);
@@ -151,8 +149,9 @@ namespace wmib
             AddConfig("network", network);
             AddConfig("style_html_file", css);
             AddConfig("nick", login);
-            text += "\nchannels=";
-            lock (config.channels)
+            text = "\nchannels=";
+
+            lock (channels)
             {
                 foreach (channel current in channels)
                 {
@@ -174,8 +173,7 @@ namespace wmib
         {
             if (text.Contains(name + "="))
             {
-                string x = text;
-                x = text.Substring(text.IndexOf(name + "=")).Replace(name + "=", "");
+                string x = text.Substring(text.IndexOf(name + "=")).Replace(name + "=", "");
                 if (x.Contains(";"))
                 {
                     x = x.Substring(0, x.IndexOf(";"));
@@ -206,9 +204,9 @@ namespace wmib
                 {
                     Directory.CreateDirectory(variables.config);
                 }
-                if (!System.IO.File.Exists(variables.config + "/wmib"))
+                if (!File.Exists(variables.config + "/wmib"))
                 {
-                    System.IO.File.WriteAllText(variables.config + "/wmib", "//this is configuration file for bot, you need to fill in some stuff for it to work");
+                    File.WriteAllText(variables.config + "/wmib", "//this is configuration file for bot, you need to fill in some stuff for it to work");
                 }
                 text = File.ReadAllText(variables.config + "/wmib");
                 bool _serverIO;
@@ -242,17 +240,17 @@ namespace wmib
                 css = parseConfig(text, "style_html_file");
                 WebpageURL = parseConfig(text, "web");
                 password = parseConfig(text, "password");
-                if (login == "")
+                if (string.IsNullOrEmpty(login))
                 {
-                    Console.WriteLine("Error there is no username for bot");
+                    Console.WriteLine("Error there is no login for bot");
                     return 1;
                 }
-                if (network == "")
+                if (string.IsNullOrEmpty(network))
                 {
                     Console.WriteLine("Error irc server is wrong");
                     return 1;
                 }
-                if (username == "")
+                if (string.IsNullOrEmpty(username))
                 {
                     Console.WriteLine("Error there is no username for bot");
                     return 1;

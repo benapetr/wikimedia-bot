@@ -11,10 +11,7 @@
 // Created by Petr Bena
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
-using System.Text.RegularExpressions;
-using System.Net;
 using System.IO;
 
 namespace wmib
@@ -74,7 +71,6 @@ namespace wmib
                         return;
                     }
                     irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
-                    return;
                 }
             }
             catch (Exception b)
@@ -175,7 +171,6 @@ namespace wmib
                         return;
                     }
                     irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), origin);
-                    return;
                 }
             }
             catch (Exception x)

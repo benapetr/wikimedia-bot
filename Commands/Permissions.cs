@@ -11,11 +11,6 @@
 // Created by Petr Bena
 
 using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Text.RegularExpressions;
-using System.Net;
-using System.IO;
 
 namespace wmib
 {
@@ -81,17 +76,13 @@ namespace wmib
                     string[] rights_info = message.Split(' ');
                     if (rights_info.Length > 1)
                     {
-                        string x = rights_info[1];
                         if (channel.Users.isApproved(user, host, "trustdel"))
                         {
                             channel.Users.delUser(channel.Users.getUser(user + "!@" + host), rights_info[1]);
                             return 0;
                         }
-                        else
-                        {
-                            irc._SlowQueue.DeliverMessage(messages.get("Authorization", channel.Language), channel.Name);
-                            return 0;
-                        }
+                        irc._SlowQueue.DeliverMessage(messages.get("Authorization", channel.Language), channel.Name);
+                        return 0;
                     }
                     irc.Message(messages.get("InvalidUser", channel.Language), channel.Name);
                 }

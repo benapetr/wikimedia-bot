@@ -29,7 +29,7 @@ namespace wmib
                 Console.Write("LOG ");
             }
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write("[" + DateTime.Now.ToString() + "]");
+            Console.Write("[{0}]", DateTime.Now.ToString());
             Console.ResetColor();
             Console.WriteLine(": " + msg);
             return false;
@@ -63,7 +63,7 @@ namespace wmib
             Log("Terminated");
         }
 
-        private static bool processVerbosity(string[] gs)
+        private static void processVerbosity(string[] gs)
         {
             foreach (string item in gs)
             {
@@ -82,7 +82,6 @@ namespace wmib
             {
                 core.DebugLog("System verbosity: " + config.SelectedVerbosity.ToString());
             }
-            return false;
         }
 
         private static void Main(string[] args)
@@ -92,9 +91,9 @@ namespace wmib
                 core.domain = AppDomain.CurrentDomain;
                 Log(config.version);
                 Log("Loading...");
-                config.UpTime = System.DateTime.Now;
+                config.UpTime = DateTime.Now;
                 processVerbosity(args);
-                Console.CancelKeyPress += new ConsoleCancelEventHandler(myHandler);
+                Console.CancelKeyPress += myHandler;
                 messages.LoadLD();
                 if (config.Load() != 0)
                 {
