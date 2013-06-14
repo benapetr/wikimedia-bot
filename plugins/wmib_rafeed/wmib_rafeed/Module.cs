@@ -10,13 +10,13 @@ using System.Text;
 
 namespace wmib
 {
-    public class RegularModule : Module
+    public class RSS : Module
     {
         public override void Hook_PRIV(config.channel channel, User invoker, string message)
         {
             if (message.StartsWith("@rss- "))
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                if (channel.Users.IsApproved(invoker, "trust"))
                 {
                     string item = message.Substring("@rss+ ".Length);
                     Feed feed = (Feed)channel.RetrieveObject("rss");
@@ -37,7 +37,7 @@ namespace wmib
 
             if (message.StartsWith("@rss-setstyle "))
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                if (channel.Users.IsApproved(invoker, "trust"))
                 {
                     string item = message.Substring("@rss-setstyle ".Length);
                     if (item.Contains(" "))
@@ -76,7 +76,7 @@ namespace wmib
 
             if (message.StartsWith("@rss+ "))
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                if (channel.Users.IsApproved(invoker, "trust"))
                 {
                     string item = message.Substring("@rss+ ".Length);
                     if (item.Contains(" "))
@@ -112,9 +112,49 @@ namespace wmib
                     }
                 }
             }
+
+            if (message.StartsWith("@rss-scanner+ "))
+            {
+                if (channel.Users.IsApproved(invoker, "trust"))
+                {
+                    string item = message.Substring("@rss-scanner+ ".Length);
+                    if (item.Contains(" "))
+                    {
+                        string id = item.Substring(0, item.IndexOf(" "));
+                        string ur = item.Substring(item.IndexOf(" ") + 1);
+                        Feed feed = (Feed)channel.RetrieveObject("rss");
+                        if (feed != null)
+                        {
+                            feed.InsertItem(id, ur);
+                        }
+                        return;
+                    }
+                    if (item != "")
+                    {
+                        Feed feed = (Feed)channel.RetrieveObject("rss");
+                        if (feed != null)
+                        {
+                            feed.InsertItem(item, "");
+                        }
+                        return;
+                    }
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Rss5", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                }
+                else
+                {
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                }
+            }
+
             if (message == "@rss-off")
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                if (channel.Users.IsApproved(invoker, "admin"))
                 {
                     if (!GetConfig(channel, "Rss.Enable", false))
                     {
@@ -138,7 +178,7 @@ namespace wmib
 
             if (message == "@rss-on")
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                if (channel.Users.IsApproved(invoker, "admin"))
                 {
                     if (GetConfig(channel, "Rss.Enable", false))
                     {

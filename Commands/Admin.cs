@@ -54,7 +54,10 @@ namespace wmib
                     irc._SlowQueue.DeliverMessage(messages.get("Config", chan.Language), chan.Name);
                     return;
                 }
-                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                if (!chan.suppress_warnings)
+                {
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                }
                 return;
             }
             if (message == config.CommandPrefix + "refresh")
@@ -160,7 +163,7 @@ namespace wmib
                     ShowHelp(parameter, chan);
                     return;
                 }
-                irc._SlowQueue.DeliverMessage("Type @commands for list of commands. This bot is running http://meta.wikimedia.org/wiki/WM-Bot version " + config.version + " source code licensed under GPL and located at https://github.com/benapetr/wikimedia-bot", chan.Name);
+                irc._SlowQueue.DeliverMessage("This bot is running http://meta.wikimedia.org/wiki/WM-Bot version " + config.version + " source code licensed under GPL and located at https://github.com/benapetr/wikimedia-bot", chan.Name);
                 return;
             }
 
@@ -386,7 +389,7 @@ namespace wmib
 
             if (message.StartsWith(config.CommandPrefix + "system-lm "))
             {
-                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
+                if (chan.Users.IsApproved(invoker.Nick, "root"))
                 {
                     string module = message.Substring("@system-lm ".Length);
                     if (module.EndsWith(".bin"))
@@ -425,7 +428,7 @@ namespace wmib
 
             if (message == config.CommandPrefix + "verbosity--")
             {
-                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
+                if (chan.Users.IsApproved(invoker, "root"))
                 {
                     if (config.SelectedVerbosity > 0)
                     {
@@ -437,7 +440,7 @@ namespace wmib
 
             if (message == config.CommandPrefix + "verbosity++")
             {
-                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
+                if (chan.Users.IsApproved(invoker, "root"))
                 {
                     config.SelectedVerbosity++;
                     irc._SlowQueue.DeliverMessage("Verbosity: " + config.SelectedVerbosity.ToString(), chan.Name, IRC.priority.high);
@@ -446,7 +449,7 @@ namespace wmib
 
             if (message.StartsWith(config.CommandPrefix + "system-rm "))
             {
-                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "root"))
+                if (chan.Users.IsApproved(invoker, "root"))
                 {
                     string module = message.Substring("@system-lm ".Length);
                     Module _m = getModule(module);
@@ -462,7 +465,7 @@ namespace wmib
 
             if (message.StartsWith(config.CommandPrefix + "join "))
             {
-                if (chan.Users.isApproved(invoker.Nick, invoker.Host, "reconnect"))
+                if (chan.Users.IsApproved(invoker, "reconnect"))
                 {
                     config.channel channel = core.getChannel(message.Substring("@join ".Length));
                     irc.Join(channel);
