@@ -141,6 +141,7 @@ namespace wmib
         /// </summary>
         public static void Save()
         {
+            text = "";
             AddConfig("username", username);
             AddConfig("password", password);
             AddConfig("web", WebpageURL);
@@ -149,7 +150,7 @@ namespace wmib
             AddConfig("network", network);
             AddConfig("style_html_file", css);
             AddConfig("nick", login);
-            text = "\nchannels=";
+            text += "\nchannels=";
 
             lock (channels)
             {
