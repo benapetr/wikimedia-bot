@@ -434,7 +434,7 @@ namespace wmib
             switch (config)
             {
                 case "recent-changes-template":
-                    core.irc._SlowQueue.DeliverMessage("Value of " + config + " is: " + GetConfig(chan, "RC.Template", "<default value>"));
+                    core.irc._SlowQueue.DeliverMessage("Value of " + config + " is: " + GetConfig(chan, "RC.Template", "<default value>"), chan);
                     return true;
             }
         }
@@ -447,14 +447,14 @@ namespace wmib
                     if (value != "null")
                     {
                         Module.SetConfig(chan, "RC.Template", value);
-                        core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, config }), chan);
                         chan.SaveConfig();
                         return true;
                     }
                     else
                     {
                         Module.SetConfig(chan, "RC.Template", "");
-                        core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { "null", config }), chan.Name);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { "null", config }), chan);
                         chan.SaveConfig();
                         return true;
                     }
