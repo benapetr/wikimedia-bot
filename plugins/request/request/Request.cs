@@ -366,7 +366,7 @@ namespace wmib
                     }
                     else
                     {
-                        core.irc._SlowQueue.DeliverMessage("There are no shell requests waiting", "#wikimedia-labs");
+                        core.irc._SlowQueue.DeliverMessage("There are no shell requests waiting", RequestLabs.RequestCh);
                     }
                 }
                 return;
