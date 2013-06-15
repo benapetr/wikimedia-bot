@@ -18,7 +18,7 @@ using System.Text.RegularExpressions;
 
 namespace wmib
 {
-    public class RegularModule : Module
+    public class ModuleRC : Module
     {
         public override void Hook_Channel(config.channel channel)
         {
@@ -284,7 +284,14 @@ namespace wmib
                 return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "" + username + "", url + "?diff=" + link, summary });
             }
 
-            return GetConfig(chan, "RC.Template", "").Replace("$wiki", name_url).Replace("$url", url).Replace("$link", link).Replace("$username", username).Replace("$page", page).Replace("$summary", summary);
+            return GetConfig(chan, "RC.Template", "").Replace("$wiki", name_url)
+                   .Replace("$encoded_page", System.Web.HttpUtility.UrlEncode(page))
+                   .Replace("$encoded_username", System.Web.HttpUtility.UrlEncode(username))
+                   .Replace("$url", url)
+                   .Replace("$link", link)
+                   .Replace("$username", username)
+                   .Replace("$page", page)
+                   .Replace("$summary", summary);
         }
 
         public override void Load()
