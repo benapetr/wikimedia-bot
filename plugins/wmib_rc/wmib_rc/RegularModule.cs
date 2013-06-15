@@ -273,7 +273,7 @@ namespace wmib
         {
             Name = "RC";
             start = true;
-            Version = "1.1.2.0";
+            Version = "1.1.6.0";
             return true;
         }
 
@@ -426,6 +426,16 @@ namespace wmib
             catch (Exception fail)
             {
                 handleException(fail);
+            }
+        }
+
+        public override bool Hook_GetConfig(config.channel chan, User invoker, string config)
+        {
+            switch (config)
+            {
+                case "recent-changes-template":
+                    core.irc._SlowQueue.DeliverMessage("Value of " + config + " is: " + GetConfig(chan, "RC.Template", "<default value>"));
+                    return true;
             }
         }
 
