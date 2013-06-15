@@ -437,6 +437,7 @@ namespace wmib
                     core.irc._SlowQueue.DeliverMessage("Value of " + config + " is: " + GetConfig(chan, "RC.Template", "<default value>"), chan);
                     return true;
             }
+            return false;
         }
 
         public override bool Hook_SetConfig(config.channel chan, User invoker, string config, string value)
