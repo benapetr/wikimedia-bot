@@ -188,6 +188,11 @@ namespace wmib
             return;
         }
 
+        public virtual bool Hook_GetConfig(config.channel chan, User invoker, string config)
+        {
+            return false;
+        }
+
         /// <summary>
         /// When a configuration of channel is being changed
         /// </summary>

@@ -370,9 +370,50 @@ namespace wmib
                         }
                         if (!chan.suppress_warnings && !exist)
                         {
-                            irc._SlowQueue.DeliverMessage(messages.get("configure-wrong", chan.Language), chan.Name);
+                            irc._SlowQueue.DeliverMessage(messages.get("configure-wrong", chan.Language), chan);
                         }
                         return;
+                    }
+                    if (!text.Contains(" "))
+                    {
+                        switch (text)
+                        {
+                            case "ignore-unknown":
+                                irc._SlowQueue.DeliverMessage("Value of " + text + " is: " + chan.ignore_unknown.ToString(), chan);
+                                return;
+                            case "respond-message":
+                                irc._SlowQueue.DeliverMessage("Value of " + text + " is: " + chan.respond_message.ToString(), chan);
+                                return;
+                            case "suppress-warnings":
+                                irc._SlowQueue.DeliverMessage("Value of " + text + " is: " + chan.suppress_warnings.ToString(), chan);
+                                return;
+                        }
+                        bool exist = false;
+                        lock (Module.module)
+                        {
+                            foreach (Module curr in Module.module)
+                            {
+                                try
+                                {
+                                    if (curr.working)
+                                    {
+                                        if (curr.Hook_GetConfig(chan, invoker, text))
+                                        {
+                                            exist = true;
+                                        }
+                                    }
+                                }
+                                catch (Exception fail)
+                                {
+                                    Program.Log("Error on Hook_GetConfig module " + curr.Name);
+                                    core.handleException(fail);
+                                }
+                            }
+                        }
+                        if (exist)
+                        {
+                            return;
+                        }
                     }
                     if (!chan.suppress_warnings)
                     {
