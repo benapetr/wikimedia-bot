@@ -356,7 +356,7 @@ namespace wmib
                                                             {
                                                                 if (w != null)
                                                                 {
-                                                                    if (w.Channel == _channel)
+                                                                    if (w.Channel == _channel || w.Channel == "all")
                                                                     {
                                                                         if (page == w.Page)
                                                                         {

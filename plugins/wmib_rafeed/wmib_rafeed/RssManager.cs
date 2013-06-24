@@ -57,7 +57,7 @@ namespace wmib
         /// </summary>
         /// <param name="url"></param>
         /// <returns></returns>
-        public static List<RssFeedItem> ReadFeed(string url, Feed.item item, string channel)
+        public static List<RssFeedItem> ReadFeed(string url, Feed.Item item, string channel)
         {
             try
             {

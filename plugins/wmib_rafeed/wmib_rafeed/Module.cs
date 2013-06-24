@@ -74,6 +74,70 @@ namespace wmib
                 }
             }
 
+            if (message.StartsWith(config.CommandPrefix + "rss-search+ "))
+            {
+                if (channel.Users.IsApproved(invoker, "trust"))
+                {
+                    string item = message.Substring("@rss-search+ ".Length);
+                    Feed feed = (Feed)channel.RetrieveObject("rss");
+                    if (feed != null)
+                    {
+                        lock (feed.ScannerMatches)
+                        {
+                            if (feed.ScannerMatches.Contains(item))
+                            {
+                                core.irc._SlowQueue.DeliverMessage("This item is already being searched", channel);
+                                return;
+                            }
+                            core.irc._SlowQueue.DeliverMessage("This item is now searched", channel);
+                            feed.ScannerMatches.Add(item);
+                            return;
+                        }
+                    }
+                    core.irc._SlowQueue.DeliverMessage("Error, this channel doesn't have RC feed", channel);
+                    return;
+                }
+                else
+                {
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                    }
+                }
+            }
+
+            if (message.StartsWith(config.CommandPrefix + "rss-search- "))
+            {
+                if (channel.Users.IsApproved(invoker, "trust"))
+                {
+                    string item = message.Substring("@rss-search+ ".Length);
+                    Feed feed = (Feed)channel.RetrieveObject("rss");
+                    if (feed != null)
+                    {
+                        lock (feed.ScannerMatches)
+                        {
+                            if (feed.ScannerMatches.Contains(item))
+                            {
+                                feed.ScannerMatches.Remove(item);
+                                core.irc._SlowQueue.DeliverMessage("This item was removed", channel);
+                                return;
+                            }
+                            core.irc._SlowQueue.DeliverMessage("This item was not being searched", channel);
+                            return;
+                        }
+                    }
+                    core.irc._SlowQueue.DeliverMessage("Error, this channel doesn't have RC feed", channel);
+                    return;
+                }
+                else
+                {
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                    }
+                }
+            }
+
             if (message.StartsWith("@rss+ "))
             {
                 if (channel.Users.IsApproved(invoker, "trust"))
@@ -125,7 +189,7 @@ namespace wmib
                         Feed feed = (Feed)channel.RetrieveObject("rss");
                         if (feed != null)
                         {
-                            feed.InsertItem(id, ur);
+                            feed.InsertItem(id, ur, true);
                         }
                         return;
                     }
@@ -134,7 +198,7 @@ namespace wmib
                         Feed feed = (Feed)channel.RetrieveObject("rss");
                         if (feed != null)
                         {
-                            feed.InsertItem(item, "");
+                            feed.InsertItem(item, "", true);
                         }
                         return;
                     }
@@ -142,6 +206,27 @@ namespace wmib
                     {
                         core.irc._SlowQueue.DeliverMessage(messages.get("Rss5", channel.Language), channel.Name, IRC.priority.low);
                     }
+                }
+                else
+                {
+                    if (!channel.suppress_warnings)
+                    {
+                        core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    }
+                }
+            }
+
+            if (message.StartsWith("@rss-scanner- "))
+            {
+                if (channel.Users.IsApproved(invoker, "trust"))
+                {
+                    string item = message.Substring("@rss-scannerx ".Length);
+                    Feed feed = (Feed)channel.RetrieveObject("rss");
+                    if (feed != null)
+                    {
+                        feed.RemoveItem(item);
+                    }
+                    return;
                 }
                 else
                 {
@@ -220,7 +305,7 @@ namespace wmib
                 HTML += "<tr><th>Name</th><th>URL</th><th>Text</th><th>Enabled</th></tr>";
                 lock (list.Content)
                 {
-                    foreach (Feed.item feed in list.Content)
+                    foreach (Feed.Item feed in list.Content)
                     {
                         HTML += "\n<tr><td>" + feed.name + "</td><td><a href=\"" + feed.URL + "\">" + feed.URL + "</a></td><td>" + feed.message + "</td><td>" + (!feed.disabled).ToString() + "</td></tr>";
                     }
@@ -232,7 +317,7 @@ namespace wmib
 
         public override void Hook_BeforeSysWeb(ref string html)
         {
-            html += "\n<br><br>Rss feeds: " + Feed.item.Count.ToString() + "\n";
+            html += "\n<br><br>Rss feeds: " + Feed.Item.Count.ToString() + "\n";
         }
 
         public override bool Hook_SetConfig(config.channel chan, User invoker, string config, string value)
@@ -321,7 +406,7 @@ namespace wmib
                             Feed feed = (Feed)channel.RetrieveObject("rss");
                             if (feed != null)
                             {
-                                feed.Recreate();
+                                feed.Fetch();
                             }
                             else
                             {

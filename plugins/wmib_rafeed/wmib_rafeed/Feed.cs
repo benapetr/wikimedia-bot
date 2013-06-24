@@ -58,7 +58,7 @@ namespace wmib
 
     public class Feed
     {
-        public class item
+        public class Item
         {
             public static int Count = 0;
             public string name;
@@ -66,24 +66,26 @@ namespace wmib
             public List<RssFeedItem> data = null;
             public bool disabled;
             public string message = "";
+            public bool ScannerOnly = false;
             public int retries = 0;
             public void reset()
             {
                 retries = 2;
             }
-            public item()
+            public Item()
             {
                 Count++;
                 reset();
                 disabled = false;
             }
-            ~item()
+            ~Item()
             {
                 Count = Count - 1;
             }
         }
 
-        public List<item> Content = new List<item>();
+        public List<string> ScannerMatches = new List<string>();
+        public List<Item> Content = new List<Item>();
 
         public string DB = "";
 
@@ -91,7 +93,7 @@ namespace wmib
 
         public bool contains(string name)
         {
-            foreach (item Item in Content)
+            foreach (Item Item in Content)
             {
                 if (Item.name == name)
                 {
@@ -114,7 +116,7 @@ namespace wmib
                         Content.Clear();
                         foreach (System.Xml.XmlNode xx in data.ChildNodes[0].ChildNodes)
                         {
-                            item i = new item();
+                            Item i = new Item();
                             i.name = xx.Attributes[0].Value;
                             i.URL = xx.Attributes[1].Value;
                             try
@@ -161,7 +163,7 @@ namespace wmib
 
                 lock (Content)
                 {
-                    foreach (item key in Content)
+                    foreach (Item key in Content)
                     {
                         XmlAttribute name = data.CreateAttribute("name");
                         name.Value = key.name;
@@ -192,13 +194,29 @@ namespace wmib
             }
         }
 
-        public bool Recreate()
+        private bool Matches(string text)
+        {
+            text = text.ToLower();
+            lock (ScannerMatches)
+            {
+                foreach (string curr in ScannerMatches)
+                {
+                    if (text.Contains(curr.ToLower()))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public bool Fetch()
         {
             try
             {
                 lock (Content)
                 {
-                    foreach (item curr in Content)
+                    foreach (Item curr in Content)
                     {
                         if (!curr.disabled && curr.data == null)
                         {
@@ -238,6 +256,14 @@ namespace wmib
                                     if (description.Length > 200)
                                     {
                                         description = description.Substring(0, 200);
+                                    }
+
+                                    if (curr.ScannerOnly)
+                                    {
+                                        if (!Matches(di.Title) && !Matches(di.Description))
+                                        {
+                                            continue;
+                                        }
                                     }
 
                                     string temp = Module.GetConfig(owner, "Rss.Style", "[$name] $title: $description $link");
@@ -284,10 +310,10 @@ namespace wmib
                 core.irc._SlowQueue.DeliverMessage("I don't have this item in a db", owner.Name);
                 return;
             }
-            item rm = null;
+            Item rm = null;
             lock (Content)
             {
-                foreach (item Item in Content)
+                foreach (Item Item in Content)
                 {
                     if (Item.name == Name)
                     {
@@ -312,10 +338,10 @@ namespace wmib
                 core.irc._SlowQueue.DeliverMessage("I don't have this item in a db", owner.Name);
                 return;
             }
-            item rm = null;
+            Item rm = null;
             lock (Content)
             {
-                foreach (item Item in Content)
+                foreach (Item Item in Content)
                 {
                     if (Item.name == Name)
                     {
@@ -334,13 +360,13 @@ namespace wmib
             core.irc._SlowQueue.DeliverMessage("Unable to remove this item from db", owner.Name);
         }
 
-        public void InsertItem(string name, string url)
+        public void InsertItem(string name, string url, bool scan = false)
         {
             if (url == "")
             {
                 if (contains(name))
                 {
-                    foreach (item curr in Content)
+                    foreach (Item curr in Content)
                     {
                         if (curr.name == name)
                         {
@@ -356,8 +382,9 @@ namespace wmib
             }
             if (!contains(name))
             {
-                item Item = new item();
+                Item Item = new Item();
                 Item.name = name;
+                Item.ScannerOnly = scan;
                 Item.URL = url;
                 lock (Content)
                 {
