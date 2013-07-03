@@ -655,12 +655,12 @@ namespace wmib
             {
                 if (HelpData.ContainsKey(parameter.ToLower()))
                 {
-                    if (HelpData[parameter] == null)
+                    if (HelpData[parameter.ToLower()] == null)
                     {
                         showInfo(parameter, messages.get(parameter.ToLower(), channel.Language), channel.Name);
                         return true;
                     }
-                    showInfo(parameter, HelpData[parameter], channel.Name);
+                    showInfo(parameter, HelpData[parameter.ToLower()], channel.Name);
                     return true;
                 }
             }
