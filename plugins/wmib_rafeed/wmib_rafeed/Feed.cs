@@ -129,6 +129,10 @@ namespace wmib
                                 {
                                     i.message = xx.Attributes[3].Value;
                                 }
+                                if (xx.Attributes.Count > 4)
+                                {
+                                    i.ScannerOnly = bool.Parse(xx.Attributes[4].Value);
+                                }
                             }
                             catch (Exception)
                             {
@@ -173,11 +177,14 @@ namespace wmib
                         rn.Value = key.disabled.ToString();
                         XmlAttribute template = data.CreateAttribute("template");
                         template.Value = key.message;
+                        XmlAttribute scan = data.CreateAttribute("so");
+                        template.Value = key.ScannerOnly.ToString();
                         System.Xml.XmlNode db = data.CreateElement("data");
                         db.Attributes.Append(name);
                         db.Attributes.Append(url);
                         db.Attributes.Append(rn);
                         db.Attributes.Append(template);
+                        db.Attributes.Append(scan);
                         xmlnode.AppendChild(db);
                     }
                 }

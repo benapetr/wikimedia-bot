@@ -380,7 +380,7 @@ namespace wmib
         {
             start = true;
             Name = "Feed";
-            Version = "1.0.12.20";
+            Version = "1.0.12.21";
             return true;
         }
 
