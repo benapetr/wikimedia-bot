@@ -14,7 +14,7 @@ namespace wmib
         {
             Name = "SEEN";
             start = true;
-            Version = "2.2.1.9";
+            Version = "2.2.1.10";
             return true;
         }
 
@@ -26,7 +26,7 @@ namespace wmib
         public override bool Hook_OnPrivateFromUser(string message, User user)
         {
             WriteStatus(user.Nick, user.Host, "<private message>", item.Action.Talk);
-            if (message.StartsWith("@seen "))
+            if (message.StartsWith(config.CommandPrefix + "seen "))
             {
                     string parameter = "";
                         parameter = message.Substring(message.IndexOf(" ") + 1);
@@ -37,7 +37,7 @@ namespace wmib
                     }
             }
 
-            if (message.StartsWith("@seenrx "))
+            if (message.StartsWith(config.CommandPrefix + "seenrx "))
             {
                     core.irc._SlowQueue.DeliverMessage("Sorry but this command can be used in channels only (it's cpu expensive so it can be used on public by trusted users only)", user.Nick, IRC.priority.low);
                     return true;
@@ -48,7 +48,7 @@ namespace wmib
         public override void Hook_PRIV(config.channel channel, User invoker, string message)
         {
             WriteStatus(invoker.Nick, invoker.Host, channel.Name, item.Action.Talk);
-            if (message.StartsWith("@seen "))
+            if (message.StartsWith(config.CommandPrefix + "seen "))
             {
                 if (GetConfig(channel, "Seen.Enabled", false))
                 {
@@ -65,9 +65,9 @@ namespace wmib
                 }
             }
 
-            if (message.StartsWith("@seenrx "))
+            if (message.StartsWith(config.CommandPrefix + "seenrx "))
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                if (channel.Users.IsApproved(invoker, "trust"))
                 {
                     if (GetConfig(channel, "Seen.Enabled", false))
                     {
@@ -91,9 +91,9 @@ namespace wmib
                 return;
             }
 
-            if (message == "@seen-off")
+            if (message == config.CommandPrefix + "seen-off")
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                if (channel.Users.IsApproved(invoker, "admin"))
                 {
                     if (!GetConfig(channel, "Seen.Enabled", false))
                     {
@@ -115,9 +115,9 @@ namespace wmib
                 return;
             }
 
-            if (message == "@seen-on")
+            if (message == config.CommandPrefix + "seen-on")
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                if (channel.Users.IsApproved(invoker, "admin"))
                 {
                     if (GetConfig(channel, "Seen.Enabled", false))
                     {
