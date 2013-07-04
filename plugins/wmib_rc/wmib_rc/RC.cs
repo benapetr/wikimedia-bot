@@ -48,6 +48,8 @@ namespace wmib
             }
         }
 
+        public static wiki all = new wiki("all", "all", "all");
+
         /// <summary>
         /// List of pages
         /// </summary>
@@ -300,6 +302,10 @@ namespace wmib
         /// <returns></returns>
         private static wiki getWiki(string Name)
         {
+            if (Name == "all")
+            {
+                return all;
+            }
             foreach (wiki curr in wikiinfo)
             {
                 if (curr.name == Name)
@@ -470,15 +476,8 @@ namespace wmib
 
         public bool insertString(string WS, string Page)
         {
-            wiki site = null;
+            wiki site = getWiki(WS);
             Page = Page.Replace("_", " ");
-            foreach (wiki Site in wikiinfo)
-            {
-                if (Site.name == WS)
-                {
-                    site = Site;
-                }
-            }
             if (site != null)
             {
                 if (channels.Contains(site.channel))
