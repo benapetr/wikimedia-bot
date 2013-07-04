@@ -83,9 +83,9 @@ namespace wmib
 
         public override void Hook_PRIV(config.channel channel, User invoker, string message)
         {
-            if (message.StartsWith("@RC-"))
+            if (message.StartsWith(config.CommandPrefix + "RC-"))
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                if (channel.Users.IsApproved(invoker, "trust"))
                 {
                     if (GetConfig(channel, "RC.Enabled", false))
                     {
@@ -117,9 +117,9 @@ namespace wmib
                 return;
             }
 
-            if (message.StartsWith("@recentchanges- "))
+            if (message.StartsWith(config.CommandPrefix + "recentchanges- "))
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "root"))
+                if (channel.Users.IsApproved(invoker, "root"))
                 {
                     if (GetConfig(channel, "RC.Enabled", false))
                     {
@@ -151,9 +151,9 @@ namespace wmib
                 return;
             }
 
-            if (message.StartsWith("@RC+ "))
+            if (message.StartsWith(config.CommandPrefix + "RC+ "))
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "trust"))
+                if (channel.Users.IsApproved(invoker, "trust"))
                 {
                     if (GetConfig(channel, "RC.Enabled", false))
                     {
@@ -185,9 +185,9 @@ namespace wmib
                 return;
             }
 
-            if (message == "@recentchanges-off")
+            if (message == config.CommandPrefix + "recentchanges-off")
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                if (channel.Users.IsApproved(invoker, "admin"))
                 {
                     if (!GetConfig(channel, "RC.Enabled", false))
                     {
@@ -209,9 +209,9 @@ namespace wmib
                 return;
             }
 
-            if (message == "@recentchanges-on")
+            if (message == config.CommandPrefix + "recentchanges-on")
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "recentchanges-manage"))
+                if (channel.Users.IsApproved(invoker, "recentchanges-manage"))
                 {
                     if (GetConfig(channel, "RC.Enabled", false))
                     {
@@ -234,9 +234,9 @@ namespace wmib
                 return;
             }
 
-            if (message.StartsWith("@recentchanges+"))
+            if (message.StartsWith(config.CommandPrefix + "recentchanges+"))
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "recentchanges-manage"))
+                if (channel.Users.IsApproved(invoker, "recentchanges-manage"))
                 {
                     if (GetConfig(channel, "RC.Enabled", false))
                     {
@@ -273,7 +273,7 @@ namespace wmib
         {
             Name = "RC";
             start = true;
-            Version = "1.1.6.0";
+            Version = "1.1.8.0";
             return true;
         }
 
@@ -285,6 +285,8 @@ namespace wmib
             }
 
             return GetConfig(chan, "RC.Template", "").Replace("$wiki", name_url)
+                   .Replace("$encoded_wiki_page", System.Web.HttpUtility.UrlEncode(page).Replace("+", "_"))
+                   .Replace("$encoded_wiki_username", System.Web.HttpUtility.UrlEncode(page).Replace("+", "_"))
                    .Replace("$encoded_page", System.Web.HttpUtility.UrlEncode(page))
                    .Replace("$encoded_username", System.Web.HttpUtility.UrlEncode(username))
                    .Replace("$url", url)
