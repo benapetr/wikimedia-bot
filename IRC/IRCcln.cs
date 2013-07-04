@@ -741,14 +741,18 @@ namespace wmib
                     catch (Exception xx)
                     {
                         core.handleException(xx, channel);
+                        core.Log("IRC: Connection error!! Terminating system");
                         connected = false;
+                        core.Kill();
                     }
                 }
             }
             catch (Exception)
             {
-                core.Log("IRC: Connection error");
+                core.Log("IRC: Connection error!! Terminating system");
                 connected = false;
+                // there is no point for being up when connection is dead and can't be reconnected
+                core.Kill();
             }
         }
 

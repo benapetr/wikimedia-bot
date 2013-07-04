@@ -88,6 +88,11 @@ namespace wmib
             }
         }
 
+        /// <summary>
+        /// This is called when the file is changed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private static void GlobalChanged(object sender, EventArgs e)
         {
             core.Log("Global user list has been changed");

@@ -34,7 +34,7 @@ namespace wmib
                 if (message.StartsWith(config.CommandPrefix + "trustadd"))
                 {
                     string[] rights_info = message.Split(' ');
-                    if (channel.Users.isApproved(user, host, "trustadd"))
+                    if (channel.Users.IsApproved(user, host, "trustadd"))
                     {
                         if (rights_info.Length < 3)
                         {
@@ -48,7 +48,7 @@ namespace wmib
                         }
                         if (rights_info[2] == "admin")
                         {
-                            if (!channel.Users.isApproved(user, host, "admin"))
+                            if (!channel.Users.IsApproved(user, host, "admin"))
                             {
                                 irc.Message(messages.get("PermissionDenied", channel.Language), channel.Name);
                                 return 2;
@@ -76,7 +76,7 @@ namespace wmib
                     string[] rights_info = message.Split(' ');
                     if (rights_info.Length > 1)
                     {
-                        if (channel.Users.isApproved(user, host, "trustdel"))
+                        if (channel.Users.IsApproved(user, host, "trustdel"))
                         {
                             channel.Users.delUser(channel.Users.getUser(user + "!@" + host), rights_info[1]);
                             return 0;
