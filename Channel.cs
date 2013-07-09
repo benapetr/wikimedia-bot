@@ -23,7 +23,7 @@ namespace wmib
         /// Represent a channel
         /// </summary>
         [Serializable]
-        public class channel : MarshalByRefObject
+        public class channel
         {
             /// <summary>
             /// Channel name
