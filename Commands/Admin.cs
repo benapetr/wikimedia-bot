@@ -92,7 +92,7 @@ namespace wmib
                         irc._SlowQueue.DeliverMessage(messages.get("UnknownChan", chan.Language), chan.Name, IRC.priority.low);
                         return;
                     }
-                    core.partChannel(Channel, invoker.Nick, invoker.Host, "@part", chan.Name);
+                    core.partChannel(Channel, invoker.Nick, invoker.Host, config.CommandPrefix + "part", chan.Name);
                     return;
                 }
                 irc._SlowQueue.DeliverMessage("It would be cool to give me a name of channel you want to part", chan.Name, IRC.priority.low);
@@ -110,7 +110,7 @@ namespace wmib
                         irc._SlowQueue.DeliverMessage(messages.get("UnknownChan", chan.Language), chan.Name, IRC.priority.low);
                         return;
                     }
-                    core.partChannel(Channel, invoker.Nick, invoker.Host, "@drop", chan.Name);
+                    core.partChannel(Channel, invoker.Nick, invoker.Host, config.CommandPrefix + "drop", chan.Name);
                     return;
                 }
                 irc._SlowQueue.DeliverMessage("It would be cool to give me a name of channel you want to drop", chan.Name, IRC.priority.low);
@@ -163,7 +163,7 @@ namespace wmib
                     ShowHelp(parameter, chan);
                     return;
                 }
-                irc._SlowQueue.DeliverMessage("This bot is running http://meta.wikimedia.org/wiki/WM-Bot version " + config.version + " source code licensed under GPL and located at https://github.com/benapetr/wikimedia-bot", chan.Name);
+                irc._SlowQueue.DeliverMessage("I am running http://meta.wikimedia.org/wiki/WM-Bot version " + config.version + " my source code is licensed under GPL and located at https://github.com/benapetr/wikimedia-bot I will be very happy if you fix my bugs or implement new features", chan.Name);
                 return;
             }
 

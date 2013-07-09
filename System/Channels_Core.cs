@@ -95,7 +95,7 @@ namespace wmib
                 {
                     origin = chan.Name;
                 }
-                if (message == "@drop")
+                if (message == config.CommandPrefix + "drop")
                 {
                     if (chan.Users.IsApproved(user, host, "admin"))
                     {
@@ -159,7 +159,7 @@ namespace wmib
                     irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), origin);
                     return;
                 }
-                if (message == "@part")
+                if (message == config.CommandPrefix + "part")
                 {
                     if (chan.Users.IsApproved(user, host, "admin"))
                     {

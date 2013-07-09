@@ -488,7 +488,7 @@ namespace wmib
                         return false;
                     }
                 }
-                if (message.StartsWith("@"))
+                if (message.StartsWith(config.CommandPrefix))
                 {
                     ModifyRights(message, curr, nick, host);
                     addChannel(curr, nick, host, message);
