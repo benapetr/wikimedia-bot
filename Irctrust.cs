@@ -168,6 +168,7 @@ namespace wmib
             if (!misc.IsValidRegex(user))
             {
                 core.Log("Unable to create user " + user + " because the regex is invalid", true);
+                core.irc._SlowQueue.DeliverMessage("Unable to add user because this regex is a piece of shit", ChannelName);
                 return false;
             }
             foreach (core.SystemUser u in Users)
