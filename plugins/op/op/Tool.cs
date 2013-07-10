@@ -163,6 +163,119 @@ namespace wmib
                 return;
             }
 
+            if (message.StartsWith(config.CommandPrefix + "unkb "))
+            {
+                if (channel.Users.IsApproved(invoker, "admin"))
+                {
+                    if (GetConfig(channel, "OP.Enabled", false))
+                    {
+                        string nick = message.Substring(6);
+                        if (nick.Contains(" "))
+                        {
+                            nick = nick.Substring(0, nick.IndexOf(" "));
+                        }
+                        User user = getUser(nick, channel);
+                        if (user == null)
+                        {
+                            core.irc._SlowQueue.DeliverMessage("Sorry but I don't see this user in a channel", channel, IRC.priority.high);
+                            return;
+                        }
+                        
+                        if (string.IsNullOrEmpty(user.Host))
+                        {
+                            core.irc._SlowQueue.DeliverMessage("Sorry but I don't know hostname of this user... you will need to issue the ban yourself", channel, IRC.priority.high);
+                            return;
+                        }
+                        // op self
+                        core.irc._SlowQueue.DeliverMessage("op " + channel.Name, "ChanServ", IRC.priority.high);
+                        core.irc._SlowQueue.Send("MODE " + channel.Name + " -b *!*@" + user.Host, IRC.priority.high);
+                        core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                        return;
+                    }
+                    return;
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
+
+            if (message.StartsWith(config.CommandPrefix + "unq "))
+            {
+                if (channel.Users.IsApproved(invoker, "admin"))
+                {
+                    if (GetConfig(channel, "OP.Enabled", false))
+                    {
+                        string nick = message.Substring(5);
+                        if (nick.Contains(" "))
+                        {
+                            nick = nick.Substring(0, nick.IndexOf(" "));
+                        }
+                        User user = getUser(nick, channel);
+                        if (user == null)
+                        {
+                            core.irc._SlowQueue.DeliverMessage("Sorry but I don't see this user in a channel", channel, IRC.priority.high);
+                            return;
+                        }
+
+                        if (string.IsNullOrEmpty(user.Host))
+                        {
+                            core.irc._SlowQueue.DeliverMessage("Sorry but I don't know hostname of this user... you will need to issue the ban yourself", channel, IRC.priority.high);
+                            return;
+                        }
+                        // op self
+                        core.irc._SlowQueue.DeliverMessage("op " + channel.Name, "ChanServ", IRC.priority.high);
+                        core.irc._SlowQueue.Send("MODE " + channel.Name + " -q *!*@" + user.Host, IRC.priority.high);
+                        core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                        return;
+                    }
+                    return;
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
+
+            if (message.StartsWith(config.CommandPrefix + "q "))
+            {
+                if (channel.Users.IsApproved(invoker, "admin"))
+                {
+                    if (GetConfig(channel, "OP.Enabled", false))
+                    {
+                        string nick = message.Substring(3);
+                        if (nick.Contains(" "))
+                        {
+                            nick = nick.Substring(0, nick.IndexOf(" "));
+                        }
+                        User user = getUser(nick, channel);
+                        if (user == null)
+                        {
+                            core.irc._SlowQueue.DeliverMessage("Sorry but I don't see this user in a channel", channel, IRC.priority.high);
+                            return;
+                        }
+                        
+                        if (string.IsNullOrEmpty(user.Host))
+                        {
+                            core.irc._SlowQueue.DeliverMessage("Sorry but I don't know hostname of this user... you will need to issue the ban yourself", channel, IRC.priority.high);
+                            return;
+                        }
+                        core.irc._SlowQueue.DeliverMessage("op " + channel.Name, "ChanServ", IRC.priority.high);
+                        core.irc._SlowQueue.Send("MODE " + channel.Name + " +q *!*@" + user.Host, IRC.priority.high);
+                        core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                        return;
+                    }
+                    return;
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
+
             if (message.StartsWith(config.CommandPrefix + "jb "))
             {
                 if (channel.Users.IsApproved(invoker, "admin"))
@@ -182,6 +295,37 @@ namespace wmib
                         // op self
                         core.irc._SlowQueue.DeliverMessage("op " + channel.Name, "ChanServ", IRC.priority.high);
                         core.irc._SlowQueue.Send("MODE " + channel.Name + " +b " + nick + "!*@*$##fix_your_connection", IRC.priority.high);
+                        core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                        return;
+                    }
+                    return;
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
+
+            if (message.StartsWith(config.CommandPrefix + "unjb "))
+            {
+                if (channel.Users.IsApproved(invoker, "admin"))
+                {
+                    if (GetConfig(channel, "OP.Enabled", false))
+                    {
+                        string nick = message.Substring(6);
+                        if (nick.Contains(" "))
+                        {
+                            nick = nick.Substring(0, nick.IndexOf(" "));
+                        }
+                        User user = getUser(nick, channel);
+                        if (user != null)
+                        {
+                            nick = user.Nick;
+                        }
+                        // op self
+                        core.irc._SlowQueue.DeliverMessage("op " + channel.Name, "ChanServ", IRC.priority.high);
+                        core.irc._SlowQueue.Send("MODE " + channel.Name + " -b " + nick + "!*@*$##fix_your_connection", IRC.priority.high);
                         core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
                         return;
                     }
