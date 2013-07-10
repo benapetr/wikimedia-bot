@@ -50,19 +50,23 @@ namespace wmib
         /// <summary>
         /// Socket Reader
         /// </summary>
-        private System.IO.StreamReader streamReader;
+        private StreamReader streamReader;
         /// <summary>
         /// Writer
         /// </summary>
-        private System.IO.StreamWriter streamWriter;
+        private StreamWriter streamWriter;
         /// <summary>
         /// Pinger
         /// </summary>
-        public static System.Threading.Thread check_thread = null;
+        public static Thread check_thread = null;
         /// <summary>
         /// Queue thread
         /// </summary>
-        private System.Threading.Thread _Queue;
+        private Thread _Queue;
+        /// <summary>
+        /// This is a thread for channel list
+        /// </summary>
+        private Thread ChannelThread;
         /// <summary>
         /// Queue of all messages that should be delivered to network
         /// </summary>
@@ -83,7 +87,7 @@ namespace wmib
         /// Queue of all messages that should be delivered to some network
         /// </summary>
         [Serializable()]
-        public class SlowQueue : MarshalByRefObject
+        public class SlowQueue
         {
             /// <summary>
             /// Creates new queue
@@ -97,7 +101,7 @@ namespace wmib
             /// <summary>
             /// Message
             /// </summary>
-            public struct Message
+            public class Message
             {
                 /// <summary>
                 /// Priority
@@ -111,6 +115,10 @@ namespace wmib
                 /// Channel which the message should be delivered to
                 /// </summary>
                 public string channel;
+                /// <summary>
+                /// If this is true the message will be sent as raw command
+                /// </summary>
+                public bool command = false;
             }
 
             private bool running = true;
@@ -148,6 +156,20 @@ namespace wmib
             public void DeliverAct(string Message, string Channel, priority Pr = priority.normal)
             {
                 Message text = new Message {_Priority = Pr, message = Message, channel = Channel};
+                lock (messages)
+                {
+                    messages.Add(text);
+                }
+            }
+
+            /// <summary>
+            /// Send a command to server
+            /// </summary>
+            /// <param name="Data"></param>
+            /// <param name="Priority"></param>
+            public void Send(string Data, priority Priority = priority.high)
+            {
+                Message text = new Message { _Priority = Priority, channel = null, message = Data, command = true };
                 lock (messages)
                 {
                     messages.Add(text);
@@ -199,6 +221,16 @@ namespace wmib
                 {
                     newmessages.Clear();
                 }
+            }
+
+            private void Transfer(Message text)
+            {
+                if (text.command)
+                {
+                    Parent.SendData(text.message);
+                    return;
+                }
+                Parent.Message(text.message, text.channel);
             }
 
             /// <summary>
@@ -258,7 +290,7 @@ namespace wmib
                                         if (message._Priority >= highest)
                                         {
                                             Processed.Add(message);
-                                            Parent.Message(message.message, message.channel);
+                                            Transfer(message);
                                             System.Threading.Thread.Sleep(1000);
                                             if (highest != priority.high)
                                             {
@@ -381,19 +413,14 @@ namespace wmib
         }
 
         /// <summary>
-        /// Ping
+        /// This function will retrieve a list of users in a channel for every channel that doesn't have it so far
         /// </summary>
-        public void Ping()
+        public void ChannelList()
         {
-            while (true)
+            try
             {
-                try
+                while (IsConnected)
                 {
-                    System.Threading.Thread.Sleep(20000);
-                    if (!config.UsingNetworkIOLayer)
-                    {
-                        SendData("PING :" + config.network);
-                    }
                     List<string> channels = new List<string>();
                     // check if there is some channel which needs an update of user list
                     lock (config.channels)
@@ -407,11 +434,43 @@ namespace wmib
                         }
                     }
 
-                    foreach (string xx in channels)
+                    if (channels.Count >= 1)
                     {
-                        SendData("WHO " + xx);
-                        Program.Log("requesting user list for" + xx);
-                        Thread.Sleep(2000);
+                        foreach (string xx in channels)
+                        {
+                            Program.Log("requesting user list for" + xx);
+                            // Send the request with low priority
+                            _SlowQueue.Send("WHO " + xx, priority.low);
+                        }
+                        // we give 10 seconds for each channel to send us a list
+                        Thread.Sleep(10000 * channels.Count);
+                    }
+                    Thread.Sleep(10000);
+                }
+            }
+            catch (ThreadAbortException)
+            {
+                return;
+            }
+            catch (Exception fail)
+            {
+                core.handleException(fail);
+            }
+        }
+
+        /// <summary>
+        /// Ping
+        /// </summary>
+        public void Ping()
+        {
+            while (IsConnected)
+            {
+                try
+                {
+                    System.Threading.Thread.Sleep(20000);
+                    if (!config.UsingNetworkIOLayer)
+                    {
+                        SendData("PING :" + config.network);
                     }
                 }
                 catch (ThreadAbortException)
@@ -447,6 +506,9 @@ namespace wmib
             }
             _SlowQueue.newmessages.Clear();
             _SlowQueue.messages.Clear();
+            ChannelThread.Abort();
+            ChannelThread = new Thread(ChannelList);
+            ChannelThread.Start();
             _Queue.Start();
             return false;
         }
@@ -535,6 +597,8 @@ namespace wmib
 
                 check_thread = new System.Threading.Thread(Ping);
                 check_thread.Start();
+                ChannelThread = new Thread(ChannelList);
+                ChannelThread.Start();
 
                 if (Auth)
                 {
