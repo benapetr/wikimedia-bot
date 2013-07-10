@@ -93,7 +93,7 @@ namespace wmib
         public static System.Net.Sockets.NetworkStream stream;
 
         public static Regex line =
-            new Regex(":rc-pmtpa!~rc-pmtpa@[^ ]* PRIVMSG #[^:]*:14\\[\\[07([^]*)14\\]\\]4 (N?)(M?)(B?)10 02.*di" +
+            new Regex(":rc-pmtpa!~rc-pmtpa@[^ ]* PRIVMSG #[^:]*:14\\[\\[07([^]*)14\\]\\]4 N?(M?)(B?)10 02.*di" +
                       "ff=([^&]*)&oldid=([^]*) 5\\* 03([^]*) 5\\* \\(?([^]*)?\\) 10([^]*)?");
 
         public config.channel channel;

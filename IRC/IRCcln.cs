@@ -597,8 +597,6 @@ namespace wmib
 
                 check_thread = new System.Threading.Thread(Ping);
                 check_thread.Start();
-                ChannelThread = new Thread(ChannelList);
-                ChannelThread.Start();
 
                 if (Auth)
                 {
@@ -622,6 +620,10 @@ namespace wmib
                         }
                     }
                 }
+
+                ChannelThread = new Thread(ChannelList);
+                ChannelThread.Start();
+
                 string nick = "";
                 string host = "";
                 string channel = "";

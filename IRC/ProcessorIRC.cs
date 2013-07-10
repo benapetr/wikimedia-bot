@@ -54,6 +54,18 @@ namespace wmib
                 if (channel != null)
                 {
                     Program.Log("Finished parsing for " + channel.Name + " parsed totaly: " + channel.UserList.Count.ToString());
+                    if (config.SelectedVerbosity > 8)
+                    {
+                        string list = "";
+                        lock (channel.UserList)
+                        {
+                            foreach (User u in channel.UserList)
+                            {
+                                list = list + u.Nick + ", ";
+                            }
+                        }
+                        core.DebugLog("Parsed: " + list, 8);
+                    }
                     channel.FreshList = true;
                 }
             }
@@ -78,6 +90,7 @@ namespace wmib
                 {
                     if (!channel.containsUser(nick))
                     {
+                        core.DebugLog("Parsing user for " + channel.Name + " " + code[7], 8);
                         User _user = new User(nick, host, ident);
                         channel.UserList.Add(_user);
                         return true;
