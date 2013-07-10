@@ -273,7 +273,7 @@ namespace wmib
         {
             Name = "RC";
             start = true;
-            Version = "1.1.8.0";
+            Version = "1.2.0.2";
             return true;
         }
 

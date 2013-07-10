@@ -93,7 +93,7 @@ namespace wmib
         public static System.Net.Sockets.NetworkStream stream;
 
         public static Regex line =
-            new Regex(":rc-pmtpa!~rc-pmtpa@[^ ]* PRIVMSG #[^:]*:14\\[\\[07([^]*)14\\]\\]4 N?(M?)(B?)10 02.*di" +
+            new Regex(":rc-pmtpa!~rc-pmtpa@[^ ]* PRIVMSG #[^:]*:14\\[\\[07([^]*)14\\]\\]4 (N?)(M?)(B?)10 02.*di" +
                       "ff=([^&]*)&oldid=([^]*) 5\\* 03([^]*) 5\\* \\(?([^]*)?\\) 10([^]*)?");
 
         public config.channel channel;
@@ -402,16 +402,10 @@ namespace wmib
         {
             Page = Page.Replace("_", " ");
             wiki site = null;
-            foreach (wiki Site in wikiinfo)
-            {
-                if (Site.name == WS)
-                {
-                    site = Site;
-                }
-            }
+            site = getWiki(WS);
             if (site != null)
             {
-                if (channels.Contains(site.channel))
+                if (WS == "all" || channels.Contains(site.channel))
                 {
                     IWatch currpage = null;
                     lock (pages)
@@ -480,7 +474,7 @@ namespace wmib
             Page = Page.Replace("_", " ");
             if (site != null)
             {
-                if (channels.Contains(site.channel))
+                if (WS == "all" || channels.Contains(site.channel))
                 {
                     IWatch currpage = null;
                     lock (pages)
@@ -517,13 +511,10 @@ namespace wmib
                     Save();
                     return true;
                 }
-                core.irc._SlowQueue.DeliverMessage(
-                    messages.get("rcfeed11", channel.Language), channel.Name);
+                core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed11", channel.Language), channel.Name);
                 return false;
             }
-            core.irc._SlowQueue.DeliverMessage(
-                messages.get("rcfeed12", channel.Language),
-                channel.Name);
+            core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed12", channel.Language), channel.Name);
             return false;
         }
     }
