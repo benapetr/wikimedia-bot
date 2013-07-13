@@ -22,7 +22,7 @@ namespace wmib
         public override bool Construct()
         {
             Name = "Html dump";
-            Version = "1.0.8.1";
+            Version = "1.0.8.2";
             Reload = false;
             start = true;
             return true;
@@ -197,7 +197,7 @@ namespace wmib
                 }
 
 
-                text += "</table>Uptime: " + core.getUptime() + " Memory usage: " + (System.Diagnostics.Process.GetCurrentProcess().VirtualMemorySize64 / 1024).ToString() + "kb Database size: " + getSize();
+                text += "</table>Uptime: " + core.getUptime() + " Memory usage: " + (System.Diagnostics.Process.GetCurrentProcess().PrivateMemorySize64 / 1024).ToString() + "kb Database size: " + getSize();
 
                 lock (Module.module)
                 {
