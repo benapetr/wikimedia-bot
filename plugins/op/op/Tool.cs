@@ -37,6 +37,26 @@ namespace wmib
             return null;
         }
 
+        public void GetOp(config.channel chan)
+        {
+            if (!GetConfig(chan, "OP.Permanent", false))
+            {
+                core.irc._SlowQueue.DeliverMessage("op " + chan.Name, "ChanServ", IRC.priority.high);
+                return;
+            }
+            // get our user
+            User user = chan.RetrieveUser(config.username);
+            if (user == null)
+            {
+                core.irc._SlowQueue.DeliverMessage("op " + chan.Name, "ChanServ", IRC.priority.high);
+                return;
+            }
+            if (!user.IsOperator)
+            {
+                core.irc._SlowQueue.DeliverMessage("op " + chan.Name, "ChanServ", IRC.priority.high);
+            }
+        }
+
         public override void Hook_PRIV(config.channel channel, User invoker, string message)
         {
             if (message.StartsWith(config.CommandPrefix + "optools-on"))
@@ -52,6 +72,54 @@ namespace wmib
                     {
                         core.irc._SlowQueue.DeliverMessage("Operator tools have been enabled on this channel", channel.Name);
                         SetConfig(channel, "OP.Enabled", true);
+                        channel.SaveConfig();
+                        return;
+                    }
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
+
+            if (message == config.CommandPrefix + "optools-permanent-off")
+            {
+                if (channel.Users.IsApproved(invoker, "admin"))
+                {
+                    if (!GetConfig(channel, "OP.Permanent", false))
+                    {
+                        core.irc._SlowQueue.DeliverMessage("Operator tools were already not in permanent mode on this channel", channel);
+                        return;
+                    }
+                    else
+                    {
+                        core.irc._SlowQueue.DeliverMessage("Operator tools are now not in permanent mode on this channel", channel.Name);
+                        SetConfig(channel, "OP.Permanent", false);
+                        channel.SaveConfig();
+                        return;
+                    }
+                }
+                if (!channel.suppress_warnings)
+                {
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                }
+                return;
+            }
+
+            if (message == config.CommandPrefix + "optools-permanent-on")
+            {
+                if (channel.Users.IsApproved(invoker, "admin"))
+                {
+                    if (GetConfig(channel, "OP.Permanent", false))
+                    {
+                        core.irc._SlowQueue.DeliverMessage("Operator tools were already in permanent mode on this channel", channel);
+                        return;
+                    }
+                    else
+                    {
+                        core.irc._SlowQueue.DeliverMessage("Operator tools are now in permanent mode on this channel", channel.Name);
+                        SetConfig(channel, "OP.Permanent", true);
                         channel.SaveConfig();
                         return;
                     }
@@ -107,9 +175,12 @@ namespace wmib
                             return;
                         }
                         // op self
-                        core.irc._SlowQueue.DeliverMessage("op " + channel.Name, "ChanServ", IRC.priority.high);
+                        GetOp(channel);
                         core.irc._SlowQueue.Send("KICK " + channel.Name + " " + user.Nick + " :" + reason, IRC.priority.high);
-                        core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                        if (!GetConfig(channel, "OP.Permanent", false))
+                        {
+                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                        }
                         return;
                     }
                     return;
@@ -141,7 +212,7 @@ namespace wmib
                             return;
                         }
                         // op self
-                        core.irc._SlowQueue.DeliverMessage("op " + channel.Name, "ChanServ", IRC.priority.high);
+                        GetOp(channel);
                         if (string.IsNullOrEmpty(user.Host))
                         {
                             core.irc._SlowQueue.DeliverMessage("Sorry but I don't know hostname of this user... you will need to issue the ban yourself", channel, IRC.priority.high);
@@ -151,7 +222,10 @@ namespace wmib
                             core.irc._SlowQueue.Send("MODE " + channel.Name + " +b *!*@" + user.Host, IRC.priority.high);
                         }
                         core.irc._SlowQueue.Send("KICK " + channel.Name + " " + user.Nick + " :" + reason, IRC.priority.high);
-                        core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                        if (!GetConfig(channel, "OP.Permanent", false))
+                        {
+                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                        }
                         return;
                     }
                     return;
@@ -187,9 +261,12 @@ namespace wmib
                             return;
                         }
                         // op self
-                        core.irc._SlowQueue.DeliverMessage("op " + channel.Name, "ChanServ", IRC.priority.high);
+                        GetOp(channel);
                         core.irc._SlowQueue.Send("MODE " + channel.Name + " -b *!*@" + user.Host, IRC.priority.high);
-                        core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                        if (!GetConfig(channel, "OP.Permanent", false))
+                        {
+                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                        }
                         return;
                     }
                     return;
@@ -225,9 +302,12 @@ namespace wmib
                             return;
                         }
                         // op self
-                        core.irc._SlowQueue.DeliverMessage("op " + channel.Name, "ChanServ", IRC.priority.high);
+                        GetOp(channel);
                         core.irc._SlowQueue.Send("MODE " + channel.Name + " -q *!*@" + user.Host, IRC.priority.high);
-                        core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                        if (!GetConfig(channel, "OP.Permanent", false))
+                        {
+                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                        }
                         return;
                     }
                     return;
@@ -262,9 +342,12 @@ namespace wmib
                             core.irc._SlowQueue.DeliverMessage("Sorry but I don't know hostname of this user... you will need to issue the ban yourself", channel, IRC.priority.high);
                             return;
                         }
-                        core.irc._SlowQueue.DeliverMessage("op " + channel.Name, "ChanServ", IRC.priority.high);
+                        GetOp(channel);
                         core.irc._SlowQueue.Send("MODE " + channel.Name + " +q *!*@" + user.Host, IRC.priority.high);
-                        core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                        if (!GetConfig(channel, "OP.Permanent", false))
+                        {
+                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                        }
                         return;
                     }
                     return;
@@ -293,9 +376,12 @@ namespace wmib
                             nick = user.Nick;
                         }
                         // op self
-                        core.irc._SlowQueue.DeliverMessage("op " + channel.Name, "ChanServ", IRC.priority.high);
+                        GetOp(channel);
                         core.irc._SlowQueue.Send("MODE " + channel.Name + " +b " + nick + "!*@*$##fix_your_connection", IRC.priority.high);
-                        core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                        if (!GetConfig(channel, "OP.Permanent", false))
+                        {
+                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                        }
                         return;
                     }
                     return;
@@ -324,9 +410,12 @@ namespace wmib
                             nick = user.Nick;
                         }
                         // op self
-                        core.irc._SlowQueue.DeliverMessage("op " + channel.Name, "ChanServ", IRC.priority.high);
+                        GetOp(channel);
                         core.irc._SlowQueue.Send("MODE " + channel.Name + " -b " + nick + "!*@*$##fix_your_connection", IRC.priority.high);
-                        core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                        if (!GetConfig(channel, "OP.Permanent", false))
+                        {
+                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                        }
                         return;
                     }
                     return;
@@ -341,7 +430,7 @@ namespace wmib
 
         public override bool Construct()
         {
-            Version = "1.0.0";
+            Version = "1.0.8";
             start = true;
             Name = "Operator tools";
             return true;

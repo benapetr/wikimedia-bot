@@ -21,68 +21,8 @@ namespace wmib
     /// <summary>
     /// IRC
     /// </summary>
-    public class IRC
+    public partial class IRC
     {
-        /// <summary>
-        /// Server addr
-        /// </summary>
-        public string Server;
-        /// <summary>
-        /// Nick
-        /// </summary>
-        public string NickName;
-        /// <summary>
-        /// ID
-        /// </summary>
-        public string Ident;
-        /// <summary>
-        /// User
-        /// </summary>
-        public string UserName;
-        /// <summary>
-        /// Pw
-        /// </summary>
-        public string Password;
-        /// <summary>
-        /// Socket
-        /// </summary>
-        private static System.Net.Sockets.NetworkStream networkStream;
-        /// <summary>
-        /// Socket Reader
-        /// </summary>
-        private StreamReader streamReader;
-        /// <summary>
-        /// Writer
-        /// </summary>
-        private StreamWriter streamWriter;
-        /// <summary>
-        /// Pinger
-        /// </summary>
-        public static Thread check_thread = null;
-        /// <summary>
-        /// Queue thread
-        /// </summary>
-        private Thread _Queue;
-        /// <summary>
-        /// This is a thread for channel list
-        /// </summary>
-        private Thread ChannelThread;
-        /// <summary>
-        /// Queue of all messages that should be delivered to network
-        /// </summary>
-        public SlowQueue _SlowQueue = null;
-        private bool connected;
-        /// <summary>
-        /// If network is connected
-        /// </summary>
-        public bool IsConnected
-        {
-            get
-            {
-                return connected;
-            }
-        }
-
         /// <summary>
         /// Queue of all messages that should be delivered to some network
         /// </summary>
@@ -140,7 +80,8 @@ namespace wmib
             /// <param name="Pr">Priority</param>
             public void DeliverMessage(string Message, string Channel, priority Pr = priority.normal)
             {
-                Message text = new Message {_Priority = Pr, message = Message, channel = Channel};
+                // first of all we check if we are in correct instance
+                Message text = new Message { _Priority = Pr, message = Message, channel = Channel };
                 lock (messages)
                 {
                     messages.Add(text);
@@ -155,7 +96,7 @@ namespace wmib
             /// <param name="Pr">Priority</param>
             public void DeliverAct(string Message, string Channel, priority Pr = priority.normal)
             {
-                Message text = new Message {_Priority = Pr, message = Message, channel = Channel};
+                Message text = new Message { _Priority = Pr, message = Message, channel = Channel };
                 lock (messages)
                 {
                     messages.Add(text);
@@ -184,7 +125,7 @@ namespace wmib
             /// <param name="Pr">Priority</param>
             public void DeliverMessage(string Message, User User, priority Pr = priority.low)
             {
-                Message text = new Message {_Priority = Pr, message = Message, channel = User.Nick};
+                Message text = new Message { _Priority = Pr, message = Message, channel = User.Nick };
                 lock (messages)
                 {
                     messages.Add(text);
@@ -199,7 +140,7 @@ namespace wmib
             /// <param name="Pr">Priority</param>
             public void DeliverMessage(string Message, config.channel Channel, priority Pr = priority.normal)
             {
-                Message text = new Message {_Priority = Pr, message = Message, channel = Channel.Name};
+                Message text = new Message { _Priority = Pr, message = Message, channel = Channel.Name };
                 lock (messages)
                 {
                     messages.Add(text);
@@ -321,6 +262,98 @@ namespace wmib
                 }
             }
         }
+        public Instance ParentInstance = null;
+        public bool IsWorking = false;
+        public string Bouncer = "127.0.0.1";
+        /// <summary>
+        /// Server addr
+        /// </summary>
+        public string Server;
+        public int BouncerPort = 6667;
+        /// <summary>
+        /// Nick
+        /// </summary>
+        public string NickName;
+        /// <summary>
+        /// ID
+        /// </summary>
+        public string Ident;
+        /// <summary>
+        /// User
+        /// </summary>
+        public string UserName;
+        /// <summary>
+        /// Pw
+        /// </summary>
+        public string Password;
+        /// <summary>
+        /// Socket
+        /// </summary>
+        private static System.Net.Sockets.NetworkStream networkStream;
+        /// <summary>
+        /// Socket Reader
+        /// </summary>
+        private StreamReader streamReader;
+        /// <summary>
+        /// Writer
+        /// </summary>
+        private StreamWriter streamWriter;
+        /// <summary>
+        /// Pinger
+        /// </summary>
+        public static Thread check_thread = null;
+        /// <summary>
+        /// Queue thread
+        /// </summary>
+        private Thread _Queue;
+        /// <summary>
+        /// This is a thread for channel list
+        /// </summary>
+        private Thread ChannelThread;
+        /// <summary>
+        /// Queue of all messages that should be delivered to network
+        /// </summary>
+        public SlowQueue _SlowQueue = null;
+        private bool connected;
+        /// <summary>
+        /// If network is connected
+        /// </summary>
+        public bool IsConnected
+        {
+            get
+            {
+                return connected;
+            }
+        }
+
+        /// <summary>
+        /// User modes, these are modes that are applied on network, not channel (invisible, oper)
+        /// </summary>
+        public List<char> UModes = new List<char> { 'i', 'w', 'o', 'Q', 'r', 'A' };
+        /// <summary>
+        /// Channel user symbols (oper and such)
+        /// </summary>
+        public List<char> UChars = new List<char> { '~', '&', '@', '%', '+' };
+        /// <summary>
+        /// Channel user modes (voiced, op)
+        /// </summary>
+        public List<char> CUModes = new List<char> { 'q', 'a', 'o', 'h', 'v' };
+        /// <summary>
+        /// Channel modes (moderated, topic)
+        /// </summary>
+        public List<char> CModes = new List<char> { 'n', 'r', 't', 'm' };
+        /// <summary>
+        /// Special channel modes with parameter as a string
+        /// </summary>
+        public List<char> SModes = new List<char> { 'k', 'L' };
+        /// <summary>
+        /// Special channel modes with parameter as a number
+        /// </summary>
+        public List<char> XModes = new List<char> { 'l' };
+        /// <summary>
+        /// Special channel user modes with parameters as a string
+        /// </summary>
+        public List<char> PModes = new List<char> { 'b', 'I', 'e' };
 
         /// <summary>
         /// Creates a new instance of IRC
@@ -329,7 +362,7 @@ namespace wmib
         /// <param name="_nick">Nickname to use</param>
         /// <param name="_ident">Ident</param>
         /// <param name="_username">Username</param>
-        public IRC(string _server, string _nick, string _ident, string _username)
+        public IRC(string _server, string _nick, string _ident, string _username, Instance instance)
         {
             Server = _server;
             Password = "";
@@ -337,6 +370,7 @@ namespace wmib
             UserName = _username;
             NickName = _nick;
             Ident = _ident;
+            ParentInstance = instance;
         }
 
         /// <summary>
@@ -491,12 +525,13 @@ namespace wmib
         public bool Reconnect()
         {
             _Queue.Abort();
-            networkStream = config.UsingNetworkIOLayer ? new System.Net.Sockets.TcpClient("127.0.0.1", 6667).GetStream() : new System.Net.Sockets.TcpClient(Server, 6667).GetStream();
+            networkStream = config.UsingNetworkIOLayer ? new System.Net.Sockets.TcpClient(Bouncer, BouncerPort).GetStream() : new System.Net.Sockets.TcpClient(Server, 6667).GetStream();
             connected = true;
             streamReader = new StreamReader(networkStream, System.Text.Encoding.UTF8);
             streamWriter = new StreamWriter(networkStream);
             SendData("USER " + UserName + " 8 * :" + Ident);
             SendData("NICK " + NickName);
+            IsWorking = true;
             Authenticate();
             _Queue = new Thread(_SlowQueue.Run);
             foreach (config.channel ch in config.channels)
@@ -562,7 +597,7 @@ namespace wmib
                 }
                 else
                 {
-                    networkStream = new System.Net.Sockets.TcpClient("127.0.0.1", 6667).GetStream();
+                    networkStream = new System.Net.Sockets.TcpClient(Bouncer, BouncerPort).GetStream();
                     Program.Log("System is using external bouncer");
                 }
                 connected = true;
@@ -574,7 +609,7 @@ namespace wmib
                 if (config.UsingNetworkIOLayer)
                 {
                     SendData("CONTROL: STATUS");
-                    Console.WriteLine("CACHE: Waiting for buffer");
+                    Program.Log("CACHE: Waiting for buffer");
                     bool done = true;
                     while (done)
                     {
@@ -598,11 +633,8 @@ namespace wmib
                 check_thread = new System.Threading.Thread(Ping);
                 check_thread.Start();
 
-                if (Auth)
-                {
-                    SendData("USER " + UserName + " 8 * :" + Ident);
-                    SendData("NICK " + NickName);
-                }
+                SendData("USER " + UserName + " 8 * :" + Ident);
+                SendData("NICK " + NickName);
 
                 _Queue.Start();
                 System.Threading.Thread.Sleep(2000);
@@ -620,6 +652,8 @@ namespace wmib
                         }
                     }
                 }
+
+                IsWorking = true;
 
                 ChannelThread = new Thread(ChannelList);
                 ChannelThread.Start();
@@ -795,12 +829,14 @@ namespace wmib
                             System.Threading.Thread.Sleep(50);
                         }
                         Program.Log("Reconnecting, end of data stream");
+                        IsWorking = false;
                         connected = false;
                         Reconnect();
                     }
                     catch (System.IO.IOException xx)
                     {
                         Program.Log("Reconnecting, connection failed " + xx.Message + xx.StackTrace);
+                        IsWorking = false;
                         connected = false;
                         Reconnect();
                     }
@@ -808,6 +844,7 @@ namespace wmib
                     {
                         core.handleException(xx, channel);
                         core.Log("IRC: Connection error!! Terminating system");
+                        IsWorking = false;
                         connected = false;
                         core.Kill();
                     }
@@ -816,6 +853,7 @@ namespace wmib
             catch (Exception)
             {
                 core.Log("IRC: Connection error!! Terminating system");
+                IsWorking = false;
                 connected = false;
                 // there is no point for being up when connection is dead and can't be reconnected
                 core.Kill();

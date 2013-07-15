@@ -91,6 +91,7 @@ namespace wmib
         /// </summary>
         public static Dictionary<Module, AppDomain> Domains = new Dictionary<Module, AppDomain>();
         private static readonly Dictionary<string, string> HelpData = new Dictionary<string, string>();
+        public static Dictionary<string, Instance> Instances = new Dictionary<string, Instance>();
 
         /// <summary>
         /// System user
@@ -128,6 +129,41 @@ namespace wmib
             { 
                 StorageWriter.InsertLine("trafficlog.dat", DateTime.Now.ToString() + ": " + text, false);
             }
+        }
+
+        public static int CreateInstance(string name, int port = 0)
+        {
+            lock (Instances)
+            {
+                if (Instances.ContainsKey(name))
+                {
+                    throw new Exception("Can't load instance " + name + " because this instance already is present");
+                }
+                Instances.Add(name, new Instance(name, port));
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// Return instance with lowest number of channels
+        /// </summary>
+        /// <returns></returns>
+        public static Instance getInstance()
+        {
+            int lowest = 99999999;
+            Instance instance = null;
+            lock (Instances)
+            {
+                foreach (Instance xx in Instances.Values)
+                {
+                    if (xx.ChannelCount < lowest)
+                    {
+                        lowest = xx.ChannelCount;
+                        instance = xx;
+                    }
+                }
+            }
+            return instance;
         }
 
         /// <summary>
@@ -375,8 +411,35 @@ namespace wmib
         /// </summary>
         public static void Connect()
         {
-            irc = new IRC(config.network, config.username, config.name, config.name);
-            irc.Connect();
+            irc = Instances[config.username].irc;
+            // now we load all instances
+            lock (Instances)
+            {
+                foreach (Instance instance in Instances.Values)
+                {
+                    // connect it to irc
+                    instance.Init();
+                }
+                // now we need to wait for all instances to connect
+                bool IsOk = false;
+                while (!IsOk)
+                {
+                    foreach (Instance instance in Instances.Values)
+                    {
+                        if (!instance.IsWorking)
+                        {
+                            Thread.Sleep(100);
+                            break;
+                        }
+                    }
+                    IsOk = true;
+                }
+                // now we make all instances join their channels
+                foreach (Instance instance in Instances.Values)
+                {
+                    
+                }
+            }
         }
 
         private static void Terminate()

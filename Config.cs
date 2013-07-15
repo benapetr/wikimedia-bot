@@ -99,7 +99,7 @@ namespace wmib
         /// <summary>
         /// Version
         /// </summary>
-        public static string version = "wikimedia bot v. 1.10.12.0";
+        public static string version = "wikimedia bot v. 1.20.0.0";
 
         /// <summary>
         /// Separator for system db
@@ -210,6 +210,55 @@ namespace wmib
                     File.WriteAllText(variables.config + "/wmib", "//this is configuration file for bot, you need to fill in some stuff for it to work");
                 }
                 text = File.ReadAllText(variables.config + "/wmib");
+                username = parseConfig(text, "username");
+                network = parseConfig(text, "network");
+                login = parseConfig(text, "nick");
+                debugchan = parseConfig(text, "debug");
+                css = parseConfig(text, "style_html_file");
+                WebpageURL = parseConfig(text, "web");
+                password = parseConfig(text, "password");
+                if (string.IsNullOrEmpty(login))
+                {
+                    Console.WriteLine("Error there is no login for bot");
+                    return 1;
+                }
+                if (string.IsNullOrEmpty(network))
+                {
+                    Console.WriteLine("Error irc server is wrong");
+                    return 1;
+                }
+                if (string.IsNullOrEmpty(username))
+                {
+                    Console.WriteLine("Error there is no username for bot");
+                    return 1;
+                }
+                core.Log("Creating instances");
+                core.CreateInstance(username, 6667); // primary instance
+                int CurrentInstance = 0;
+                while (CurrentInstance < 20)
+                {
+                    string InstanceName = parseConfig(text, "instancename" + CurrentInstance.ToString());
+                    if (InstanceName == "")
+                    {
+                        break;
+                    }
+                    core.DebugLog("Instance found: " + InstanceName);
+                    if (UsingNetworkIOLayer)
+                    {
+                        string InstancePort = parseConfig(text, "instanceport" + CurrentInstance.ToString());
+                        if (InstancePort == "")
+                        {
+                            core.Log("Instance " + InstanceName + " has invalid port, not using", true);
+                            continue;
+                        }
+                        int port = int.Parse(InstancePort);
+                        core.CreateInstance(InstanceName, port);
+                    }
+                    else
+                    {
+                        core.CreateInstance(InstanceName);
+                    }
+                }
                 bool _serverIO;
                 if (bool.TryParse(parseConfig(text, "serverIO"), out _serverIO))
                 {
@@ -233,29 +282,8 @@ namespace wmib
                 {
                     ch.Shares();
                 }
+
                 Program.Log("Channel db's working");
-                username = parseConfig(text, "username");
-                network = parseConfig(text, "network");
-                login = parseConfig(text, "nick");
-                debugchan = parseConfig(text, "debug");
-                css = parseConfig(text, "style_html_file");
-                WebpageURL = parseConfig(text, "web");
-                password = parseConfig(text, "password");
-                if (string.IsNullOrEmpty(login))
-                {
-                    Console.WriteLine("Error there is no login for bot");
-                    return 1;
-                }
-                if (string.IsNullOrEmpty(network))
-                {
-                    Console.WriteLine("Error irc server is wrong");
-                    return 1;
-                }
-                if (string.IsNullOrEmpty(username))
-                {
-                    Console.WriteLine("Error there is no username for bot");
-                    return 1;
-                }
                 return 0;
             }
             catch (Exception ex)

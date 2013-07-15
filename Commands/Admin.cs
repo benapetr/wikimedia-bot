@@ -231,6 +231,36 @@ namespace wmib
                 }
             }
 
+            if (message.StartsWith(config.CommandPrefix + "instance "))
+            {
+                if (chan.Users.IsApproved(invoker, "root"))
+                {
+                    string channel;
+                    string instance;
+                    message = message.Substring(".instance ".Length);
+                    if (!message.Contains(" "))
+                    {
+                        irc._SlowQueue.DeliverMessage("This command need 2 parameters", chan.Name);
+                        return;
+                    }
+                    channel = message.Substring(message.IndexOf(" ") + 1);
+                    instance = message.Substring(0, message.IndexOf(" "));
+                    config.channel ch = core.getChannel(channel);
+                    if (ch == null)
+                    {
+                        irc._SlowQueue.DeliverMessage("This channel I never heard of :'(", chan.Name);
+                        return;
+                    }
+
+                    irc._SlowQueue.DeliverMessage("Changed default instance of " + channel + " to " + instance, chan);
+                    return;
+                }
+                if (!chan.suppress_warnings)
+                {
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                }
+            }
+
             if (message == config.CommandPrefix + "traffic-off")
             {
                 if (chan.Users.IsApproved(invoker, "root"))

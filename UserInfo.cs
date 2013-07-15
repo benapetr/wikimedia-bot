@@ -34,6 +34,47 @@ namespace wmib
         public string Nick;
 
         /// <summary>
+        /// Mode
+        /// </summary>
+        public NetworkMode ChannelMode = new NetworkMode();
+
+        /// <summary>
+        /// If user is opped
+        /// </summary>
+        public bool IsOperator
+        {
+            get
+            {
+                if (ChannelMode != null)
+                {
+                    if (ChannelMode._Mode.Contains("o"))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Change a user level according to symbol
+        /// </summary>
+        /// <param name="symbol"></param>
+        public void SymbolMode(char symbol)
+        {
+            if (symbol == '\0')
+            {
+                return;
+            }
+
+            if (core.irc.UChars.Contains(symbol))
+            {
+                char mode = core.irc.CUModes[core.irc.UChars.IndexOf(symbol)];
+                ChannelMode.ChangeMode("+" + mode.ToString());
+            }
+        }
+
+        /// <summary>
         /// Creates a new instance of user
         /// </summary>
         /// <param name="nick"></param>
@@ -41,6 +82,15 @@ namespace wmib
         /// <param name="ident"></param>
         public User(string nick, string host, string ident)
         {
+            if (nick != "")
+            {
+                char prefix = nick[0];
+                if (core.irc.UChars.Contains(prefix))
+                {
+                    SymbolMode(prefix);
+                    nick = nick.Substring(1);
+                }
+            }
             Nick = nick;
             Ident = ident;
             Host = host;
