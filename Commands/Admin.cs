@@ -252,7 +252,30 @@ namespace wmib
                         return;
                     }
 
-                    irc._SlowQueue.DeliverMessage("Changed default instance of " + channel + " to " + instance, chan);
+                    Instance _instance = null;
+
+                    lock (core.Instances)
+                    {
+                        if (!core.Instances.ContainsKey(instance))
+                        {
+                            irc._SlowQueue.DeliverMessage("This instance I never heard of :'(", chan.Name);
+                            return;
+                        }
+                        _instance = core.Instances[instance];
+                    }
+
+                    if (_instance == ch.instance)
+                    {
+                        irc._SlowQueue.DeliverMessage("This channel is already in this instance", chan.Name);
+                        return;
+                    }
+
+                    ch.instance.irc.SendData("PART " + ch.Name + " :Switching instance");
+                    ch.instance = _instance;
+                    ch.instance.irc.SendData("JOIN " + ch.Name);
+                    ch.SaveConfig();
+
+                    chan.instance.irc._SlowQueue.DeliverMessage("Changed default instance of " + channel + " to " + instance, chan);
                     return;
                 }
                 if (!chan.suppress_warnings)
@@ -306,12 +329,7 @@ namespace wmib
 
             if (message == config.CommandPrefix + "channellist")
             {
-                string channels = "";
-                foreach (config.channel a in config.channels)
-                {
-                    channels = channels + a.Name + ", ";
-                }
-                irc._SlowQueue.DeliverMessage(messages.get("List", chan.Language) + channels, chan.Name);
+                irc._SlowQueue.DeliverMessage("I am in " + config.channels.Count.ToString() + " channels in this moment", chan.Name);
                 return;
             }
 

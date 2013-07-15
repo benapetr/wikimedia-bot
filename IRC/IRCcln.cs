@@ -96,6 +96,20 @@ namespace wmib
                         return;
                     }
                 }
+                else
+                {
+                    lock (core.TargetBuffer)
+                    {
+                        if (core.TargetBuffer.ContainsKey(Channel))
+                        {
+                            if (core.TargetBuffer[Channel] != Parent.ParentInstance)
+                            {
+                                core.TargetBuffer[Channel].irc._SlowQueue.DeliverMessage(Message, Channel, Pr);
+                                return;
+                            }
+                        }
+                    }
+                }
                 Message text = new Message { _Priority = Pr, message = Message, channel = Channel };
                 lock (messages)
                 {
@@ -474,6 +488,12 @@ namespace wmib
         {
             if (Channel != null)
             {
+                if (Channel.instance != ParentInstance)
+                {
+                    core.DebugLog("Fixing instance for " + Channel.Name);
+                    Channel.instance.irc.Join(Channel);
+                    return false;
+                }
                 SendData("JOIN " + Channel.Name);
                 return true;
             }
@@ -503,14 +523,11 @@ namespace wmib
                 {
                     List<string> channels = new List<string>();
                     // check if there is some channel which needs an update of user list
-                    lock (config.channels)
+                    foreach (config.channel dd in ParentInstance.ChannelList)
                     {
-                        foreach (config.channel dd in config.channels)
+                        if (!dd.FreshList)
                         {
-                            if (!dd.FreshList)
-                            {
-                                channels.Add(dd.Name);
-                            }
+                            channels.Add(dd.Name);
                         }
                     }
 
@@ -518,7 +535,7 @@ namespace wmib
                     {
                         foreach (string xx in channels)
                         {
-                            Program.Log("requesting user list for" + xx);
+                            Program.Log("requesting user list on " + ParentInstance.Nick + " for channel: " + xx);
                             // Send the request with low priority
                             _SlowQueue.Send("WHO " + xx, priority.low);
                         }
@@ -570,6 +587,11 @@ namespace wmib
         /// <returns></returns>
         public bool Reconnect()
         {
+            if (core._Status == core.Status.ShuttingDown)
+            {
+                core.Log("Ignoring request to reconnect because bot is shutting down");
+                return false;
+            }
             _Queue.Abort();
             networkStream = config.UsingNetworkIOLayer ? new System.Net.Sockets.TcpClient(Bouncer, BouncerPort).GetStream() : new System.Net.Sockets.TcpClient(Server, 6667).GetStream();
             connected = true;
@@ -580,7 +602,7 @@ namespace wmib
             IsWorking = true;
             Authenticate();
             _Queue = new Thread(_SlowQueue.Run);
-            foreach (config.channel ch in config.channels)
+            foreach (config.channel ch in ParentInstance.ChannelList)
             {
                 Thread.Sleep(2000);
                 this.Join(ch);
@@ -600,13 +622,17 @@ namespace wmib
         /// <param name="text"></param>
         public void SendData(string text)
         {
+            if (core._Status == core.Status.ShuttingDown)
+            {
+                return;
+            }
             if (IsConnected)
             {
                 lock (this)
                 {
                     streamWriter.WriteLine(text);
                     streamWriter.Flush();
-                    core.TrafficLog("MAIN>>>>>>" + text);
+                    core.TrafficLog(ParentInstance.Nick + ">>>>>>" + text);
                 }
             }
             else
@@ -643,6 +669,7 @@ namespace wmib
                 }
                 else
                 {
+                    core.Log(ParentInstance.Nick + " is using personal bouncer port " + BouncerPort.ToString());
                     networkStream = new System.Net.Sockets.TcpClient(Bouncer, BouncerPort).GetStream();
                     Program.Log("System is using external bouncer");
                 }
@@ -657,7 +684,6 @@ namespace wmib
                     SendData("CONTROL: STATUS");
                     Program.Log("CACHE: Waiting for buffer");
                     bool done = true;
-                    ChannelsJoined = true;
                     while (done)
                     {
                         string response = streamReader.ReadLine();
@@ -665,7 +691,8 @@ namespace wmib
                         {
                             done = false;
                             Auth = false;
-                            ChannelsJoined = false;
+                            ChannelsJoined = true;
+                            IsWorking = true;
                         }
                         else if (response == "CONTROL: FALSE")
                         {
@@ -678,21 +705,22 @@ namespace wmib
 
                 _Queue = new System.Threading.Thread(_SlowQueue.Run);
 
+
                 check_thread = new System.Threading.Thread(Ping);
                 check_thread.Start();
 
-                SendData("USER " + UserName + " 8 * :" + Ident);
-                SendData("NICK " + NickName);
+                if (Auth)
+                {
+                    SendData("USER " + UserName + " 8 * :" + Ident);
+                    SendData("NICK " + ParentInstance.Nick);
+                }
 
                 _Queue.Start();
-                System.Threading.Thread.Sleep(2000);
 
                 if (Auth)
                 {
                     Authenticate();
                 }
-
-                IsWorking = true;
 
                 string nick = "";
                 string host = "";
@@ -706,7 +734,7 @@ namespace wmib
                         while (!streamReader.EndOfStream && core._Status == core.Status.OK)
                         {
                             string text = streamReader.ReadLine();
-                            core.TrafficLog("MAIN<<<<<<" + text);
+                            core.TrafficLog(ParentInstance.Nick + "<<<<<<" + text);
                             if (config.UsingNetworkIOLayer)
                             {
                                 if (text.StartsWith("CONTROL: "))
@@ -722,7 +750,7 @@ namespace wmib
                                             System.Threading.Thread.Sleep(800);
                                             SendData("CONTROL: STATUS");
                                             string response = streamReader.ReadLine();
-                                            core.TrafficLog("MAIN<<<<<<" + response);
+                                            core.TrafficLog(ParentInstance.Nick + "<<<<<<" + response);
                                             if (response == "CONTROL: OK")
                                             {
                                                 Reconnect();
@@ -735,6 +763,7 @@ namespace wmib
                             if (text.StartsWith(":"))
                             {
                                 ProcessorIRC processor = new ProcessorIRC(text);
+                                processor.instance = ParentInstance;
                                 processor.Result();
                                 string check = text.Substring(text.IndexOf(" "));
                                 if (check.StartsWith(" 005"))
@@ -796,6 +825,18 @@ namespace wmib
                                         {
                                             SendData("NOTICE " + nick + " :" + delimiter.ToString() + "VERSION " + config.version);
                                             continue;
+                                        }
+                                        // store which instance this message was from so that we can send it using same instance
+                                        lock (core.TargetBuffer)
+                                        {
+                                            if (!core.TargetBuffer.ContainsKey(nick))
+                                            {
+                                                core.TargetBuffer.Add(nick, ParentInstance);
+                                            }
+                                            else
+                                            {
+                                                core.TargetBuffer[nick] = ParentInstance;
+                                            }
                                         }
                                         bool respond = true;
                                         string modules = "";
@@ -886,8 +927,9 @@ namespace wmib
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception fail)
             {
+                core.handleException(fail);
                 core.Log("IRC: Connection error!! Terminating system");
                 IsWorking = false;
                 connected = false;

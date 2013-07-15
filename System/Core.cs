@@ -83,6 +83,10 @@ namespace wmib
         /// </summary>
         public static IRC irc = null;
         /// <summary>
+        /// If this is not true it means bot did not yet finish connecting or joining to all networks
+        /// </summary>
+        public static bool FinishedJoining = false;
+        /// <summary>
         /// Thread which is writing the system data to files
         /// </summary>
         public static Thread WriterThread = null;
@@ -92,6 +96,7 @@ namespace wmib
         public static Dictionary<Module, AppDomain> Domains = new Dictionary<Module, AppDomain>();
         private static readonly Dictionary<string, string> HelpData = new Dictionary<string, string>();
         public static Dictionary<string, Instance> Instances = new Dictionary<string, Instance>();
+        public static Dictionary<string, Instance> TargetBuffer = new Dictionary<string, Instance>();
 
         /// <summary>
         /// System user
@@ -133,6 +138,7 @@ namespace wmib
 
         public static int CreateInstance(string name, int port = 0)
         {
+            core.DebugLog("Creating instance " + name + " with port " + port.ToString());
             lock (Instances)
             {
                 if (Instances.ContainsKey(name))
@@ -240,7 +246,7 @@ namespace wmib
                 {
                     irc._SlowQueue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText, config.debugchan);
                 }
-                Program.Log("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace, true);
+                Program.WriteNow("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace, true);
             }
             catch (Exception) // exception happened while we tried to handle another one, ignore that (probably issue with logging)
             { }
@@ -429,11 +435,17 @@ namespace wmib
                     {
                         if (!instance.IsWorking)
                         {
-                            Thread.Sleep(100);
+                            core.DebugLog("Waiting for " + instance.Nick);
+                            Thread.Sleep(1000);
+                            IsOk = false;
                             break;
                         }
+                        else
+                        {
+                            core.DebugLog("Connected to " + instance.Nick);
+                            IsOk = true;
+                        }
                     }
-                    IsOk = true;
                 }
                 // now we make all instances join their channels
                 foreach (Instance instance in Instances.Values)
@@ -451,13 +463,16 @@ namespace wmib
                         if (!instance.irc.ChannelsJoined)
                         {
                             Thread.Sleep(100);
+                            IsOk = false;
                             break;
                         }
+                        IsOk = true;
                     }
-                    IsOk = true;
                 }
                 core.Log("All instances joined their channels");
             }
+
+            core.FinishedJoining = true;
 
             while (_Status == Status.OK)
             {
@@ -510,33 +525,33 @@ namespace wmib
                 StorageWriter.isRunning = false;
                 Thread modules = new Thread(Terminate) {Name = "KERNEL: Core helper shutdown thread"};
                 modules.Start();
-                Program.Log("Giving grace time for all modules to finish ok");
+                Program.WriteNow("Giving grace time for all modules to finish ok");
                 int kill = 0;
                 while (kill < 20)
                 {
                     kill++;
                     if (Module.module.Count == 0)
                     {
-                        Program.Log("KERNEL: Modules are all down");
+                        Program.WriteNow("KERNEL: Modules are all down");
                         if (WriterThread.ThreadState == ThreadState.Running || WriterThread.ThreadState == ThreadState.WaitSleepJoin)
                         {
-                            Log("KERNEL: Writer thread didn't shut down gracefully, waiting 2 seconds", true);
+                            Program.WriteNow("KERNEL: Writer thread didn't shut down gracefully, waiting 2 seconds", true);
                             Thread.Sleep(2000);
                             if (WriterThread.ThreadState == ThreadState.Running || WriterThread.ThreadState == ThreadState.WaitSleepJoin)
                             {
-                                Log("KERNEL: Writer thread didn't shut down gracefully, killing", true);
+                                Program.WriteNow("KERNEL: Writer thread didn't shut down gracefully, killing", true);
                                 WriterThread.Abort();
                             }
                             else
                             {
-                                Log("KERNEL: Writer thread is shut down", true);
+                                Program.WriteNow("KERNEL: Writer thread is shut down", true);
                             }
                         }
                         else
                         {
-                            Log("KERNEL: Writer thread is down ok");
+                            Program.WriteNow("KERNEL: Writer thread is down ok");
                         }
-                        Program.Log("KERNEL: Terminated");
+                        Program.WriteNow("KERNEL: Terminated");
                         System.Diagnostics.Process.GetCurrentProcess().Kill();
                         break;
                     }
@@ -548,8 +563,8 @@ namespace wmib
                 core.handleException(fail);
 
             }
-            Program.Log("There was problem shutting down " + Module.module.Count.ToString() + " modules, terminating process");
-            Program.Log("Terminated");
+            Program.WriteNow("There was problem shutting down " + Module.module.Count.ToString() + " modules, terminating process");
+            Program.WriteNow("Terminated");
             System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
 

@@ -47,6 +47,7 @@
     <Compile Include="IRC\Instance.cs" />
     <Compile Include="IRC\ChannelMode.cs" />
     <Compile Include="IRC\ProcessorIRC.cs" />
+    <Compile Include="Logging.cs" />
     <Compile Include="System\Channels_Core.cs" />
     <Compile Include="Commands\Permissions.cs" />
     <Compile Include="Config.cs" />

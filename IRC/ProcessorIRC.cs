@@ -20,6 +20,7 @@ namespace wmib
     public class ProcessorIRC
     {
         private string text;
+        public Instance instance;
 
         private void Ping()
         {
@@ -572,6 +573,9 @@ namespace wmib
                                 {
                                     return true;
                                 }
+                                break;
+                            case "376":
+                                instance.irc.IsWorking = true;
                                 break;
                             case "439":
                             case "707":

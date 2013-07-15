@@ -28,6 +28,27 @@ namespace wmib
         public bool IsConnected = false;
         public Thread JoinThread = null;
         public Thread thread = null;
+        public List<config.channel> ChannelList
+        {
+            get
+            {
+                List<config.channel> list = new List<config.channel>();
+                lock (config.channels)
+                {
+                    foreach (config.channel ch in config.channels)
+                    {
+                        if (ch.instance == this)
+                        {
+                            list.Add(ch);
+                        }
+                    }
+                }
+                return list;
+            }
+        }
+        /// <summary>
+        /// Whether this instance is working
+        /// </summary>
         public bool IsWorking
         {
             get
@@ -85,22 +106,11 @@ namespace wmib
         {
             if (irc.ChannelsJoined == false)
             {
-                List<config.channel> ChannelList = new List<config.channel>();
-                lock (config.channels)
-                {
-                    foreach (config.channel ch in config.channels)
-                    {
-                        if (ch.instance == this)
-                        {
-                            ChannelList.Add(ch);
-                        }
-                    }
-                }
-
                 foreach (config.channel channel in ChannelList)
                 {
                     if (channel.Name != "")
                     {
+                        core.DebugLog("Joining " + channel.Name + " on " + Nick);
                         irc.Join(channel);
                         Thread.Sleep(2000);
                     }
