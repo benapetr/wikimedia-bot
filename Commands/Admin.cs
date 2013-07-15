@@ -273,6 +273,7 @@ namespace wmib
                     ch.instance.irc.SendData("PART " + ch.Name + " :Switching instance");
                     ch.instance = _instance;
                     ch.instance.irc.SendData("JOIN " + ch.Name);
+                    ch.DefaultInstance = ch.instance.Nick;
                     ch.SaveConfig();
 
                     chan.instance.irc._SlowQueue.DeliverMessage("Changed default instance of " + channel + " to " + instance, chan);
