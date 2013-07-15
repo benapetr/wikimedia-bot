@@ -30,15 +30,6 @@ namespace wmib
         public class SlowQueue
         {
             /// <summary>
-            /// Creates new queue
-            /// </summary>
-            /// <param name="_parent">Parent object</param>
-            public SlowQueue(IRC _parent)
-            {
-                Parent = _parent;
-            }
-
-            /// <summary>
             /// Message
             /// </summary>
             public class Message
@@ -73,6 +64,15 @@ namespace wmib
             private IRC Parent;
 
             /// <summary>
+            /// Creates new queue
+            /// </summary>
+            /// <param name="_parent">Parent object</param>
+            public SlowQueue(IRC _parent)
+            {
+                Parent = _parent;
+            }
+
+            /// <summary>
             /// Deliver a message
             /// </summary>
             /// <param name="Message">Text</param>
@@ -81,6 +81,21 @@ namespace wmib
             public void DeliverMessage(string Message, string Channel, priority Pr = priority.normal)
             {
                 // first of all we check if we are in correct instance
+                if (Channel.StartsWith("#"))
+                {
+                    config.channel ch = core.getChannel(Channel);
+                    if (ch == null)
+                    {
+                        core.Log("Not sending message to unknown channel: " + Channel);
+                        return;
+                    }
+                    // this is wrong instance so let's put this message to correct one
+                    if (ch.instance != Parent.ParentInstance)
+                    {
+                        ch.instance.irc._SlowQueue.DeliverMessage(Message, Channel, Pr);
+                        return;
+                    }
+                }
                 Message text = new Message { _Priority = Pr, message = Message, channel = Channel };
                 lock (messages)
                 {
@@ -96,6 +111,22 @@ namespace wmib
             /// <param name="Pr">Priority</param>
             public void DeliverAct(string Message, string Channel, priority Pr = priority.normal)
             {
+                // first of all we check if we are in correct instance
+                if (Channel.StartsWith("#"))
+                {
+                    config.channel ch = core.getChannel(Channel);
+                    if (ch == null)
+                    {
+                        core.Log("Not sending message to unknown channel: " + Channel);
+                        return;
+                    }
+                    // this is wrong instance so let's put this message to correct one
+                    if (ch.instance != Parent.ParentInstance)
+                    {
+                        ch.instance.irc._SlowQueue.DeliverAct(Message, Channel, Pr);
+                        return;
+                    }
+                }
                 Message text = new Message { _Priority = Pr, message = Message, channel = Channel };
                 lock (messages)
                 {
@@ -140,6 +171,17 @@ namespace wmib
             /// <param name="Pr">Priority</param>
             public void DeliverMessage(string Message, config.channel Channel, priority Pr = priority.normal)
             {
+                if (Channel == null)
+                {
+                    core.Log("Not sending message to unknown channel");
+                    return;
+                }
+                // this is wrong instance so let's put this message to correct one
+                if (Channel.instance != Parent.ParentInstance)
+                {
+                    Channel.instance.irc._SlowQueue.DeliverMessage(Message, Channel, Pr);
+                    return;
+                }
                 Message text = new Message { _Priority = Pr, message = Message, channel = Channel.Name };
                 lock (messages)
                 {
@@ -153,7 +195,7 @@ namespace wmib
             public void Exit()
             {
                 running = false;
-                core.Log("Turning off the message queue with " + (newmessages.Count + messages.Count).ToString() + " untransfered data");
+                core.Log("Turning off the message queue of instance " + Parent.ParentInstance.Nick + " with " + (newmessages.Count + messages.Count).ToString() + " untransfered data");
                 lock (messages)
                 {
                     messages.Clear();
@@ -266,6 +308,10 @@ namespace wmib
         public bool IsWorking = false;
         public string Bouncer = "127.0.0.1";
         /// <summary>
+        /// Whether bot has already joined all channels after connection to irc
+        /// </summary>
+        public bool ChannelsJoined = false;
+        /// <summary>
         /// Server addr
         /// </summary>
         public string Server;
@@ -309,7 +355,7 @@ namespace wmib
         /// <summary>
         /// This is a thread for channel list
         /// </summary>
-        private Thread ChannelThread;
+        public Thread ChannelThread;
         /// <summary>
         /// Queue of all messages that should be delivered to network
         /// </summary>
@@ -611,6 +657,7 @@ namespace wmib
                     SendData("CONTROL: STATUS");
                     Program.Log("CACHE: Waiting for buffer");
                     bool done = true;
+                    ChannelsJoined = true;
                     while (done)
                     {
                         string response = streamReader.ReadLine();
@@ -618,6 +665,7 @@ namespace wmib
                         {
                             done = false;
                             Auth = false;
+                            ChannelsJoined = false;
                         }
                         else if (response == "CONTROL: FALSE")
                         {
@@ -642,21 +690,9 @@ namespace wmib
                 if (Auth)
                 {
                     Authenticate();
-
-                    foreach (config.channel ch in config.channels)
-                    {
-                        if (ch.Name != "")
-                        {
-                            this.Join(ch);
-                            Thread.Sleep(2000);
-                        }
-                    }
                 }
 
                 IsWorking = true;
-
-                ChannelThread = new Thread(ChannelList);
-                ChannelThread.Start();
 
                 string nick = "";
                 string host = "";
@@ -792,7 +828,7 @@ namespace wmib
                                         }
                                         else
                                         {
-                                            Program.Log("Private message: (handled by " + modules + " from "  + nick + ") " + message.Substring(2), false);
+                                            Program.Log("Private message: (handled by " + modules + " from " + nick + ") " + message.Substring(2), false);
                                         }
                                         continue;
                                     }

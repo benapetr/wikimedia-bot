@@ -421,6 +421,7 @@ namespace wmib
                     instance.Init();
                 }
                 // now we need to wait for all instances to connect
+                core.Log("Waiting for all instances to connect to irc");
                 bool IsOk = false;
                 while (!IsOk)
                 {
@@ -437,8 +438,30 @@ namespace wmib
                 // now we make all instances join their channels
                 foreach (Instance instance in Instances.Values)
                 {
-                    
+                    instance.Join();
                 }
+
+                // wait for all instances to join their channels
+                core.Log("Waiting for all instances to join channels");
+                IsOk = false;
+                while (!IsOk)
+                {
+                    foreach (Instance instance in Instances.Values)
+                    {
+                        if (!instance.irc.ChannelsJoined)
+                        {
+                            Thread.Sleep(100);
+                            break;
+                        }
+                    }
+                    IsOk = true;
+                }
+                core.Log("All instances joined their channels");
+            }
+
+            while (_Status == Status.OK)
+            {
+                Thread.Sleep(200);
             }
         }
 

@@ -26,6 +26,7 @@ namespace wmib
         /// If this instance is connected
         /// </summary>
         public bool IsConnected = false;
+        public Thread JoinThread = null;
         public Thread thread = null;
         public bool IsWorking
         {
@@ -70,9 +71,45 @@ namespace wmib
             irc.BouncerPort = Port;
         }
 
-        public void JoinAll()
+        public void Join()
         {
-            
+            JoinThread = new Thread(JoinAll);
+            JoinThread.Name = "Jointhread " + Nick;
+            JoinThread.Start();
+        }
+
+        /// <summary>
+        /// Join all channels
+        /// </summary>
+        private void JoinAll()
+        {
+            if (irc.ChannelsJoined == false)
+            {
+                List<config.channel> ChannelList = new List<config.channel>();
+                lock (config.channels)
+                {
+                    foreach (config.channel ch in config.channels)
+                    {
+                        if (ch.instance == this)
+                        {
+                            ChannelList.Add(ch);
+                        }
+                    }
+                }
+
+                foreach (config.channel channel in ChannelList)
+                {
+                    if (channel.Name != "")
+                    {
+                        irc.Join(channel);
+                        Thread.Sleep(2000);
+                    }
+                }
+                irc.ChannelsJoined = true;
+            }
+
+            irc.ChannelThread = new Thread(irc.ChannelList);
+            irc.ChannelThread.Start();
         }
 
         public void Init()

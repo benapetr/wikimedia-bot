@@ -60,12 +60,11 @@ namespace tcp_io
     class Server
     {
         public static string network = "irc.freenode.net";
+        public static int port = 6667;
 
         public static bool connection_remote = false;
 
         public static bool connection_host = false;
-
-        public static Socket _socket;
 
         public static System.IO.StreamReader local_reader;
         public static System.IO.StreamWriter local_writer;
@@ -80,7 +79,7 @@ namespace tcp_io
 
         public static void Listen()
         {
-            TcpListener cache = new TcpListener(IPAddress.Parse("127.0.0.1"), 6667);
+            TcpListener cache = new TcpListener(IPAddress.Parse("127.0.0.1"), port);
 
             cache.Start();
             Console.WriteLine("Cache is ok");
