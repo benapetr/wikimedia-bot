@@ -732,7 +732,7 @@ namespace wmib
                             {
                                 if (!chan.suppress_warnings)
                                 {
-                                    core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), chan.Name);
+                                    core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), chan);
                                 }
                                 return true;
                             }
@@ -740,7 +740,7 @@ namespace wmib
                             {
                                 if (!chan.suppress_warnings)
                                 {
-                                    core.irc.Message(messages.get("InvalidAlias", chan.Language), chan.Name);
+                                    core.irc._SlowQueue.DeliverMessage(messages.get("InvalidAlias", chan.Language), chan);
                                 }
                                 return true;
                             }
@@ -754,7 +754,7 @@ namespace wmib
                         {
                             if (!chan.suppress_warnings)
                             {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan.Name);
+                                core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan);
                             }
                         }
                         return false;
@@ -767,7 +767,7 @@ namespace wmib
                             {
                                 if (!chan.suppress_warnings)
                                 {
-                                    core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), chan.Name);
+                                    core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), chan);
                                 }
                                 return true;
                             }
@@ -780,7 +780,7 @@ namespace wmib
                                         if (b.Name == parm[0])
                                         {
                                             infobot.Alias.Remove(b);
-                                            core.irc.Message(messages.get("AliasRemoved", chan.Language), chan.Name);
+                                            core.irc._SlowQueue.DeliverMessage(messages.get("AliasRemoved", chan.Language), chan);
                                             infobot.stored = false;
                                             return false;
                                         }
@@ -791,18 +791,18 @@ namespace wmib
                         }
                         if (!chan.suppress_warnings)
                         {
-                            core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan.Name);
+                            core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan);
                         }
                         return false;
                     }
                     // remove key
                     if (parm[1] == "del")
                     {
-                        if (chan.Users.isApproved(user, host, "info"))
+                        if (chan.Users.IsApproved(user, host, "info"))
                         {
                             if (!Allowed)
                             {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), chan.Name);
+                                core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), chan);
                                 return true;
                             }
                             if (infobot != null)
@@ -814,7 +814,7 @@ namespace wmib
                         {
                             if (!chan.suppress_warnings)
                             {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan.Name);
+                                core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan);
                             }
                         }
                         return false;
@@ -875,11 +875,11 @@ namespace wmib
                     keyv = parseInfo(keyv, p, original, _key);
                     if (User == "")
                     {
-                        core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
+                        core.irc._SlowQueue.DeliverMessage(keyv, chan);
                     }
                     else
                     {
-                        core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
+                        core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan);
                     }
                     return true;
                 }
@@ -899,11 +899,11 @@ namespace wmib
                                         keyv = parseInfo(keyv, p, original, _key);
                                         if (User == "")
                                         {
-                                            core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
+                                            core.irc._SlowQueue.DeliverMessage(keyv, chan);
                                         }
                                         else
                                         {
-                                            core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
+                                            core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan);
                                         }
                                         return true;
                                     }
@@ -919,11 +919,11 @@ namespace wmib
                                         keyv = parseInfo(keyv, p, original, _key);
                                         if (User == "")
                                         {
-                                            core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
+                                            core.irc._SlowQueue.DeliverMessage(keyv, chan);
                                         }
                                         else
                                         {
-                                            core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
+                                            core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan);
                                         }
                                         return true;
                                     }
@@ -1092,12 +1092,12 @@ namespace wmib
             }
             if (!misc.IsValidRegex(key))
             {
-                core.irc.Message(messages.get("Error1", Chan.Language), Chan.Name);
+                core.irc._SlowQueue.DeliverMessage(messages.get("Error1", Chan.Language), Chan.Name);
                 return;
             }
             if (key.Length < 11)
             {
-                core.irc.Message(messages.get("Search1", Chan.Language), Chan.Name);
+                core.irc._SlowQueue.DeliverMessage(messages.get("Search1", Chan.Language), Chan.Name);
                 return;
             }
             config.channel data = isAllowed(Chan);
@@ -1126,7 +1126,7 @@ namespace wmib
                 if (check > 8)
                 {
                     Th.Abort();
-                    core.irc.Message(messages.get("Error2", Chan.Language), Chan.Name);
+                    core.irc._SlowQueue.DeliverMessage(messages.get("Error2", Chan.Language), Chan.Name);
                     RegularModule.running = false;
                     return;
                 }
@@ -1152,7 +1152,7 @@ namespace wmib
             }
             if (key.Length < 9)
             {
-                core.irc.Message(messages.get("Error1", Chan.Language), Chan.Name);
+                core.irc._SlowQueue.DeliverMessage(messages.get("Error1", Chan.Language), Chan.Name);
                 return;
             }
             key = key.Substring(8);
