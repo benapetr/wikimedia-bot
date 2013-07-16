@@ -98,6 +98,7 @@ namespace wmib
                     WriteNow("Error while loading the config file, exiting", true);
                     return;
                 }
+                Terminal.Init();
                 core.Help.CreateHelp();
                 core.WriterThread = new System.Threading.Thread(StorageWriter.Core);
                 core.WriterThread.Start();

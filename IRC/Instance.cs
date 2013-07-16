@@ -25,7 +25,17 @@ namespace wmib
         /// <summary>
         /// If this instance is connected
         /// </summary>
-        public bool IsConnected = false;
+        public bool IsConnected
+        {
+            get
+            {
+                if (irc != null && irc.IsConnected)
+                {
+                    return true;
+                }
+                return false;
+            }
+        }
         public Thread JoinThread = null;
         public Thread thread = null;
         public List<config.channel> ChannelList

@@ -113,6 +113,8 @@ namespace wmib
 
         public static int BouncerPort = 6667;
 
+        public static int SystemPort = 2020;
+
         /// <summary>
         /// List of channels the bot is in
         /// </summary>

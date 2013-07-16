@@ -112,6 +112,10 @@ namespace wmib
             /// Level
             /// </summary>
             public string level;
+            public string UserName = null;
+            public string Password = null;
+
+
             /// <summary>
             /// Constructor
             /// </summary>

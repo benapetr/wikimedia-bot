@@ -45,7 +45,7 @@ namespace wmib
                 return;
             }
             // get our user
-            User user = chan.RetrieveUser(config.username);
+            User user = chan.RetrieveUser(chan.instance.Nick);
             if (user == null)
             {
                 core.irc._SlowQueue.DeliverMessage("op " + chan.Name, "ChanServ", IRC.priority.high);
@@ -179,7 +179,7 @@ namespace wmib
                         core.irc._SlowQueue.Send("KICK " + channel.Name + " " + user.Nick + " :" + reason, IRC.priority.high);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
                         }
                         return;
                     }
@@ -224,7 +224,7 @@ namespace wmib
                         core.irc._SlowQueue.Send("KICK " + channel.Name + " " + user.Nick + " :" + reason, IRC.priority.high);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
                         }
                         return;
                     }
@@ -265,7 +265,7 @@ namespace wmib
                         core.irc._SlowQueue.Send("MODE " + channel.Name + " -b *!*@" + user.Host, IRC.priority.high);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
                         }
                         return;
                     }
@@ -306,7 +306,7 @@ namespace wmib
                         core.irc._SlowQueue.Send("MODE " + channel.Name + " -q *!*@" + user.Host, IRC.priority.high);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
                         }
                         return;
                     }
@@ -346,7 +346,7 @@ namespace wmib
                         core.irc._SlowQueue.Send("MODE " + channel.Name + " +q *!*@" + user.Host, IRC.priority.high);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
                         }
                         return;
                     }
@@ -380,7 +380,7 @@ namespace wmib
                         core.irc._SlowQueue.Send("MODE " + channel.Name + " +b " + nick + "!*@*$##fix_your_connection", IRC.priority.high);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
                         }
                         return;
                     }
@@ -414,7 +414,7 @@ namespace wmib
                         core.irc._SlowQueue.Send("MODE " + channel.Name + " -b " + nick + "!*@*$##fix_your_connection", IRC.priority.high);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + config.username, IRC.priority.low);
+                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
                         }
                         return;
                     }

@@ -68,6 +68,29 @@ namespace wmib
             }
         }
 
+        public static int Auth(string User, string Password)
+        {
+            lock (GlobalUsers)
+            {
+                foreach (core.SystemUser user in GlobalUsers)
+                {
+                    if (user.Password == Password && user.UserName == User)
+                    {
+                        switch (user.level)
+                        {
+                            case "trusted":
+                                return 1;
+                            case "admin":
+                                return 2;
+                            case "root":
+                                return 10;
+                        }
+                    }
+                }
+            }
+            return 0;
+        }
+
         private static void GlobalLoad()
         {
             string[] dba = System.IO.File.ReadAllLines(variables.config + System.IO.Path.DirectorySeparatorChar + "admins");
@@ -81,7 +104,13 @@ namespace wmib
                         string[] info = x.Split(Char.Parse(config.separator));
                         string level = info[1];
                         string name = core.decode2(info[0]);
-                        GlobalUsers.Add(new core.SystemUser(level, name));
+                        core.SystemUser user = new core.SystemUser(level, name);
+                        if (info.Length > 3)
+                        {
+                            user.UserName = info[3];
+                            user.Password = info[2];
+                        }
+                        GlobalUsers.Add(user);
                         core.DebugLog("Registered global user (" + level + "): " + name, 2);
                     }
                 }
