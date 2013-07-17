@@ -41,19 +41,19 @@ namespace wmib
         {
             if (!GetConfig(chan, "OP.Permanent", false))
             {
-                core.irc._SlowQueue.DeliverMessage("op " + chan.Name, "ChanServ", IRC.priority.high);
+                chan.instance.irc._SlowQueue.Send("CS op " + chan.Name, IRC.priority.high);
                 return;
             }
             // get our user
             User user = chan.RetrieveUser(chan.instance.Nick);
             if (user == null)
             {
-                core.irc._SlowQueue.DeliverMessage("op " + chan.Name, "ChanServ", IRC.priority.high);
+                chan.instance.irc._SlowQueue.Send("CS op " + chan.Name, IRC.priority.high);
                 return;
             }
             if (!user.IsOperator)
             {
-                core.irc._SlowQueue.DeliverMessage("op " + chan.Name, "ChanServ", IRC.priority.high);
+                chan.instance.irc._SlowQueue.Send("CS op " + chan.Name, IRC.priority.high);
             }
         }
 
@@ -176,10 +176,10 @@ namespace wmib
                         }
                         // op self
                         GetOp(channel);
-                        core.irc._SlowQueue.Send("KICK " + channel.Name + " " + user.Nick + " :" + reason, IRC.priority.high);
+                        channel.instance.irc._SlowQueue.Send("KICK " + channel.Name + " " + user.Nick + " :" + reason, IRC.priority.high);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
+                            channel.instance.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
                         }
                         return;
                     }
@@ -219,12 +219,12 @@ namespace wmib
                         }
                         else
                         {
-                            core.irc._SlowQueue.Send("MODE " + channel.Name + " +b *!*@" + user.Host, IRC.priority.high);
+                            channel.instance.irc._SlowQueue.Send("MODE " + channel.Name + " +b *!*@" + user.Host, IRC.priority.high);
                         }
-                        core.irc._SlowQueue.Send("KICK " + channel.Name + " " + user.Nick + " :" + reason, IRC.priority.high);
+                        channel.instance.irc._SlowQueue.Send("KICK " + channel.Name + " " + user.Nick + " :" + reason, IRC.priority.high);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
+                            channel.instance.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
                         }
                         return;
                     }
@@ -251,21 +251,21 @@ namespace wmib
                         User user = getUser(nick, channel);
                         if (user == null)
                         {
-                            core.irc._SlowQueue.DeliverMessage("Sorry but I don't see this user in a channel", channel, IRC.priority.high);
+                            channel.instance.irc._SlowQueue.DeliverMessage("Sorry but I don't see this user in a channel", channel, IRC.priority.high);
                             return;
                         }
                         
                         if (string.IsNullOrEmpty(user.Host))
                         {
-                            core.irc._SlowQueue.DeliverMessage("Sorry but I don't know hostname of this user... you will need to issue the ban yourself", channel, IRC.priority.high);
+                            channel.instance.irc._SlowQueue.DeliverMessage("Sorry but I don't know hostname of this user... you will need to issue the ban yourself", channel, IRC.priority.high);
                             return;
                         }
                         // op self
                         GetOp(channel);
-                        core.irc._SlowQueue.Send("MODE " + channel.Name + " -b *!*@" + user.Host, IRC.priority.high);
+                        channel.instance.irc._SlowQueue.Send("MODE " + channel.Name + " -b *!*@" + user.Host, IRC.priority.high);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
+                            channel.instance.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
                         }
                         return;
                     }
@@ -303,10 +303,10 @@ namespace wmib
                         }
                         // op self
                         GetOp(channel);
-                        core.irc._SlowQueue.Send("MODE " + channel.Name + " -q *!*@" + user.Host, IRC.priority.high);
+                        channel.instance.irc._SlowQueue.Send("MODE " + channel.Name + " -q *!*@" + user.Host, IRC.priority.high);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
+                            channel.instance.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
                         }
                         return;
                     }
@@ -343,10 +343,10 @@ namespace wmib
                             return;
                         }
                         GetOp(channel);
-                        core.irc._SlowQueue.Send("MODE " + channel.Name + " +q *!*@" + user.Host, IRC.priority.high);
+                        channel.instance.irc._SlowQueue.Send("MODE " + channel.Name + " +q *!*@" + user.Host, IRC.priority.high);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
+                            channel.instance.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
                         }
                         return;
                     }
@@ -377,10 +377,10 @@ namespace wmib
                         }
                         // op self
                         GetOp(channel);
-                        core.irc._SlowQueue.Send("MODE " + channel.Name + " +b " + nick + "!*@*$##fix_your_connection", IRC.priority.high);
+                        channel.instance.irc._SlowQueue.Send("MODE " + channel.Name + " +b " + nick + "!*@*$##fix_your_connection", IRC.priority.high);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
+                            channel.instance.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
                         }
                         return;
                     }
@@ -411,10 +411,10 @@ namespace wmib
                         }
                         // op self
                         GetOp(channel);
-                        core.irc._SlowQueue.Send("MODE " + channel.Name + " -b " + nick + "!*@*$##fix_your_connection", IRC.priority.high);
+                        channel.instance.irc._SlowQueue.Send("MODE " + channel.Name + " -b " + nick + "!*@*$##fix_your_connection", IRC.priority.high);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            core.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
+                            channel.instance.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
                         }
                         return;
                     }
@@ -430,7 +430,7 @@ namespace wmib
 
         public override bool Construct()
         {
-            Version = "1.0.8";
+            Version = "1.0.20";
             start = true;
             Name = "Operator tools";
             return true;
