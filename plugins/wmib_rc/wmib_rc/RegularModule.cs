@@ -278,13 +278,17 @@ namespace wmib
         }
 
         public string Format(string name_url, string url, string page, string username, string link, string summary, config.channel chan, bool bot, bool New, bool minor)
-        { 
+        {
+
+
             if (GetConfig(chan, "RC.Template", "") == "")
             {
-                return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "" + username + "", url + "?diff=" + link, summary });
+                if (!New)
+                {
+                    return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "" + username + "", url + "?diff=" + link, summary });
+                }
+                return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "" + username + "", url + "?title=" + name_url, summary });
             }
-
-            
 
             string flags = "";
 
@@ -308,6 +312,12 @@ namespace wmib
                 flags = flags.Substring(0, flags.Length - 2);
             }
 
+            string fu = url + "?diff=" + link;
+            if (New)
+            {
+                fu = url + "?title=" + System.Web.HttpUtility.UrlEncode(page).Replace("+", "_");
+            }
+
             return GetConfig(chan, "RC.Template", "").Replace("$wiki", name_url)
                    .Replace("$encoded_wiki_page", System.Web.HttpUtility.UrlEncode(page).Replace("+", "_"))
                    .Replace("$encoded_wiki_username", System.Web.HttpUtility.UrlEncode(username).Replace("+", "_"))
@@ -315,6 +325,7 @@ namespace wmib
                    .Replace("$encoded_username", System.Web.HttpUtility.UrlEncode(username))
                    .Replace("$url", url)
                    .Replace("$link", link)
+                   .Replace("$fullurl", fu)
                    .Replace("$username", username)
                    .Replace("$page", page)
                    .Replace("$summary", summary)
@@ -358,21 +369,31 @@ namespace wmib
 
             text = text.Substring(text.IndexOf(variables.color + "14]]") + 5);
 
-            if (!text.Contains("?diff=p"))
+            if (text.Contains("?oldid="))
             {
-                core.DebugLog("Parser error #3", 6);
-                return null;
+                change.oldid = text.Substring(text.IndexOf("?oldid=") + 7);
+
+                if (!change.oldid.Contains("&"))
+                {
+                    core.DebugLog("Parser error #4", 6);
+                    return null;
+                }
+
+                change.oldid = change.diff.Substring(0, change.diff.IndexOf("&"));
             }
 
-            change.diff = text.Substring(text.IndexOf("?diff=") + 6);
-
-            if (!change.diff.Contains("&"))
+            if (text.Contains("?diff="))
             {
-                core.DebugLog("Parser error #4", 6);
-                return null;
+                change.diff = text.Substring(text.IndexOf("?diff=") + 6);
+
+                if (!change.diff.Contains("&"))
+                {
+                    core.DebugLog("Parser error #4", 6);
+                    return null;
+                }
+                change.diff = change.diff.Substring(0, change.diff.IndexOf("&"));
             }
 
-            change.diff = change.diff.Substring(0, change.diff.IndexOf("&"));
 
             text = text.Substring(text.IndexOf("?diff=") + 6);
 
@@ -384,13 +405,13 @@ namespace wmib
 
             change.User = text.Substring(text.IndexOf(variables.color + "03") + 3);
 
-            if (!change.User.Contains(" "))
+            if (!change.User.Contains(" " + variables.color + "5*"))
             {
                 core.DebugLog("Parser error #6", 6);
                 return null;
             }
 
-            change.User = change.User.Substring(0, change.User.IndexOf(" ") + 1);
+            change.User = change.User.Substring(0, change.User.IndexOf(" " + variables.color + "5*") + 4);
 
             if (!text.Contains(variables.color + "5"))
             {
@@ -463,6 +484,10 @@ namespace wmib
                             while (!RecentChanges.RD.EndOfStream)
                             {
                                 message = RecentChanges.RD.ReadLine();
+                                if (!message.Contains("PRIVMSG"))
+                                {
+                                    continue;
+                                }
                                 Change edit = String2Change(message);
                                 //Match Edit = RecentChanges.line.Match(message);
                                 if (edit != null)
