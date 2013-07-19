@@ -373,13 +373,21 @@ namespace wmib
             {
                 change.oldid = text.Substring(text.IndexOf("?oldid=") + 7);
 
-                if (!change.oldid.Contains("&"))
+                if (!change.oldid.Contains("&") && !change.oldid.Contains(" "))
                 {
                     core.DebugLog("Parser error #4", 6);
                     return null;
                 }
 
-                change.oldid = change.diff.Substring(0, change.diff.IndexOf("&"));
+                if (change.oldid.Contains(" "))
+                {
+                    change.oldid = change.oldid.Substring(0, change.oldid.IndexOf(" "));
+                }
+
+                if (change.oldid.Contains("&"))
+                {
+                    change.oldid = change.oldid.Substring(0, change.oldid.IndexOf("&"));
+                }
             }
 
             if (text.Contains("?diff="))
@@ -411,7 +419,7 @@ namespace wmib
                 return null;
             }
 
-            change.User = change.User.Substring(0, change.User.IndexOf(" " + variables.color + "5*") + 4);
+            change.User = change.User.Substring(0, change.User.IndexOf(" " + variables.color + "5*"));
 
             if (!text.Contains(variables.color + "5"))
             {
@@ -421,21 +429,18 @@ namespace wmib
 
             text = text.Substring(text.IndexOf(variables.color + "5"));
 
-            if (!text.Contains("("))
+            if (text.Contains("("))
             {
-                core.DebugLog("Parser error #8", 6);
-                return null;
+                change.Size = text.Substring(text.IndexOf("(") + 1);
+
+                if (!change.Size.Contains(")"))
+                {
+                    core.DebugLog("Parser error #10", 6);
+                    return null;
+                }
+
+                change.Size = change.Size.Substring(0, change.Size.IndexOf(")"));
             }
-
-            change.Size = text.Substring(text.IndexOf("(") + 1);
-
-            if (!change.Size.Contains(")"))
-            {
-                core.DebugLog("Parser error #10", 6);
-                return null;
-            }
-
-            change.Size = change.Size.Substring(0, change.Size.IndexOf(")"));
 
             if (!text.Contains(variables.color + "10"))
             {
@@ -484,7 +489,7 @@ namespace wmib
                             while (!RecentChanges.RD.EndOfStream)
                             {
                                 message = RecentChanges.RD.ReadLine();
-                                if (!message.Contains("PRIVMSG"))
+                                if (!message.Contains(" PRIVMSG "))
                                 {
                                     continue;
                                 }
@@ -515,6 +520,10 @@ namespace wmib
                                                             {
                                                                 if (w.Channel == _channel || w.Channel == "all")
                                                                 {
+                                                                    if (edit.Size != null)
+                                                                    {
+                                                                        edit.Description = "[" + edit.Size + "] " + edit.Description;
+                                                                    }
                                                                     if (edit.Page == w.Page)
                                                                     {
                                                                         if (w.URL == null)
