@@ -18,6 +18,27 @@ using System.Text.RegularExpressions;
 
 namespace wmib
 {
+    public class Change
+    {
+        public string Page;
+        public string Description;
+        public string User;
+        public bool Bot = false;
+        public bool Minor = false;
+        public string Size = null;
+        public bool New = false;
+        public string oldid = null;
+        public string diff = null;
+        public bool Special = true;
+
+        public Change(string _Page, string _Description, string _User)
+        {
+            Description = _Description;
+            User = _User;
+            Page = _Page;
+        }
+    }
+
     public class RecentChanges
     {
         public class IWatch

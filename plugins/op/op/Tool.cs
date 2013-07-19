@@ -94,7 +94,7 @@ namespace wmib
                     }
                     else
                     {
-                        core.irc._SlowQueue.DeliverMessage("Operator tools are now not in permanent mode on this channel", channel.Name);
+                        core.irc._SlowQueue.DeliverMessage("Operator tools are now not in permanent mode on this channel", channel);
                         SetConfig(channel, "OP.Permanent", false);
                         channel.SaveConfig();
                         return;
@@ -102,7 +102,7 @@ namespace wmib
                 }
                 if (!channel.suppress_warnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel, IRC.priority.low);
                 }
                 return;
             }
@@ -118,7 +118,7 @@ namespace wmib
                     }
                     else
                     {
-                        core.irc._SlowQueue.DeliverMessage("Operator tools are now in permanent mode on this channel", channel.Name);
+                        core.irc._SlowQueue.DeliverMessage("Operator tools are now in permanent mode on this channel", channel);
                         SetConfig(channel, "OP.Permanent", true);
                         channel.SaveConfig();
                         return;
@@ -126,7 +126,7 @@ namespace wmib
                 }
                 if (!channel.suppress_warnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel, IRC.priority.low);
                 }
                 return;
             }
@@ -142,7 +142,7 @@ namespace wmib
                     }
                     else
                     {
-                        core.irc._SlowQueue.DeliverMessage("Operator tools have been disabled on this channel", channel.Name);
+                        core.irc._SlowQueue.DeliverMessage("Operator tools have been disabled on this channel", channel);
                         SetConfig(channel, "OP.Enabled", false);
                         channel.SaveConfig();
                         return;
@@ -150,7 +150,7 @@ namespace wmib
                 }
                 if (!channel.suppress_warnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel, IRC.priority.low);
                 }
                 return;
             }

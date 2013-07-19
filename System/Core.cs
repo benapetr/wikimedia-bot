@@ -31,6 +31,7 @@ namespace wmib
         /// Prefix for a log directory
         /// </summary>
         public static readonly string prefix_logdir = "log";
+        public static readonly string color = ((char)003).ToString();
         /// <summary>
         /// This string represent a character that changes text to bold
         /// </summary>
@@ -114,15 +115,16 @@ namespace wmib
             public string level;
             public string UserName = null;
             public string Password = null;
-
+            public bool IsGlobal;
 
             /// <summary>
             /// Constructor
             /// </summary>
             /// <param name="level"></param>
             /// <param name="name"></param>
-            public SystemUser(string level, string name)
+            public SystemUser(string level, string name, bool Global = false)
             {
+                IsGlobal = Global;
                 this.level = level;
                 this.name = name;
             }
