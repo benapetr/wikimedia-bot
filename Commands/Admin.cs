@@ -92,7 +92,7 @@ namespace wmib
                         irc._SlowQueue.DeliverMessage(messages.get("UnknownChan", chan.Language), chan.Name, IRC.priority.low);
                         return;
                     }
-                    core.partChannel(Channel, invoker.Nick, invoker.Host, "@part", chan.Name);
+                    core.partChannel(Channel, invoker.Nick, invoker.Host, config.CommandPrefix + "part", chan.Name);
                     return;
                 }
                 irc._SlowQueue.DeliverMessage("It would be cool to give me a name of channel you want to part", chan.Name, IRC.priority.low);
@@ -110,7 +110,7 @@ namespace wmib
                         irc._SlowQueue.DeliverMessage(messages.get("UnknownChan", chan.Language), chan.Name, IRC.priority.low);
                         return;
                     }
-                    core.partChannel(Channel, invoker.Nick, invoker.Host, "@drop", chan.Name);
+                    core.partChannel(Channel, invoker.Nick, invoker.Host, config.CommandPrefix + "drop", chan.Name);
                     return;
                 }
                 irc._SlowQueue.DeliverMessage("It would be cool to give me a name of channel you want to drop", chan.Name, IRC.priority.low);
@@ -163,7 +163,7 @@ namespace wmib
                     ShowHelp(parameter, chan);
                     return;
                 }
-                irc._SlowQueue.DeliverMessage("This bot is running http://meta.wikimedia.org/wiki/WM-Bot version " + config.version + " source code licensed under GPL and located at https://github.com/benapetr/wikimedia-bot", chan.Name);
+                irc._SlowQueue.DeliverMessage("I am running http://meta.wikimedia.org/wiki/WM-Bot version " + config.version + " my source code is licensed under GPL and located at https://github.com/benapetr/wikimedia-bot I will be very happy if you fix my bugs or implement new features", chan.Name);
                 return;
             }
 
@@ -231,6 +231,60 @@ namespace wmib
                 }
             }
 
+            if (message.StartsWith(config.CommandPrefix + "instance "))
+            {
+                if (chan.Users.IsApproved(invoker, "root"))
+                {
+                    string channel;
+                    string instance;
+                    message = message.Substring(".instance ".Length);
+                    if (!message.Contains(" "))
+                    {
+                        irc._SlowQueue.DeliverMessage("This command need 2 parameters", chan.Name);
+                        return;
+                    }
+                    channel = message.Substring(message.IndexOf(" ") + 1);
+                    instance = message.Substring(0, message.IndexOf(" "));
+                    config.channel ch = core.getChannel(channel);
+                    if (ch == null)
+                    {
+                        irc._SlowQueue.DeliverMessage("This channel I never heard of :'(", chan.Name);
+                        return;
+                    }
+
+                    Instance _instance = null;
+
+                    lock (core.Instances)
+                    {
+                        if (!core.Instances.ContainsKey(instance))
+                        {
+                            irc._SlowQueue.DeliverMessage("This instance I never heard of :'(", chan.Name);
+                            return;
+                        }
+                        _instance = core.Instances[instance];
+                    }
+
+                    if (_instance == ch.instance)
+                    {
+                        irc._SlowQueue.DeliverMessage("This channel is already in this instance", chan.Name);
+                        return;
+                    }
+
+                    ch.instance.irc.SendData("PART " + ch.Name + " :Switching instance");
+                    ch.instance = _instance;
+                    ch.instance.irc.SendData("JOIN " + ch.Name);
+                    ch.DefaultInstance = ch.instance.Nick;
+                    ch.SaveConfig();
+
+                    chan.instance.irc._SlowQueue.DeliverMessage("Changed default instance of " + channel + " to " + instance, chan);
+                    return;
+                }
+                if (!chan.suppress_warnings)
+                {
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                }
+            }
+
             if (message == config.CommandPrefix + "traffic-off")
             {
                 if (chan.Users.IsApproved(invoker, "root"))
@@ -276,12 +330,7 @@ namespace wmib
 
             if (message == config.CommandPrefix + "channellist")
             {
-                string channels = "";
-                foreach (config.channel a in config.channels)
-                {
-                    channels = channels + a.Name + ", ";
-                }
-                irc._SlowQueue.DeliverMessage(messages.get("List", chan.Language) + channels, chan.Name);
+                irc._SlowQueue.DeliverMessage("I am in " + config.channels.Count.ToString() + " channels in this moment", chan.Name);
                 return;
             }
 

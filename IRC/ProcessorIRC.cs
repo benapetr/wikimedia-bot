@@ -20,6 +20,7 @@ namespace wmib
     public class ProcessorIRC
     {
         private string text;
+        public Instance instance;
 
         private void Ping()
         {
@@ -54,6 +55,18 @@ namespace wmib
                 if (channel != null)
                 {
                     Program.Log("Finished parsing for " + channel.Name + " parsed totaly: " + channel.UserList.Count.ToString());
+                    if (config.SelectedVerbosity > 8)
+                    {
+                        string list = "";
+                        lock (channel.UserList)
+                        {
+                            foreach (User u in channel.UserList)
+                            {
+                                list = list + u.Nick + ", ";
+                            }
+                        }
+                        core.DebugLog("Parsed: " + list, 8);
+                    }
                     channel.FreshList = true;
                 }
             }
@@ -65,7 +78,7 @@ namespace wmib
             return false;
         }
 
-        private bool ParseUs(string[] code)
+        private bool ParseUser(string[] code)
         {
             if (code.Length > 8)
             {
@@ -74,21 +87,44 @@ namespace wmib
                 string host = code[5];
                 string nick = code[7];
                 string server = code[6];
+                char mode = '\0';
+                if (code[8].Length > 0)
+                {
+                    mode = code[8][code[8].Length - 1];
+                    if (!core.irc.UChars.Contains(mode))
+                    {
+                        mode = '\0';
+                    }
+                }
                 if (channel != null)
                 {
                     if (!channel.containsUser(nick))
                     {
-                        User _user = new User(nick, host, ident);
-                        channel.UserList.Add(_user);
+                        User _user = null;
+                        if (mode != '\0')
+                        {
+                            _user = new User(mode.ToString() + nick, host, ident);
+                        }
+                        else
+                        {
+                            _user = new User(nick, host, ident);
+                        }
+                        lock (channel.UserList)
+                        {
+                            channel.UserList.Add(_user);
+                        }
                         return true;
                     }
-                    foreach (User u in channel.UserList)
+                    lock (channel.UserList)
                     {
-                        if (u.Nick == nick)
+                        foreach (User u in channel.UserList)
                         {
-                            u.Ident = ident;
-                            u.Host = host;
-                            break;
+                            if (u.Nick == nick)
+                            {
+                                u.Ident = ident;
+                                u.Host = host;
+                                break;
+                            }
                         }
                     }
                 }
@@ -107,11 +143,33 @@ namespace wmib
                     string[] _chan = data[2].Split(' ');
                     foreach (var user in _chan)
                     {
-                        if (!channel.containsUser(user) && user != "")
+                        string _user = user;
+                        char _UserMode = '\0';
+                        if (_user.Length > 0)
                         {
+                            foreach (char mode in core.irc.UChars)
+                            {
+                                if (_user[0] == mode)
+                                {
+                                    _UserMode = user[0];
+                                    _user = _user.Substring(1);
+                                }
+                            }
+
                             lock (channel.UserList)
                             {
-                                channel.UserList.Add(new User(user, "", ""));
+                                User _u = channel.RetrieveUser(_user);
+                                if (_u == null && _user != "")
+                                {
+                                    channel.UserList.Add(new User(user, "", ""));
+                                }
+                                else
+                                {
+                                    if (_u != null)
+                                    {
+                                        _u.SymbolMode(_UserMode);
+                                    }
+                                }
                             }
                         }
                     }
@@ -168,11 +226,6 @@ namespace wmib
                 }
             }
             return true;
-        }
-
-        private bool Mode(string source, string parameters, string value)
-        {
-            return false;
         }
 
         private bool Part(string source, string parameters, string value)
@@ -348,6 +401,65 @@ namespace wmib
             return false;
         }
 
+        private bool Mode(string source, string parameters, string value)
+        {
+            if (parameters.Contains(" "))
+            {
+                string chan = parameters.Substring(0, parameters.IndexOf(" "));
+                chan = chan.Replace(" ", "");
+                string user = source;
+                if (chan.StartsWith("#"))
+                {
+                    config.channel channel = core.getChannel(chan);
+                    if (channel != null)
+                    {
+                        string change = parameters.Substring(parameters.IndexOf(" "));
+
+                        while (change.StartsWith(" "))
+                        {
+                            change = change.Substring(1);
+                        }
+
+                        Formatter formatter = new Formatter();
+
+                        while (change.EndsWith(" ") && change.Length > 1)
+                        {
+                            change = change.Substring(0, change.Length - 1);
+                        }
+
+                        // we get all the mode changes for this channel
+                        formatter.RewriteBuffer(change);
+
+                        foreach (SimpleMode m in formatter.getMode)
+                        {
+                            if (core.irc.CUModes.Contains(m.Mode) && m.ContainsParameter)
+                            {
+                                User flagged_user = channel.RetrieveUser(m.Parameter);
+                                if (flagged_user != null)
+                                {
+                                    flagged_user.ChannelMode.ChangeMode("+" + m.Mode);
+                                }
+                            }
+                        }
+
+                        foreach (SimpleMode m in formatter.getRemovingMode)
+                        {
+                            if (core.irc.CUModes.Contains(m.Mode) && m.ContainsParameter)
+                            {
+                                User flagged_user = channel.RetrieveUser(m.Parameter);
+                                if (flagged_user != null)
+                                {
+                                    flagged_user.ChannelMode.ChangeMode("-" + m.Mode);
+                                }
+                            }
+                        }
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         private bool Join(string source, string parameters, string value)
         {
             string chan = parameters;
@@ -462,6 +574,9 @@ namespace wmib
                                     return true;
                                 }
                                 break;
+                            case "376":
+                                instance.irc.IsWorking = true;
+                                break;
                             case "439":
                             case "707":
                                 core.Log("Unable to send data to irc: " + text, true);
@@ -548,7 +663,7 @@ namespace wmib
                                     }
                                     break;
                                 case "352":
-                                    if (ParseUs(code))
+                                    if (ParseUser(code))
                                     {
                                         return true;
                                     }

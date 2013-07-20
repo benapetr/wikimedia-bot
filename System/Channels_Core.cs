@@ -29,10 +29,15 @@ namespace wmib
         {
             try
             {
-                if (message.StartsWith("@add"))
+                if (message.StartsWith(config.CommandPrefix + "add"))
                 {
                     if (chan.Users.IsApproved(user, host, "admin"))
                     {
+                        while (!core.FinishedJoining)
+                        {
+                            core.Log("Postponing request to join because bot is still loading", true);
+                            Thread.Sleep(2000);
+                        }
                         if (message.Contains(" "))
                         {
                             string channel = message.Substring(message.IndexOf(" ") + 1);
@@ -53,12 +58,13 @@ namespace wmib
                                 }
                             }
                             bool existing = config.channel.channelExist(channel);
+                            config.channel xx = new config.channel(channel);
                             lock (config.channels)
                             {
-                                config.channels.Add(new config.channel(channel));
+                                config.channels.Add(xx);
                             }
                             config.Save();
-                            irc.SendData("JOIN " + channel);
+                            xx.instance.irc.SendData("JOIN " + channel);
                             Thread.Sleep(100);
                             config.channel Chan = getChannel(channel);
                             if (!existing)
@@ -95,11 +101,16 @@ namespace wmib
                 {
                     origin = chan.Name;
                 }
-                if (message == "@drop")
+                if (message == config.CommandPrefix + "drop")
                 {
                     if (chan.Users.IsApproved(user, host, "admin"))
                     {
-                        irc.SendData("PART " + chan.Name + " :" + "dropped by " + user + " from " + origin);
+                        while (!core.FinishedJoining)
+                        {
+                            core.Log("Postponing request to part " + chan.Name + " because bot is still loading", true);
+                            Thread.Sleep(2000);
+                        }
+                        chan.instance.irc.SendData("PART " + chan.Name + " :" + "dropped by " + user + " from " + origin);
                         Program.Log("Dropped " + chan.Name + " dropped by " + user + " from " + origin);
                         Thread.Sleep(100);
                         try
@@ -159,11 +170,16 @@ namespace wmib
                     irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), origin);
                     return;
                 }
-                if (message == "@part")
+                if (message == config.CommandPrefix + "part")
                 {
                     if (chan.Users.IsApproved(user, host, "admin"))
                     {
-                        irc.SendData("PART " + chan.Name + " :" + "removed by " + user + " from " + origin);
+                        while (!core.FinishedJoining)
+                        {
+                            core.Log("Postponing request to part " + chan.Name + " because bot is still loading", true);
+                            Thread.Sleep(2000);
+                        }
+                        chan.instance.irc.SendData("PART " + chan.Name + " :" + "removed by " + user + " from " + origin);
                         Program.Log("Removed " + chan.Name + " removed by " + user + " from " + origin);
                         Thread.Sleep(100);
                         config.channels.Remove(chan);

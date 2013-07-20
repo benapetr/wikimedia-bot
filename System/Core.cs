@@ -31,6 +31,7 @@ namespace wmib
         /// Prefix for a log directory
         /// </summary>
         public static readonly string prefix_logdir = "log";
+        public static readonly string color = ((char)003).ToString();
         /// <summary>
         /// This string represent a character that changes text to bold
         /// </summary>
@@ -83,6 +84,10 @@ namespace wmib
         /// </summary>
         public static IRC irc = null;
         /// <summary>
+        /// If this is not true it means bot did not yet finish connecting or joining to all networks
+        /// </summary>
+        public static bool FinishedJoining = false;
+        /// <summary>
         /// Thread which is writing the system data to files
         /// </summary>
         public static Thread WriterThread = null;
@@ -91,6 +96,8 @@ namespace wmib
         /// </summary>
         public static Dictionary<Module, AppDomain> Domains = new Dictionary<Module, AppDomain>();
         private static readonly Dictionary<string, string> HelpData = new Dictionary<string, string>();
+        public static Dictionary<string, Instance> Instances = new Dictionary<string, Instance>();
+        public static Dictionary<string, Instance> TargetBuffer = new Dictionary<string, Instance>();
 
         /// <summary>
         /// System user
@@ -106,13 +113,18 @@ namespace wmib
             /// Level
             /// </summary>
             public string level;
+            public string UserName = null;
+            public string Password = null;
+            public bool IsGlobal;
+
             /// <summary>
             /// Constructor
             /// </summary>
             /// <param name="level"></param>
             /// <param name="name"></param>
-            public SystemUser(string level, string name)
+            public SystemUser(string level, string name, bool Global = false)
             {
+                IsGlobal = Global;
                 this.level = level;
                 this.name = name;
             }
@@ -128,6 +140,42 @@ namespace wmib
             { 
                 StorageWriter.InsertLine("trafficlog.dat", DateTime.Now.ToString() + ": " + text, false);
             }
+        }
+
+        public static int CreateInstance(string name, int port = 0)
+        {
+            core.DebugLog("Creating instance " + name + " with port " + port.ToString());
+            lock (Instances)
+            {
+                if (Instances.ContainsKey(name))
+                {
+                    throw new Exception("Can't load instance " + name + " because this instance already is present");
+                }
+                Instances.Add(name, new Instance(name, port));
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// Return instance with lowest number of channels
+        /// </summary>
+        /// <returns></returns>
+        public static Instance getInstance()
+        {
+            int lowest = 99999999;
+            Instance instance = null;
+            lock (Instances)
+            {
+                foreach (Instance xx in Instances.Values)
+                {
+                    if (xx.ChannelCount < lowest)
+                    {
+                        lowest = xx.ChannelCount;
+                        instance = xx;
+                    }
+                }
+            }
+            return instance;
         }
 
         /// <summary>
@@ -204,7 +252,7 @@ namespace wmib
                 {
                     irc._SlowQueue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText, config.debugchan);
                 }
-                Program.Log("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace, true);
+                Program.WriteNow("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace, true);
             }
             catch (Exception) // exception happened while we tried to handle another one, ignore that (probably issue with logging)
             { }
@@ -375,8 +423,67 @@ namespace wmib
         /// </summary>
         public static void Connect()
         {
-            irc = new IRC(config.network, config.username, config.name, config.name);
-            irc.Connect();
+            irc = Instances[config.username].irc;
+            // now we load all instances
+            lock (Instances)
+            {
+                foreach (Instance instance in Instances.Values)
+                {
+                    // connect it to irc
+                    instance.Init();
+                }
+                // now we need to wait for all instances to connect
+                core.Log("Waiting for all instances to connect to irc");
+                bool IsOk = false;
+                while (!IsOk)
+                {
+                    foreach (Instance instance in Instances.Values)
+                    {
+                        if (!instance.IsWorking)
+                        {
+                            core.DebugLog("Waiting for " + instance.Nick);
+                            Thread.Sleep(1000);
+                            IsOk = false;
+                            break;
+                        }
+                        else
+                        {
+                            core.DebugLog("Connected to " + instance.Nick);
+                            IsOk = true;
+                        }
+                    }
+                }
+                // now we make all instances join their channels
+                foreach (Instance instance in Instances.Values)
+                {
+                    instance.Join();
+                }
+
+                // wait for all instances to join their channels
+                core.Log("Waiting for all instances to join channels");
+                IsOk = false;
+                while (!IsOk)
+                {
+                    foreach (Instance instance in Instances.Values)
+                    {
+                        if (!instance.irc.ChannelsJoined)
+                        {
+                            Thread.Sleep(100);
+                            IsOk = false;
+                            break;
+                        }
+                        IsOk = true;
+                    }
+                }
+                core.Log("All instances joined their channels");
+            }
+
+            core.FinishedJoining = true;
+
+            while (_Status == Status.OK)
+            {
+                Thread.Sleep(200);
+            }
         }
 
         private static void Terminate()
@@ -424,33 +531,33 @@ namespace wmib
                 StorageWriter.isRunning = false;
                 Thread modules = new Thread(Terminate) {Name = "KERNEL: Core helper shutdown thread"};
                 modules.Start();
-                Program.Log("Giving grace time for all modules to finish ok");
+                Program.WriteNow("Giving grace time for all modules to finish ok");
                 int kill = 0;
                 while (kill < 20)
                 {
                     kill++;
                     if (Module.module.Count == 0)
                     {
-                        Program.Log("KERNEL: Modules are all down");
+                        Program.WriteNow("KERNEL: Modules are all down");
                         if (WriterThread.ThreadState == ThreadState.Running || WriterThread.ThreadState == ThreadState.WaitSleepJoin)
                         {
-                            Log("KERNEL: Writer thread didn't shut down gracefully, waiting 2 seconds", true);
+                            Program.WriteNow("KERNEL: Writer thread didn't shut down gracefully, waiting 2 seconds", true);
                             Thread.Sleep(2000);
                             if (WriterThread.ThreadState == ThreadState.Running || WriterThread.ThreadState == ThreadState.WaitSleepJoin)
                             {
-                                Log("KERNEL: Writer thread didn't shut down gracefully, killing", true);
+                                Program.WriteNow("KERNEL: Writer thread didn't shut down gracefully, killing", true);
                                 WriterThread.Abort();
                             }
                             else
                             {
-                                Log("KERNEL: Writer thread is shut down", true);
+                                Program.WriteNow("KERNEL: Writer thread is shut down", true);
                             }
                         }
                         else
                         {
-                            Log("KERNEL: Writer thread is down ok");
+                            Program.WriteNow("KERNEL: Writer thread is down ok");
                         }
-                        Program.Log("KERNEL: Terminated");
+                        Program.WriteNow("KERNEL: Terminated");
                         System.Diagnostics.Process.GetCurrentProcess().Kill();
                         break;
                     }
@@ -462,8 +569,8 @@ namespace wmib
                 core.handleException(fail);
 
             }
-            Program.Log("There was problem shutting down " + Module.module.Count.ToString() + " modules, terminating process");
-            Program.Log("Terminated");
+            Program.WriteNow("There was problem shutting down " + Module.module.Count.ToString() + " modules, terminating process");
+            Program.WriteNow("Terminated");
             System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
 
@@ -488,7 +595,7 @@ namespace wmib
                         return false;
                     }
                 }
-                if (message.StartsWith("@"))
+                if (message.StartsWith(config.CommandPrefix))
                 {
                     ModifyRights(message, curr, nick, host);
                     addChannel(curr, nick, host, message);

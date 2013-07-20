@@ -23,7 +23,7 @@ namespace wmib
         /// Represent a channel
         /// </summary>
         [Serializable]
-        public class channel : MarshalByRefObject
+        public class channel
         {
             /// <summary>
             /// Channel name
@@ -116,6 +116,16 @@ namespace wmib
             public List<channel> SharedLinkedChan = null;
 
             /// <summary>
+            /// Default instance this channel belongs to
+            /// </summary>
+            public string DefaultInstance = "any";
+
+            /// <summary>
+            /// Current instance
+            /// </summary>
+            public Instance instance = null;
+
+            /// <summary>
             /// Users
             /// </summary>
             public IRCTrust Users = null;
@@ -197,6 +207,22 @@ namespace wmib
                 catch (Exception er)
                 {
                     core.handleException(er);
+                }
+                return null;
+            }
+
+            public User RetrieveUser(string Nick)
+            {
+                Nick = Nick.ToUpper();
+                lock (UserList)
+                {
+                    foreach (User xx in UserList)
+                    {
+                        if (Nick == xx.Nick.ToUpper())
+                        {
+                            return xx;
+                        }
+                    }
                 }
                 return null;
             }
@@ -315,6 +341,9 @@ namespace wmib
                             case "sharedinfo":
                                 shared = xx.Attributes[1].Value;
                                 break;
+                            case "defaultbot":
+                                DefaultInstance = xx.Attributes[1].Value;
+                                break;
                         }
                     }
                 }
@@ -353,6 +382,7 @@ namespace wmib
                     InsertData("suppress-warnings", suppress_warnings.ToString(), ref data, ref xmlnode);
                     InsertData("respond_wait", respond_wait.ToString(), ref data, ref xmlnode);
                     InsertData("sharedinfo", shared, ref data, ref xmlnode);
+                    InsertData("defaultbot", DefaultInstance, ref data, ref xmlnode);
                     if (!(SharedLinkedChan.Count < 1))
                     {
                         foreach (channel current in SharedLinkedChan)
@@ -474,6 +504,28 @@ namespace wmib
                 shared = "";
                 suppress = false;
                 LoadConfig();
+                if (DefaultInstance == "any")
+                {
+                    instance = core.getInstance();
+                    // we need to save the instance so that next time bot reconnect to bouncer it uses the same instance
+                    DefaultInstance = instance.Nick;
+                    SaveConfig();
+                }
+                else
+                {
+                    lock (core.Instances)
+                    {
+                        if (!core.Instances.ContainsKey(DefaultInstance))
+                        {
+                            core.DebugLog("There is no instance " + DefaultInstance);
+                            instance = core.getInstance();
+                        }
+                        else
+                        {
+                            instance = core.Instances[DefaultInstance];
+                        }
+                    }
+                }
                 if (!Directory.Exists(path_txt))
                 {
                     Directory.CreateDirectory(path_txt);

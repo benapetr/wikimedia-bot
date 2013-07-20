@@ -20,7 +20,7 @@ namespace wmib
     /// Module
     /// </summary>
     [Serializable()]
-    public abstract class Module : MarshalByRefObject
+    public abstract class Module
     {
         /// <summary>
         /// List of all modules loaded in kernel
@@ -188,6 +188,13 @@ namespace wmib
             return;
         }
 
+        /// <summary>
+        /// Return a value
+        /// </summary>
+        /// <param name="chan"></param>
+        /// <param name="invoker"></param>
+        /// <param name="config"></param>
+        /// <returns></returns>
         public virtual bool Hook_GetConfig(config.channel chan, User invoker, string config)
         {
             return false;

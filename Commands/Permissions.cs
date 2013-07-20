@@ -34,29 +34,29 @@ namespace wmib
                 if (message.StartsWith(config.CommandPrefix + "trustadd"))
                 {
                     string[] rights_info = message.Split(' ');
-                    if (channel.Users.isApproved(user, host, "trustadd"))
+                    if (channel.Users.IsApproved(user, host, "trustadd"))
                     {
                         if (rights_info.Length < 3)
                         {
-                            irc.Message(messages.get("Trust1", channel.Language), channel.Name);
+                            irc._SlowQueue.DeliverMessage(messages.get("Trust1", channel.Language), channel);
                             return 0;
                         }
                         if (!(rights_info[2] == "admin" || rights_info[2] == "trusted"))
                         {
-                            irc.Message(messages.get("Unknown1", channel.Language), channel.Name);
+                            irc._SlowQueue.DeliverMessage(messages.get("Unknown1", channel.Language), channel);
                             return 2;
                         }
                         if (rights_info[2] == "admin")
                         {
-                            if (!channel.Users.isApproved(user, host, "admin"))
+                            if (!channel.Users.IsApproved(user, host, "admin"))
                             {
-                                irc.Message(messages.get("PermissionDenied", channel.Language), channel.Name);
+                                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel);
                                 return 2;
                             }
                         }
                         if (channel.Users.addUser(rights_info[2], rights_info[1]))
                         {
-                            irc.Message(messages.get("UserSc", channel.Language) + rights_info[1], channel.Name);
+                            irc._SlowQueue.DeliverMessage(messages.get("UserSc", channel.Language) + rights_info[1], channel);
                             return 0;
                         }
                     }
@@ -76,15 +76,15 @@ namespace wmib
                     string[] rights_info = message.Split(' ');
                     if (rights_info.Length > 1)
                     {
-                        if (channel.Users.isApproved(user, host, "trustdel"))
+                        if (channel.Users.IsApproved(user, host, "trustdel"))
                         {
                             channel.Users.delUser(channel.Users.getUser(user + "!@" + host), rights_info[1]);
                             return 0;
                         }
-                        irc._SlowQueue.DeliverMessage(messages.get("Authorization", channel.Language), channel.Name);
+                        irc._SlowQueue.DeliverMessage(messages.get("Authorization", channel.Language), channel);
                         return 0;
                     }
-                    irc.Message(messages.get("InvalidUser", channel.Language), channel.Name);
+                    irc._SlowQueue.DeliverMessage(messages.get("InvalidUser", channel.Language), channel);
                 }
             }
             catch (Exception b)

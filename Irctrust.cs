@@ -68,6 +68,29 @@ namespace wmib
             }
         }
 
+        public static int Auth(string User, string Password)
+        {
+            lock (GlobalUsers)
+            {
+                foreach (core.SystemUser user in GlobalUsers)
+                {
+                    if (user.Password == Password && user.UserName == User)
+                    {
+                        switch (user.level)
+                        {
+                            case "trusted":
+                                return 1;
+                            case "admin":
+                                return 2;
+                            case "root":
+                                return 10;
+                        }
+                    }
+                }
+            }
+            return 0;
+        }
+
         private static void GlobalLoad()
         {
             string[] dba = System.IO.File.ReadAllLines(variables.config + System.IO.Path.DirectorySeparatorChar + "admins");
@@ -81,13 +104,24 @@ namespace wmib
                         string[] info = x.Split(Char.Parse(config.separator));
                         string level = info[1];
                         string name = core.decode2(info[0]);
-                        GlobalUsers.Add(new core.SystemUser(level, name));
+                        core.SystemUser user = new core.SystemUser(level, name);
+                        if (info.Length > 3)
+                        {
+                            user.UserName = info[3];
+                            user.Password = info[2];
+                        }
+                        GlobalUsers.Add(user);
                         core.DebugLog("Registered global user (" + level + "): " + name, 2);
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// This is called when the file is changed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private static void GlobalChanged(object sender, EventArgs e)
         {
             core.Log("Global user list has been changed");
@@ -163,6 +197,7 @@ namespace wmib
             if (!misc.IsValidRegex(user))
             {
                 core.Log("Unable to create user " + user + " because the regex is invalid", true);
+                core.irc._SlowQueue.DeliverMessage("Unable to add user because this regex is a piece of shit", ChannelName);
                 return false;
             }
             foreach (core.SystemUser u in Users)

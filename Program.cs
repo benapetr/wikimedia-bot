@@ -11,6 +11,9 @@
 // Created by Petr Bena <benapetr@gmail.com>
 
 using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading;
 
 namespace wmib
 {
@@ -18,21 +21,14 @@ namespace wmib
     {
         public static bool Log(string msg, bool warn = false)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            if (warn)
-            {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.Write("LOG (WARNING)");
-            }
-            else
-            {
-                Console.Write("LOG ");
-            }
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write("[{0}]", DateTime.Now.ToString());
-            Console.ResetColor();
-            Console.WriteLine(": " + msg);
-            return false;
+            Logging.Write(msg, warn);
+            return true;
+        }
+
+        public static bool WriteNow(string msg, bool warn = false)
+        {
+            Logging.Display(DateTime.Now, msg, warn);
+            return true;
         }
 
         public static bool Temp(string file)
@@ -88,18 +84,21 @@ namespace wmib
         {
             try
             {
+                Thread logger = new Thread(Logging.Exec);
                 core.domain = AppDomain.CurrentDomain;
                 Log(config.version);
                 Log("Loading...");
                 config.UpTime = DateTime.Now;
                 processVerbosity(args);
+                logger.Start();
                 Console.CancelKeyPress += myHandler;
                 messages.LoadLD();
                 if (config.Load() != 0)
                 {
-                    Log("Error while loading the config file, exiting", true);
+                    WriteNow("Error while loading the config file, exiting", true);
                     return;
                 }
+                Terminal.Init();
                 core.Help.CreateHelp();
                 core.WriterThread = new System.Threading.Thread(StorageWriter.Core);
                 core.WriterThread.Start();
@@ -111,7 +110,7 @@ namespace wmib
             }
             catch (Exception fatal)
             {
-                Log("ERROR: bot crashed, bellow is debugging information");
+                WriteNow("ERROR: bot crashed, bellow is debugging information");
                 Console.WriteLine("------------------------------------------------------------------------");
                 Console.WriteLine("Description: " + fatal.Message);
                 Console.WriteLine("Stack trace: " + fatal.StackTrace);

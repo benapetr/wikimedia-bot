@@ -99,7 +99,7 @@ namespace wmib
         /// <summary>
         /// Version
         /// </summary>
-        public static string version = "wikimedia bot v. 1.10.8.18";
+        public static string version = "wikimedia bot v. 1.20.0.0";
 
         /// <summary>
         /// Separator for system db
@@ -110,6 +110,10 @@ namespace wmib
         /// User name
         /// </summary>
         public static string name = "wm-bot";
+
+        public static int BouncerPort = 6667;
+
+        public static int SystemPort = 2020;
 
         /// <summary>
         /// List of channels the bot is in
@@ -128,7 +132,7 @@ namespace wmib
         /// <param name="b"></param>
         private static void AddConfig(string a, string b)
         {
-            text = text + "\n" + a + "=" + b + ";";
+            text = text + a + "=" + b + ";\n";
         }
 
         /// <summary>
@@ -148,6 +152,7 @@ namespace wmib
             AddConfig("serverIO", UsingNetworkIOLayer.ToString());
             AddConfig("debug", debugchan);
             AddConfig("network", network);
+            AddConfig("bouncerp", BouncerPort.ToString());
             AddConfig("style_html_file", css);
             AddConfig("nick", login);
             text += "\nchannels=";
@@ -159,7 +164,19 @@ namespace wmib
                     text += current.Name + ",\n";
                 }
             }
-            text = text + ";";
+            text = text + ";\n";
+            lock (core.Instances)
+            {
+                int current = 0;
+                foreach (Instance blah in core.Instances.Values)
+                {
+                    if (blah.Nick != username)
+                    {
+                        AddConfig("instancename" + current.ToString(), blah.Nick);
+                        AddConfig("instanceport" + current.ToString(), blah.Port.ToString());
+                    }
+                }
+            }
             File.WriteAllText(variables.config + "/wmib", text);
             text = null;
         }
@@ -199,69 +216,95 @@ namespace wmib
         /// </summary>
         public static int Load()
         {
-            try
+            if (Directory.Exists(variables.config) == false)
             {
-                if (Directory.Exists(variables.config) == false)
+                Directory.CreateDirectory(variables.config);
+            }
+            if (!File.Exists(variables.config + "/wmib"))
+            {
+                File.WriteAllText(variables.config + "/wmib", "//this is configuration file for bot, you need to fill in some stuff for it to work");
+            }
+            text = File.ReadAllText(variables.config + "/wmib");
+            username = parseConfig(text, "username");
+            network = parseConfig(text, "network");
+            login = parseConfig(text, "nick");
+            debugchan = parseConfig(text, "debug");
+            if (parseConfig(text, "bouncerp") != "")
+            {
+                BouncerPort = int.Parse(parseConfig(text, "bouncerp"));
+            }
+            css = parseConfig(text, "style_html_file");
+            WebpageURL = parseConfig(text, "web");
+            password = parseConfig(text, "password");
+            if (string.IsNullOrEmpty(login))
+            {
+                Console.WriteLine("Error there is no login for bot");
+                return 1;
+            }
+            if (string.IsNullOrEmpty(network))
+            {
+                Console.WriteLine("Error irc server is wrong");
+                return 1;
+            }
+            if (string.IsNullOrEmpty(username))
+            {
+                Console.WriteLine("Error there is no username for bot");
+                return 1;
+            }
+            bool _serverIO;
+            if (bool.TryParse(parseConfig(text, "serverIO"), out _serverIO))
+            {
+                UsingNetworkIOLayer = _serverIO;
+            }
+            core.Log("Creating instances");
+            core.CreateInstance(username, BouncerPort); // primary instance
+            int CurrentInstance = 0;
+            while (CurrentInstance < 20)
+            {
+                string InstanceName = parseConfig(text, "instancename" + CurrentInstance.ToString());
+                if (InstanceName == "")
                 {
-                    Directory.CreateDirectory(variables.config);
+                    break;
                 }
-                if (!File.Exists(variables.config + "/wmib"))
+                core.DebugLog("Instance found: " + InstanceName);
+                if (UsingNetworkIOLayer)
                 {
-                    File.WriteAllText(variables.config + "/wmib", "//this is configuration file for bot, you need to fill in some stuff for it to work");
-                }
-                text = File.ReadAllText(variables.config + "/wmib");
-                bool _serverIO;
-                if (bool.TryParse(parseConfig(text, "serverIO"), out _serverIO))
-                {
-                    UsingNetworkIOLayer = _serverIO;
-                }
-                foreach (string x in parseConfig(text, "channels").Replace("\n", "").Split(','))
-                {
-                    string name = x.Replace(" ", "").Replace("\n", "");
-                    if (name != "")
+                    core.DebugLog("Using bouncer, looking for instance port");
+                    string InstancePort = parseConfig(text, "instanceport" + CurrentInstance.ToString());
+                    if (InstancePort == "")
                     {
-                        lock (channels)
-                        {
-                            channels.Add(new channel(name));
-                        }
+                        core.Log("Instance " + InstanceName + " has invalid port, not using", true);
+                        continue;
+                    }
+                    int port = int.Parse(InstancePort);
+                    core.CreateInstance(InstanceName, port);
+                }
+                else
+                {
+                    core.CreateInstance(InstanceName);
+                }
+                CurrentInstance++;
+            }
+            foreach (string x in parseConfig(text, "channels").Replace("\n", "").Split(','))
+            {
+                string name = x.Replace(" ", "").Replace("\n", "");
+                if (name != "")
+                {
+                    lock (channels)
+                    {
+                        channels.Add(new channel(name));
                     }
                 }
-                Program.Log("Channels were all loaded");
+            }
+            Program.Log("Channels were all loaded");
 
-                // Now when all chans are loaded let's link them together
-                foreach (channel ch in channels)
-                {
-                    ch.Shares();
-                }
-                Program.Log("Channel db's working");
-                username = parseConfig(text, "username");
-                network = parseConfig(text, "network");
-                login = parseConfig(text, "nick");
-                debugchan = parseConfig(text, "debug");
-                css = parseConfig(text, "style_html_file");
-                WebpageURL = parseConfig(text, "web");
-                password = parseConfig(text, "password");
-                if (string.IsNullOrEmpty(login))
-                {
-                    Console.WriteLine("Error there is no login for bot");
-                    return 1;
-                }
-                if (string.IsNullOrEmpty(network))
-                {
-                    Console.WriteLine("Error irc server is wrong");
-                    return 1;
-                }
-                if (string.IsNullOrEmpty(username))
-                {
-                    Console.WriteLine("Error there is no username for bot");
-                    return 1;
-                }
-                return 0;
-            }
-            catch (Exception ex)
+            // Now when all chans are loaded let's link them together
+            foreach (channel ch in channels)
             {
-                core.handleException(ex);
+                ch.Shares();
             }
+
+            Program.Log("Channel db's working");
             if (!Directory.Exists(DumpDir))
             {
                 Directory.CreateDirectory(DumpDir);
