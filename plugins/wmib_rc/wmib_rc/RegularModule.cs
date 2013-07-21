@@ -1,4 +1,4 @@
-//This program is free software: you can redistribute it and/or modify
+?//This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
 //the Free Software Foundation, either version 3 of the License, or
 //(at your option) any later version.
@@ -290,6 +290,7 @@ namespace wmib
                 return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "" + username + "", url + "?title=" + name_url, summary });
             }
 
+            string action = "modified";
             string flags = "";
 
             if (minor)
@@ -300,6 +301,7 @@ namespace wmib
             if (New)
             {
                 flags += "new page, ";
+                action = "created";
             }
 
             if (bot)
@@ -329,7 +331,8 @@ namespace wmib
                    .Replace("$username", username)
                    .Replace("$page", page)
                    .Replace("$summary", summary)
-                   .Replace("$flags", flags);
+                   .Replace("$flags", flags)
+                   .Replace("$action", action);
         }
 
         public static Change String2Change(string text)
