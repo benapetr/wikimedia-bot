@@ -199,6 +199,23 @@ namespace wmib
 
                 text += "</table>Uptime: " + core.getUptime() + " Memory usage: " + (System.Diagnostics.Process.GetCurrentProcess().PrivateMemorySize64 / 1024).ToString() + "kb Database size: " + getSize();
 
+                text += "<table class=\"text\"><th>Name</th><th>Status</th><th>Bouncer</th>";
+
+                lock(core.Instances)
+                {
+                    foreach (Instance xx in core.Instances.Values)
+                    {
+                        string status = "Online in " + xx.ChannelCount.ToString() + " channels";
+                        if (!xx.IsWorking || !xx.irc.IsConnected)
+                        {
+                            status = "Disconnected";
+                        }
+                        text += "<tr><td>"+xx.Nick+"</td><td>"+status+"</td><td>"+xx.Port.ToString()+"</td></tr>";
+                    }
+                }
+
+                text += "</table>";
+
                 lock (Module.module)
                 {
                     foreach (Module mm in Module.module)

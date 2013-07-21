@@ -48,6 +48,7 @@ namespace wmib
             data.Add("cs", new container("cs"));
             data.Add("en", new container("en"));
             data.Add("zh", new container("zh"));
+            data.Add("de", new container("de"));
         }
 
         private static string parse(string text, string name)
@@ -123,6 +124,9 @@ namespace wmib
                         break;
                 case "zh":
                         text = Properties.Resources.zh_chinese;
+                        break;
+                case "de":
+                        text = Properties.Resources.de_german;
                         break;
                 default:
                         return "invalid language: " + language;

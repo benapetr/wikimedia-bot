@@ -77,6 +77,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="translation\cs_czech.txt" />
+    <EmbeddedResource Include="translation\de_german.txt" />
     <EmbeddedResource Include="translation\english.txt" />
   </ItemGroup>
   <ItemGroup>
