@@ -104,7 +104,7 @@ namespace wmib
             else
             {
                 message = message.ToLower();
-                if (message.Contains(channel.instance.Nick) && !message.Contains("thanks to") && (message.Contains("thanks") || message.Contains("thank you")))
+                if (message.Contains(channel.instance.Nick) && !message.Contains("thanks to") && (message.Contains("thanks") || message.Contains("thank you")) && !message.Contains("no thank"))
                 {
                     string response = "Hey " + invoker.Nick + ", you are welcome!";
                     Buffer.Item x = Ring.getUser(invoker.Nick);
