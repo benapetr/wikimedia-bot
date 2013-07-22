@@ -321,8 +321,8 @@ namespace wmib
             }
 
             return GetConfig(chan, "RC.Template", "").Replace("$wiki", name_url)
-                   .Replace("$encoded_wiki_page", System.Web.HttpUtility.UrlEncode(page).Replace("+", "_").Replace("%3A", ":").Replace("%2F", "/").Replace("%28", "(").Replace("%29", ")"))
-                   .Replace("$encoded_wiki_username", System.Web.HttpUtility.UrlEncode(username).Replace("+", "_").Replace("%3A", ":").Replace("%2F", "/").Replace("%28", "(").Replace("%29", ")"))
+                   .Replace("$encoded_wiki_page", System.Web.HttpUtility.UrlEncode(page).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")"))
+                   .Replace("$encoded_wiki_username", System.Web.HttpUtility.UrlEncode(username).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")"))
                    .Replace("$encoded_page", System.Web.HttpUtility.UrlEncode(page))
                    .Replace("$encoded_username", System.Web.HttpUtility.UrlEncode(username))
                    .Replace("$url", url)
