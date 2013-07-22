@@ -416,13 +416,13 @@ namespace wmib
 
             change.User = text.Substring(text.IndexOf(variables.color + "03") + 3);
 
-            if (!change.User.Contains(" " + variables.color + "5*"))
+            if (!change.User.Contains(variables.color + " " + variables.color + "5*"))
             {
                 core.DebugLog("Parser error #6", 6);
                 return null;
             }
 
-            change.User = change.User.Substring(0, change.User.IndexOf(" " + variables.color + "5*"));
+            change.User = change.User.Substring(0, change.User.IndexOf(variables.color + " " + variables.color + "5*"));
 
             if (!text.Contains(variables.color + "5"))
             {
