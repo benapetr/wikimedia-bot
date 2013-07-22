@@ -113,11 +113,11 @@ namespace wmib
 
         public override void Load()
         {
-            try
+            while (true)
             {
-                while (true)
+                try
                 {
-                    try
+                    lock (config.channels)
                     {
                         foreach (config.channel chan in config.channels)
                         {
@@ -135,19 +135,15 @@ namespace wmib
                         }
                         Thread.Sleep(8000);
                     }
-                    catch (ThreadAbortException)
-                    {
-                        return;
-                    }
-                    catch (Exception f)
-                    {
-                        handleException(f);
-                    }
                 }
-            }
-            catch (ThreadAbortException)
-            {
-                return;
+                catch (ThreadAbortException)
+                {
+                    return;
+                }
+                catch (Exception f)
+                {
+                    handleException(f);
+                }
             }
         }
 
@@ -162,63 +158,63 @@ namespace wmib
                 }
             }
 
-            if (message == "@statistics-off")
+            if (message == config.CommandPrefix + "statistics-off")
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                if (channel.Users.IsApproved(invoker, "admin"))
                 {
                     if (!Module.GetConfig(channel, "Statistics.Enabled", false))
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("StatE2", channel.Language), channel.Name);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("StatE2", channel.Language), channel);
                         return;
                     }
                     else
                     {
                         Module.SetConfig(channel, "Statistics.Enabled", false);
                         channel.SaveConfig();
-                        core.irc._SlowQueue.DeliverMessage(messages.get("Stat-off", channel.Language), channel.Name);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Stat-off", channel.Language), channel);
                         return;
                     }
                 }
                 if (!channel.suppress_warnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel, IRC.priority.low);
                 }
                 return;
             }
 
-            if (message == "@statistics-reset")
+            if (message == config.CommandPrefix + "statistics-reset")
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                if (channel.Users.IsApproved(invoker, "admin"))
                 {
                     Statistics st = (Statistics)channel.RetrieveObject("Statistics");
                     if (st != null)
                     {
                         st.Delete();
                     }
-                    core.irc._SlowQueue.DeliverMessage(messages.get("Statdt", channel.Language), channel.Name);
+                    core.irc._SlowQueue.DeliverMessage(messages.get("Statdt", channel.Language), channel);
                     return;
                 }
                 if (!channel.suppress_warnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel, IRC.priority.low);
                 }
                 return;
             }
 
-            if (message == "@statistics-on")
+            if (message == config.CommandPrefix + "statistics-on")
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                if (channel.Users.IsApproved(invoker, "admin"))
                 {
                     if (Module.GetConfig(channel, "Statistics.Enabled", false))
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("StatE1", channel.Language), channel.Name);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("StatE1", channel.Language), channel);
                         return;
                     }
                     else
                     {
                         Module.SetConfig(channel, "Statistics.Enabled", true);
                         channel.SaveConfig();
-                        core.irc._SlowQueue.DeliverMessage(messages.get("Stat-on", channel.Language), channel.Name);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("Stat-on", channel.Language), channel);
                         return;
                     }
                 }
@@ -312,25 +308,28 @@ namespace wmib
             XmlDocument stat = new XmlDocument();
             XmlNode xmlnode = stat.CreateElement("channel_stat");
 
-            foreach (list curr in data)
+            lock(data)
             {
-                XmlAttribute name = stat.CreateAttribute("username");
-                name.Value = curr.user;
-                XmlAttribute messages = stat.CreateAttribute("messages");
-                messages.Value = curr.messages.ToString();
-                XmlAttribute longest_message = stat.CreateAttribute("longest_message");
-                longest_message.Value = "0";
-                XmlAttribute logging_since = stat.CreateAttribute("logging_since");
-                logging_since.Value = curr.logging_since.ToBinary().ToString();
-                XmlAttribute link = stat.CreateAttribute("link");
-                link.Value = curr.URL;
-                XmlNode db = stat.CreateElement("user");
-                db.Attributes.Append(name);
-                db.Attributes.Append(messages);
-                db.Attributes.Append(longest_message);
-                db.Attributes.Append(logging_since);
-                db.Attributes.Append(link);
-                xmlnode.AppendChild(db);
+                foreach (list curr in data)
+                {
+                    XmlAttribute name = stat.CreateAttribute("username");
+                    name.Value = curr.user;
+                    XmlAttribute messages = stat.CreateAttribute("messages");
+                    messages.Value = curr.messages.ToString();
+                    XmlAttribute longest_message = stat.CreateAttribute("longest_message");
+                    longest_message.Value = "0";
+                    XmlAttribute logging_since = stat.CreateAttribute("logging_since");
+                    logging_since.Value = curr.logging_since.ToBinary().ToString();
+                    XmlAttribute link = stat.CreateAttribute("link");
+                    link.Value = curr.URL;
+                    XmlNode db = stat.CreateElement("user");
+                    db.Attributes.Append(name);
+                    db.Attributes.Append(messages);
+                    db.Attributes.Append(longest_message);
+                    db.Attributes.Append(logging_since);
+                    db.Attributes.Append(link);
+                    xmlnode.AppendChild(db);
+                }
             }
             stat.AppendChild(xmlnode);
             if (System.IO.File.Exists(variables.config + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics"))
