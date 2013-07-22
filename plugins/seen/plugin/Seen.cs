@@ -406,13 +406,14 @@ namespace wmib
                             {
                                 xx.lastplace = "N/A";
                             }
+
                             if (xx.LastAc == item.Action.Exit)
                             {
-                                response = "Last time I saw " + xx.nick + " they were " + action + " at " + xx.LastSeen.ToString() + " (" + span2.ToString() + " ago)";
+                                response = "Last time I saw " + xx.nick + " they were " + action + " at " + xx.LastSeen.ToString() + " (" + RegularModule.FormatTimeSpan(span2) + " ago)";
                             }
                             else
                             {
-                                response = "Last time I saw " + xx.nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString() + " (" + span2.ToString() + " ago)";
+                                response = "Last time I saw " + xx.nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString() + " (" + RegularModule.FormatTimeSpan(span2) + " ago)";
                             }
                         }
                     }
@@ -664,9 +665,9 @@ namespace wmib
                         TimeSpan span = DateTime.Now - xx.LastSeen;
                         if (xx.LastAc == item.Action.Exit)
                         {
-                            response = "Last time I saw " + nick + " they were " + action + " at " + xx.LastSeen.ToString() + " (" + span.ToString() + " ago)";
+                            response = "Last time I saw " + nick + " they were " + action + " at " + xx.LastSeen.ToString() + " (" + RegularModule.FormatTimeSpan (span) + " ago)";
                         }
-                        response = "Last time I saw " + nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString() + " (" + span.ToString() + " ago)";
+                        response = "Last time I saw " + nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString() + " (" + RegularModule.FormatTimeSpan (span) + " ago)";
                         break;
                     }
                 }
@@ -868,5 +869,29 @@ namespace wmib
                 handleException(f);
             }
         }
+
+		public static string FormatTimeSpan(TimeSpan ts) {
+			string[] timeSpanParts = ts.ToString().Split(':');
+			//2.13:24:12.6511690 = 2d13h24m12.6511690s
+			//Format is d.h:m:s ("d." is optional)
+			string newTimeString = "";
+
+			string[] daysAndHoursSplit = timeSpanParts[0].Split('.');
+
+			if ( daysAndHoursSplit.Length == 2 ) {
+				newTimeString += daysAndHoursSplit[0] + 'd';
+				newTimeString += daysAndHoursSplit[1] + 'h';
+			} else if ( daysAndHoursSplit[0] != "00" ) {
+				newTimeString += daysAndHoursSplit[0] + 'h';
+			}
+
+			if ( timeSpanParts[1] != "00" ) {
+				newTimeString += timeSpanParts[1] + 'm';
+			}
+
+			newTimeString += Math.Round(Decimal.Parse(timeSpanParts[2])).ToString() + 's';
+
+			return newTimeString;
+		}
     }
 }
