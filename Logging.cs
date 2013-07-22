@@ -34,19 +34,31 @@ namespace wmib
 
         public static void Display(DateTime time, string Message, bool Warning)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
+            if (config.Colors)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+            }
             if (Warning)
             {
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                if (config.Colors)
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                }
                 Console.Write("LOG (WARNING)");
             }
             else
             {
                 Console.Write("LOG ");
             }
-            Console.ForegroundColor = ConsoleColor.Green;
+            if (config.Colors)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+            }
             Console.Write("[{0}]", time.ToString());
-            Console.ResetColor();
+            if (config.Colors)
+            {
+                Console.ResetColor();
+            }
             Console.WriteLine(": " + Message);
         }
 

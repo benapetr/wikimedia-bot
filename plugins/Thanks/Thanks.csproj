@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{51F3647B-BBAB-4FDB-A9AC-C35603AFA862}</ProjectGuid>
+    <ProjectGuid>{BCDB44D7-22A5-4953-8B0E-2D2EF36E148F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>htmldump</RootNamespace>
-    <AssemblyName>htmldump</AssemblyName>
+    <RootNamespace>Thanks</RootNamespace>
+    <AssemblyName>Thanks</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -34,14 +34,13 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
     <Reference Include="wmib">
-      <HintPath>..\..\..\bin\Release\wmib.exe</HintPath>
+      <HintPath>..\..\bin\Debug\wmib.exe</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HtmlDump.cs" />
+    <Compile Include="Class1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

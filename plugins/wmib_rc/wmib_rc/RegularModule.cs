@@ -1,4 +1,4 @@
-//This program is free software: you can redistribute it and/or modify
+﻿//This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
 //the Free Software Foundation, either version 3 of the License, or
 //(at your option) any later version.
@@ -251,7 +251,7 @@ namespace wmib
                         string _channel = message.Substring(message.IndexOf(" ") + 1);
                         if (RecentChanges.InsertChannel(channel, _channel))
                         {
-                            core.irc.Message(messages.get("Wiki+", channel.Language), channel.Name);
+                            core.irc._SlowQueue.DeliverMessage(messages.get("Wiki+", channel.Language), channel.Name);
                         }
                         return;
                     }
@@ -376,13 +376,21 @@ namespace wmib
             {
                 change.oldid = text.Substring(text.IndexOf("?oldid=") + 7);
 
-                if (!change.oldid.Contains("&"))
+                if (!change.oldid.Contains("&") && !change.oldid.Contains(" "))
                 {
                     core.DebugLog("Parser error #4", 6);
                     return null;
                 }
 
-                change.oldid = change.diff.Substring(0, change.diff.IndexOf("&"));
+                if (change.oldid.Contains(" "))
+                {
+                    change.oldid = change.oldid.Substring(0, change.oldid.IndexOf(" "));
+                }
+
+                if (change.oldid.Contains("&"))
+                {
+                    change.oldid = change.oldid.Substring(0, change.oldid.IndexOf("&"));
+                }
             }
 
             if (text.Contains("?diff="))
@@ -414,7 +422,7 @@ namespace wmib
                 return null;
             }
 
-            change.User = change.User.Substring(0, change.User.IndexOf(" " + variables.color + "5*") + 4);
+            change.User = change.User.Substring(0, change.User.IndexOf(" " + variables.color + "5*"));
 
             if (!text.Contains(variables.color + "5"))
             {
@@ -424,21 +432,18 @@ namespace wmib
 
             text = text.Substring(text.IndexOf(variables.color + "5"));
 
-            if (!text.Contains("("))
+            if (text.Contains("("))
             {
-                core.DebugLog("Parser error #8", 6);
-                return null;
+                change.Size = text.Substring(text.IndexOf("(") + 1);
+
+                if (!change.Size.Contains(")"))
+                {
+                    core.DebugLog("Parser error #10", 6);
+                    return null;
+                }
+
+                change.Size = change.Size.Substring(0, change.Size.IndexOf(")"));
             }
-
-            change.Size = text.Substring(text.IndexOf("(") + 1);
-
-            if (!change.Size.Contains(")"))
-            {
-                core.DebugLog("Parser error #10", 6);
-                return null;
-            }
-
-            change.Size = change.Size.Substring(0, change.Size.IndexOf(")"));
 
             if (!text.Contains(variables.color + "10"))
             {
@@ -487,7 +492,7 @@ namespace wmib
                             while (!RecentChanges.RD.EndOfStream)
                             {
                                 message = RecentChanges.RD.ReadLine();
-                                if (!message.Contains("PRIVMSG"))
+                                if (!message.Contains(" PRIVMSG "))
                                 {
                                     continue;
                                 }
@@ -498,49 +503,55 @@ namespace wmib
                                     string _channel = message.Substring(message.IndexOf("PRIVMSG"));
                                     _channel = _channel.Substring(_channel.IndexOf("#"));
                                     _channel = _channel.Substring(0, _channel.IndexOf(" "));
+                                    List<RecentChanges> R = new List<RecentChanges>();
                                     lock (RecentChanges.rc)
                                     {
-                                        foreach (RecentChanges curr in RecentChanges.rc)
+                                        R.AddRange(RecentChanges.rc);
+                                    }
+                                    foreach (RecentChanges curr in R)
+                                    {
+                                        if (curr != null)
                                         {
-                                            if (curr != null)
+                                            if (edit.Special && !GetConfig(curr.channel, "RC.Special", false))
                                             {
-                                                if (edit.Special && !GetConfig(curr.channel, "RC.Special", false))
+                                                continue;
+                                            }
+                                            if (GetConfig(curr.channel, "RC.Enabled", false))
+                                            {
+                                                lock (curr.pages)
                                                 {
-                                                    continue;
-                                                }
-                                                if (GetConfig(curr.channel, "RC.Enabled", false))
-                                                {
-                                                    lock (curr.pages)
+                                                    foreach (RecentChanges.IWatch w in curr.pages)
                                                     {
-                                                        foreach (RecentChanges.IWatch w in curr.pages)
+                                                        if (w != null)
                                                         {
-                                                            if (w != null)
+                                                            if (w.Channel == _channel || w.Channel == "all")
                                                             {
-                                                                if (w.Channel == _channel || w.Channel == "all")
+                                                                if (edit.Page == w.Page)
                                                                 {
-                                                                    if (edit.Page == w.Page)
+                                                                    if (edit.Size != null)
                                                                     {
-                                                                        if (w.URL == null)
-                                                                        {
-                                                                            DebugLog("NULL pointer on idata 1", 2);
-                                                                        }
-                                                                        core.irc._SlowQueue.DeliverMessage(
-                                                                           Format(w.URL.name, w.URL.url, edit.Page, edit.User, edit.diff, edit.Description, curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
+                                                                        edit.Description = "[" + edit.Size + "] " + edit.Description;
                                                                     }
-                                                                    else
-                                                                        if (w.Page.EndsWith("*"))
-                                                                        {
-                                                                            if (edit.Page.StartsWith(w.Page.Replace("*", "")))
-                                                                            {
-                                                                                if (w.URL == null)
-                                                                                {
-                                                                                    DebugLog("NULL pointer on idata 2", 2);
-                                                                                }
-                                                                                core.irc._SlowQueue.DeliverMessage(
-                                                                                Format(w.URL.name, w.URL.url, edit.Page, edit.User, edit.diff, edit.Description, curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
-                                                                            }
-                                                                        }
+                                                                    if (w.URL == null)
+                                                                    {
+                                                                        DebugLog("NULL pointer on idata 1", 2);
+                                                                    }
+                                                                    core.irc._SlowQueue.DeliverMessage(
+                                                                       Format(w.URL.name, w.URL.url, edit.Page, edit.User, edit.diff, edit.Description, curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
                                                                 }
+                                                                else
+                                                                    if (w.Page.EndsWith("*"))
+                                                                    {
+                                                                        if (edit.Page.StartsWith(w.Page.Replace("*", "")))
+                                                                        {
+                                                                            if (w.URL == null)
+                                                                            {
+                                                                                DebugLog("NULL pointer on idata 2", 2);
+                                                                            }
+                                                                            core.irc._SlowQueue.DeliverMessage(
+                                                                            Format(w.URL.name, w.URL.url, edit.Page, edit.User, edit.diff, edit.Description, curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
+                                                                        }
+                                                                    }
                                                             }
                                                         }
                                                     }

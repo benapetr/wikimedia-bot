@@ -99,7 +99,7 @@ namespace wmib
         /// <summary>
         /// Version
         /// </summary>
-        public static string version = "wikimedia bot v. 1.20.0.0";
+        public static string version = "wikimedia bot v. 1.20.0.12";
 
         /// <summary>
         /// Separator for system db
@@ -124,6 +124,11 @@ namespace wmib
         /// This is a string which commands are prefixed with
         /// </summary>
         public const string CommandPrefix = "@";
+
+        /// <summary>
+        /// If colors are in terminal
+        /// </summary>
+        public static bool Colors = true;
 
         /// <summary>
         /// Add line to the config file

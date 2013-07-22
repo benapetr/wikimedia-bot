@@ -84,6 +84,11 @@ namespace wmib.Properties {
             }
         }
         
+        internal static string de_german {
+            get {
+                return ResourceManager.GetString("de_german", resourceCulture);
+            }
+        }
         /// <summary>
         ///   Looks up a localized string similar to PermissionDenied=Permission denied;
         ///Authorization=You are not authorized to perform this, sorry;
