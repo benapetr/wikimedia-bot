@@ -870,28 +870,22 @@ namespace wmib
             }
         }
 
-		public static string FormatTimeSpan(TimeSpan ts) {
-			string[] timeSpanParts = ts.ToString().Split(':');
-			//2.13:24:12.6511690 = 2d13h24m12.6511690s
-			//Format is d.h:m:s ("d." is optional)
-			string newTimeString = "";
+        public static string FormatTimeSpan(TimeSpan ts) {
+            string newTimeString = "";
 
-			string[] daysAndHoursSplit = timeSpanParts[0].Split('.');
+            if (ts.Days != 0) {
+                newTimeString += ts.Days.ToString() + "d";
+            }
 
-			if ( daysAndHoursSplit.Length == 2 ) {
-				newTimeString += daysAndHoursSplit[0] + 'd';
-				newTimeString += daysAndHoursSplit[1] + 'h';
-			} else if ( daysAndHoursSplit[0] != "00" ) {
-				newTimeString += daysAndHoursSplit[0] + 'h';
-			}
+            if (ts.Hours != 0) {
+                newTimeString += ts.Hours.ToString() + "h";
+            }
 
-			if ( timeSpanParts[1] != "00" ) {
-				newTimeString += timeSpanParts[1] + 'm';
-			}
+            if (ts.Minutes != 0) {
+                newTimeString += ts.Minutes.ToString() + "m";
+            }
 
-			newTimeString += Math.Round(Decimal.Parse(timeSpanParts[2])).ToString() + 's';
-
-			return newTimeString;
-		}
+            return newTimeString + ts.Seconds.ToString() + "s";
+        }
     }
 }
