@@ -290,6 +290,7 @@ namespace wmib
                 return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "" + username + "", url + "?title=" + name_url, summary });
             }
 
+            string action = "modified";
             string flags = "";
 
             if (minor)
@@ -300,6 +301,7 @@ namespace wmib
             if (New)
             {
                 flags += "new page, ";
+                action = "created";
             }
 
             if (bot)
@@ -319,8 +321,8 @@ namespace wmib
             }
 
             return GetConfig(chan, "RC.Template", "").Replace("$wiki", name_url)
-                   .Replace("$encoded_wiki_page", System.Web.HttpUtility.UrlEncode(page).Replace("+", "_").Replace("%3A", ":").Replace("%2F", "/").Replace("%28", "(").Replace("%29", ")"))
-                   .Replace("$encoded_wiki_username", System.Web.HttpUtility.UrlEncode(username).Replace("+", "_").Replace("%3A", ":").Replace("%2F", "/").Replace("%28", "(").Replace("%29", ")"))
+                   .Replace("$encoded_wiki_page", System.Web.HttpUtility.UrlEncode(page).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")"))
+                   .Replace("$encoded_wiki_username", System.Web.HttpUtility.UrlEncode(username).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")"))
                    .Replace("$encoded_page", System.Web.HttpUtility.UrlEncode(page))
                    .Replace("$encoded_username", System.Web.HttpUtility.UrlEncode(username))
                    .Replace("$url", url)
@@ -329,7 +331,8 @@ namespace wmib
                    .Replace("$username", username)
                    .Replace("$page", page)
                    .Replace("$summary", summary)
-                   .Replace("$flags", flags);
+                   .Replace("$flags", flags)
+                   .Replace("$action", action);
         }
 
         public static Change String2Change(string text)
