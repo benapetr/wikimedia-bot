@@ -63,6 +63,11 @@ namespace wmib
         {
             foreach (string item in gs)
             {
+                if (item == "--nocolors")
+                {
+                    config.Colors = false;
+                    continue;
+                }
                 if (item.StartsWith("-v"))
                 {
                     foreach (char x in item)
