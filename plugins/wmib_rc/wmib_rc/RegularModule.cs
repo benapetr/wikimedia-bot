@@ -251,7 +251,7 @@ namespace wmib
                         string _channel = message.Substring(message.IndexOf(" ") + 1);
                         if (RecentChanges.InsertChannel(channel, _channel))
                         {
-                            core.irc.Message(messages.get("Wiki+", channel.Language), channel.Name);
+                            core.irc._SlowQueue.DeliverMessage(messages.get("Wiki+", channel.Language), channel.Name);
                         }
                         return;
                     }
