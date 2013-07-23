@@ -45,7 +45,7 @@ namespace wmib
         /// <summary>
         /// Link to css
         /// </summary>
-        public static string WebsiteHtmlStyleCss;
+        public static string css = null;
 
         /// <summary>
         /// Login name
@@ -162,7 +162,7 @@ namespace wmib
             AddConfig("debug", DebugChan, text);
             AddConfig("network", network, text);
             AddConfig("bouncerp", BouncerPort.ToString(), text);
-            AddConfig("style_html_file", WebsiteHtmlStyleCss, text);
+            AddConfig("style_html_file", css, text);
             AddConfig("nick", login, text);
             text.Append("\nchannels=");
 
@@ -296,7 +296,7 @@ namespace wmib
             }
             if (Configuration.ContainsKey("style_html_file"))
             {
-                WebsiteHtmlStyleCss = Configuration["style_html_file"];
+                css = Configuration["style_html_file"];
             }
             if (Configuration.ContainsKey("web"))
             {
