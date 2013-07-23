@@ -129,6 +129,7 @@ namespace wmib
                 Console.WriteLine("------------------------------------------------------------------------");
                 Console.WriteLine("Description: " + fatal.Message);
                 Console.WriteLine("Stack trace: " + fatal.StackTrace);
+                Environment.Exit(-2);
             }
         }
     }

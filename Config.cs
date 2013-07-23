@@ -219,7 +219,7 @@ namespace wmib
                     Values.Add(LastName, content);
                     continue;
                 }
-                else
+                if (LastName != null)
                 {
                     content = line;
                     if (!content.Contains(";"))
@@ -234,6 +234,7 @@ namespace wmib
                     }
                     continue;
                 }
+                Program.WriteNow("Invalid configuration line: " + line, true);
             }
             return Values;
         }
