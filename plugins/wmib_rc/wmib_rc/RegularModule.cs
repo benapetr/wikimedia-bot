@@ -1,4 +1,4 @@
-﻿//This program is free software: you can redistribute it and/or modify
+//This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
 //the Free Software Foundation, either version 3 of the License, or
 //(at your option) any later version.
@@ -285,9 +285,9 @@ namespace wmib
             {
                 if (!New)
                 {
-                    return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "" + username + "", url + "?diff=" + link, summary });
+                    return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "modified", "" + username + "", url + "?diff=" + link, summary });
                 }
-                return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "" + username + "", url + "?title=" + name_url, summary });
+                return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", url + "?title=" + name_url, summary });
             }
 
             string action = "modified";
