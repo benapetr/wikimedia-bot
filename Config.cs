@@ -173,6 +173,12 @@ namespace wmib
                     text.Append(current.Name + ",\n");
                 }
             }
+            if (text.ToString().EndsWith(",\n"))
+            {
+                string x = text.ToString();
+                x = x.Substring(0, x.Length - 2);
+                text = new StringBuilder(x);
+            }
             text.Append(";\n");
             lock (core.Instances)
             {
