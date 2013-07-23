@@ -231,6 +231,10 @@ namespace wmib
                     }
                     Values.Add(LastName, content);
                     core.DebugWrite("Stored config value: " + LastName + ": " + content);
+                    if (line.Contains(";"))
+                    {
+                        LastName = null;
+                    }
                     continue;
                 }
                 if (LastName != null)
