@@ -31,7 +31,7 @@ namespace wmib
             public string Name = null;
 
             /// <summary>
-            /// Language
+            /// Language used in this channel (doesn't apply for other channels)
             /// </summary>
             public string Language = null;
 
@@ -41,7 +41,7 @@ namespace wmib
             public List<User> UserList = new List<User>();
             
             /// <summary>
-            /// Whether the channel contains a fresh user list
+            /// Whether the channel contains a fresh user list (in case it doesn't bot will auto reparse it from ircd)
             /// </summary>
             public bool FreshList = false;
 
@@ -63,7 +63,7 @@ namespace wmib
             private readonly Dictionary<string, string> ExtensionData = new Dictionary<string, string>();
 
             /// <summary>
-            /// If messages aren't sent
+            /// If this is true, no messages are sent to this channel
             /// </summary>
             public bool suppress = false;
 

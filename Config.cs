@@ -120,9 +120,25 @@ namespace wmib
         public static int SystemPort = 2020;
 
         /// <summary>
-        /// List of channels the bot is in
+        /// List of channels the bot is in, you should never need to use this, use ChannelList instead
         /// </summary>
         public static List<channel> channels = new List<channel>();
+
+        /// <summary>
+        /// List of all channels the bot is in, thread safe
+        /// </summary>
+        public static List<channel> ChannelList
+        {
+            get
+            {
+                List<channel> list = new List<channel>();
+                lock (channels)
+                {
+                    list.AddRange(channels);
+                }
+                return list;
+            }
+        }
 
         /// <summary>
         /// This is a string which commands are prefixed with

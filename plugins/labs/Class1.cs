@@ -707,7 +707,7 @@ namespace wmib
         {
             if (message.StartsWith("@labs-off"))
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                if (channel.Users.IsApproved(invoker, "admin"))
                 {
                     if (!GetConfig(channel, "LABS.Enabled", false))
                     {
@@ -732,7 +732,7 @@ namespace wmib
 
             if (message.StartsWith("@labs-on"))
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                if (channel.Users.IsApproved(invoker, "admin"))
                 {
                     if (GetConfig(channel, "LABS.Enabled", false))
                     {
@@ -1033,6 +1033,5 @@ namespace wmib
                 core.handleException(f, "Labs");
             }
         }
-
     }
 }
