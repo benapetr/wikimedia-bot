@@ -1,4 +1,4 @@
-﻿//This program is free software: you can redistribute it and/or modify
+//This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
 //the Free Software Foundation, either version 3 of the License, or
 //(at your option) any later version.
@@ -86,11 +86,11 @@ namespace wmib
             /// Time of last message received in channel
             /// </summary>
             public DateTime last_msg = DateTime.Now;
-			
+            
             /// <summary>
             /// Doesn't send any warnings on error
             /// </summary>
-			public bool suppress_warnings = false;
+            public bool suppress_warnings = false;
 
             /// <summary>
             /// Configuration text

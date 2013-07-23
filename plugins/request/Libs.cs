@@ -1,4 +1,4 @@
-﻿// DotNetWikiBot Framework 2.101 - bot framework based on Microsoft .NET Framework 2.0 for wiki projects
+// DotNetWikiBot Framework 2.101 - bot framework based on Microsoft .NET Framework 2.0 for wiki projects
 
 // Distributed under the terms of the MIT (X11) license: http://www.opensource.org/licenses/mit-license.php
 
@@ -81,11 +81,11 @@ namespace DotNetWikiBot
 
         /// See "http://www.mediawiki.org/wiki/Manual:Short URL" for details.</summary>
 
-        public string wikiPath;		// = "/wiki/";
+        public string wikiPath;     // = "/wiki/";
 
         /// <summary>Relative path to "index.php" file on server.</summary>
 
-        public string indexPath;	// = "/w/";
+        public string indexPath;    // = "/w/";
 
         /// <summary>User's watchlist. Should be loaded manually with FillFromWatchList function,
 
@@ -470,7 +470,7 @@ namespace DotNetWikiBot
             GetInfo();
 
             if (!Bot.isRunningOnMono)
-                Bot.DisableCanonicalizingUriAsFilePath();	// .NET bug evasion
+                Bot.DisableCanonicalizingUriAsFilePath();   // .NET bug evasion
 
         }
 
@@ -553,7 +553,7 @@ namespace DotNetWikiBot
                     string message = e.Message;
 
                     if (Regex.IsMatch(message, ": \\(50[02349]\\) "))
-                    {		// Remote problem
+                    {       // Remote problem
 
                         if (errorCounter > Bot.retryTimes)
 
@@ -564,7 +564,7 @@ namespace DotNetWikiBot
                     }
 
                     else if (message.Contains("Section=ResponseStatusLine"))
-                    {	// Squid problem
+                    {   // Squid problem
 
                         Bot.SwitchUnsafeHttpHeaderParsing(true);
 
@@ -772,7 +772,7 @@ namespace DotNetWikiBot
 
             bool prevBotQueryState = botQuery;
 
-            botQuery = false;	// backward compatibility requirement
+            botQuery = false;   // backward compatibility requirement
 
             pl.FillFromAllPages("!", 8, false, 100000);
 
@@ -1005,7 +1005,7 @@ namespace DotNetWikiBot
             string redirectTag = "REDIRECT";
 
             switch (language)
-            {		// Revised 2010-07-02 (MediaWiki 1.15.4)
+            {       // Revised 2010-07-02 (MediaWiki 1.15.4)
 
                 case "af": redirectTag += "|aanstuur"; break;
 
@@ -1240,9 +1240,9 @@ namespace DotNetWikiBot
 
                 return;
 
-            string[] wikiNSNames = { "Media", "Special", "", "Talk", "User", "User talk", name,
-				name + " talk", "Image", "Image talk", "MediaWiki", "MediaWiki talk", "Template",
-				"Template talk", "Help", "Help talk", "Category", "Category talk" };
+            string[] wikiNSNames = { "Media", "Special", "", "Talk", "User", "User talk", name,
+                name + " talk", "Image", "Image talk", "MediaWiki", "MediaWiki talk", "Template",
+                "Template talk", "Help", "Help talk", "Category", "Category talk" };
 
             for (int i = -2, j = 0; i < 16; i++, j++)
 
@@ -1262,126 +1262,126 @@ namespace DotNetWikiBot
 
             // Revised 2010-07-02
 
-            mediaWikiVars = new string[] { "currentmonth","currentmonthname","currentmonthnamegen",
-				"currentmonthabbrev","currentday2","currentdayname","currentyear","currenttime",
-				"currenthour","localmonth","localmonthname","localmonthnamegen","localmonthabbrev",
-				"localday","localday2","localdayname","localyear","localtime","localhour",
-				"numberofarticles","numberoffiles","sitename","server","servername","scriptpath",
-				"pagename","pagenamee","fullpagename","fullpagenamee","namespace","namespacee",
-				"currentweek","currentdow","localweek","localdow","revisionid","revisionday",
-				"revisionday2","revisionmonth","revisionyear","revisiontimestamp","subpagename",
-				"subpagenamee","talkspace","talkspacee","subjectspace","dirmark","directionmark",
-				"subjectspacee","talkpagename","talkpagenamee","subjectpagename","subjectpagenamee",
-				"numberofusers","rawsuffix","newsectionlink","numberofpages","currentversion",
-				"basepagename","basepagenamee","urlencode","currenttimestamp","localtimestamp",
-				"directionmark","language","contentlanguage","pagesinnamespace","numberofadmins",
-				"currentday","numberofarticles:r","numberofpages:r","magicnumber",
-				"numberoffiles:r", "numberofusers:r", "numberofadmins:r", "numberofactiveusers",
-				"numberofactiveusers:r" };
+            mediaWikiVars = new string[] { "currentmonth","currentmonthname","currentmonthnamegen",
+                "currentmonthabbrev","currentday2","currentdayname","currentyear","currenttime",
+                "currenthour","localmonth","localmonthname","localmonthnamegen","localmonthabbrev",
+                "localday","localday2","localdayname","localyear","localtime","localhour",
+                "numberofarticles","numberoffiles","sitename","server","servername","scriptpath",
+                "pagename","pagenamee","fullpagename","fullpagenamee","namespace","namespacee",
+                "currentweek","currentdow","localweek","localdow","revisionid","revisionday",
+                "revisionday2","revisionmonth","revisionyear","revisiontimestamp","subpagename",
+                "subpagenamee","talkspace","talkspacee","subjectspace","dirmark","directionmark",
+                "subjectspacee","talkpagename","talkpagenamee","subjectpagename","subjectpagenamee",
+                "numberofusers","rawsuffix","newsectionlink","numberofpages","currentversion",
+                "basepagename","basepagenamee","urlencode","currenttimestamp","localtimestamp",
+                "directionmark","language","contentlanguage","pagesinnamespace","numberofadmins",
+                "currentday","numberofarticles:r","numberofpages:r","magicnumber",
+                "numberoffiles:r", "numberofusers:r", "numberofadmins:r", "numberofactiveusers",
+                "numberofactiveusers:r" };
 
-            parserFunctions = new string[] { "ns:", "localurl:", "localurle:", "urlencode:",
-				"anchorencode:", "fullurl:", "fullurle:",  "grammar:", "plural:", "lc:", "lcfirst:",
-				"uc:", "ucfirst:", "formatnum:", "padleft:", "padright:", "#language:",
-				"displaytitle:", "defaultsort:", "#if:", "#if:", "#switch:", "#ifexpr:",
-				"numberingroup:", "pagesinns:", "pagesincat:", "pagesincategory:", "pagesize:",
-				"gender:", "filepath:", "#special:", "#tag:" };
+            parserFunctions = new string[] { "ns:", "localurl:", "localurle:", "urlencode:",
+                "anchorencode:", "fullurl:", "fullurle:",  "grammar:", "plural:", "lc:", "lcfirst:",
+                "uc:", "ucfirst:", "formatnum:", "padleft:", "padright:", "#language:",
+                "displaytitle:", "defaultsort:", "#if:", "#if:", "#switch:", "#ifexpr:",
+                "numberingroup:", "pagesinns:", "pagesincat:", "pagesincategory:", "pagesize:",
+                "gender:", "filepath:", "#special:", "#tag:" };
 
             templateModifiers = new string[] { ":", "int:", "msg:", "msgnw:", "raw:", "subst:" };
 
             // Revised 2010-07-02
 
-            iwikiLinksOrderByLocalFW = new string[] {
-				"ace", "af", "ak", "als", "am", "ang", "ab", "ar", "an", "arc",
-				"roa-rup", "frp", "as", "ast", "gn", "av", "ay", "az", "id", "ms",
-				"bm", "bn", "zh-min-nan", "nan", "map-bms", "jv", "su", "ba", "be",
-				"be-x-old", "bh", "bcl", "bi", "bar", "bo", "bs", "br", "bug", "bg",
-				"bxr", "ca", "ceb", "cv", "cs", "ch", "cbk-zam", "ny", "sn", "tum",
-				"cho", "co", "cy", "da", "dk", "pdc", "de", "dv", "nv", "dsb", "na",
-				"dz", "mh", "et", "el", "eml", "en", "myv", "es", "eo", "ext", "eu",
-				"ee", "fa", "hif", "fo", "fr", "fy", "ff", "fur", "ga", "gv", "sm",
-				"gd", "gl", "gan", "ki", "glk", "gu", "got", "hak", "xal", "ko",
-				"ha", "haw", "hy", "hi", "ho", "hsb", "hr", "io", "ig", "ilo",
-				"bpy", "ia", "ie", "iu", "ik", "os", "xh", "zu", "is", "it", "he",
-				"kl", "kn", "kr", "pam", "ka", "ks", "csb", "kk", "kw", "rw", "ky",
-				"rn", "sw", "kv", "kg", "ht", "ku", "kj", "lad", "lbe", "lo", "la",
-				"lv", "to", "lb", "lt", "lij", "li", "ln", "jbo", "lg", "lmo", "hu",
-				"mk", "mg", "ml", "krc", "mt", "mi", "mr", "arz", "mzn", "cdo",
-				"mwl", "mdf", "mo", "mn", "mus", "my", "nah", "fj", "nl", "nds-nl",
-				"cr", "ne", "new", "ja", "nap", "ce", "pih", "no", "nb", "nn",
-				"nrm", "nov", "ii", "oc", "mhr", "or", "om", "ng", "hz", "uz", "pa",
-				"pi", "pag", "pnb", "pap", "ps", "km", "pcd", "pms", "nds", "pl",
-				"pnt", "pt", "aa", "kaa", "crh", "ty", "ksh", "ro", "rmy", "rm",
-				"qu", "ru", "sah", "se", "sa", "sg", "sc", "sco", "stq", "st", "tn",
-				"sq", "scn", "si", "simple", "sd", "ss", "sk", "sl", "cu", "szl",
-				"so", "ckb", "srn", "sr", "sh", "fi", "sv", "tl", "ta", "kab",
-				"roa-tara", "tt", "te", "tet", "th", "vi", "ti", "tg", "tpi",
-				"tokipona", "tp", "chr", "chy", "ve", "tr", "tk", "tw", "udm", "uk",
-				"ur", "ug", "za", "vec", "vo", "fiu-vro", "wa", "zh-classical",
-				"vls", "war", "wo", "wuu", "ts", "yi", "yo", "zh-yue", "diq", "zea",
-				"bat-smg", "zh", "zh-tw", "zh-cn"
-			};
+            iwikiLinksOrderByLocalFW = new string[] {
+                "ace", "af", "ak", "als", "am", "ang", "ab", "ar", "an", "arc",
+                "roa-rup", "frp", "as", "ast", "gn", "av", "ay", "az", "id", "ms",
+                "bm", "bn", "zh-min-nan", "nan", "map-bms", "jv", "su", "ba", "be",
+                "be-x-old", "bh", "bcl", "bi", "bar", "bo", "bs", "br", "bug", "bg",
+                "bxr", "ca", "ceb", "cv", "cs", "ch", "cbk-zam", "ny", "sn", "tum",
+                "cho", "co", "cy", "da", "dk", "pdc", "de", "dv", "nv", "dsb", "na",
+                "dz", "mh", "et", "el", "eml", "en", "myv", "es", "eo", "ext", "eu",
+                "ee", "fa", "hif", "fo", "fr", "fy", "ff", "fur", "ga", "gv", "sm",
+                "gd", "gl", "gan", "ki", "glk", "gu", "got", "hak", "xal", "ko",
+                "ha", "haw", "hy", "hi", "ho", "hsb", "hr", "io", "ig", "ilo",
+                "bpy", "ia", "ie", "iu", "ik", "os", "xh", "zu", "is", "it", "he",
+                "kl", "kn", "kr", "pam", "ka", "ks", "csb", "kk", "kw", "rw", "ky",
+                "rn", "sw", "kv", "kg", "ht", "ku", "kj", "lad", "lbe", "lo", "la",
+                "lv", "to", "lb", "lt", "lij", "li", "ln", "jbo", "lg", "lmo", "hu",
+                "mk", "mg", "ml", "krc", "mt", "mi", "mr", "arz", "mzn", "cdo",
+                "mwl", "mdf", "mo", "mn", "mus", "my", "nah", "fj", "nl", "nds-nl",
+                "cr", "ne", "new", "ja", "nap", "ce", "pih", "no", "nb", "nn",
+                "nrm", "nov", "ii", "oc", "mhr", "or", "om", "ng", "hz", "uz", "pa",
+                "pi", "pag", "pnb", "pap", "ps", "km", "pcd", "pms", "nds", "pl",
+                "pnt", "pt", "aa", "kaa", "crh", "ty", "ksh", "ro", "rmy", "rm",
+                "qu", "ru", "sah", "se", "sa", "sg", "sc", "sco", "stq", "st", "tn",
+                "sq", "scn", "si", "simple", "sd", "ss", "sk", "sl", "cu", "szl",
+                "so", "ckb", "srn", "sr", "sh", "fi", "sv", "tl", "ta", "kab",
+                "roa-tara", "tt", "te", "tet", "th", "vi", "ti", "tg", "tpi",
+                "tokipona", "tp", "chr", "chy", "ve", "tr", "tk", "tw", "udm", "uk",
+                "ur", "ug", "za", "vec", "vo", "fiu-vro", "wa", "zh-classical",
+                "vls", "war", "wo", "wuu", "ts", "yi", "yo", "zh-yue", "diq", "zea",
+                "bat-smg", "zh", "zh-tw", "zh-cn"
+            };
 
-            iwikiLinksOrderByLocal = new string[] {
-				"ace", "af", "ak", "als", "am", "ang", "ab", "ar", "an", "arc",
-				"roa-rup", "frp", "as", "ast", "gn", "av", "ay", "az", "bm", "bn",
-				"zh-min-nan", "nan", "map-bms", "ba", "be", "be-x-old", "bh", "bcl",
-				"bi", "bar", "bo", "bs", "br", "bg", "bxr", "ca", "cv", "ceb", "cs",
-				"ch", "cbk-zam", "ny", "sn", "tum", "cho", "co", "cy", "da", "dk",
-				"pdc", "de", "dv", "nv", "dsb", "dz", "mh", "et", "el", "eml", "en",
-				"myv", "es", "eo", "ext", "eu", "ee", "fa", "hif", "fo", "fr", "fy",
-				"ff", "fur", "ga", "gv", "gd", "gl", "gan", "ki", "glk", "gu",
-				"got", "hak", "xal", "ko", "ha", "haw", "hy", "hi", "ho", "hsb",
-				"hr", "io", "ig", "ilo", "bpy", "id", "ia", "ie", "iu", "ik", "os",
-				"xh", "zu", "is", "it", "he", "jv", "kl", "kn", "kr", "pam", "krc",
-				"ka", "ks", "csb", "kk", "kw", "rw", "ky", "rn", "sw", "kv", "kg",
-				"ht", "ku", "kj", "lad", "lbe", "lo", "la", "lv", "lb", "lt", "lij",
-				"li", "ln", "jbo", "lg", "lmo", "hu", "mk", "mg", "ml", "mt", "mi",
-				"mr", "arz", "mzn", "ms", "cdo", "mwl", "mdf", "mo", "mn", "mus",
-				"my", "nah", "na", "fj", "nl", "nds-nl", "cr", "ne", "new", "ja",
-				"nap", "ce", "pih", "no", "nb", "nn", "nrm", "nov", "ii", "oc",
-				"mhr", "or", "om", "ng", "hz", "uz", "pa", "pi", "pag", "pnb",
-				"pap", "ps", "km", "pcd", "pms", "tpi", "nds", "pl", "tokipona",
-				"tp", "pnt", "pt", "aa", "kaa", "crh", "ty", "ksh", "ro", "rmy",
-				"rm", "qu", "ru", "sah", "se", "sm", "sa", "sg", "sc", "sco", "stq",
-				"st", "tn", "sq", "scn", "si", "simple", "sd", "ss", "sk", "cu",
-				"sl", "szl", "so", "ckb", "srn", "sr", "sh", "su", "fi", "sv", "tl",
-				"ta", "kab", "roa-tara", "tt", "te", "tet", "th", "ti", "tg", "to",
-				"chr", "chy", "ve", "tr", "tk", "tw", "udm", "bug", "uk", "ur",
-				"ug", "za", "vec", "vi", "vo", "fiu-vro", "wa", "zh-classical",
-				"vls", "war", "wo", "wuu", "ts", "yi", "yo", "zh-yue", "diq", "zea",
-				"bat-smg", "zh", "zh-tw", "zh-cn"
-			};
+            iwikiLinksOrderByLocal = new string[] {
+                "ace", "af", "ak", "als", "am", "ang", "ab", "ar", "an", "arc",
+                "roa-rup", "frp", "as", "ast", "gn", "av", "ay", "az", "bm", "bn",
+                "zh-min-nan", "nan", "map-bms", "ba", "be", "be-x-old", "bh", "bcl",
+                "bi", "bar", "bo", "bs", "br", "bg", "bxr", "ca", "cv", "ceb", "cs",
+                "ch", "cbk-zam", "ny", "sn", "tum", "cho", "co", "cy", "da", "dk",
+                "pdc", "de", "dv", "nv", "dsb", "dz", "mh", "et", "el", "eml", "en",
+                "myv", "es", "eo", "ext", "eu", "ee", "fa", "hif", "fo", "fr", "fy",
+                "ff", "fur", "ga", "gv", "gd", "gl", "gan", "ki", "glk", "gu",
+                "got", "hak", "xal", "ko", "ha", "haw", "hy", "hi", "ho", "hsb",
+                "hr", "io", "ig", "ilo", "bpy", "id", "ia", "ie", "iu", "ik", "os",
+                "xh", "zu", "is", "it", "he", "jv", "kl", "kn", "kr", "pam", "krc",
+                "ka", "ks", "csb", "kk", "kw", "rw", "ky", "rn", "sw", "kv", "kg",
+                "ht", "ku", "kj", "lad", "lbe", "lo", "la", "lv", "lb", "lt", "lij",
+                "li", "ln", "jbo", "lg", "lmo", "hu", "mk", "mg", "ml", "mt", "mi",
+                "mr", "arz", "mzn", "ms", "cdo", "mwl", "mdf", "mo", "mn", "mus",
+                "my", "nah", "na", "fj", "nl", "nds-nl", "cr", "ne", "new", "ja",
+                "nap", "ce", "pih", "no", "nb", "nn", "nrm", "nov", "ii", "oc",
+                "mhr", "or", "om", "ng", "hz", "uz", "pa", "pi", "pag", "pnb",
+                "pap", "ps", "km", "pcd", "pms", "tpi", "nds", "pl", "tokipona",
+                "tp", "pnt", "pt", "aa", "kaa", "crh", "ty", "ksh", "ro", "rmy",
+                "rm", "qu", "ru", "sah", "se", "sm", "sa", "sg", "sc", "sco", "stq",
+                "st", "tn", "sq", "scn", "si", "simple", "sd", "ss", "sk", "cu",
+                "sl", "szl", "so", "ckb", "srn", "sr", "sh", "su", "fi", "sv", "tl",
+                "ta", "kab", "roa-tara", "tt", "te", "tet", "th", "ti", "tg", "to",
+                "chr", "chy", "ve", "tr", "tk", "tw", "udm", "bug", "uk", "ur",
+                "ug", "za", "vec", "vi", "vo", "fiu-vro", "wa", "zh-classical",
+                "vls", "war", "wo", "wuu", "ts", "yi", "yo", "zh-yue", "diq", "zea",
+                "bat-smg", "zh", "zh-tw", "zh-cn"
+            };
 
             iwikiLinksOrderByLatinFW = new string[] {
-				"ace", "af", "ak", "als", "am", "ang", "ab", "ar", "an", "arc",
-				"roa-rup", "frp", "arz", "as", "ast", "gn", "av", "ay", "az", "id",
-				"ms", "bg", "bm", "zh-min-nan", "nan", "map-bms", "jv", "su", "ba",
-				"be", "be-x-old", "bh", "bcl", "bi", "bn", "bo", "bar", "bs", "bpy",
-				"br", "bug", "bxr", "ca", "ceb", "ch", "cbk-zam", "sn", "tum", "ny",
-				"cho", "chr", "co", "cy", "cv", "cs", "da", "dk", "pdc", "de", "nv",
-				"dsb", "na", "dv", "dz", "mh", "et", "el", "eml", "en", "myv", "es",
-				"eo", "ext", "eu", "ee", "fa", "hif", "fo", "fr", "fy", "ff", "fur",
-				"ga", "gv", "sm", "gd", "gl", "gan", "ki", "glk", "got", "gu", "ha",
-				"hak", "xal", "haw", "he", "hi", "ho", "hsb", "hr", "hy", "io",
-				"ig", "ii", "ilo", "ia", "ie", "iu", "ik", "os", "xh", "zu", "is",
-				"it", "ja", "ka", "kl", "kr", "pam", "krc", "csb", "kk", "kw", "rw",
-				"ky", "rn", "sw", "km", "kn", "ko", "kv", "kg", "ht", "ks", "ku",
-				"kj", "lad", "lbe", "la", "lv", "to", "lb", "lt", "lij", "li", "ln",
-				"lo", "jbo", "lg", "lmo", "hu", "mk", "mg", "mt", "mi", "cdo",
-				"mwl", "ml", "mdf", "mo", "mn", "mr", "mus", "my", "mzn", "nah",
-				"fj", "ne", "nl", "nds-nl", "cr", "new", "nap", "ce", "pih", "no",
-				"nb", "nn", "nrm", "nov", "oc", "mhr", "or", "om", "ng", "hz", "uz",
-				"pa", "pag", "pap", "pi", "pcd", "pms", "nds", "pnb", "pl", "pt",
-				"pnt", "ps", "aa", "kaa", "crh", "ty", "ksh", "ro", "rmy", "rm",
-				"qu", "ru", "sa", "sah", "se", "sg", "sc", "sco", "sd", "stq", "st",
-				"tn", "sq", "si", "scn", "simple", "ss", "sk", "sl", "cu", "szl",
-				"so", "ckb", "srn", "sr", "sh", "fi", "sv", "ta", "tl", "kab",
-				"roa-tara", "tt", "te", "tet", "th", "ti", "vi", "tg", "tokipona",
-				"tp", "tpi", "chy", "ve", "tr", "tk", "tw", "udm", "uk", "ur", "ug",
-				"za", "vec", "vo", "fiu-vro", "wa", "vls", "war", "wo", "wuu", "ts",
-				"yi", "yo", "diq", "zea", "zh", "zh-tw", "zh-cn", "zh-classical",
-				"zh-yue", "bat-smg"
-			};
+                "ace", "af", "ak", "als", "am", "ang", "ab", "ar", "an", "arc",
+                "roa-rup", "frp", "arz", "as", "ast", "gn", "av", "ay", "az", "id",
+                "ms", "bg", "bm", "zh-min-nan", "nan", "map-bms", "jv", "su", "ba",
+                "be", "be-x-old", "bh", "bcl", "bi", "bn", "bo", "bar", "bs", "bpy",
+                "br", "bug", "bxr", "ca", "ceb", "ch", "cbk-zam", "sn", "tum", "ny",
+                "cho", "chr", "co", "cy", "cv", "cs", "da", "dk", "pdc", "de", "nv",
+                "dsb", "na", "dv", "dz", "mh", "et", "el", "eml", "en", "myv", "es",
+                "eo", "ext", "eu", "ee", "fa", "hif", "fo", "fr", "fy", "ff", "fur",
+                "ga", "gv", "sm", "gd", "gl", "gan", "ki", "glk", "got", "gu", "ha",
+                "hak", "xal", "haw", "he", "hi", "ho", "hsb", "hr", "hy", "io",
+                "ig", "ii", "ilo", "ia", "ie", "iu", "ik", "os", "xh", "zu", "is",
+                "it", "ja", "ka", "kl", "kr", "pam", "krc", "csb", "kk", "kw", "rw",
+                "ky", "rn", "sw", "km", "kn", "ko", "kv", "kg", "ht", "ks", "ku",
+                "kj", "lad", "lbe", "la", "lv", "to", "lb", "lt", "lij", "li", "ln",
+                "lo", "jbo", "lg", "lmo", "hu", "mk", "mg", "mt", "mi", "cdo",
+                "mwl", "ml", "mdf", "mo", "mn", "mr", "mus", "my", "mzn", "nah",
+                "fj", "ne", "nl", "nds-nl", "cr", "new", "nap", "ce", "pih", "no",
+                "nb", "nn", "nrm", "nov", "oc", "mhr", "or", "om", "ng", "hz", "uz",
+                "pa", "pag", "pap", "pi", "pcd", "pms", "nds", "pnb", "pl", "pt",
+                "pnt", "ps", "aa", "kaa", "crh", "ty", "ksh", "ro", "rmy", "rm",
+                "qu", "ru", "sa", "sah", "se", "sg", "sc", "sco", "sd", "stq", "st",
+                "tn", "sq", "si", "scn", "simple", "ss", "sk", "sl", "cu", "szl",
+                "so", "ckb", "srn", "sr", "sh", "fi", "sv", "ta", "tl", "kab",
+                "roa-tara", "tt", "te", "tet", "th", "ti", "vi", "tg", "tokipona",
+                "tp", "tpi", "chy", "ve", "tr", "tk", "tw", "udm", "uk", "ur", "ug",
+                "za", "vec", "vo", "fiu-vro", "wa", "vls", "war", "wo", "wuu", "ts",
+                "yi", "yo", "diq", "zea", "zh", "zh-tw", "zh-cn", "zh-classical",
+                "zh-yue", "bat-smg"
+            };
 
             botQueryLists.Add("allpages", "ap"); botQueryLists.Add("alllinks", "al");
 
@@ -1590,7 +1590,7 @@ namespace DotNetWikiBot
             if (!string.IsNullOrEmpty(postData))
             {
 
-                if (Bot.isRunningOnMono)	// Mono bug 636219 evasion
+                if (Bot.isRunningOnMono)    // Mono bug 636219 evasion
 
                     webReq.AllowAutoRedirect = false;
 
@@ -1633,12 +1633,12 @@ namespace DotNetWikiBot
 
                     if (webReq.AllowAutoRedirect == false &&
 
-                        webResp.StatusCode == HttpStatusCode.Redirect)	// Mono bug 636219 evasion
+                        webResp.StatusCode == HttpStatusCode.Redirect)  // Mono bug 636219 evasion
 
                         return "";
 
                     if (Regex.IsMatch(message, ": \\(50[02349]\\) "))
-                    {		// Remote problem
+                    {       // Remote problem
 
                         if (errorCounter > Bot.retryTimes)
 
@@ -1651,7 +1651,7 @@ namespace DotNetWikiBot
                     }
 
                     else if (message.Contains("Section=ResponseStatusLine"))
-                    {	// Squid problem
+                    {   // Squid problem
 
                         Bot.SwitchUnsafeHttpHeaderParsing(true);
 
@@ -2005,7 +2005,7 @@ namespace DotNetWikiBot
 
         /// Dictionary &lt;string, string&gt; parameters1 =
 
-        /// 	site.ParseTemplate("TemplateTitle|param1=val1|param2=val2");
+        ///     site.ParseTemplate("TemplateTitle|param1=val1|param2=val2");
 
         /// string[] templates = page.GetTemplatesWithParams();
 
@@ -2577,7 +2577,7 @@ namespace DotNetWikiBot
                 string message = e.Message;
 
                 if (message.Contains(": (404) "))
-                {		// Not Found
+                {       // Not Found
 
 
                     text = "";
@@ -3308,37 +3308,37 @@ namespace DotNetWikiBot
         public void ReviseInMSWord()
         {
 
-#if MS_WORD_INTEROP
-			if (string.IsNullOrEmpty(text))
-				throw new WikiBotException(Bot.Msg("No text on page to revise in Microsoft Word."));
-			Microsoft.Office.Interop.Word.Application app =
-				new Microsoft.Office.Interop.Word.Application();
-			app.Visible = true;
-			object mv = System.Reflection.Missing.Value;
-			object template = mv;
-			object newTemplate = mv;
-			object documentType = Microsoft.Office.Interop.Word.WdDocumentType.wdTypeDocument;
-			object visible = true;
-			Microsoft.Office.Interop.Word.Document doc =
-				app.Documents.Add(ref template, ref newTemplate, ref documentType, ref visible);
-			doc.Words.First.InsertBefore(text);
-			text = null;
-			Microsoft.Office.Interop.Word.DocumentEvents_Event docEvents =
-				(Microsoft.Office.Interop.Word.DocumentEvents_Event) doc;
-			docEvents.Close +=
-				new Microsoft.Office.Interop.Word.DocumentEvents_CloseEventHandler(
-					delegate { text = doc.Range(ref mv, ref mv).Text; doc.Saved = true; } );
-			app.Activate();
-			while (text == null);
-			text = Regex.Replace(text, "\r(?!\n)", "\r\n");
-			app = null;
-			doc = null;
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			Console.WriteLine(
-				Bot.Msg("Text of \"{0}\" page was revised in Microsoft Word."), title);
+#if MS_WORD_INTEROP
+            if (string.IsNullOrEmpty(text))
+                throw new WikiBotException(Bot.Msg("No text on page to revise in Microsoft Word."));
+            Microsoft.Office.Interop.Word.Application app =
+                new Microsoft.Office.Interop.Word.Application();
+            app.Visible = true;
+            object mv = System.Reflection.Missing.Value;
+            object template = mv;
+            object newTemplate = mv;
+            object documentType = Microsoft.Office.Interop.Word.WdDocumentType.wdTypeDocument;
+            object visible = true;
+            Microsoft.Office.Interop.Word.Document doc =
+                app.Documents.Add(ref template, ref newTemplate, ref documentType, ref visible);
+            doc.Words.First.InsertBefore(text);
+            text = null;
+            Microsoft.Office.Interop.Word.DocumentEvents_Event docEvents =
+                (Microsoft.Office.Interop.Word.DocumentEvents_Event) doc;
+            docEvents.Close +=
+                new Microsoft.Office.Interop.Word.DocumentEvents_CloseEventHandler(
+                    delegate { text = doc.Range(ref mv, ref mv).Text; doc.Saved = true; } );
+            app.Activate();
+            while (text == null);
+            text = Regex.Replace(text, "\r(?!\n)", "\r\n");
+            app = null;
+            doc = null;
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            Console.WriteLine(
+                Bot.Msg("Text of \"{0}\" page was revised in Microsoft Word."), title);
 #else
 
             throw new WikiBotException(Bot.Msg("Page.ReviseInMSWord() function requires MS " +
@@ -3504,7 +3504,7 @@ namespace DotNetWikiBot
                     string message = e.Message;
 
                     if (Regex.IsMatch(message, ": \\(50[02349]\\) "))
-                    {		// Remote problem
+                    {       // Remote problem
 
                         if (errorCounter > Bot.retryTimes)
 
@@ -3517,7 +3517,7 @@ namespace DotNetWikiBot
                     }
 
                     else if (message.Contains("Section=ResponseStatusLine"))
-                    {	// Squid problem
+                    {   // Squid problem
 
                         Bot.SwitchUnsafeHttpHeaderParsing(true);
 
@@ -3565,7 +3565,7 @@ namespace DotNetWikiBot
             catch (WikiBotException e)
             {
 
-                if (!e.Message.Contains("Uploadcorrupt"))	// skip, if MediaWiki message not found
+                if (!e.Message.Contains("Uploadcorrupt"))   // skip, if MediaWiki message not found
 
                     throw;
 
@@ -3670,7 +3670,7 @@ namespace DotNetWikiBot
                 string message = e.Message;
 
                 if (message.Contains(": (404) "))
-                {		// Not Found
+                {       // Not Found
 
                     Console.Error.WriteLine(Bot.Msg("Page \"{0}\" doesn't exist."), title);
 
@@ -4247,7 +4247,7 @@ namespace DotNetWikiBot
                 return;
 
             switch (site.site)
-            {		// special sort orders
+            {       // special sort orders
 
                 case "http://en.wikipedia.org":
 
@@ -4307,7 +4307,7 @@ namespace DotNetWikiBot
             iwList = sortedIwikiList;
 
             switch (site.site)
-            {		// special sort orders, based on default iwList.Sort();
+            {       // special sort orders, based on default iwList.Sort();
 
                 case "http://hu.wikipedia.org":
 
@@ -5318,7 +5318,7 @@ namespace DotNetWikiBot
 
                 matches = Regex.Matches(text, "(?i)" + (includeFileLinks ? "" : "(?<!:)") +
 
-                    "(" + nsPrefixes + ")(:)(.*?)(\\||\r|\n|]])");		// FIXME: inexact matches
+                    "(" + nsPrefixes + ")(:)(.*?)(\\||\r|\n|]])");      // FIXME: inexact matches
 
             else
 
@@ -6213,9 +6213,9 @@ namespace DotNetWikiBot
 
         /// pageList.FillFromCustomBotQueryList("categorymembers",
 
-        /// 	"cmcategory=Physical%20sciences&amp;cmnamespace=0|14",
+        ///     "cmcategory=Physical%20sciences&amp;cmnamespace=0|14",
 
-        /// 	int.MaxValue);
+        ///     int.MaxValue);
 
         /// </code></example>
 
@@ -6882,7 +6882,7 @@ namespace DotNetWikiBot
 
                         p.comment = Regex.Replace(reader.ReadInnerXml().Trim(), "<.+?>", "");
 
-                        p.comment = p.comment.Substring(1, p.comment.Length - 2);	// brackets
+                        p.comment = p.comment.Substring(1, p.comment.Length - 2);   // brackets
 
                     }
 
@@ -7410,7 +7410,7 @@ namespace DotNetWikiBot
 
                     Regex.Escape(site.indexPath) + @"index\.php\?title=)" +
 
-                "([^\"]+?)\"");		// ..." class=\"?l\"?
+                "([^\"]+?)\"");     // ..." class=\"?l\"?
 
             MatchCollection matches = GoogleLinkToPageRE.Matches(src);
 
@@ -8510,22 +8510,22 @@ namespace DotNetWikiBot
 
         /// <summary>List of cached files absolute URIs.</summary>
 
-        static string[] cachedFilesURIs = {
-			"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd",
-			"http://www.w3.org/TR/xhtml1/DTD/xhtml-lat1.ent",
-			"http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent",
-			"http://www.w3.org/TR/xhtml1/DTD/xhtml-special.ent"
-			//http://www.mediawiki.org/xml/export-0.4/ http://www.mediawiki.org/xml/export-0.4.xsd
-		};
+        static string[] cachedFilesURIs = {
+            "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd",
+            "http://www.w3.org/TR/xhtml1/DTD/xhtml-lat1.ent",
+            "http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent",
+            "http://www.w3.org/TR/xhtml1/DTD/xhtml-special.ent"
+            //http://www.mediawiki.org/xml/export-0.4/ http://www.mediawiki.org/xml/export-0.4.xsd
+        };
 
         /// <summary>List of cached files names.</summary>
 
-        static string[] cachedFiles = {
-			"xhtml1-transitional.dtd",
-			"xhtml-lat1.ent",
-			"xhtml-symbol.ent",
-			"xhtml-special.ent"
-		};
+        static string[] cachedFiles = {
+            "xhtml1-transitional.dtd",
+            "xhtml-lat1.ent",
+            "xhtml-symbol.ent",
+            "xhtml-special.ent"
+        };
 
         /// <summary>Local cache directory.</summary>
 
@@ -9392,7 +9392,7 @@ namespace DotNetWikiBot
                     string message = e.Message;
 
                     if (Regex.IsMatch(message, ": \\(50[02349]\\) "))
-                    {		// Remote problem
+                    {       // Remote problem
 
                         Console.Error.WriteLine(message + " " + Bot.Msg("Retrying in 60 seconds."));
 
@@ -9401,7 +9401,7 @@ namespace DotNetWikiBot
                     }
 
                     else if (message.Contains("Section=ResponseStatusLine"))
-                    {	// Squid problem
+                    {   // Squid problem
 
                         SwitchUnsafeHttpHeaderParsing(true);
 
