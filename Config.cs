@@ -246,7 +246,7 @@ namespace wmib
                     }
                     else
                     {
-                        content = content.Substring(0, content.IndexOf(";") + 1);
+                        content = content.Substring(0, content.IndexOf(";"));
                         Values[LastName] += "\n" + content;
                         core.DebugWrite("Append config value: " + LastName + ": " + content);
                         LastName = null;
@@ -353,7 +353,7 @@ namespace wmib
                 }
                 CurrentInstance++;
             }
-            foreach (string x in Configuration["channels"].Replace("\n", "").Split(','))
+            foreach (string x in Configuration["channels"].Replace("\n", "").Replace(" ", "").Split(','))
             {
                 string name = x.Replace(" ", "").Replace("\n", "");
                 if (name != "")
