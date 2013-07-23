@@ -200,10 +200,15 @@ namespace wmib
             foreach (string line in xx)
             {
                 string content = null;
+                if (line == "")
+                {
+                    continue;
+                }
                 if (line.StartsWith("//"))
                 {
                     continue;
                 }
+                core.DebugLog("Parsing line: " + line, 8);
                 if (LastName == null && line.Contains("="))
                 {
                     LastName = line.Substring(0, line.IndexOf("="));
@@ -217,6 +222,7 @@ namespace wmib
                         content = content.Substring(0, content.IndexOf(";"));
                     }
                     Values.Add(LastName, content);
+                    core.DebugLog("Stored config value: " + LastName + ": " + content);
                     continue;
                 }
                 if (LastName != null)
@@ -224,12 +230,14 @@ namespace wmib
                     content = line;
                     if (!content.Contains(";"))
                     {
+                        core.DebugLog("Append config value: " + LastName + ": " + content);
                         Values[LastName] += "\n" + content;
                     }
                     else
                     {
                         content = content.Substring(0, content.IndexOf(";") + 1);
                         Values[LastName] += "\n" + content;
+                        core.DebugLog("Append config value: " + LastName + ": " + content);
                         LastName = null;
                     }
                     continue;

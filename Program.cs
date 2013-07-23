@@ -111,6 +111,7 @@ namespace wmib
                 if (config.Load() != 0)
                 {
                     WriteNow("Error while loading the config file, exiting", true);
+                    Environment.Exit(-2);
                     return;
                 }
                 Terminal.Init();
