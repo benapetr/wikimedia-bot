@@ -1,4 +1,4 @@
-﻿PermissionDenied=Permission denied;
+PermissionDenied=Permission denied;
 Authorization=You are not authorized to perform this, sorry;
 ChannelIn=This channel is already in db;
 UserSc=Successfuly added ;
@@ -118,7 +118,7 @@ infobot-share-off=Switch back to local db;
 infobot-share-trust+=Give a channel rights to access your db;
 infobot-share-trust-=Remove a channel from access list;
 infobot-link=Set up a link to shared db using other channel;
-fl=Change on $1 a page $2 was modified, changed by $3 link $4 edit summary: $5;
+fl=Change on $1 a page $2 was $3, changed by $4 link $5 edit summary: $6;
 Trust1=This user has higher level than you, sorry;
 Trust2=You can't delete yourself from db;
 Trust3=User was deleted from access list;
