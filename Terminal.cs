@@ -7,12 +7,24 @@ using System.Text;
 
 namespace wmib
 {
+    /// <summary>
+    /// This class open a network console which sysadmins can login to and control the bot
+    /// </summary>
     public class Terminal
     {
+        /// <summary>
+        /// Thread this console run in
+        /// </summary>
         public static Thread thread;
         public static bool Running = true;
+        /// <summary>
+        /// Number of current connections to this console
+        /// </summary>
         public static int Connections = 0;
 
+        /// <summary>
+        /// This will start the console
+        /// </summary>
         public static void Init()
         {
             thread = new System.Threading.Thread(thrd);
@@ -198,12 +210,12 @@ namespace wmib
             {
                 System.Net.Sockets.TcpListener server = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Any, config.SystemPort);
                 server.Start();
+                Program.Log("Network console is online on port: " + config.SystemPort.ToString());
                 while (Running)
                 {
                     System.Net.Sockets.TcpClient connection = server.AcceptTcpClient();
                     Thread client = new Thread(HandleClient);
                     client.Start(connection);
-
                     Thread.Sleep(100);
                 }
             }

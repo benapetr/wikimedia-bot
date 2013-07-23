@@ -5,6 +5,10 @@ using System.Text;
 
 namespace wmib
 {
+    /// <summary>
+    /// This class is handling the system terminal, it writes to it using a single thread so that
+    /// multiple threads do not break their messages as they write to console in same moment
+    /// </summary>
     public class Logging
     {
         public class Message

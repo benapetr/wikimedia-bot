@@ -317,7 +317,7 @@ namespace wmib
             {
                 if (chan.Users.IsApproved(invoker, "root"))
                 {
-                    irc.Message("System is shutting down, requested by " + invoker.Nick + " from " + chan.Name, config.debugchan);
+                    irc.Message("System is shutting down, requested by " + invoker.Nick + " from " + chan.Name, config.DebugChan);
                     Program.Log("System is shutting down, requested by " + invoker.Nick + " from " + chan.Name);
                     Kill();
                     return;

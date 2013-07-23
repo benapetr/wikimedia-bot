@@ -434,9 +434,9 @@ namespace wmib
         {
             try
             {
-                if (!string.IsNullOrEmpty(config.debugchan))
+                if (!string.IsNullOrEmpty(config.DebugChan))
                 {
-                    core.irc._SlowQueue.DeliverMessage("DEBUG Exception in plugin " + Name + ": " + ex.Message + " last input was " + core.LastText, config.debugchan);
+                    core.irc._SlowQueue.DeliverMessage("DEBUG Exception in plugin " + Name + ": " + ex.Message + " last input was " + core.LastText, config.DebugChan);
                 }
                 Program.Log("DEBUG Exception in module " + Name + ": " + ex.Message + ex.Source + ex.StackTrace, true);
             }

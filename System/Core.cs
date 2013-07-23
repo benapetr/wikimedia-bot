@@ -239,9 +239,9 @@ namespace wmib
         {
             try
             {
-                if (!string.IsNullOrEmpty(config.debugchan))
+                if (!string.IsNullOrEmpty(config.DebugChan))
                 {
-                    irc._SlowQueue.DeliverMessage("DEBUG Exception in module " + module + ": " + ex.Message + " last input was " + LastText, config.debugchan);
+                    irc._SlowQueue.DeliverMessage("DEBUG Exception in module " + module + ": " + ex.Message + " last input was " + LastText, config.DebugChan);
                 }
                 Program.Log("DEBUG Exception in module " + module + ": " + ex.Message + ex.Source + ex.StackTrace, true);
             }
@@ -257,9 +257,9 @@ namespace wmib
         {
             try
             {
-                if (!string.IsNullOrEmpty(config.debugchan))
+                if (!string.IsNullOrEmpty(config.DebugChan))
                 {
-                    irc._SlowQueue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText, config.debugchan);
+                    irc._SlowQueue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText, config.DebugChan);
                 }
                 Program.WriteNow("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace, true);
             }
