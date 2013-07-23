@@ -216,7 +216,7 @@ namespace wmib
                 {
                     continue;
                 }
-                core.DebugLog("Parsing line: " + line, 8);
+                core.DebugWrite("Parsing line: " + line, 8);
                 if (LastName == null && line.Contains("="))
                 {
                     LastName = line.Substring(0, line.IndexOf("="));
@@ -230,7 +230,7 @@ namespace wmib
                         content = content.Substring(0, content.IndexOf(";"));
                     }
                     Values.Add(LastName, content);
-                    core.DebugLog("Stored config value: " + LastName + ": " + content);
+                    core.DebugWrite("Stored config value: " + LastName + ": " + content);
                     continue;
                 }
                 if (LastName != null)
@@ -238,14 +238,14 @@ namespace wmib
                     content = line;
                     if (!content.Contains(";"))
                     {
-                        core.DebugLog("Append config value: " + LastName + ": " + content);
+                        core.DebugWrite("Append config value: " + LastName + ": " + content);
                         Values[LastName] += "\n" + content;
                     }
                     else
                     {
                         content = content.Substring(0, content.IndexOf(";") + 1);
                         Values[LastName] += "\n" + content;
-                        core.DebugLog("Append config value: " + LastName + ": " + content);
+                        core.DebugWrite("Append config value: " + LastName + ": " + content);
                         LastName = null;
                     }
                     continue;
@@ -337,7 +337,7 @@ namespace wmib
                     core.DebugLog("Using bouncer, looking for instance port");
                     if (!Configuration.ContainsKey("instanceport" + CurrentInstance.ToString()))
                     {
-                        Program.Log("Instance " + InstanceName + " has invalid port, not using", true);
+                        Program.WriteNow("Instance " + InstanceName + " has invalid port, not using", true);
                         continue;
                     }
                     string InstancePort = Configuration["instanceport" + CurrentInstance.ToString()];

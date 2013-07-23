@@ -231,6 +231,19 @@ namespace wmib
         }
 
         /// <summary>
+        /// Debug log
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="verbosity"></param>
+        public static void DebugWrite(string text, int verbosity = 1)
+        {
+            if (config.SelectedVerbosity >= verbosity)
+            {
+                Program.WriteNow("DEBUG: " + text);
+            }
+        }
+
+        /// <summary>
         /// Exception handler
         /// </summary>
         /// <param name="ex">Exception pointer</param>
