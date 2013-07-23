@@ -1,4 +1,4 @@
-﻿// Part of wmib
+// Part of wmib
 
 using System;
 using System.Collections.Generic;
