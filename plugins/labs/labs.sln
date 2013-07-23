@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C# Express 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "labs", "labs\labs.csproj", "{0CFEC9A6-B6B4-4C48-9395-24F9A49F03AE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "labs", "labs.csproj", "{0CFEC9A6-B6B4-4C48-9395-24F9A49F03AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

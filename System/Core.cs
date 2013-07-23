@@ -31,6 +31,9 @@ namespace wmib
         /// Prefix for a log directory
         /// </summary>
         public static readonly string prefix_logdir = "log";
+        /// <summary>
+        /// This string represent a character that changes color
+        /// </summary>
         public static readonly string color = ((char)003).ToString();
         /// <summary>
         /// This string represent a character that changes text to bold
@@ -96,7 +99,13 @@ namespace wmib
         /// </summary>
         public static Dictionary<Module, AppDomain> Domains = new Dictionary<Module, AppDomain>();
         private static readonly Dictionary<string, string> HelpData = new Dictionary<string, string>();
+        /// <summary>
+        /// List of instances
+        /// </summary>
         public static Dictionary<string, Instance> Instances = new Dictionary<string, Instance>();
+        /// <summary>
+        /// Target's of each instance
+        /// </summary>
         public static Dictionary<string, Instance> TargetBuffer = new Dictionary<string, Instance>();
 
         /// <summary>
@@ -222,6 +231,19 @@ namespace wmib
         }
 
         /// <summary>
+        /// Debug log
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="verbosity"></param>
+        public static void DebugWrite(string text, int verbosity = 1)
+        {
+            if (config.SelectedVerbosity >= verbosity)
+            {
+                Program.WriteNow("DEBUG: " + text);
+            }
+        }
+
+        /// <summary>
         /// Exception handler
         /// </summary>
         /// <param name="ex">Exception pointer</param>
@@ -230,9 +252,9 @@ namespace wmib
         {
             try
             {
-                if (!string.IsNullOrEmpty(config.debugchan))
+                if (!string.IsNullOrEmpty(config.DebugChan))
                 {
-                    irc._SlowQueue.DeliverMessage("DEBUG Exception in module " + module + ": " + ex.Message + " last input was " + LastText, config.debugchan);
+                    irc._SlowQueue.DeliverMessage("DEBUG Exception in module " + module + ": " + ex.Message + " last input was " + LastText, config.DebugChan);
                 }
                 Program.Log("DEBUG Exception in module " + module + ": " + ex.Message + ex.Source + ex.StackTrace, true);
             }
@@ -248,9 +270,9 @@ namespace wmib
         {
             try
             {
-                if (!string.IsNullOrEmpty(config.debugchan))
+                if (!string.IsNullOrEmpty(config.DebugChan))
                 {
-                    irc._SlowQueue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText, config.debugchan);
+                    irc._SlowQueue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText, config.DebugChan);
                 }
                 Program.WriteNow("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace, true);
             }

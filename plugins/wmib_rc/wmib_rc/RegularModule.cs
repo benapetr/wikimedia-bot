@@ -345,21 +345,28 @@ namespace wmib
             }
             Change change = new Change("", "", "");
 
-            if (text.Contains(variables.color + "4 M"))
+            if (text.Contains(variables.color + "4 "))
             {
-                change.Minor = true;
-            }
+                string flags = text.Substring(text.IndexOf(variables.color + "4 ") + 3);
+                if (flags.Contains(variables.color))
+                {
+                    flags = flags.Substring(0, flags.IndexOf(variables.color));
+                }
+                if (flags.Contains("N"))
+                {
+                    change.New = true;
+                }
 
-            if (text.Contains(variables.color + "4 B"))
-            {
-                change.Bot = true;
+                if (flags.Contains("M"))
+                {
+                    change.Minor = true;
+                }
+                if (flags.Contains("B"))
+                {
+                    change.Bot = true;
+                }
             }
-
-            if (text.Contains(variables.color + "4 N"))
-            {
-                change.New = true;
-            }
-
+            
             change.Page = text.Substring(text.IndexOf(variables.color + "14[[") + 5);
             change.Page = change.Page.Substring(3);
             if (!change.Page.Contains(variables.color + "14]]"))
@@ -416,13 +423,13 @@ namespace wmib
 
             change.User = text.Substring(text.IndexOf(variables.color + "03") + 3);
 
-            if (!change.User.Contains(" " + variables.color + "5*"))
+            if (!change.User.Contains(variables.color + " " + variables.color + "5*"))
             {
                 core.DebugLog("Parser error #6", 6);
                 return null;
             }
 
-            change.User = change.User.Substring(0, change.User.IndexOf(" " + variables.color + "5*"));
+            change.User = change.User.Substring(0, change.User.IndexOf(variables.color + " " + variables.color + "5*"));
 
             if (!text.Contains(variables.color + "5"))
             {

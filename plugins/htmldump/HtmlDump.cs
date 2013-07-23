@@ -1,4 +1,4 @@
-﻿//This program is free software: you can redistribute it and/or modify
+//This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
 //the Free Software Foundation, either version 3 of the License, or
 //(at your option) any later version.
@@ -30,12 +30,9 @@ namespace wmib
 
         public override bool Hook_OnRegister()
         {
-            lock (config.channels)
+            foreach (config.channel chan in config.ChannelList)
             {
-                foreach (config.channel chan in config.channels)
-                {
-                    SetConfig(chan, "HTML.Update", true);
-                }
+                SetConfig(chan, "HTML.Update", true);
             }
             return true;
         }
@@ -46,17 +43,14 @@ namespace wmib
             Thread.Sleep(10000);
             while (true)
             {
-                lock (config.channels)
+                foreach (config.channel chan in config.ChannelList)
                 {
-                    foreach (config.channel chan in config.channels)
+                    if (GetConfig(chan, "HTML.Update", true))
                     {
-                        if (GetConfig(chan, "HTML.Update", true))
-                        {
-                            HtmlDump dump = new HtmlDump(chan);
-                            dump.Make();
-                            core.DebugLog("Making dump for " + chan.Name);
-                            SetConfig(chan, "HTML.Update", false);
-                        }
+                        HtmlDump dump = new HtmlDump(chan);
+                        dump.Make();
+                        core.DebugLog("Making dump for " + chan.Name);
+                        SetConfig(chan, "HTML.Update", false);
                     }
                 }
                 HtmlDump.Stat();
@@ -186,35 +180,15 @@ namespace wmib
                 string text = CreateHeader("System info");
                 text += "<h1>System data</h1><p class=info>List of channels:</p>\n";
                 text += "<table class=\"channels\">\n<tr><th>Channel name</th><th>Options</th></tr>\n";
-                lock (config.channels)
+                foreach (config.channel chan in config.ChannelList)
                 {
-                    foreach (config.channel chan in config.channels)
-                    {
-                        text = text + "<tr>";
-                        text = text + "<td><a href=\"" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm\">" + chan.Name + "</a></td><td>";
-                        text += "infobot: " + Module.GetConfig(chan, "Infobot.Enabled", true).ToString() + ", recentchanges: " + Module.GetConfig(chan, "RC.Enabled", false).ToString() + ", logs: " + Module.GetConfig(chan, "Logging.Enabled", false).ToString() + ", suppress: " + chan.suppress.ToString() + ", seen: " + Module.GetConfig(chan, "Seen.Enabled", false).ToString() + ", rss: " + Module.GetConfig(chan, "Rss.Enabled", false).ToString() + ", statistics: " + Module.GetConfig(chan, "Statistics.Enabled", false).ToString() + "</td></tr>\n";
-                    }
+                    text = text + "<tr>";
+                    text = text + "<td><a href=\"" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm\">" + chan.Name + "</a></td><td>";
+                    text += "infobot: " + Module.GetConfig(chan, "Infobot.Enabled", true).ToString() + ", recentchanges: " + Module.GetConfig(chan, "RC.Enabled", false).ToString() + ", logs: " + Module.GetConfig(chan, "Logging.Enabled", false).ToString() + ", suppress: " + chan.suppress.ToString() + ", seen: " + Module.GetConfig(chan, "Seen.Enabled", false).ToString() + ", rss: " + Module.GetConfig(chan, "Rss.Enabled", false).ToString() + ", statistics: " + Module.GetConfig(chan, "Statistics.Enabled", false).ToString() + "Instance: " + chan.instance.Nick + "</td></tr>\n";
                 }
 
 
                 text += "</table>Uptime: " + core.getUptime() + " Memory usage: " + (System.Diagnostics.Process.GetCurrentProcess().PrivateMemorySize64 / 1024).ToString() + "kb Database size: " + getSize();
-
-                text += "<table class=\"text\"><th>Name</th><th>Status</th><th>Bouncer</th>";
-
-                lock(core.Instances)
-                {
-                    foreach (Instance xx in core.Instances.Values)
-                    {
-                        string status = "Online in " + xx.ChannelCount.ToString() + " channels";
-                        if (!xx.IsWorking || !xx.irc.IsConnected)
-                        {
-                            status = "Disconnected";
-                        }
-                        text += "<tr><td>"+xx.Nick+"</td><td>"+status+"</td><td>"+xx.Port.ToString()+"</td></tr>";
-                    }
-                }
-
-                text += "</table>";
 
                 lock (Module.module)
                 {
@@ -223,7 +197,26 @@ namespace wmib
                         mm.Hook_BeforeSysWeb(ref text);
                     }
 
-                    text += "<br>Core version: " + config.version + "<br><h2>Plugins</h2><table class=\"modules\">";
+                    text += "<br>Core version: " + config.version + "<br>\n";
+
+                    text += "<h2>Bots</h2><table class=\"text\"><th>Name</th><th>Status</th><th>Bouncer</th>";
+
+                    lock (core.Instances)
+                    {
+                        foreach (Instance xx in core.Instances.Values)
+                        {
+                            string status = "Online in " + xx.ChannelCount.ToString() + " channels";
+                            if (!xx.IsWorking || !xx.irc.IsConnected)
+                            {
+                                status = "Disconnected";
+                            }
+                            text += "<tr><td>" + xx.Nick + "</td><td>" + status + "</td><td>" + xx.Port.ToString() + "</td></tr>";
+                        }
+                    }
+
+                    text += "</table>";
+                        
+                    text += "<h2>Plugins</h2><table class=\"modules\">";
 
                     foreach (Module module in Module.module)
                     {
