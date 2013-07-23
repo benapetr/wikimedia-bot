@@ -68,6 +68,12 @@ namespace wmib
             }
         }
 
+        /// <summary>
+        /// Login
+        /// </summary>
+        /// <param name="User">Username</param>
+        /// <param name="Password">Password</param>
+        /// <returns></returns>
         public static int Auth(string User, string Password)
         {
             lock (GlobalUsers)
@@ -91,6 +97,9 @@ namespace wmib
             return 0;
         }
 
+        /// <summary>
+        /// Load all global users of bot
+        /// </summary>
         private static void GlobalLoad()
         {
             string[] dba = System.IO.File.ReadAllLines(variables.config + System.IO.Path.DirectorySeparatorChar + "admins");
@@ -159,9 +168,12 @@ namespace wmib
             try
             {
                 StringBuilder data = new StringBuilder("");
-                foreach (core.SystemUser u in Users)
+                lock (Users)
                 {
-                    data.Append(core.encode2(u.name) + config.separator + u.level + "\n");
+                    foreach (core.SystemUser u in Users)
+                    {
+                        data.Append(core.encode2(u.name) + config.separator + u.level + "\n");
+                    }
                 }
                 System.IO.File.WriteAllText(File, data.ToString());
                 System.IO.File.Delete(config.tempName(File));

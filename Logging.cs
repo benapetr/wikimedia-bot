@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Collections.Generic;
 using System.Text;
@@ -13,10 +13,25 @@ namespace wmib
     {
         public class Message
         {
+            /// <summary>
+            /// Time
+            /// </summary>
             public DateTime T;
+            /// <summary>
+            /// Message
+            /// </summary>
             public string Text;
+            /// <summary>
+            /// Is a warning
+            /// </summary>
             public bool Warning;
 
+            /// <summary>
+            /// Creates a new instance of message
+            /// </summary>
+            /// <param name="text"></param>
+            /// <param name="time"></param>
+            /// <param name="warning"></param>
             public Message(string text, DateTime time, bool warning)
             {
                 Text = text;
@@ -25,8 +40,16 @@ namespace wmib
             }
         }
 
+        /// <summary>
+        /// Database of messages that needs to be written
+        /// </summary>
         public static List<Message> messages = new List<Message>();
 
+        /// <summary>
+        /// Write a message to terminal
+        /// </summary>
+        /// <param name="Message"></param>
+        /// <param name="warning"></param>
         public static void Write(string Message, bool warning)
         {
             Message message = new Message(Message, DateTime.Now, warning);
@@ -36,6 +59,12 @@ namespace wmib
             }
         }
 
+        /// <summary>
+        /// Write a message
+        /// </summary>
+        /// <param name="time"></param>
+        /// <param name="Message"></param>
+        /// <param name="Warning"></param>
         public static void Display(DateTime time, string Message, bool Warning)
         {
             if (config.Colors)
@@ -66,6 +95,9 @@ namespace wmib
             Console.WriteLine(": " + Message);
         }
 
+        /// <summary>
+        /// Execute thread
+        /// </summary>
         public static void Exec()
         {
             try

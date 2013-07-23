@@ -1,4 +1,4 @@
-//This program is free software: you can redistribute it and/or modify
+﻿//This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
 //the Free Software Foundation, either version 3 of the License, or
 //(at your option) any later version.
@@ -43,7 +43,7 @@ namespace wmib
                             string channel = message.Substring(message.IndexOf(" ") + 1);
                             if (!validFile(channel) || (channel.Contains("#") == false))
                             {
-                                irc._SlowQueue.DeliverMessage(messages.get("InvalidName", chan.Language), chan.Name);
+                                irc._SlowQueue.DeliverMessage(messages.get("InvalidName", chan.Language), chan);
                                 return;
                             }
                             lock (config.channels)
@@ -52,7 +52,7 @@ namespace wmib
                                 {
                                     if (channel == cu.Name)
                                     {
-                                        irc._SlowQueue.DeliverMessage(messages.get("ChannelIn", chan.Language), chan.Name);
+                                        irc._SlowQueue.DeliverMessage(messages.get("ChannelIn", chan.Language), chan);
                                         return;
                                     }
                                 }
@@ -73,10 +73,10 @@ namespace wmib
                             }
                             return;
                         }
-                        irc.Message(messages.get("InvalidName", chan.Language), chan.Name);
+                        chan.instance.irc.Message(messages.get("InvalidName", chan.Language), chan.Name);
                         return;
                     }
-                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name);
+                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan);
                 }
             }
             catch (Exception b)
