@@ -10,6 +10,7 @@
 
 // Created by Petr Bena benapetr@gmail.com
 
+using System.Text;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,11 +22,6 @@ namespace wmib
     /// </summary>
     public partial class config
     {
-        /// <summary>
-        /// This is a temporary string containing the configuration data
-        /// </summary>
-        private static string text;
-
         /// <summary>
         /// Network the bot is connecting to
         /// </summary>
@@ -54,7 +50,7 @@ namespace wmib
         /// <summary>
         /// Login name
         /// </summary>
-        public static string login = "";
+        public static string login = null;
 
         /// <summary>
         /// Login pw
@@ -135,9 +131,9 @@ namespace wmib
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
-        private static void AddConfig(string a, string b)
+        private static void AddConfig(string a, string b, StringBuilder text)
         {
-            text = text + a + "=" + b + ";\n";
+            text.Append(a + "=" + b + ";\n");
         }
 
         /// <summary>
@@ -150,26 +146,26 @@ namespace wmib
         /// </summary>
         public static void Save()
         {
-            text = "";
-            AddConfig("username", username);
-            AddConfig("password", password);
-            AddConfig("web", WebpageURL);
-            AddConfig("serverIO", UsingNetworkIOLayer.ToString());
-            AddConfig("debug", debugchan);
-            AddConfig("network", network);
-            AddConfig("bouncerp", BouncerPort.ToString());
-            AddConfig("style_html_file", css);
-            AddConfig("nick", login);
-            text += "\nchannels=";
+            StringBuilder text = new StringBuilder("");
+            AddConfig("username", username, text);
+            AddConfig("password", password, text);
+            AddConfig("web", WebpageURL, text);
+            AddConfig("serverIO", UsingNetworkIOLayer.ToString(), text);
+            AddConfig("debug", debugchan, text);
+            AddConfig("network", network, text);
+            AddConfig("bouncerp", BouncerPort.ToString(), text);
+            AddConfig("style_html_file", css, text);
+            AddConfig("nick", login, text);
+            text.Append("\nchannels=");
 
             lock (channels)
             {
                 foreach (channel current in channels)
                 {
-                    text += current.Name + ",\n";
+                    text.Append(current.Name + ",\n");
                 }
             }
-            text = text + ";\n";
+            text.Append(text + ";\n");
             lock (core.Instances)
             {
                 int current = 0;
@@ -177,33 +173,13 @@ namespace wmib
                 {
                     if (blah.Nick != username)
                     {
-                        AddConfig("instancename" + current.ToString(), blah.Nick);
-                        AddConfig("instanceport" + current.ToString(), blah.Port.ToString());
+                        AddConfig("instancename" + current.ToString(), blah.Nick, text);
+                        AddConfig("instanceport" + current.ToString(), blah.Port.ToString(), text);
                     }
                 }
             }
-            File.WriteAllText(variables.config + "/wmib", text);
+            File.WriteAllText(variables.config + Path.DirectorySeparatorChar + "wmib", text.ToString());
             text = null;
-        }
-
-        /// <summary>
-        /// Parse config data text
-        /// </summary>
-        /// <param name="text"></param>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public static string parseConfig(string text, string name)
-        {
-            if (text.Contains(name + "="))
-            {
-                string x = text.Substring(text.IndexOf(name + "=")).Replace(name + "=", "");
-                if (x.Contains(";"))
-                {
-                    x = x.Substring(0, x.IndexOf(";"));
-                    return x;
-                }
-            }
-            return "";
         }
 
         /// <summary>
@@ -216,6 +192,52 @@ namespace wmib
             return (file + "~");
         }
 
+        private static Dictionary<string, string> File2Dict()
+        {
+            Dictionary<string, string> Values = new Dictionary<string, string>();
+            string[] xx = File.ReadAllLines(variables.config + Path.DirectorySeparatorChar + "wmib");
+            string LastName = null;
+            foreach (string line in xx)
+            {
+                string content = null;
+                if (line.StartsWith("//"))
+                {
+                    continue;
+                }
+                if (LastName == null && line.Contains("="))
+                {
+                    LastName = line.Substring(0, line.IndexOf("="));
+                    if (Values.ContainsKey(LastName))
+                    {
+                        throw new Exception("You can't redefine same value in configuration multiple times, error reading: " + LastName);
+                    }
+                    content = line.Substring(line.IndexOf("=") + 1);
+                    if (content.Contains(";"))
+                    {
+                        content = content.Substring(0, content.IndexOf(";"));
+                    }
+                    Values.Add(LastName, content);
+                    continue;
+                }
+                else
+                {
+                    content = line;
+                    if (!content.Contains(";"))
+                    {
+                        Values[LastName] += "\n" + content;
+                    }
+                    else
+                    {
+                        content = content.Substring(0, content.IndexOf(";") + 1);
+                        Values[LastName] += "\n" + content;
+                        LastName = null;
+                    }
+                    continue;
+                }
+            }
+            return Values;
+        }
+
         /// <summary>
         /// Load config of bot
         /// </summary>
@@ -225,22 +247,44 @@ namespace wmib
             {
                 Directory.CreateDirectory(variables.config);
             }
-            if (!File.Exists(variables.config + "/wmib"))
+            if (!File.Exists(variables.config + Path.DirectorySeparatorChar + "wmib"))
             {
-                File.WriteAllText(variables.config + "/wmib", "//this is configuration file for bot, you need to fill in some stuff for it to work");
+                Console.WriteLine("Error: unable to find config file in configuration/wmib");
+                return 2;
             }
-            text = File.ReadAllText(variables.config + "/wmib");
-            username = parseConfig(text, "username");
-            network = parseConfig(text, "network");
-            login = parseConfig(text, "nick");
-            debugchan = parseConfig(text, "debug");
-            if (parseConfig(text, "bouncerp") != "")
+            Dictionary<string, string> Configuration = File2Dict();
+            if (Configuration.ContainsKey("username"))
             {
-                BouncerPort = int.Parse(parseConfig(text, "bouncerp"));
+                username = Configuration["username"];
             }
-            css = parseConfig(text, "style_html_file");
-            WebpageURL = parseConfig(text, "web");
-            password = parseConfig(text, "password");
+            if (Configuration.ContainsKey("network"))
+            {
+                network = Configuration["network"];
+            }
+            if (Configuration.ContainsKey("nick"))
+            {
+                login = Configuration["nick"];
+            }
+            if (Configuration.ContainsKey("debug"))
+            {
+                debugchan = Configuration["debug"];
+            }
+            if (Configuration.ContainsKey("bouncerp"))
+            {
+                BouncerPort =  int.Parse(Configuration["bouncerp"]);
+            }
+            if (Configuration.ContainsKey("style_html_file"))
+            {
+                css = Configuration["style_html_file"];
+            }
+            if (Configuration.ContainsKey("web"))
+            {
+                WebpageURL = Configuration["web"];
+            }
+            if (Configuration.ContainsKey("password"))
+            {
+                password = Configuration["password"];
+            }
             if (string.IsNullOrEmpty(login))
             {
                 Console.WriteLine("Error there is no login for bot");
@@ -249,38 +293,37 @@ namespace wmib
             if (string.IsNullOrEmpty(network))
             {
                 Console.WriteLine("Error irc server is wrong");
-                return 1;
+                return 4;
             }
             if (string.IsNullOrEmpty(username))
             {
                 Console.WriteLine("Error there is no username for bot");
-                return 1;
+                return 6;
             }
-            bool _serverIO;
-            if (bool.TryParse(parseConfig(text, "serverIO"), out _serverIO))
+            if (Configuration.ContainsKey("serverIO"))
             {
-                UsingNetworkIOLayer = _serverIO;
+                UsingNetworkIOLayer = bool.Parse(Configuration["serverIO"]);
             }
             core.Log("Creating instances");
             core.CreateInstance(username, BouncerPort); // primary instance
             int CurrentInstance = 0;
             while (CurrentInstance < 20)
             {
-                string InstanceName = parseConfig(text, "instancename" + CurrentInstance.ToString());
-                if (InstanceName == "")
+                if (!Configuration.ContainsKey("instancename" + CurrentInstance.ToString()))
                 {
                     break;
                 }
+                string InstanceName = Configuration["instancename" + CurrentInstance.ToString()];
                 core.DebugLog("Instance found: " + InstanceName);
                 if (UsingNetworkIOLayer)
                 {
                     core.DebugLog("Using bouncer, looking for instance port");
-                    string InstancePort = parseConfig(text, "instanceport" + CurrentInstance.ToString());
-                    if (InstancePort == "")
+                    if (!Configuration.ContainsKey("instanceport" + CurrentInstance.ToString()))
                     {
-                        core.Log("Instance " + InstanceName + " has invalid port, not using", true);
+                        Program.Log("Instance " + InstanceName + " has invalid port, not using", true);
                         continue;
                     }
+                    string InstancePort = Configuration["instanceport" + CurrentInstance.ToString()];
                     int port = int.Parse(InstancePort);
                     core.CreateInstance(InstanceName, port);
                 }
@@ -290,7 +333,7 @@ namespace wmib
                 }
                 CurrentInstance++;
             }
-            foreach (string x in parseConfig(text, "channels").Replace("\n", "").Split(','))
+            foreach (string x in Configuration["channels"].Replace("\n", "").Split(','))
             {
                 string name = x.Replace(" ", "").Replace("\n", "");
                 if (name != "")
@@ -301,7 +344,7 @@ namespace wmib
                     }
                 }
             }
-            Program.Log("Channels were all loaded");
+            Program.WriteNow("Channels were all loaded");
 
             // Now when all chans are loaded let's link them together
             foreach (channel ch in channels)
@@ -309,7 +352,7 @@ namespace wmib
                 ch.Shares();
             }
 
-            Program.Log("Channel db's working");
+            Program.WriteNow("Channel db's working");
             if (!Directory.Exists(DumpDir))
             {
                 Directory.CreateDirectory(DumpDir);

@@ -920,21 +920,21 @@ namespace wmib
                     catch (Exception xx)
                     {
                         core.handleException(xx, channel);
-                        core.Log("IRC: Connection error!! Terminating system");
+                        core.Log("IRC: Connection error!! Terminating instance " + ParentInstance.Nick);
                         IsWorking = false;
                         connected = false;
-                        core.Kill();
+                        return;
                     }
                 }
             }
             catch (Exception fail)
             {
                 core.handleException(fail);
-                core.Log("IRC: Connection error!! Terminating system");
+                core.Log("IRC: Connection error!! Terminating instance " + ParentInstance.Nick);
                 IsWorking = false;
                 connected = false;
                 // there is no point for being up when connection is dead and can't be reconnected
-                core.Kill();
+                return;
             }
         }
 

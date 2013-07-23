@@ -45,8 +45,8 @@ namespace wmib
 
         protected static void myHandler(object sender, ConsoleCancelEventArgs args)
         {
-            Log("SIGINT");
-            Log("Shutting down");
+            WriteNow("SIGINT");
+            WriteNow("Shutting down");
             try
             {
                 core.Kill();
@@ -56,7 +56,7 @@ namespace wmib
                 core.irc.Disconnect();
                 core._Status = core.Status.ShuttingDown;
             }
-            Log("Terminated");
+            WriteNow("Terminated");
         }
 
         private static void processVerbosity(string[] gs)
@@ -67,6 +67,16 @@ namespace wmib
                 {
                     config.Colors = false;
                     continue;
+                }
+                if (item == "-h" || item == "--help")
+                {
+                    Console.WriteLine("This is a wikimedia bot binary\n\n" +
+                        "Parameters:\n" +
+                        "    --nocolors: Disable colors in system logs\n" +
+                        "    -h [--help]: Display help\n" +
+                        "    -v: Increases verbosity\n\n" +
+                        "This software is open source, licensed under GPLv3");
+                    Environment.Exit(0);
                 }
                 if (item.StartsWith("-v"))
                 {
@@ -91,8 +101,8 @@ namespace wmib
             {
                 Thread logger = new Thread(Logging.Exec);
                 core.domain = AppDomain.CurrentDomain;
-                Log(config.version);
-                Log("Loading...");
+                WriteNow(config.version);
+                WriteNow("Loading...");
                 config.UpTime = DateTime.Now;
                 processVerbosity(args);
                 logger.Start();

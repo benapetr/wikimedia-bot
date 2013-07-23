@@ -31,6 +31,9 @@ namespace wmib
         /// Prefix for a log directory
         /// </summary>
         public static readonly string prefix_logdir = "log";
+        /// <summary>
+        /// This string represent a character that changes color
+        /// </summary>
         public static readonly string color = ((char)003).ToString();
         /// <summary>
         /// This string represent a character that changes text to bold
@@ -96,7 +99,13 @@ namespace wmib
         /// </summary>
         public static Dictionary<Module, AppDomain> Domains = new Dictionary<Module, AppDomain>();
         private static readonly Dictionary<string, string> HelpData = new Dictionary<string, string>();
+        /// <summary>
+        /// List of instances
+        /// </summary>
         public static Dictionary<string, Instance> Instances = new Dictionary<string, Instance>();
+        /// <summary>
+        /// Target's of each instance
+        /// </summary>
         public static Dictionary<string, Instance> TargetBuffer = new Dictionary<string, Instance>();
 
         /// <summary>
