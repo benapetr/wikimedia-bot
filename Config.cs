@@ -173,7 +173,7 @@ namespace wmib
                     text.Append(current.Name + ",\n");
                 }
             }
-            text.Append(text + ";\n");
+            text.Append(";\n");
             lock (core.Instances)
             {
                 int current = 0;
@@ -187,7 +187,6 @@ namespace wmib
                 }
             }
             File.WriteAllText(variables.config + Path.DirectorySeparatorChar + "wmib", text.ToString());
-            text = null;
         }
 
         /// <summary>
