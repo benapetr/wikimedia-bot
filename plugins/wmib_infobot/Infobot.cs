@@ -20,11 +20,9 @@ namespace wmib
         public bool stored = true;
         public static readonly string prefix = "!";
 
-        [NonSerialized()]
         private Thread Th = null;
 
-        [NonSerialized()]
-        public Thread SnapshotManager;
+        public Thread SnapshotManager = null;
 
         // if we need to update dump
         public bool update = true;
@@ -45,48 +43,66 @@ namespace wmib
             /// </summary>
             public string Key;
 
-            public string user;
+            /// <summary>
+            /// User who created this key
+            /// </summary>
+            public string User;
 
-            public string locked;
+            /// <summary>
+            /// If this key is locked or not
+            /// </summary>
+            public string Locked;
 
-            public DateTime created;
+            /// <summary>
+            /// Creation time of key
+            /// </summary>
+            public DateTime CreationTime;
 
+            /// <summary>
+            /// If key is raw or not
+            /// </summary>
             public bool Raw;
 
+            /// <summary>
+            /// How many times it was displayed
+            /// </summary>
             public int Displayed = 0;
 
-            public DateTime lasttime;
+            /// <summary>
+            /// Last time when a key was displayed
+            /// </summary>
+            public DateTime LastTime;
 
             /// <summary>
             /// Constructor
             /// </summary>
             /// <param name="Key">Key</param>
             /// <param name="Text">Text of the key</param>
-            /// <param name="User">User who created the key</param>
+            /// <param name="_User">User who created the key</param>
             /// <param name="Lock">If key is locked or not</param>
-            public InfobotKey(string key, string text, string User, string Lock = "false", string date = "", string time = "", int Number = 0, bool RAW = false)
+            public InfobotKey(string key, string text, string _User, string Lock = "false", string date = "", string time = "", int Number = 0, bool RAW = false)
             {
                 Text = text;
                 Key = key;
-                locked = Lock;
-                user = User;
+                Locked = Lock;
+                User = _User;
                 Raw = RAW;
                 Displayed = Number;
                 if (time == "")
                 {
-                    lasttime = NA;
+                    LastTime = NA;
                 }
                 else
                 {
-                    lasttime = DateTime.FromBinary(long.Parse(time));
+                    LastTime = DateTime.FromBinary(long.Parse(time));
                 }
                 if (date == "")
                 {
-                    created = DateTime.Now;
+                    CreationTime = DateTime.Now;
                 }
                 else
                 {
-                    created = DateTime.FromBinary(long.Parse(date));
+                    CreationTime = DateTime.FromBinary(long.Parse(date));
                 }
             }
         }
@@ -117,9 +133,21 @@ namespace wmib
 
         public class InfoItem
         {
+            /// <summary>
+            /// Channel
+            /// </summary>
             public config.channel Channel = null;
+            /// <summary>
+            /// User
+            /// </summary>
             public string User = null;
+            /// <summary>
+            /// Name
+            /// </summary>
             public string Name = null;
+            /// <summary>
+            /// Host
+            /// </summary>
             public string Host = null;
         }
 
@@ -139,7 +167,6 @@ namespace wmib
         public string Channel;
 
         private string search_key;
-
 
         /// <summary>
         /// Load it
@@ -213,6 +240,12 @@ namespace wmib
             return false;
         }
 
+        /// <summary>
+        /// Function returns true if key exists
+        /// </summary>
+        /// <param name="name">Name of key</param>
+        /// <param name="sensitive">If bot is sensitive or not</param>
+        /// <returns></returns>
         public bool KeyExist(string name, bool sensitive = true)
         {
             if (!sensitive)
@@ -346,6 +379,11 @@ namespace wmib
             return true;
         }
 
+        /// <summary>
+        /// @infobot-detail
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="chan"></param>
         public void Info(string key, config.channel chan)
         {
             InfobotKey CV = GetKey(key, Sensitive);
@@ -359,18 +397,18 @@ namespace wmib
                 string created = "N/A";
                 string last = "N/A";
                 string name = "N/A";
-                if (CV.lasttime != NA)
+                if (CV.LastTime != NA)
                 {
-                    TimeSpan span = DateTime.Now - CV.lasttime;
-                    last = CV.lasttime.ToString() + " (" + span.ToString() + " ago)";
+                    TimeSpan span = DateTime.Now - CV.LastTime;
+                    last = CV.LastTime.ToString() + " (" + span.ToString() + " ago)";
                 }
-                if (CV.created != NA)
+                if (CV.CreationTime != NA)
                 {
-                    created = CV.created.ToString();
+                    created = CV.CreationTime.ToString();
                 }
-                if (CV.user != "")
+                if (CV.User != "")
                 {
-                    name = CV.user;
+                    name = CV.User;
                 }
                 string type = " this key is normal";
                 if (CV.Raw)
@@ -535,11 +573,11 @@ namespace wmib
                         System.Xml.XmlAttribute kk = data.CreateAttribute("data");
                         kk.Value = key.Text;
                         System.Xml.XmlAttribute created = data.CreateAttribute("created_date");
-                        created.Value = key.created.ToBinary().ToString();
+                        created.Value = key.CreationTime.ToBinary().ToString();
                         System.Xml.XmlAttribute nick = data.CreateAttribute("nickname");
-                        nick.Value = key.user;
+                        nick.Value = key.User;
                         System.Xml.XmlAttribute last = data.CreateAttribute("touched");
-                        last.Value = key.lasttime.ToBinary().ToString();
+                        last.Value = key.LastTime.ToBinary().ToString();
                         System.Xml.XmlAttribute triggered = data.CreateAttribute("triggered");
                         triggered.Value = key.Displayed.ToString();
                         XmlAttribute k = data.CreateAttribute("raw");
@@ -600,7 +638,7 @@ namespace wmib
                     {
                         if (data.Key == key)
                         {
-                            data.lasttime = DateTime.Now;
+                            data.LastTime = DateTime.Now;
                             data.Displayed++;
                             stored = false;
                             return data.Text;
@@ -613,7 +651,7 @@ namespace wmib
                 {
                     if (data.Key.ToLower() == key2)
                     {
-                        data.lasttime = DateTime.Now;
+                        data.LastTime = DateTime.Now;
                         data.Displayed++;
                         stored = false;
                         return data.Text;
@@ -761,7 +799,7 @@ namespace wmib
                     }
                     if (parm[1] == "unalias")
                     {
-                        if (chan.Users.isApproved(user, host, "info"))
+                        if (chan.Users.IsApproved(user, host, "info"))
                         {
                             if (!Allowed)
                             {
@@ -835,20 +873,7 @@ namespace wmib
                     User = name.Substring(name.IndexOf("|") + 1);
                     if (Module.GetConfig(chan, "Infobot.Trim-white-space-in-name", true))
                     {
-                        if (User.EndsWith(" "))
-                        {
-                            while (User.EndsWith(" "))
-                            {
-                                User = User.Substring(0, User.Length - 1);
-                            }
-                        }
-                        if (User.StartsWith(" "))
-                        {
-                            while (User.StartsWith(" "))
-                            {
-                                User = User.Substring(1);
-                            }
-                        }
+                        User = User.Trim();
                     }
                     name = name.Substring(0, name.IndexOf("|"));
                 }

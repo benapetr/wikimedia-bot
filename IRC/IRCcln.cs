@@ -304,10 +304,10 @@ namespace wmib
                                     }
                                 }
                             }
-                        }
-                        lock (newmessages)
-                        {
-                            newmessages.Clear();
+                            lock (newmessages)
+                            {
+                                newmessages.Clear();
+                            }
                         }
                     }
                     catch (ThreadAbortException)
