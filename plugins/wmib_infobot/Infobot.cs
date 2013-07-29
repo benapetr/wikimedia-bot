@@ -455,6 +455,7 @@ namespace wmib
                     {
                         keyv = keyv.Replace("$" + curr.ToString(), pars[curr]);
                         keyv = keyv.Replace("$url_encoded_" + curr.ToString(), System.Web.HttpUtility.UrlEncode(pars[curr]));
+                        keyv = keyv.Replace("$wiki_encoded_" + curr.ToString(), System.Web.HttpUtility.UrlEncode(pars[curr]).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")"));
                     }
                     if (keys == "")
                     {
@@ -468,6 +469,7 @@ namespace wmib
                 }
                 keyv = keyv.Replace("$*", original);
                 keyv = keyv.Replace("$url_encoded_*", System.Web.HttpUtility.UrlEncode(original));
+                keyv = keyv.Replace("$wiki_encoded_*", System.Web.HttpUtility.UrlEncode(original).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")"));
             }
             return keyv;
         }
