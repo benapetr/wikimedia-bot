@@ -273,7 +273,7 @@ namespace wmib
         {
             Name = "RC";
             start = true;
-            Version = "1.2.0.2";
+            Version = "1.2.0.3";
             return true;
         }
 
@@ -287,7 +287,7 @@ namespace wmib
                 {
                     return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "modified", "" + username + "", url + "?diff=" + link, summary });
                 }
-                return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", url + "?title=" + name_url, summary });
+                return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", url + "?title=" + page, summary });
             }
 
             string action = "modified";
