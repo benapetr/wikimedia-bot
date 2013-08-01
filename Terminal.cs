@@ -196,6 +196,28 @@ namespace wmib
                             Writer.WriteLine("Unknown instance: " + parameters);
                             Writer.Flush();
                             break;
+                        case "send":
+                            if (!parameters.Contains(" "))
+                            {
+                                Writer.WriteLine("This command requires 2 parameters");
+                                Writer.Flush();
+                                break;
+                            }
+                            string to = parameters.Substring(0, parameters.IndexOf(" "));
+                            if (core.Instances.ContainsKey(to))
+                            {
+                                if (!core.Instances[to].irc.IsConnected)
+                                {
+                                    Writer.WriteLine("Refusing to send data using instance which is not connected: " + to);
+                                    Writer.Flush();
+                                    break;
+                                }
+                                core.Instances[to].irc.SendData(parameters.Substring(parameters.IndexOf(" ") + 1));
+                                break;
+                            }
+                            Writer.WriteLine("I have no such instance dude");
+                            Writer.Flush();
+                            break;
                         default:
                             Writer.WriteLine("Unknown command, try help");
                             Writer.Flush();
