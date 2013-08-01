@@ -51,6 +51,10 @@ namespace wmib
         {
             if (code.Length > 2)
             {
+                if (code[3] == config.DebugChan && instance.Nick != core.irc.NickName)
+                {
+                    return true;
+                }
                 config.channel channel = core.getChannel(code[3]);
                 if (channel != null)
                 {
@@ -82,6 +86,10 @@ namespace wmib
         {
             if (code.Length > 8)
             {
+                if (code[3] == config.DebugChan && instance.Nick != core.irc.NickName)
+                {
+                    return true;
+                }
                 config.channel channel = core.getChannel(code[3]);
                 string ident = code[4];
                 string host = code[5];
@@ -137,6 +145,10 @@ namespace wmib
             if (code.Length > 3)
             {
                 string name = code[4];
+                if (name == config.DebugChan && instance.Nick != core.irc.NickName)
+                {
+                    return true;
+                }
                 config.channel channel = core.getChannel(name);
                 if (channel != null)
                 {
@@ -196,6 +208,10 @@ namespace wmib
             string _new = value;
             foreach (config.channel item in config.channels)
             {
+                if (item.Name == config.DebugChan && instance.Nick != core.irc.NickName)
+                {
+                    return true;
+                }
                 lock (item.UserList)
                 {
                     foreach (User curr in item.UserList)
@@ -235,6 +251,10 @@ namespace wmib
             string user = source.Substring(0, source.IndexOf("!"));
             string _ident;
             string _host;
+            if (chan == config.DebugChan && instance.Nick != core.irc.NickName)
+            {
+                return true;
+            }
             _host = source.Substring(source.IndexOf("@") + 1);
             _ident = source.Substring(source.IndexOf("!") + 1);
             _ident = _ident.Substring(0, _ident.IndexOf("@"));
@@ -285,7 +305,10 @@ namespace wmib
         private bool Topic(string source, string parameters, string value)
         {
             string chan = parameters;
-
+            if (chan == config.DebugChan && instance.Nick != core.irc.NickName)
+            {
+                return false;
+            }
             return false;
         }
 
@@ -355,7 +378,12 @@ namespace wmib
             User user01 = new User(user, "", "");
             User sr = new User(user2, _host, _ident);
             // petan!pidgeon@petan.staff.tm-irc.org KICK #support HelpBot :Removed from the channel
-            config.channel channel = core.getChannel(parameters.Substring(0, parameters.IndexOf(" ")));
+            string chan = parameters.Substring(0, parameters.IndexOf(" "));
+            if (chan == config.DebugChan && instance.Nick != core.irc.NickName)
+            {
+                return true; ;
+            }
+            config.channel channel = core.getChannel(chan);
             if (channel != null)
             {
                 lock (Module.module)
@@ -410,6 +438,10 @@ namespace wmib
                 string user = source;
                 if (chan.StartsWith("#"))
                 {
+                    if (chan == config.DebugChan && instance.Nick != core.irc.NickName)
+                    {
+                        return true;
+                    }
                     config.channel channel = core.getChannel(chan);
                     if (channel != null)
                     {
@@ -467,6 +499,10 @@ namespace wmib
             if (string.IsNullOrEmpty(chan))
             {
                 chan = value;
+            }
+            if (chan == config.DebugChan && instance.Nick != core.irc.NickName)
+            {
+                return true;
             }
             string user = source.Substring(0, source.IndexOf("!"));
             string _host = source.Substring(source.IndexOf("@") + 1);

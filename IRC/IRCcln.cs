@@ -766,11 +766,7 @@ namespace wmib
                                 processor.instance = ParentInstance;
                                 processor.Result();
                                 string check = text.Substring(text.IndexOf(" "));
-                                if (check.StartsWith(" 005"))
-                                {
-
-                                }
-                                else
+                                if (!check.StartsWith(" 005"))
                                 {
                                     string command = "";
                                     if (text.Contains(" :"))
@@ -793,6 +789,10 @@ namespace wmib
                                         if (info_host.Contains("#"))
                                         {
                                             channel = info_host.Substring(info_host.IndexOf("#"));
+                                            if (channel == config.DebugChan && ParentInstance.Nick != core.irc.NickName)
+                                            {
+                                                continue;
+                                            }
                                             message = text.Replace(info, "");
                                             message = message.Substring(message.IndexOf(" :") + 2);
                                             if (message.Contains(delimiter.ToString() + "ACTION"))
@@ -885,6 +885,10 @@ namespace wmib
                                         if (parts.Length > 1)
                                         {
                                             string _channel = parts[1];
+                                            if (_channel == config.DebugChan && ParentInstance.Nick != core.irc.NickName)
+                                            {
+                                                continue;
+                                            }
                                             string user = parts[2];
                                             if (user == NickName)
                                             {
