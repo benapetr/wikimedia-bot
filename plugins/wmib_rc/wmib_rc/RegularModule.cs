@@ -273,7 +273,7 @@ namespace wmib
         {
             Name = "RC";
             start = true;
-            Version = "1.2.0.3";
+            Version = "1.2.0.4";
             return true;
         }
 
@@ -285,9 +285,9 @@ namespace wmib
             {
                 if (!New)
                 {
-                    return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "modified", "" + username + "", url + "?diff=" + link, summary });
+                    return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "modified", "" + username + "", url + "?diff=" + link, summary });
                 }
-                return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", url + "?title=" + page, summary });
+                return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", url + "?title=" + page, summary });
             }
 
             string action = "modified";
@@ -317,7 +317,7 @@ namespace wmib
             string fu = url + "?diff=" + link;
             if (New)
             {
-                fu = url + "?title=" + System.Web.HttpUtility.UrlEncode(page).Replace("+", "_");
+                fu = url + "?title=" + System.Web.HttpUtility.UrlEncode(page).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")");
             }
 
             return GetConfig(chan, "RC.Template", "").Replace("$wiki", name_url)
