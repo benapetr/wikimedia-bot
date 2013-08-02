@@ -205,6 +205,7 @@ namespace wmib
                     {
                         AddConfig("instancename" + current.ToString(), blah.Nick, text);
                         AddConfig("instanceport" + current.ToString(), blah.Port.ToString(), text);
+                        current++;
                     }
                 }
             }

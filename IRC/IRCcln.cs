@@ -679,6 +679,8 @@ namespace wmib
 
                 bool Auth = true;
 
+                List<string> Backlog = new List<string>();
+
                 if (config.UsingNetworkIOLayer)
                 {
                     SendData("CONTROL: STATUS");
@@ -693,6 +695,10 @@ namespace wmib
                             Auth = false;
                             ChannelsJoined = true;
                             IsWorking = true;
+                        }
+                        else if (response.StartsWith(":"))
+                        {
+                            Backlog.Add(response);
                         }
                         else if (response == "CONTROL: FALSE")
                         {
@@ -731,9 +737,18 @@ namespace wmib
                 {
                     try
                     {
-                        while (!streamReader.EndOfStream && core._Status == core.Status.OK)
+                        while ((!streamReader.EndOfStream || Backlog.Count > 0) && core._Status == core.Status.OK)
                         {
-                            string text = streamReader.ReadLine();
+                            string text;
+                            if (Backlog.Count == 0)
+                            {
+                                text = streamReader.ReadLine();
+                            }
+                            else
+                            {
+                                text = Backlog[0];
+                                Backlog.RemoveAt(0);
+                            }
                             core.TrafficLog(ParentInstance.Nick + "<<<<<<" + text);
                             if (config.UsingNetworkIOLayer)
                             {
