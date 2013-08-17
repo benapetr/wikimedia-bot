@@ -16,6 +16,7 @@ namespace wmib
             Name = "NetCat";
             start = true;
             Version = "1.0.0.0";
+            Log("Starting module");
             return true;
         }
 
