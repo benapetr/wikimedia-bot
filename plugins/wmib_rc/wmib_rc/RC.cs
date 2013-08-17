@@ -190,7 +190,7 @@ namespace wmib
                 wiki web = null;
                 if (Loaded == false)
                 {
-                    core.irc.Message(messages.get("rcfeed13", target.Language), target.Name);
+                    core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed13", target.Language), target.Name);
                     return false;
                 }
 
@@ -205,12 +205,12 @@ namespace wmib
 
                 if (web == null)
                 {
-                    core.irc.Message(messages.get("rcfeed1", target.Language), target.Name);
+                    core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed1", target.Language), target.Name);
                     return false;
                 }
                 if (channels.Contains(web.channel))
                 {
-                    core.irc.Message(messages.get("rcfeed2", target.Language), target.Name);
+                    core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed2", target.Language), target.Name);
                     return false;
                 }
                 channels.Add(web.channel);
@@ -240,7 +240,7 @@ namespace wmib
             wiki W = null;
             if (Loaded == false)
             {
-                core.irc.Message(messages.get("rcfeed13", target.Language), target.Name);
+                core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed13", target.Language), target.Name);
                 return false;
             }
             try
@@ -255,12 +255,12 @@ namespace wmib
                 }
                 if (W == null)
                 {
-                    core.irc.Message(messages.get("rcfeed1", target.Language), target.Name);
+                    core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed1", target.Language), target.Name);
                     return false;
                 }
                 if (!channels.Contains(W.channel))
                 {
-                    core.irc.Message(messages.get("rcfeed3", target.Language), target.Name);
+                    core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed3", target.Language), target.Name);
                     return false;
                 }
                 channels.Remove(W.channel);

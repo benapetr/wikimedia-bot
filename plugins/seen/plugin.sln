@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C# Express 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "plugin", "plugin\plugin.csproj", "{D685D1B9-0849-4590-BC5B-7041FC2DE539}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "plugin", "plugin.csproj", "{D685D1B9-0849-4590-BC5B-7041FC2DE539}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
@@ -7,12 +7,27 @@ using System.Text;
 
 namespace wmib
 {
+    /// <summary>
+    /// This class open a network console which sysadmins can login to and control the bot
+    /// </summary>
     public class Terminal
     {
+        /// <summary>
+        /// Thread this console run in
+        /// </summary>
         public static Thread thread;
+        /// <summary>
+        /// Whether the console is running or not
+        /// </summary>
         public static bool Running = true;
+        /// <summary>
+        /// Number of current connections to this console
+        /// </summary>
         public static int Connections = 0;
 
+        /// <summary>
+        /// This will start the console
+        /// </summary>
         public static void Init()
         {
             thread = new System.Threading.Thread(thrd);
@@ -57,7 +72,7 @@ namespace wmib
                     return;
                 }
 
-                Writer.WriteLine("Successfuly logged in to wm-bot");
+                Writer.WriteLine("Successfuly logged in to wm-bot, I have " + Connections.ToString() + " users logged in");
                 Writer.Flush();
 
                 while (connection.Connected && !Reader.EndOfStream)
@@ -85,13 +100,14 @@ namespace wmib
                             Connections--;
                             return;
                         case "info":
-                            string result = "Uptime: " + core.getUptime() + Environment.NewLine
-                                + "Instances:" + Environment.NewLine;
+                            string result = "Uptime: " + core.getUptime() + Environment.NewLine + "Instances:" + Environment.NewLine;
                             lock (core.Instances)
                             {
                                 foreach (Instance instance in core.Instances.Values)
                                 {
-                                    result += instance.Nick + " channels: " + instance.ChannelCount.ToString() + " connected: " + instance.IsConnected.ToString() + " working: " + instance.IsWorking.ToString() + "\n";
+                                    result += instance.Nick + " channels: " + instance.ChannelCount.ToString() +
+                                        " connected: " + instance.IsConnected.ToString() + " working: " +
+                                        instance.IsWorking.ToString() + "\n";
                                 }
                             }
                             Writer.WriteLine(result);
@@ -103,7 +119,9 @@ namespace wmib
                             +"info - print information about system\n"
                             +"halt - shutdown bot\n"
                             +"traffic-on - turn on traffic logs\n"
-                            +"traffic-off - turn off traffic logs\n");
+                            +"traffic-off - turn off traffic logs\n"
+                            +"kill [instance] - disconnect selected instance\n"
+                            +"conn [instance] - connect instance\n");
                             Writer.Flush();
                             break;
                         case "halt":
@@ -178,6 +196,28 @@ namespace wmib
                             Writer.WriteLine("Unknown instance: " + parameters);
                             Writer.Flush();
                             break;
+                        case "send":
+                            if (!parameters.Contains(" "))
+                            {
+                                Writer.WriteLine("This command requires 2 parameters");
+                                Writer.Flush();
+                                break;
+                            }
+                            string to = parameters.Substring(0, parameters.IndexOf(" "));
+                            if (core.Instances.ContainsKey(to))
+                            {
+                                if (!core.Instances[to].irc.IsConnected)
+                                {
+                                    Writer.WriteLine("Refusing to send data using instance which is not connected: " + to);
+                                    Writer.Flush();
+                                    break;
+                                }
+                                core.Instances[to].irc.SendData(parameters.Substring(parameters.IndexOf(" ") + 1));
+                                break;
+                            }
+                            Writer.WriteLine("I have no such instance dude");
+                            Writer.Flush();
+                            break;
                         default:
                             Writer.WriteLine("Unknown command, try help");
                             Writer.Flush();
@@ -198,12 +238,12 @@ namespace wmib
             {
                 System.Net.Sockets.TcpListener server = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Any, config.SystemPort);
                 server.Start();
+                Program.Log("Network console is online on port: " + config.SystemPort.ToString());
                 while (Running)
                 {
                     System.Net.Sockets.TcpClient connection = server.AcceptTcpClient();
                     Thread client = new Thread(HandleClient);
                     client.Start(connection);
-
                     Thread.Sleep(100);
                 }
             }

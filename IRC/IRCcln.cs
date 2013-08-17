@@ -1,4 +1,4 @@
-﻿//This program is free software: you can redistribute it and/or modify
+//This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
 //the Free Software Foundation, either version 3 of the License, or
 //(at your option) any later version.
@@ -304,10 +304,10 @@ namespace wmib
                                     }
                                 }
                             }
-                        }
-                        lock (newmessages)
-                        {
-                            newmessages.Clear();
+                            lock (newmessages)
+                            {
+                                newmessages.Clear();
+                            }
                         }
                     }
                     catch (ThreadAbortException)
@@ -679,6 +679,8 @@ namespace wmib
 
                 bool Auth = true;
 
+                List<string> Backlog = new List<string>();
+
                 if (config.UsingNetworkIOLayer)
                 {
                     SendData("CONTROL: STATUS");
@@ -693,6 +695,10 @@ namespace wmib
                             Auth = false;
                             ChannelsJoined = true;
                             IsWorking = true;
+                        }
+                        else if (response.StartsWith(":"))
+                        {
+                            Backlog.Add(response);
                         }
                         else if (response == "CONTROL: FALSE")
                         {
@@ -731,9 +737,18 @@ namespace wmib
                 {
                     try
                     {
-                        while (!streamReader.EndOfStream && core._Status == core.Status.OK)
+                        while ((!streamReader.EndOfStream || Backlog.Count > 0) && core._Status == core.Status.OK)
                         {
-                            string text = streamReader.ReadLine();
+                            string text;
+                            if (Backlog.Count == 0)
+                            {
+                                text = streamReader.ReadLine();
+                            }
+                            else
+                            {
+                                text = Backlog[0];
+                                Backlog.RemoveAt(0);
+                            }
                             core.TrafficLog(ParentInstance.Nick + "<<<<<<" + text);
                             if (config.UsingNetworkIOLayer)
                             {
@@ -766,11 +781,7 @@ namespace wmib
                                 processor.instance = ParentInstance;
                                 processor.Result();
                                 string check = text.Substring(text.IndexOf(" "));
-                                if (check.StartsWith(" 005"))
-                                {
-
-                                }
-                                else
+                                if (!check.StartsWith(" 005"))
                                 {
                                     string command = "";
                                     if (text.Contains(" :"))
@@ -793,6 +804,10 @@ namespace wmib
                                         if (info_host.Contains("#"))
                                         {
                                             channel = info_host.Substring(info_host.IndexOf("#"));
+                                            if (channel == config.DebugChan && ParentInstance.Nick != core.irc.NickName)
+                                            {
+                                                continue;
+                                            }
                                             message = text.Replace(info, "");
                                             message = message.Substring(message.IndexOf(" :") + 2);
                                             if (message.Contains(delimiter.ToString() + "ACTION"))
@@ -885,6 +900,10 @@ namespace wmib
                                         if (parts.Length > 1)
                                         {
                                             string _channel = parts[1];
+                                            if (_channel == config.DebugChan && ParentInstance.Nick != core.irc.NickName)
+                                            {
+                                                continue;
+                                            }
                                             string user = parts[2];
                                             if (user == NickName)
                                             {
@@ -920,21 +939,21 @@ namespace wmib
                     catch (Exception xx)
                     {
                         core.handleException(xx, channel);
-                        core.Log("IRC: Connection error!! Terminating system");
+                        core.Log("IRC: Connection error!! Terminating instance " + ParentInstance.Nick);
                         IsWorking = false;
                         connected = false;
-                        core.Kill();
+                        return;
                     }
                 }
             }
             catch (Exception fail)
             {
                 core.handleException(fail);
-                core.Log("IRC: Connection error!! Terminating system");
+                core.Log("IRC: Connection error!! Terminating instance " + ParentInstance.Nick);
                 IsWorking = false;
                 connected = false;
                 // there is no point for being up when connection is dead and can't be reconnected
-                core.Kill();
+                return;
             }
         }
 

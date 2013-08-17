@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Text;
@@ -118,7 +118,11 @@ namespace wmib
             {
                 foreach (config.channel channel in ChannelList)
                 {
-                    if (channel.Name != "")
+                    if (config.DebugChan != null)
+                    {
+                        irc.SendData("JOIN " + config.DebugChan);
+                    }
+                    if (channel.Name != "" && channel.Name != config.DebugChan)
                     {
                         core.DebugLog("Joining " + channel.Name + " on " + Nick);
                         irc.Join(channel);

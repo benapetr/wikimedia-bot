@@ -1,0 +1,21 @@
+// This is a username (real name)
+username=wm-bot;
+// in case you have a password for chanserv your bot uncomment this and insert it
+//password=;
+web=http://bots.wmflabs.org/~wm-bot/;
+// Whether bouncer is being used
+serverIO=False;
+// Debug channel
+debug=#wm-bot;
+// IRC server
+network=holmes.freenode.net;
+// Port of bouncer
+bouncerp=6667;
+// Css style
+style_html_file=http://bots.wmflabs.org/~wm-bot/wmib/style.css;
+// Guess what
+nick=wm-blah;
+// List of channels separated by comma
+channels=#gagfd,
+#sdgsg;
+

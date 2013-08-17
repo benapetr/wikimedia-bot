@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace wmib
 {
@@ -70,10 +70,10 @@ namespace wmib
         public static bool exist(string lang)
         {
             if (!data.ContainsKey (lang))
-			{
-				return false;
-			}
-			return true;
+            {
+                return false;
+            }
+            return true;
         }
 
         private static string finalize(string text, List<string> va)

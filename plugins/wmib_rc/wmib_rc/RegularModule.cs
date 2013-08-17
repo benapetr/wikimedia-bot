@@ -1,4 +1,4 @@
-﻿//This program is free software: you can redistribute it and/or modify
+//This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
 //the Free Software Foundation, either version 3 of the License, or
 //(at your option) any later version.
@@ -251,7 +251,7 @@ namespace wmib
                         string _channel = message.Substring(message.IndexOf(" ") + 1);
                         if (RecentChanges.InsertChannel(channel, _channel))
                         {
-                            core.irc.Message(messages.get("Wiki+", channel.Language), channel.Name);
+                            core.irc._SlowQueue.DeliverMessage(messages.get("Wiki+", channel.Language), channel.Name);
                         }
                         return;
                     }
@@ -273,7 +273,7 @@ namespace wmib
         {
             Name = "RC";
             start = true;
-            Version = "1.2.0.2";
+            Version = "1.2.0.4";
             return true;
         }
 
@@ -285,11 +285,12 @@ namespace wmib
             {
                 if (!New)
                 {
-                    return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "" + username + "", url + "?diff=" + link, summary });
+                    return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "modified", "" + username + "", url + "?diff=" + link, summary });
                 }
-                return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "" + username + "", url + "?title=" + name_url, summary });
+                return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", url + "?title=" + page, summary });
             }
 
+            string action = "modified";
             string flags = "";
 
             if (minor)
@@ -300,6 +301,7 @@ namespace wmib
             if (New)
             {
                 flags += "new page, ";
+                action = "created";
             }
 
             if (bot)
@@ -315,12 +317,12 @@ namespace wmib
             string fu = url + "?diff=" + link;
             if (New)
             {
-                fu = url + "?title=" + System.Web.HttpUtility.UrlEncode(page).Replace("+", "_");
+                fu = url + "?title=" + System.Web.HttpUtility.UrlEncode(page).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")");
             }
 
             return GetConfig(chan, "RC.Template", "").Replace("$wiki", name_url)
-                   .Replace("$encoded_wiki_page", System.Web.HttpUtility.UrlEncode(page).Replace("+", "_"))
-                   .Replace("$encoded_wiki_username", System.Web.HttpUtility.UrlEncode(username).Replace("+", "_"))
+                   .Replace("$encoded_wiki_page", System.Web.HttpUtility.UrlEncode(page).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")"))
+                   .Replace("$encoded_wiki_username", System.Web.HttpUtility.UrlEncode(username).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")"))
                    .Replace("$encoded_page", System.Web.HttpUtility.UrlEncode(page))
                    .Replace("$encoded_username", System.Web.HttpUtility.UrlEncode(username))
                    .Replace("$url", url)
@@ -329,7 +331,8 @@ namespace wmib
                    .Replace("$username", username)
                    .Replace("$page", page)
                    .Replace("$summary", summary)
-                   .Replace("$flags", flags);
+                   .Replace("$flags", flags)
+                   .Replace("$action", action);
         }
 
         public static Change String2Change(string text)
@@ -342,21 +345,28 @@ namespace wmib
             }
             Change change = new Change("", "", "");
 
-            if (text.Contains(variables.color + "4 M"))
+            if (text.Contains(variables.color + "4 "))
             {
-                change.Minor = true;
-            }
+                string flags = text.Substring(text.IndexOf(variables.color + "4 ") + 3);
+                if (flags.Contains(variables.color))
+                {
+                    flags = flags.Substring(0, flags.IndexOf(variables.color));
+                }
+                if (flags.Contains("N"))
+                {
+                    change.New = true;
+                }
 
-            if (text.Contains(variables.color + "4 B"))
-            {
-                change.Bot = true;
+                if (flags.Contains("M"))
+                {
+                    change.Minor = true;
+                }
+                if (flags.Contains("B"))
+                {
+                    change.Bot = true;
+                }
             }
-
-            if (text.Contains(variables.color + "4 N"))
-            {
-                change.New = true;
-            }
-
+            
             change.Page = text.Substring(text.IndexOf(variables.color + "14[[") + 5);
             change.Page = change.Page.Substring(3);
             if (!change.Page.Contains(variables.color + "14]]"))
@@ -373,13 +383,21 @@ namespace wmib
             {
                 change.oldid = text.Substring(text.IndexOf("?oldid=") + 7);
 
-                if (!change.oldid.Contains("&"))
+                if (!change.oldid.Contains("&") && !change.oldid.Contains(" "))
                 {
                     core.DebugLog("Parser error #4", 6);
                     return null;
                 }
 
-                change.oldid = change.diff.Substring(0, change.diff.IndexOf("&"));
+                if (change.oldid.Contains(" "))
+                {
+                    change.oldid = change.oldid.Substring(0, change.oldid.IndexOf(" "));
+                }
+
+                if (change.oldid.Contains("&"))
+                {
+                    change.oldid = change.oldid.Substring(0, change.oldid.IndexOf("&"));
+                }
             }
 
             if (text.Contains("?diff="))
@@ -405,13 +423,13 @@ namespace wmib
 
             change.User = text.Substring(text.IndexOf(variables.color + "03") + 3);
 
-            if (!change.User.Contains(" " + variables.color + "5*"))
+            if (!change.User.Contains(variables.color + " " + variables.color + "5*"))
             {
                 core.DebugLog("Parser error #6", 6);
                 return null;
             }
 
-            change.User = change.User.Substring(0, change.User.IndexOf(" " + variables.color + "5*") + 4);
+            change.User = change.User.Substring(0, change.User.IndexOf(variables.color + " " + variables.color + "5*"));
 
             if (!text.Contains(variables.color + "5"))
             {
@@ -421,21 +439,18 @@ namespace wmib
 
             text = text.Substring(text.IndexOf(variables.color + "5"));
 
-            if (!text.Contains("("))
+            if (text.Contains("("))
             {
-                core.DebugLog("Parser error #8", 6);
-                return null;
+                change.Size = text.Substring(text.IndexOf("(") + 1);
+
+                if (!change.Size.Contains(")"))
+                {
+                    core.DebugLog("Parser error #10", 6);
+                    return null;
+                }
+
+                change.Size = change.Size.Substring(0, change.Size.IndexOf(")"));
             }
-
-            change.Size = text.Substring(text.IndexOf("(") + 1);
-
-            if (!change.Size.Contains(")"))
-            {
-                core.DebugLog("Parser error #10", 6);
-                return null;
-            }
-
-            change.Size = change.Size.Substring(0, change.Size.IndexOf(")"));
 
             if (!text.Contains(variables.color + "10"))
             {
@@ -484,7 +499,7 @@ namespace wmib
                             while (!RecentChanges.RD.EndOfStream)
                             {
                                 message = RecentChanges.RD.ReadLine();
-                                if (!message.Contains("PRIVMSG"))
+                                if (!message.Contains(" PRIVMSG "))
                                 {
                                     continue;
                                 }
@@ -520,6 +535,10 @@ namespace wmib
                                                             {
                                                                 if (edit.Page == w.Page)
                                                                 {
+                                                                    if (edit.Size != null)
+                                                                    {
+                                                                        edit.Description = "[" + edit.Size + "] " + edit.Description;
+                                                                    }
                                                                     if (w.URL == null)
                                                                     {
                                                                         DebugLog("NULL pointer on idata 1", 2);
