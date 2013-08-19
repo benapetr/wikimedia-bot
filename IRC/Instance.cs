@@ -116,12 +116,12 @@ namespace wmib
         {
             if (irc.ChannelsJoined == false)
             {
+                if (config.DebugChan != null)
+                {
+                    irc.SendData("JOIN " + config.DebugChan);
+                }
                 foreach (config.channel channel in ChannelList)
                 {
-                    if (config.DebugChan != null)
-                    {
-                        irc.SendData("JOIN " + config.DebugChan);
-                    }
                     if (channel.Name != "" && channel.Name != config.DebugChan)
                     {
                         core.DebugLog("Joining " + channel.Name + " on " + Nick);
