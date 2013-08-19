@@ -458,7 +458,11 @@ namespace wmib
                 return null;
             }
 
-            change.Description = text.Substring(text.IndexOf(variables.color + "10") + 3);
+            change.Summary = text.Substring(text.IndexOf(variables.color + "10") + 3);
+            if (change.Summary.EndsWith(variables.color))
+            {
+                change.Summary = change.Summary.Substring(0, change.Summary.Length - 1);
+            }
 
             change.Special = change.Page.StartsWith("Special:");
 
@@ -537,14 +541,14 @@ namespace wmib
                                                                 {
                                                                     if (edit.Size != null)
                                                                     {
-                                                                        edit.Description = "[" + edit.Size + "] " + edit.Description;
+                                                                        edit.Summary = "[" + edit.Size + "] " + edit.Summary;
                                                                     }
                                                                     if (w.URL == null)
                                                                     {
                                                                         DebugLog("NULL pointer on idata 1", 2);
                                                                     }
                                                                     core.irc._SlowQueue.DeliverMessage(
-                                                                       Format(w.URL.name, w.URL.url, edit.Page, edit.User, edit.diff, edit.Description, curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
+                                                                       Format(w.URL.name, w.URL.url, edit.Page, edit.User, edit.diff, edit.Summary, curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
                                                                 }
                                                                 else
                                                                     if (w.Page.EndsWith("*"))
@@ -556,7 +560,7 @@ namespace wmib
                                                                                 DebugLog("NULL pointer on idata 2", 2);
                                                                             }
                                                                             core.irc._SlowQueue.DeliverMessage(
-                                                                            Format(w.URL.name, w.URL.url, edit.Page, edit.User, edit.diff, edit.Description, curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
+                                                                            Format(w.URL.name, w.URL.url, edit.Page, edit.User, edit.diff, edit.Summary, curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
                                                                         }
                                                                     }
                                                             }

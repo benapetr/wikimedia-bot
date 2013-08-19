@@ -21,7 +21,7 @@ namespace wmib
     public class Change
     {
         public string Page;
-        public string Description;
+        public string Summary;
         public string User;
         public bool Bot = false;
         public bool Minor = false;
@@ -33,7 +33,7 @@ namespace wmib
 
         public Change(string _Page, string _Description, string _User)
         {
-            Description = _Description;
+            Summary = _Description;
             User = _User;
             Page = _Page;
         }
