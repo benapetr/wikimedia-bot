@@ -59,6 +59,7 @@ namespace wmib
         /// <returns></returns>
         public static List<RssFeedItem> ReadFeed(string url, Feed.Item item, string channel)
         {
+            string temp = "No data were sent by server";
             try
             {
                 //create a new list of the rss feed items to return
@@ -69,7 +70,9 @@ namespace wmib
                 HttpWebRequest rssFeed = (HttpWebRequest)WebRequest.Create(url);
 
                 XmlDocument rss = new XmlDocument();
-                rss.Load(rssFeed.GetResponse().GetResponseStream());
+                StreamReader xx = new StreamReader(rssFeed.GetResponse().GetResponseStream());
+                temp = xx.ReadToEnd();
+                rss.LoadXml(temp);
 
                 if (url.StartsWith("http://bugzilla.wikimedia") || url.StartsWith("https://bugzilla.wikimedia"))
                 {
@@ -277,8 +280,11 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.Log("Unable to parse feed from " + url + " I will try to do that again " + item.retries.ToString() + " times", true);
-                core.handleException(fail, "Feed");
+                RSS.module.Log("Unable to parse feed from " + url + " I will try to do that again " + item.retries.ToString() + " times", true);
+                RSS.module.handleException(fail, "Feed");
+                string dump = Path.GetTempFileName();
+                File.WriteAllText(dump, temp);
+                RSS.module.Log("Dumped the source to " + dump);
                 if (item.retries < 1)
                 {
                     item.disabled = true;

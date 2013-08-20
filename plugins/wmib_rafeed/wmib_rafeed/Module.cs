@@ -12,6 +12,8 @@ namespace wmib
 {
     public class RSS : Module
     {
+        public static Module module = null;
+
         public override void Hook_PRIV(config.channel channel, User invoker, string message)
         {
             if (message.StartsWith("@rss- "))
@@ -379,6 +381,7 @@ namespace wmib
         public override bool Construct()
         {
             start = true;
+            module = this;
             Name = "Feed";
             Version = "1.0.12.21";
             return true;
@@ -425,7 +428,7 @@ namespace wmib
             catch (Exception fail)
             {
                 handleException(fail);
-                Log("RC feed is permanently down", true);
+                Log("Rss feed is permanently down", true);
             }
         }
     }

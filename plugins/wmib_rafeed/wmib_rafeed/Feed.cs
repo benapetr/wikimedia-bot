@@ -136,7 +136,7 @@ namespace wmib
                             }
                             catch (Exception)
                             {
-                                core.DebugLog("unable to load item for feed item name: " + i.name + " channel name " + owner.Name + " item was removed");
+                                RSS.module.DebugLog("unable to load item for feed item name: " + i.name + " channel name " + owner.Name + " item was removed");
                                 i.disabled = false;
                             }
                             Content.Add(i);
@@ -146,7 +146,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail, "Feed");
+                RSS.module.handleException(fail, "Feed");
             }
         }
 
@@ -197,7 +197,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail, "Feed");
+                RSS.module.handleException(fail);
             }
         }
 
@@ -304,8 +304,8 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.Log("Unable to handle rss in " + owner.Name, true);
-                core.handleException(fail, "Feed");
+                RSS.module.Log("Unable to handle rss in " + owner.Name, true);
+                RSS.module.handleException(fail, "Feed");
             }
             return true;
         }
