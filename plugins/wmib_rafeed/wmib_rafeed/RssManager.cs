@@ -280,11 +280,11 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                RSS.module.Log("Unable to parse feed from " + url + " I will try to do that again " + item.retries.ToString() + " times", true);
-                RSS.module.handleException(fail, "Feed");
+                RSS.m.Log("Unable to parse feed from " + url + " I will try to do that again " + item.retries.ToString() + " times", true);
+                RSS.m.handleException(fail, "Feed");
                 string dump = Path.GetTempFileName();
                 File.WriteAllText(dump, temp);
-                RSS.module.Log("Dumped the source to " + dump);
+                RSS.m.Log("Dumped the source to " + dump);
                 if (item.retries < 1)
                 {
                     item.disabled = true;

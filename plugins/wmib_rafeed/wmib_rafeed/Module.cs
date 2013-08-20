@@ -12,11 +12,11 @@ namespace wmib
 {
     public class RSS : Module
     {
-        public static Module module = null;
+        public static Module m = null;
 
         public override void Hook_PRIV(config.channel channel, User invoker, string message)
         {
-            if (message.StartsWith("@rss- "))
+            if (message.StartsWith(config.CommandPrefix + "rss- "))
             {
                 if (channel.Users.IsApproved(invoker, "trust"))
                 {
@@ -37,7 +37,7 @@ namespace wmib
                 }
             }
 
-            if (message.StartsWith("@rss-setstyle "))
+            if (message.StartsWith(config.CommandPrefix + "rss-setstyle "))
             {
                 if (channel.Users.IsApproved(invoker, "trust"))
                 {
@@ -140,7 +140,7 @@ namespace wmib
                 }
             }
 
-            if (message.StartsWith("@rss+ "))
+            if (message.StartsWith(config.CommandPrefix + "rss+ "))
             {
                 if (channel.Users.IsApproved(invoker, "trust"))
                 {
@@ -381,7 +381,7 @@ namespace wmib
         public override bool Construct()
         {
             start = true;
-            module = this;
+            m = this;
             Name = "Feed";
             Version = "1.0.12.21";
             return true;
