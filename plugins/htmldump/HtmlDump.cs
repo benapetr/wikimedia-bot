@@ -22,7 +22,7 @@ namespace wmib
         public override bool Construct()
         {
             Name = "Html dump";
-            Version = "1.0.8.2";
+            Version = "1.0.8.6";
             Reload = false;
             start = true;
             return true;
@@ -184,7 +184,14 @@ namespace wmib
                 {
                     text = text + "<tr>";
                     text = text + "<td><a href=\"" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm\">" + chan.Name + "</a></td><td>";
-                    text += "infobot: " + Module.GetConfig(chan, "Infobot.Enabled", true).ToString() + ", recentchanges: " + Module.GetConfig(chan, "RC.Enabled", false).ToString() + ", logs: " + Module.GetConfig(chan, "Logging.Enabled", false).ToString() + ", suppress: " + chan.suppress.ToString() + ", seen: " + Module.GetConfig(chan, "Seen.Enabled", false).ToString() + ", rss: " + Module.GetConfig(chan, "Rss.Enabled", false).ToString() + ", statistics: " + Module.GetConfig(chan, "Statistics.Enabled", false).ToString() + "Instance: " + chan.instance.Nick + "</td></tr>\n";
+                    text += "infobot: " + Module.GetConfig(chan, "Infobot.Enabled", true).ToString() 
+                        + ", Recent Changes: " + Module.GetConfig(chan, "RC.Enabled", false).ToString() 
+                        + ", Logs: " + Module.GetConfig(chan, "Logging.Enabled", false).ToString() 
+                        + ", Suppress: " + chan.suppress.ToString() 
+                        + ", Seen: " + Module.GetConfig(chan, "Seen.Enabled", false).ToString() 
+                        + ", rss: " + Module.GetConfig(chan, "Rss.Enabled", false).ToString() 
+                        + ", statistics: " + Module.GetConfig(chan, "Statistics.Enabled", false).ToString() 
+                        + " Instance: " + chan.instance.Nick + "</td></tr>\n";
                 }
 
 
