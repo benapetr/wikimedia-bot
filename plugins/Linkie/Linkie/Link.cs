@@ -40,7 +40,14 @@ namespace wmib
                     }
                 }
             }
-            return "https://enwp.org/" + link;
+            lock (Wiki)
+            {
+                if (Wiki.ContainsKey(Default))
+                {
+                    return Wiki[Default].Replace("$1", "Template:" + link);
+                }
+            }
+            return "https://enwp.org/Template:" + link;
         }
 
         public static string URL(string prefix, string Default)
@@ -60,6 +67,13 @@ namespace wmib
                     {
                         return Wiki[Default].Replace("$1", link);
                     }
+                }
+            }
+            lock (Wiki)
+            {
+                if (Wiki.ContainsKey(Default))
+                {
+                    return Wiki[Default].Replace("$1", "Template:" + link);
                 }
             }
             return "https://enwp.org/" + link;
