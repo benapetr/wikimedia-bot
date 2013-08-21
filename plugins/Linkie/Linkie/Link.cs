@@ -19,25 +19,27 @@ namespace wmib
 
         public static string URL(string prefix, string Default)
         {
+            string link = prefix;
             if (prefix.Contains(":"))
             {
+                link = prefix.Substring(prefix.IndexOf(":") + 1);
+                prefix = prefix.Substring(0, prefix.IndexOf(":"));
                 lock (Wiki)
                 {
-                    prefix = prefix.Substring(0, prefix.IndexOf(":"));
                     if (Wiki.ContainsKey(prefix))
                     {
-                        return Wiki[prefix].Replace("$1", "");
+                        return Wiki[prefix].Replace("$1", link);
                     }
                     else if (Wiki.ContainsKey(Default))
                     {
-                        return Wiki[Default].Replace("$1", "");
+                        return Wiki[Default].Replace("$1", link);
                     }
                 }
             }
-            return "https://enwp.org/";
+            return "https://enwp.org/" + link;
         }
 
-        private static string MakeLink(string text, string Default)
+        private static string MakeLink(string text, string Default, bool Ignore)
         {
             string link = "";
             if (text.Contains("[["))
@@ -48,20 +50,24 @@ namespace wmib
                     string second = link.Substring(link.IndexOf("]]") + 2);
                     if (second.Contains("[["))
                     {
-                        second = MakeLink(second, Default);
+                        second = MakeLink(second, Default, Ignore);
                     }
                     else
                     {
                         second = null;
                     }
                     link = link.Substring(0, link.IndexOf("]]"));
-                    link = System.Web.HttpUtility.UrlEncode(link).Replace("%3", ":").Replace("+", "_");
+                    link = System.Web.HttpUtility.UrlEncode(link).Replace("%3a", ":").Replace("+", "_");
                     if (second != null)
                     {
-                        return URL(link, Default) + link + " " + second;
+                        return URL(link, Default) + " " + second;
                     }
-                    return URL(link, Default) + link;
+                    return URL(link, Default);
                 }
+            }
+            if (Ignore)
+            {
+                return "";
             }
             return "This string can't be converted to a wiki link";
         }
@@ -115,7 +121,7 @@ namespace wmib
             if (message.StartsWith(config.CommandPrefix + "link "))
             {
                 string link = message.Substring(6);
-                core.irc._SlowQueue.DeliverMessage(MakeLink(link, GetConfig(channel, "Link.Default", "en")), channel);
+                core.irc._SlowQueue.DeliverMessage(MakeLink(link, GetConfig(channel, "Link.Default", "en"), false), channel);
                 return;
             }
 
@@ -126,7 +132,11 @@ namespace wmib
                     string link = message.Substring(message.IndexOf("[[") + 2);
                     if (link.Contains("]]"))
                     {
-                        core.irc._SlowQueue.DeliverMessage(MakeLink(link, GetConfig(channel, "Link.Default", "en")), channel);
+                        string result = MakeLink(link, GetConfig(channel, "Link.Default", "en"), true);
+                        if (result != "")
+                        {
+                            core.irc._SlowQueue.DeliverMessage(result, channel);
+                        }
                         return;
                     }
                 }

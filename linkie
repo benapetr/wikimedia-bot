@@ -100,7 +100,7 @@ cr|https://cr.wikipedia.org/wiki/$1
 crazyhacks|https://www.crazy-hacks.org/wiki/index.php?title=$1
 creatureswiki|https://creatures.wikia.com/wiki/$1
 crh|https://crh.wikipedia.org/wiki/$1
-cs|https://cs.wikipedia.org/wiki/$1
+cs|http://cswp.cz/$1
 csb|https://csb.wikipedia.org/wiki/$1
 cu|https://cu.wikipedia.org/wiki/$1
 cv|https://cv.wikipedia.org/wiki/$1
@@ -152,7 +152,7 @@ el|https://el.wikipedia.org/wiki/$1
 elibre|https://enciclopedia.us.es/index.php/$1
 emacswiki|https://www.emacswiki.org/cgi-bin/wiki.pl?$1
 eml|https://eml.wikipedia.org/wiki/$1
-en|https://enwp.org/$1
+en|http://enwp.org/$1
 energiewiki|https://www.netzwerk-energieberater.de/wiki/index.php/$1
 eo|https://eo.wikipedia.org/wiki/$1
 eokulturcentro|https://esperanto.toulouse.free.fr/nova/wikini/wakka.php?wiki=$1
