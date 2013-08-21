@@ -55,12 +55,12 @@ namespace wmib
                         second = null;
                     }
                     link = link.Substring(0, link.IndexOf("]]"));
-                    link = System.Web.HttpUtility.UrlEncode(link).Replace("+", "_");
+                    link = System.Web.HttpUtility.UrlEncode(link).Replace("%3", ":").Replace("+", "_");
                     if (second != null)
                     {
                         return URL(link, Default) + link + " " + second;
                     }
-                    return link;
+                    return URL(link, Default) + link;
                 }
             }
             return "This string can't be converted to a wiki link";
@@ -131,6 +131,23 @@ namespace wmib
                     }
                 }
             }
+        }
+
+        public override bool Hook_SetConfig(config.channel chan, User invoker, string config, string value)
+        {
+            if (config == "default_link_wiki")
+            {
+                if (value != "")
+                {
+                    SetConfig(chan, "Link.Default", value);
+                    chan.SaveConfig();
+                    core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
+                    return true;
+                }
+                core.irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
+                return true;
+            }
+            return false;
         }
 
         public override void Load()
