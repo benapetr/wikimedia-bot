@@ -97,7 +97,7 @@ namespace wmib
                         second = null;
                     }
                     link = link.Substring(0, link.IndexOf("}}"));
-                    link = System.Web.HttpUtility.UrlEncode(link).Replace("%2f", "")
+                    link = System.Web.HttpUtility.UrlEncode(link).Replace("%2f", "/")
                         .Replace("%3a", ":")
                         .Replace("+", "_");
                     if (second != null)
@@ -132,7 +132,7 @@ namespace wmib
                     {
                         link = link.Substring(0, link.IndexOf("|"));
                     }
-                    link = System.Web.HttpUtility.UrlEncode(link).Replace("%2f", "")
+                    link = System.Web.HttpUtility.UrlEncode(link).Replace("%2f", "/")
                         .Replace("%3a", ":")
                         .Replace("+", "_");
                     if (second != null)
