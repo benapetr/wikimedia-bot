@@ -97,7 +97,9 @@ namespace wmib
                         second = null;
                     }
                     link = link.Substring(0, link.IndexOf("}}"));
-                    link = System.Web.HttpUtility.UrlEncode(link).Replace("%3a", ":").Replace("+", "_");
+                    link = System.Web.HttpUtility.UrlEncode(link).Replace("%2f", "")
+                        .Replace("%3a", ":")
+                        .Replace("+", "_");
                     if (second != null)
                     {
                         return URL2(link, Default) + " " + second;
@@ -126,7 +128,13 @@ namespace wmib
                         second = null;
                     }
                     link = link.Substring(0, link.IndexOf("]]"));
-                    link = System.Web.HttpUtility.UrlEncode(link).Replace("%3a", ":").Replace("+", "_");
+                    if (link.Contains("|"))
+                    {
+                        link = link.Substring(0, link.IndexOf("|"));
+                    }
+                    link = System.Web.HttpUtility.UrlEncode(link).Replace("%2f", "")
+                        .Replace("%3a", ":")
+                        .Replace("+", "_");
                     if (second != null)
                     {
                         return URL(link, Default) + " " + second;
@@ -295,7 +303,7 @@ namespace wmib
             {
                 while (working)
                 {
-                    Thread.Sleep(2000);
+                    Thread.Sleep(20000);
                 }
             }
             catch (ThreadAbortException)
