@@ -36,11 +36,7 @@ namespace wmib
                     }
                     else if (Wiki.ContainsKey(Default))
                     {
-                        if (!prefix.StartsWith("User:"))
-                        {
-                            prefix = "Template:" + prefix;
-                        }
-                        return Wiki[Default].Replace("$1", prefix);
+                        return Wiki[Default].Replace("$1", prefix + ":" + link);
                     }
                 }
             }
@@ -141,6 +137,25 @@ namespace wmib
             return "";
         }
 
+        public static bool ContainsLink(string message)
+        {
+            if (message.Contains("{{"))
+            {
+                if (message.Substring(message.IndexOf("{{") + 2).Contains("}}"))
+                {
+                    return true;
+                }
+            }
+            if (message.Contains("[["))
+            {
+                if (message.Substring(message.IndexOf("[[") + 2).Contains("]]"))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public override void Hook_PRIV(config.channel channel, User invoker, string message)
         {
             if (message == config.CommandPrefix + "linkie-off")
@@ -189,6 +204,23 @@ namespace wmib
                 return;
             }
 
+            if (message == config.CommandPrefix + "link")
+            {
+                if (GetConfig(channel, "Link.Last", "") == "")
+                {
+                    core.irc._SlowQueue.DeliverMessage("There is no link in buffer for this channel :/", channel);
+                    return;
+                }
+                string xx = MakeTemplate(GetConfig(channel, "Link.Last", ""), GetConfig(channel, "Link.Default", "en"), false) + MakeLink(GetConfig(channel, "Link.Last", ""), GetConfig(channel, "Link.Default", "en"), true);
+                if (xx != "")
+                {
+                    core.irc._SlowQueue.DeliverMessage(xx, channel);
+                    return;
+                }
+                core.irc._SlowQueue.DeliverMessage("That thing in my buffer is not a valid link", channel);
+                return;
+            }
+
             if (message.StartsWith(config.CommandPrefix + "link "))
             {
                 string link = message.Substring(6);
@@ -208,8 +240,13 @@ namespace wmib
                 if (result != "")
                 {
                     core.irc._SlowQueue.DeliverMessage(result, channel);
+                    return;
                 }
-                return;
+            }
+
+            if (ContainsLink(message))
+            {
+                SetConfig(channel, "Link.Last", message);
             }
         }
 
