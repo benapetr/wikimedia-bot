@@ -77,7 +77,7 @@ namespace wmib
             {
                 if (Wiki.ContainsKey(Default))
                 {
-                    return Wiki[Default].Replace("$1", "Template:" + link);
+                    return Wiki[Default].Replace("$1", link);
                 }
             }
             return "https://enwp.org/" + link;
