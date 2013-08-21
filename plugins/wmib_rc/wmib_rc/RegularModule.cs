@@ -287,7 +287,7 @@ namespace wmib
                 {
                     return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "modified", "" + username + "", url + "?diff=" + link, summary });
                 }
-                return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", url + "?title=" + page, summary });
+                return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", url + "?title=" + System.Web.HttpUtility.UrlEncode( page ), summary });
             }
 
             string action = "modified";
