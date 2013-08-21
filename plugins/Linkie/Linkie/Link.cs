@@ -136,7 +136,7 @@ namespace wmib
         public override void Load()
         {
             Log("Loading db of links");
-            if (System.IO.File.Exists(variables.config + "/linkie"))
+            if (!System.IO.File.Exists(variables.config + "/linkie"))
             {
                 Log("Unable to load " + variables.config + "/linkie aborting module", true);
                 Exit();
@@ -161,7 +161,7 @@ namespace wmib
             {
                 while (working)
                 {
-                    Thread.Sleep(200);
+                    Thread.Sleep(2000);
                 }
             }
             catch (ThreadAbortException)
