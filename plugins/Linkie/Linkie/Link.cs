@@ -36,7 +36,11 @@ namespace wmib
                     }
                     else if (Wiki.ContainsKey(Default))
                     {
-                        return Wiki[Default].Replace("$1", link);
+                        if (!prefix.StartsWith("User:"))
+                        {
+                            prefix = "Template:" + prefix;
+                        }
+                        return Wiki[Default].Replace("$1", prefix);
                     }
                 }
             }
