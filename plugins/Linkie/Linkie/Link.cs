@@ -11,9 +11,9 @@ namespace wmib
 
         public override bool Construct()
         {
-            start = true;
-            Name = "Linkie-Bottie";
             Version = "1.0.0.0";
+            Name = "Linkie-Bottie";
+            start = true;
             return true;
         }
 
@@ -53,6 +53,7 @@ namespace wmib
         public static string URL(string prefix, string Default)
         {
             string link = prefix;
+            string original = prefix;
             if (prefix.Contains(":"))
             {
                 link = prefix.Substring(prefix.IndexOf(":") + 1);
@@ -65,7 +66,7 @@ namespace wmib
                     }
                     else if (Wiki.ContainsKey(Default))
                     {
-                        return Wiki[Default].Replace("$1", link);
+                        return Wiki[Default].Replace("$1", original);
                     }
                 }
             }
