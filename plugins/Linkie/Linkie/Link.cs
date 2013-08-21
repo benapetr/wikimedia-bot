@@ -120,11 +120,7 @@ namespace wmib
                     return URL(link, Default);
                 }
             }
-            if (Ignore)
-            {
-                return "";
-            }
-            return "This string can't be converted to a wiki link";
+            return "";
         }
 
         public override void Hook_PRIV(config.channel channel, User invoker, string message)
@@ -178,7 +174,13 @@ namespace wmib
             if (message.StartsWith(config.CommandPrefix + "link "))
             {
                 string link = message.Substring(6);
-                core.irc._SlowQueue.DeliverMessage(MakeTemplate(link, GetConfig(channel, "Link.Default", "en"), false) + MakeLink(link, GetConfig(channel, "Link.Default", "en"), false), channel);
+                string xx = MakeTemplate(link, GetConfig(channel, "Link.Default", "en"), false) + MakeLink(link, GetConfig(channel, "Link.Default", "en"), true);
+                if (xx != "")
+                {
+                    core.irc._SlowQueue.DeliverMessage(xx, channel);
+                    return;
+                }
+                core.irc._SlowQueue.DeliverMessage("This is not a valid link", channel);
                 return;
             }
 
