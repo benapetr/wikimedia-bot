@@ -19,6 +19,7 @@ namespace wmib
 
         public static string URL2(string prefix, string Default)
         {
+            string original = prefix;
             string link = prefix;
             if (prefix.Contains(":"))
             {
@@ -44,10 +45,10 @@ namespace wmib
             {
                 if (Wiki.ContainsKey(Default))
                 {
-                    return Wiki[Default].Replace("$1", "Template:" + link);
+                    return Wiki[Default].Replace("$1", "Template:" + original);
                 }
             }
-            return "https://enwp.org/Template:" + link;
+            return "http://enwp.org/Template:" + original;
         }
 
         public static string URL(string prefix, string Default)
@@ -74,10 +75,10 @@ namespace wmib
             {
                 if (Wiki.ContainsKey(Default))
                 {
-                    return Wiki[Default].Replace("$1", link);
+                    return Wiki[Default].Replace("$1", original);
                 }
             }
-            return "https://enwp.org/" + link;
+            return "http://enwp.org/" + original;
         }
 
         private static string MakeTemplate(string text, string Default, bool Ignore)
@@ -98,6 +99,10 @@ namespace wmib
                         second = null;
                     }
                     link = link.Substring(0, link.IndexOf("}}"));
+                    if (link.Contains("|"))
+                    {
+                        link = link.Substring(0, link.IndexOf("|"));
+                    }
                     link = System.Web.HttpUtility.UrlEncode(link).Replace("%2f", "/")
                         .Replace("%3a", ":")
                         .Replace("+", "_");
