@@ -49,6 +49,7 @@ namespace wmib
             data.Add("en", new container("en"));
             data.Add("zh", new container("zh"));
             data.Add("de", new container("de"));
+            data.Add("ko", new container("ko"));
         }
 
         private static string parse(string text, string name)
@@ -69,7 +70,7 @@ namespace wmib
         /// <returns></returns>
         public static bool exist(string lang)
         {
-            if (!data.ContainsKey (lang))
+            if (!data.ContainsKey(lang))
             {
                 return false;
             }
@@ -84,11 +85,11 @@ namespace wmib
             {
                 return text;
             }
-                foreach (string part in va)
-                { 
-                    position++;
-                    Text = Text.Replace("$" + position.ToString(), part);
-                }
+            foreach (string part in va)
+            {
+                position++;
+                Text = Text.Replace("$" + position.ToString(), part);
+            }
             return Text;
         }
 
@@ -115,21 +116,24 @@ namespace wmib
             }
             string text;
             switch (language)
-            { 
+            {
                 case "en":
-                        text = Properties.Resources.english;
-                        break;
+                    text = Properties.Resources.english;
+                    break;
                 case "cs":
-                        text = Properties.Resources.cs_czech;
-                        break;
+                    text = Properties.Resources.cs_czech;
+                    break;
                 case "zh":
-                        text = Properties.Resources.zh_chinese;
-                        break;
+                    text = Properties.Resources.zh_chinese;
+                    break;
                 case "de":
-                        text = Properties.Resources.de_german;
-                        break;
+                    text = Properties.Resources.de_german;
+                    break;
+                case "ko":
+                    text = Properties.Resources.ko_korean;
+                    break;
                 default:
-                        return "invalid language: " + language;
+                    return "invalid language: " + language;
             }
             string value = parse(text, item);
             if (string.IsNullOrEmpty(value))
