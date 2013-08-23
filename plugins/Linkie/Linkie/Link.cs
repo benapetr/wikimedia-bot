@@ -180,11 +180,11 @@ namespace wmib
                     {
                         SetConfig(channel, "Link.Enable", false);
                         channel.SaveConfig();
-                        channel.instance.irc._SlowQueue.DeliverMessage("Links will not be automatically translated in this channel now", channel);
+                        channel.instance.irc._SlowQueue.DeliverMessage(messages.get("Linkie-Off", channel.Language), channel);
                     }
                     else
                     {
-                        channel.instance.irc._SlowQueue.DeliverMessage("Links are already not automatically translated in this channel", channel);
+                        channel.instance.irc._SlowQueue.DeliverMessage(messages.get("Linkie-Off2", channel.Language), channel);
                     }
                     return;
                 }
@@ -203,11 +203,11 @@ namespace wmib
                     {
                         SetConfig(channel, "Link.Enable", true);
                         channel.SaveConfig();
-                        channel.instance.irc._SlowQueue.DeliverMessage("Links will be automatically translated in this channel now", channel);
+                        channel.instance.irc._SlowQueue.DeliverMessage(messages.get("Linkie-On", channel.Language), channel);
                     }
                     else
                     {
-                        channel.instance.irc._SlowQueue.DeliverMessage("Links are already automatically translated in this channel", channel);
+                        channel.instance.irc._SlowQueue.DeliverMessage(messages.get("Linkie-On2", channel.Language), channel);
                     }
                     return;
                 }
@@ -222,7 +222,7 @@ namespace wmib
             {
                 if (GetConfig(channel, "Link.Last", "") == "")
                 {
-                    core.irc._SlowQueue.DeliverMessage("There is no link in buffer for this channel :/", channel);
+                    core.irc._SlowQueue.DeliverMessage(messages.get("Linkie-E1", channel.Language), channel);
                     return;
                 }
                 string xx = MakeTemplate(GetConfig(channel, "Link.Last", ""), GetConfig(channel, "Link.Default", "en"), false) + MakeLink(GetConfig(channel, "Link.Last", ""), GetConfig(channel, "Link.Default", "en"), true);
@@ -231,7 +231,7 @@ namespace wmib
                     core.irc._SlowQueue.DeliverMessage(xx, channel);
                     return;
                 }
-                core.irc._SlowQueue.DeliverMessage("That thing in my buffer is not a valid link", channel);
+                core.irc._SlowQueue.DeliverMessage(messages.get("Linkie-E2", channel.Language), channel);
                 return;
             }
 
@@ -244,7 +244,7 @@ namespace wmib
                     core.irc._SlowQueue.DeliverMessage(xx, channel);
                     return;
                 }
-                core.irc._SlowQueue.DeliverMessage("This is not a valid link", channel);
+                core.irc._SlowQueue.DeliverMessage(messages.get("Linkie-E3", channel.Language), channel);
                 return;
             }
 
