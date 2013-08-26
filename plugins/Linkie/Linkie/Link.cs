@@ -105,6 +105,7 @@ namespace wmib
                     }
                     link = System.Web.HttpUtility.UrlEncode(link).Replace("%2f", "/")
                         .Replace("%3a", ":")
+                        .Replace("%28", "#")
                         .Replace("+", "_");
                     if (second != null)
                     {
