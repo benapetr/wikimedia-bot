@@ -273,7 +273,7 @@ namespace wmib
         {
             Name = "RC";
             start = true;
-            Version = "1.2.0.4";
+            Version = "1.2.0.5";
             return true;
         }
 
@@ -287,7 +287,7 @@ namespace wmib
                 {
                     return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "modified", "" + username + "", url + "?diff=" + link, summary });
                 }
-                return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", url + "?title=" + System.Web.HttpUtility.UrlEncode( page ), summary });
+                return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", url + "?title=" + System.Web.HttpUtility.UrlEncode(page), summary });
             }
 
             string action = "modified";
@@ -317,12 +317,12 @@ namespace wmib
             string fu = url + "?diff=" + link;
             if (New)
             {
-                fu = url + "?title=" + System.Web.HttpUtility.UrlEncode(page).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")");
+                fu = url + "?title=" + System.Web.HttpUtility.UrlEncode(page).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%23", "#").Replace("%28", "(").Replace("%29", ")");
             }
 
             return GetConfig(chan, "RC.Template", "").Replace("$wiki", name_url)
-                   .Replace("$encoded_wiki_page", System.Web.HttpUtility.UrlEncode(page).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")"))
-                   .Replace("$encoded_wiki_username", System.Web.HttpUtility.UrlEncode(username).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")"))
+                   .Replace("$encoded_wiki_page", System.Web.HttpUtility.UrlEncode(page).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%23", "#").Replace("%28", "(").Replace("%29", ")"))
+                   .Replace("$encoded_wiki_username", System.Web.HttpUtility.UrlEncode(username).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%23", "#").Replace("%28", "(").Replace("%29", ")"))
                    .Replace("$encoded_page", System.Web.HttpUtility.UrlEncode(page))
                    .Replace("$encoded_username", System.Web.HttpUtility.UrlEncode(username))
                    .Replace("$url", url)
