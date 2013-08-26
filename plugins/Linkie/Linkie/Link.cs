@@ -11,7 +11,7 @@ namespace wmib
 
         public override bool Construct()
         {
-            Version = "1.0.0.0";
+            Version = "1.0.0.1";
             Name = "Linkie-Bottie";
             start = true;
             return true;
@@ -105,7 +105,6 @@ namespace wmib
                     }
                     link = System.Web.HttpUtility.UrlEncode(link).Replace("%2f", "/")
                         .Replace("%3a", ":")
-                        .Replace("%28", "#")
                         .Replace("+", "_");
                     if (second != null)
                     {
@@ -141,6 +140,7 @@ namespace wmib
                     }
                     link = System.Web.HttpUtility.UrlEncode(link).Replace("%2f", "/")
                         .Replace("%3a", ":")
+                        .Replace("%28", "#")
                         .Replace("+", "_");
                     if (second != null)
                     {
@@ -267,7 +267,7 @@ namespace wmib
 
         public override bool Hook_SetConfig(config.channel chan, User invoker, string config, string value)
         {
-            if (config == "default_link_wiki")
+            if (config == "default-link-wiki")
             {
                 if (value != "")
                 {
