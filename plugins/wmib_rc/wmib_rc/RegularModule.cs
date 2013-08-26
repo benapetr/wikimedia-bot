@@ -317,7 +317,7 @@ namespace wmib
             string fu = url + "?diff=" + link;
             if (New)
             {
-                fu = url + "?title=" + System.Web.HttpUtility.UrlEncode(page).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%23", "#").Replace("%28", "(").Replace("%29", ")");
+                fu = url + "?title=" + System.Web.HttpUtility.UrlEncode(page);
             }
 
             return GetConfig(chan, "RC.Template", "").Replace("$wiki", name_url)
