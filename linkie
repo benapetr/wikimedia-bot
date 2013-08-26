@@ -624,7 +624,7 @@ wikisophia|https://wikisophia.org/index.php?title=$1
 wikisource|https://en.wikisource.org/wiki/$1
 wikispecies|https://species.wikimedia.org/wiki/$1
 wikispot|https://wikispot.org/?action=gotowikipage&v=$1
-wikitext|https://wikitech.wikimedia.org/wiki/$1
+wikitech|https://wikitech.wikimedia.org/wiki/$1
 wikiti|https://wikiti.denglend.net/index.php?title=$1
 wikitravel|https://wikitravel.org/en/$1
 wikitree|https://wikitree.org/index.php?title=$1
