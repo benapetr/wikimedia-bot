@@ -114,6 +114,7 @@ dbdump|https://download.wikimedia.org/$1
 dcc|https://www.dccwiki.com/$1
 dcdatabase|https://www.dcdatabaseproject.com/wiki/$1
 dcma|https://www.christian-morgenstern.de/dcma/$1
+ddo|http://ddowiki.com/page/$1
 de|https://de.wikipedia.org/wiki/$1
 dejanews|https://www.deja.com/=dnc/getdoc.xp?AN=$1
 delicious|https://del.icio.us/tag/$1
@@ -590,6 +591,7 @@ webdevwikinl|https://www.promo-it.nl/WebDevWiki/index.php?page=$1
 webisodes|https://www.webisodes.org/$1
 webseitzwiki|https://webseitz.fluxent.com/wiki/$1
 wg|https://wg.en.wikipedia.org/wiki/$1
+widget|http://www.mediawikiwidgets.org/$1
 wiki|https://c2.com/cgi/wiki?$1
 wikia|https://www.wikia.com/wiki/c:$1
 wikianso|https://www.ansorena.de/mediawiki/wiki/$1
@@ -622,6 +624,7 @@ wikisophia|https://wikisophia.org/index.php?title=$1
 wikisource|https://en.wikisource.org/wiki/$1
 wikispecies|https://species.wikimedia.org/wiki/$1
 wikispot|https://wikispot.org/?action=gotowikipage&v=$1
+wikitext|https://wikitech.wikimedia.org/wiki/$1
 wikiti|https://wikiti.denglend.net/index.php?title=$1
 wikitravel|https://wikitravel.org/en/$1
 wikitree|https://wikitree.org/index.php?title=$1
