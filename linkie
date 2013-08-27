@@ -413,7 +413,7 @@ o-bot2|http://bot2.orain.org/wiki/$1
 o-computerclan|http://computerclan.orain.org/wiki/$1
 o-cricket|http://cricket.orain.org/wiki/$1
 o-encyclopedianational|http://encyclopedianational.orain.org/wiki/$1
-o-foodopedia|foodopedia.orain.org/wiki/$1
+o-foodopedia|http://foodopedia.orain.org/wiki/$1
 o-levels|http://levels.orain.org/wiki/$1
 o-mediawikitesters|http://mediawikitesters.orain.org/wiki/$1
 o-meta|http://meta.orain.org/wiki/$1
