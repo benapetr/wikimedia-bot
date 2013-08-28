@@ -124,6 +124,8 @@ namespace wmib
         /// </summary>
         public static List<channel> channels = new List<channel>();
 
+        public static int Interval = 800;
+
         /// <summary>
         /// List of all channels the bot is in, thread safe
         /// </summary>
@@ -179,6 +181,7 @@ namespace wmib
             AddConfig("network", network, text);
             AddConfig("bouncerp", BouncerPort.ToString(), text);
             AddConfig("style_html_file", css, text);
+            AddConfig("interval", Interval.ToString(), text);
             AddConfig("nick", login, text);
             text.Append("\nchannels=");
 
@@ -327,6 +330,10 @@ namespace wmib
             if (Configuration.ContainsKey("password"))
             {
                 password = Configuration["password"];
+            }
+            if (Configuration.ContainsKey("interval"))
+            {
+                Interval = int.Parse(Configuration["interval"]);
             }
             if (string.IsNullOrEmpty(login))
             {
