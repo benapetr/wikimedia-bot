@@ -95,7 +95,7 @@ namespace wmib
                     core.partChannel(Channel, invoker.Nick, invoker.Host, config.CommandPrefix + "part", chan.Name);
                     return;
                 }
-                irc._SlowQueue.DeliverMessage("It would be cool to give me a name of channel you want to part", chan.Name, IRC.priority.low);
+                irc._SlowQueue.DeliverMessage(messages.get("Responses-PartFail", chan.Language), chan, IRC.priority.low);
                 return;
             }
 
@@ -113,7 +113,7 @@ namespace wmib
                     core.partChannel(Channel, invoker.Nick, invoker.Host, config.CommandPrefix + "drop", chan.Name);
                     return;
                 }
-                irc._SlowQueue.DeliverMessage("It would be cool to give me a name of channel you want to drop", chan, IRC.priority.low);
+                irc._SlowQueue.DeliverMessage(messages.get("Responses-PartFail", chan.Language), chan, IRC.priority.low);
                 return;
             }
 
@@ -330,7 +330,7 @@ namespace wmib
 
             if (message == config.CommandPrefix + "channellist")
             {
-                irc._SlowQueue.DeliverMessage("I am in " + config.channels.Count.ToString() + " channels in this moment", chan);
+                irc._SlowQueue.DeliverMessage(messages.get("Responses-List", chan.Language, new List<string> { config.channels.Count.ToString() }), chan);
                 return;
             }
 
@@ -428,13 +428,13 @@ namespace wmib
                         switch (text)
                         {
                             case "ignore-unknown":
-                                irc._SlowQueue.DeliverMessage("Value of " + text + " is: " + chan.ignore_unknown.ToString(), chan);
+                                irc._SlowQueue.DeliverMessage(messages.get("Responses-Conf", chan.Language, new List<string> { text, chan.ignore_unknown.ToString() } ), chan);
                                 return;
                             case "respond-message":
-                                irc._SlowQueue.DeliverMessage("Value of " + text + " is: " + chan.respond_message.ToString(), chan);
+                                irc._SlowQueue.DeliverMessage(messages.get("Responses-Conf", chan.Language, new List<string> { text, chan.respond_message.ToString() }), chan);
                                 return;
                             case "suppress-warnings":
-                                irc._SlowQueue.DeliverMessage("Value of " + text + " is: " + chan.suppress_warnings.ToString(), chan);
+                                irc._SlowQueue.DeliverMessage(messages.get("Responses-Conf", chan.Language, new List<string> { text, chan.suppress_warnings.ToString() } ), chan);
                                 return;
                         }
                         bool exist = false;

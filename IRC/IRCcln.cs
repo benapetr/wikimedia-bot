@@ -288,7 +288,7 @@ namespace wmib
                                         {
                                             Processed.Add(message);
                                             Transfer(message);
-                                            System.Threading.Thread.Sleep(1000);
+                                            System.Threading.Thread.Sleep(config.Interval);
                                             if (highest != priority.high)
                                             {
                                                 break;

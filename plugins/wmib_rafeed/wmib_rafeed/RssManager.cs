@@ -59,6 +59,7 @@ namespace wmib
         /// <returns></returns>
         public static List<RssFeedItem> ReadFeed(string url, Feed.Item item, string channel)
         {
+            string temp = "No data were sent by server";
             try
             {
                 //create a new list of the rss feed items to return
@@ -69,7 +70,9 @@ namespace wmib
                 HttpWebRequest rssFeed = (HttpWebRequest)WebRequest.Create(url);
 
                 XmlDocument rss = new XmlDocument();
-                rss.Load(rssFeed.GetResponse().GetResponseStream());
+                StreamReader xx = new StreamReader(rssFeed.GetResponse().GetResponseStream());
+                temp = xx.ReadToEnd();
+                rss.LoadXml(temp);
 
                 if (url.StartsWith("http://bugzilla.wikimedia") || url.StartsWith("https://bugzilla.wikimedia"))
                 {
@@ -106,61 +109,50 @@ namespace wmib
                                             string html = System.Web.HttpUtility.HtmlDecode(data.InnerText);
                                             if (html.Contains("<table>"))
                                             {
-                                                try
+                                                XmlDocument summary = new XmlDocument();
+                                                summary.LoadXml(html);
+                                                foreach (XmlNode tr in summary.ChildNodes[0].ChildNodes)
                                                 {
-                                                    XmlDocument summary = new XmlDocument();
-                                                    summary.LoadXml(html);
-                                                    foreach (XmlNode tr in summary.ChildNodes[0].ChildNodes)
+                                                    bool type = true;
+                                                    string st = "";
+                                                    foreach (XmlNode td in tr.ChildNodes)
                                                     {
-                                                        bool type = true;
-                                                        string st = "";
-                                                        foreach (XmlNode td in tr.ChildNodes)
+                                                        if (type)
                                                         {
-                                                            if (type)
-                                                            {
-                                                                st = td.InnerText;
-                                                            }
-                                                            else
-                                                            {
-                                                                switch (st.Replace(" ", ""))
-                                                                {
-                                                                    case "Product":
-                                                                        curr.bugzilla_product = td.InnerText;
-                                                                        break;
-                                                                    case "Status":
-                                                                        curr.bugzilla_status = td.InnerText;
-                                                                        break;
-                                                                    case "Component":
-                                                                        curr.bugzilla_component = td.InnerText;
-                                                                        break;
-                                                                    case "Assignee":
-                                                                        curr.bugzilla_assignee = td.InnerText;
-                                                                        break;
-                                                                    case "Reporter":
-                                                                        curr.bugzilla_reporter = td.InnerText;
-                                                                        break;
-                                                                    case "Resolution":
-                                                                        curr.bugzilla_reso = td.InnerText;
-                                                                        break;
-                                                                    case "Priority":
-                                                                        curr.bugzilla_priority = td.InnerText;
-                                                                        break;
-                                                                    case "Severity":
-                                                                        curr.bugzilla_severity = td.InnerText;
-                                                                        break;
-                                                                }
-                                                            }
-                                                            type = !type;
+                                                            st = td.InnerText;
                                                         }
+                                                        else
+                                                        {
+                                                            switch (st.Replace(" ", ""))
+                                                            {
+                                                                case "Product":
+                                                                    curr.bugzilla_product = td.InnerText;
+                                                                    break;
+                                                                case "Status":
+                                                                    curr.bugzilla_status = td.InnerText;
+                                                                    break;
+                                                                case "Component":
+                                                                    curr.bugzilla_component = td.InnerText;
+                                                                    break;
+                                                                case "Assignee":
+                                                                    curr.bugzilla_assignee = td.InnerText;
+                                                                    break;
+                                                                case "Reporter":
+                                                                    curr.bugzilla_reporter = td.InnerText;
+                                                                    break;
+                                                                case "Resolution":
+                                                                    curr.bugzilla_reso = td.InnerText;
+                                                                    break;
+                                                                case "Priority":
+                                                                    curr.bugzilla_priority = td.InnerText;
+                                                                    break;
+                                                                case "Severity":
+                                                                    curr.bugzilla_severity = td.InnerText;
+                                                                    break;
+                                                            }
+                                                        }
+                                                        type = !type;
                                                     }
-                                                }
-                                                catch (ThreadAbortException fail)
-                                                {
-                                                    throw fail;
-                                                }
-                                                catch (Exception fail)
-                                                {
-                                                    core.Log("RAFEED: " + fail.Message + fail.StackTrace, true);
                                                 }
                                             }
                                             break;
@@ -288,8 +280,11 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.Log("Unable to parse feed from " + url + " I will try to do that again " + item.retries.ToString() + " times", true);
-                core.handleException(fail, "Feed");
+                RSS.m.Log("Unable to parse feed from " + url + " I will try to do that again " + item.retries.ToString() + " times", true);
+                RSS.m.handleException(fail, "Feed");
+                string dump = Path.GetTempFileName();
+                File.WriteAllText(dump, temp);
+                RSS.m.Log("Dumped the source to " + dump);
                 if (item.retries < 1)
                 {
                     item.disabled = true;

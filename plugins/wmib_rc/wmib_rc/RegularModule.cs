@@ -273,7 +273,7 @@ namespace wmib
         {
             Name = "RC";
             start = true;
-            Version = "1.2.0.4";
+            Version = "1.2.0.5";
             return true;
         }
 
@@ -287,7 +287,7 @@ namespace wmib
                 {
                     return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "modified", "" + username + "", url + "?diff=" + link, summary });
                 }
-                return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", url + "?title=" + page, summary });
+                return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", url + "?title=" + System.Web.HttpUtility.UrlEncode(page), summary });
             }
 
             string action = "modified";
@@ -317,12 +317,12 @@ namespace wmib
             string fu = url + "?diff=" + link;
             if (New)
             {
-                fu = url + "?title=" + System.Web.HttpUtility.UrlEncode(page).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")");
+                fu = url + "?title=" + System.Web.HttpUtility.UrlEncode(page);
             }
 
             return GetConfig(chan, "RC.Template", "").Replace("$wiki", name_url)
-                   .Replace("$encoded_wiki_page", System.Web.HttpUtility.UrlEncode(page).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")"))
-                   .Replace("$encoded_wiki_username", System.Web.HttpUtility.UrlEncode(username).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")"))
+                   .Replace("$encoded_wiki_page", System.Web.HttpUtility.UrlEncode(page).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%23", "#").Replace("%28", "(").Replace("%29", ")"))
+                   .Replace("$encoded_wiki_username", System.Web.HttpUtility.UrlEncode(username).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%23", "#").Replace("%28", "(").Replace("%29", ")"))
                    .Replace("$encoded_page", System.Web.HttpUtility.UrlEncode(page))
                    .Replace("$encoded_username", System.Web.HttpUtility.UrlEncode(username))
                    .Replace("$url", url)
@@ -458,7 +458,11 @@ namespace wmib
                 return null;
             }
 
-            change.Description = text.Substring(text.IndexOf(variables.color + "10") + 3);
+            change.Summary = text.Substring(text.IndexOf(variables.color + "10") + 3);
+            if (change.Summary.EndsWith(variables.color))
+            {
+                change.Summary = change.Summary.Substring(0, change.Summary.Length - 1);
+            }
 
             change.Special = change.Page.StartsWith("Special:");
 
@@ -537,14 +541,14 @@ namespace wmib
                                                                 {
                                                                     if (edit.Size != null)
                                                                     {
-                                                                        edit.Description = "[" + edit.Size + "] " + edit.Description;
+                                                                        edit.Summary = "[" + edit.Size + "] " + edit.Summary;
                                                                     }
                                                                     if (w.URL == null)
                                                                     {
                                                                         DebugLog("NULL pointer on idata 1", 2);
                                                                     }
                                                                     core.irc._SlowQueue.DeliverMessage(
-                                                                       Format(w.URL.name, w.URL.url, edit.Page, edit.User, edit.diff, edit.Description, curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
+                                                                       Format(w.URL.name, w.URL.url, edit.Page, edit.User, edit.diff, edit.Summary, curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
                                                                 }
                                                                 else
                                                                     if (w.Page.EndsWith("*"))
@@ -556,7 +560,7 @@ namespace wmib
                                                                                 DebugLog("NULL pointer on idata 2", 2);
                                                                             }
                                                                             core.irc._SlowQueue.DeliverMessage(
-                                                                            Format(w.URL.name, w.URL.url, edit.Page, edit.User, edit.diff, edit.Description, curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
+                                                                            Format(w.URL.name, w.URL.url, edit.Page, edit.User, edit.diff, edit.Summary, curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
                                                                         }
                                                                     }
                                                             }

@@ -65,12 +65,12 @@ namespace wmib
                 {
                     if (GetConfig(channel, "OP.Enabled", false))
                     {
-                        core.irc._SlowQueue.DeliverMessage("Operator tools were already enabled on this channel", channel);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("OpE1", channel.Language), channel);
                         return;
                     }
                     else
                     {
-                        core.irc._SlowQueue.DeliverMessage("Operator tools have been enabled on this channel", channel.Name);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("OpM1", channel.Language), channel.Name);
                         SetConfig(channel, "OP.Enabled", true);
                         channel.SaveConfig();
                         return;
@@ -89,12 +89,12 @@ namespace wmib
                 {
                     if (!GetConfig(channel, "OP.Permanent", false))
                     {
-                        core.irc._SlowQueue.DeliverMessage("Operator tools were already not in permanent mode on this channel", channel);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("OpE2", channel.Language), channel);
                         return;
                     }
                     else
                     {
-                        core.irc._SlowQueue.DeliverMessage("Operator tools are now not in permanent mode on this channel", channel);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("OpM2", channel.Language), channel);
                         SetConfig(channel, "OP.Permanent", false);
                         channel.SaveConfig();
                         return;
@@ -113,12 +113,12 @@ namespace wmib
                 {
                     if (GetConfig(channel, "OP.Permanent", false))
                     {
-                        core.irc._SlowQueue.DeliverMessage("Operator tools were already in permanent mode on this channel", channel);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("OpE3", channel.Language), channel);
                         return;
                     }
                     else
                     {
-                        core.irc._SlowQueue.DeliverMessage("Operator tools are now in permanent mode on this channel", channel);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("OpM3", channel.Language), channel);
                         SetConfig(channel, "OP.Permanent", true);
                         channel.SaveConfig();
                         return;
@@ -137,12 +137,12 @@ namespace wmib
                 {
                     if (!GetConfig(channel, "OP.Enabled", false))
                     {
-                        core.irc._SlowQueue.DeliverMessage("Operator tools were already disabled on this channel", channel);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("OpE4", channel.Language), channel);
                         return;
                     }
                     else
                     {
-                        core.irc._SlowQueue.DeliverMessage("Operator tools have been disabled on this channel", channel);
+                        core.irc._SlowQueue.DeliverMessage(messages.get("OpM4", channel.Language), channel);
                         SetConfig(channel, "OP.Enabled", false);
                         channel.SaveConfig();
                         return;
@@ -171,7 +171,7 @@ namespace wmib
                         User user = getUser(nick, channel);
                         if (user == null)
                         {
-                            core.irc._SlowQueue.DeliverMessage("Sorry but I don't see this user in a channel", channel, IRC.priority.high);
+                            core.irc._SlowQueue.DeliverMessage(messages.get("OpE5", channel.Language), channel, IRC.priority.high);
                             return;
                         }
                         // op self
@@ -208,14 +208,14 @@ namespace wmib
                         User user = getUser(nick, channel);
                         if (user == null)
                         {
-                            core.irc._SlowQueue.DeliverMessage("Sorry but I don't see this user in a channel", channel, IRC.priority.high);
+                            core.irc._SlowQueue.DeliverMessage(messages.get("OpE5", channel.Language), channel, IRC.priority.high);
                             return;
                         }
                         // op self
                         GetOp(channel);
                         if (string.IsNullOrEmpty(user.Host))
                         {
-                            core.irc._SlowQueue.DeliverMessage("Sorry but I don't know hostname of this user... you will need to issue the ban yourself", channel, IRC.priority.high);
+                            core.irc._SlowQueue.DeliverMessage(messages.get("OpE6", channel.Language), channel, IRC.priority.high);
                         }
                         else
                         {
@@ -251,13 +251,13 @@ namespace wmib
                         User user = getUser(nick, channel);
                         if (user == null)
                         {
-                            channel.instance.irc._SlowQueue.DeliverMessage("Sorry but I don't see this user in a channel", channel, IRC.priority.high);
+                            channel.instance.irc._SlowQueue.DeliverMessage(messages.get("OpE5", channel.Language), channel, IRC.priority.high);
                             return;
                         }
                         
                         if (string.IsNullOrEmpty(user.Host))
                         {
-                            channel.instance.irc._SlowQueue.DeliverMessage("Sorry but I don't know hostname of this user... you will need to issue the ban yourself", channel, IRC.priority.high);
+                            channel.instance.irc._SlowQueue.DeliverMessage(messages.get("OpE6", channel.Language), channel, IRC.priority.high);
                             return;
                         }
                         // op self
@@ -292,13 +292,13 @@ namespace wmib
                         User user = getUser(nick, channel);
                         if (user == null)
                         {
-                            core.irc._SlowQueue.DeliverMessage("Sorry but I don't see this user in a channel", channel, IRC.priority.high);
+                            core.irc._SlowQueue.DeliverMessage(messages.get("OpE5", channel.Language), channel, IRC.priority.high);
                             return;
                         }
 
                         if (string.IsNullOrEmpty(user.Host))
                         {
-                            core.irc._SlowQueue.DeliverMessage("Sorry but I don't know hostname of this user... you will need to issue the ban yourself", channel, IRC.priority.high);
+                            core.irc._SlowQueue.DeliverMessage(messages.get("OpE6", channel.Language), channel, IRC.priority.high);
                             return;
                         }
                         // op self
@@ -333,13 +333,13 @@ namespace wmib
                         User user = getUser(nick, channel);
                         if (user == null)
                         {
-                            core.irc._SlowQueue.DeliverMessage("Sorry but I don't see this user in a channel", channel, IRC.priority.high);
+                            core.irc._SlowQueue.DeliverMessage(messages.get("OpE5", channel.Language), channel, IRC.priority.high);
                             return;
                         }
                         
                         if (string.IsNullOrEmpty(user.Host))
                         {
-                            core.irc._SlowQueue.DeliverMessage("Sorry but I don't know hostname of this user... you will need to issue the ban yourself", channel, IRC.priority.high);
+                            core.irc._SlowQueue.DeliverMessage(messages.get("OpE6", channel.Language), channel, IRC.priority.high);
                             return;
                         }
                         GetOp(channel);
