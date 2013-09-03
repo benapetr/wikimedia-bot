@@ -244,25 +244,8 @@ namespace wmib
                     if (GetConfig(channel, "OP.Enabled", false))
                     {
                         string nick = message.Substring(6);
-                        if (nick.Contains(" "))
-                        {
-                            nick = nick.Substring(0, nick.IndexOf(" "));
-                        }
-                        User user = getUser(nick, channel);
-                        if (user == null)
-                        {
-                            channel.instance.irc._SlowQueue.DeliverMessage(messages.get("OpE5", channel.Language), channel, IRC.priority.high);
-                            return;
-                        }
-                        
-                        if (string.IsNullOrEmpty(user.Host))
-                        {
-                            channel.instance.irc._SlowQueue.DeliverMessage(messages.get("OpE6", channel.Language), channel, IRC.priority.high);
-                            return;
-                        }
-                        // op self
                         GetOp(channel);
-                        channel.instance.irc._SlowQueue.Send("MODE " + channel.Name + " -b *!*@" + user.Host, IRC.priority.high);
+                        channel.instance.irc._SlowQueue.Send("MODE " + channel.Name + " -b *!*@" + nick, IRC.priority.high);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
                             channel.instance.irc._SlowQueue.Send("MODE " + channel.Name + " -o " + channel.instance.Nick, IRC.priority.low);
