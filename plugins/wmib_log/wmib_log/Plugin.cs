@@ -158,7 +158,6 @@ namespace wmib
                     Thread.Sleep(2000);
                     if (DJ.Count > 0)
                     {
-                        DebugLog("1");
                         List<Item> db = new List<Item>();
                         lock (DJ)
                         {
@@ -167,9 +166,7 @@ namespace wmib
                         }
                         lock (core.DB.DatabaseLock)
                         {
-                            DebugLog("2");
                             core.DB.Connect();
-                            DebugLog("3");
                             while (!core.DB.IsConnected)
                             {
                                 if (core.DB.ErrorBuffer != null)
@@ -179,23 +176,23 @@ namespace wmib
                                 Thread.Sleep(20000);
                                 core.DB.Connect();
                             }
-                            DebugLog("4");
                             foreach (Item item in db)
                             {
                                 Database.Row row = new Database.Row();
                                 row.Values.Add(new Database.Row.Value(0));
+                                DebugLog("a");
                                 row.Values.Add(new Database.Row.Value(item.ch.Name, Database.DataType.Varchar));
+                                DebugLog("b");
                                 row.Values.Add(new Database.Row.Value(item.username, Database.DataType.Varchar));
+                                DebugLog("c");
                                 row.Values.Add(new Database.Row.Value(item.time));
+                                DebugLog("d");
                                 row.Values.Add(new Database.Row.Value(item.act));
-                                row.Values.Add(new Database.Row.Value(item.message, Database.DataType.Varchar));
                                 row.Values.Add(new Database.Row.Value(item.message, Database.DataType.Varchar));
                                 core.DB.InsertRow("logs", row);
                             }
-                            DebugLog("5");
                             core.DB.Commit();
                             core.DB.Disconnect();
-                            DebugLog("6");
                         }
                     }
                 }
