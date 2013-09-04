@@ -47,6 +47,16 @@ namespace wmib
         /// </summary>
         public static string css = null;
 
+        public static string MysqlUser = null;
+
+        public static string MysqlPw = null;
+
+        public static string MysqlHost = null;
+
+        public static string Mysqldb = null;
+
+        public static int MysqlPort = 3306;
+
         /// <summary>
         /// Login name
         /// </summary>
@@ -159,7 +169,10 @@ namespace wmib
         /// <param name="b"></param>
         private static void AddConfig(string a, string b, StringBuilder text)
         {
-            text.Append(a + "=" + b + ";\n");
+            if (b != null)
+            {
+                text.Append(a + "=" + b + ";\n");
+            }
         }
 
         /// <summary>
@@ -183,6 +196,11 @@ namespace wmib
             AddConfig("style_html_file", css, text);
             AddConfig("interval", Interval.ToString(), text);
             AddConfig("nick", login, text);
+            AddConfig("mysql_user", MysqlUser, text);
+            AddConfig("mysql_host", MysqlHost, text);
+            AddConfig("mysql_pw", MysqlPw, text);
+            AddConfig("mysql_db", Mysqldb, text);
+            AddConfig("mysql_port", MysqlPort.ToString(), text);
             text.Append("\nchannels=");
 
             lock (channels)
@@ -331,9 +349,29 @@ namespace wmib
             {
                 password = Configuration["password"];
             }
+            if (Configuration.ContainsKey("mysql_pw"))
+            {
+                MysqlPw = Configuration["mysql_pw"];
+            }
+            if (Configuration.ContainsKey("mysql_db"))
+            {
+                Mysqldb = Configuration["mysql_db"];
+            }
+            if (Configuration.ContainsKey("mysql_user"))
+            {
+                MysqlUser = Configuration["mysql_user"];
+            }
             if (Configuration.ContainsKey("interval"))
             {
                 Interval = int.Parse(Configuration["interval"]);
+            }
+            if (Configuration.ContainsKey("mysql_port"))
+            {
+                MysqlPort = int.Parse(Configuration["mysql_port"]);
+            }
+            if (Configuration.ContainsKey("mysql_host"))
+            {
+                MysqlHost = Configuration["mysql_host"];
             }
             if (string.IsNullOrEmpty(login))
             {

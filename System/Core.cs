@@ -18,58 +18,57 @@ using System.IO;
 
 namespace wmib
 {
-    /// <summary>
-    /// variables
-    /// </summary>
-    public class variables
-    {
-        /// <summary>
-        /// Configuration directory
-        /// </summary>
-        public static readonly string config = "configuration";
-        /// <summary>
-        /// Prefix for a log directory
-        /// </summary>
-        public static readonly string prefix_logdir = "log";
-        /// <summary>
-        /// This string represent a character that changes color
-        /// </summary>
-        public static readonly string color = ((char)003).ToString();
-        /// <summary>
-        /// This string represent a character that changes text to bold
-        /// </summary>
-        public static readonly string bold = ((char)002).ToString();
-    }
-
-    /// <summary>
-    /// misc
-    /// </summary>
-    public class misc
-    {
-        /// <summary>
-        /// Check if a regex is valid
-        /// </summary>
-        /// <param name="pattern"></param>
-        /// <returns></returns>
-        public static bool IsValidRegex(string pattern)
-        {
-            if (string.IsNullOrEmpty(pattern)) return false;
-
-            try
-            {
-                Regex.Match("", pattern);
-            }
-            catch (ArgumentException)
-            {
-                return false;
-            }
-            return true;
-        }
-    }
-
     [Serializable]
     public partial class core : MarshalByRefObject
     {
+        /// <summary>
+        /// System user
+        /// </summary>
+        [Serializable]
+        public class SystemUser
+        {
+            /// <summary>
+            /// Regex
+            /// </summary>
+            public string name;
+            /// <summary>
+            /// Level
+            /// </summary>
+            public string level;
+            public string UserName = null;
+            public string Password = null;
+            public bool IsGlobal;
+
+            /// <summary>
+            /// Constructor
+            /// </summary>
+            /// <param name="level"></param>
+            /// <param name="name"></param>
+            public SystemUser(string level, string name, bool Global = false)
+            {
+                IsGlobal = Global;
+                this.level = level;
+                this.name = name;
+            }
+        }
+        /// <summary>
+        /// Return true if database server is available
+        /// </summary>
+        public static bool DatabaseServerIsAvailable
+        {
+            get
+            {
+                if (config.MysqlHost == null || config.MysqlUser == null)
+                {
+                    return false;
+                }
+                return true;
+            }
+        }
+        /// <summary>
+        /// Database server
+        /// </summary>
+        public static Database DB = null;
         /// <summary>
         /// Domain in which the core is running
         /// </summary>
@@ -107,37 +106,6 @@ namespace wmib
         /// Target's of each instance
         /// </summary>
         public static Dictionary<string, Instance> TargetBuffer = new Dictionary<string, Instance>();
-
-        /// <summary>
-        /// System user
-        /// </summary>
-        [Serializable]
-        public class SystemUser
-        {
-            /// <summary>
-            /// Regex
-            /// </summary>
-            public string name;
-            /// <summary>
-            /// Level
-            /// </summary>
-            public string level;
-            public string UserName = null;
-            public string Password = null;
-            public bool IsGlobal;
-
-            /// <summary>
-            /// Constructor
-            /// </summary>
-            /// <param name="level"></param>
-            /// <param name="name"></param>
-            public SystemUser(string level, string name, bool Global = false)
-            {
-                IsGlobal = Global;
-                this.level = level;
-                this.name = name;
-            }
-        }
 
         /// <summary>
         /// Store a traffic log to a file
@@ -445,6 +413,12 @@ namespace wmib
         /// </summary>
         public static void Connect()
         {
+            if (DatabaseServerIsAvailable)
+            {
+                Log("Initializing MySQL");
+                MySQL db = new MySQL();
+            }
+
             irc = Instances[config.username].irc;
             // now we load all instances
             lock (Instances)
