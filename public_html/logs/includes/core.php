@@ -16,14 +16,23 @@ class Logs
     private static function GetChannels()
     {
         $list = array();
-        while($item = mysql_fetch_assoc(mysql_query("SELECT DISTINCT(channel) FROM logs")))
-          $list[] = $item;
+        $query = mysql_query("SELECT DISTINCT(channel) FROM logs");
+        while($item = mysql_fetch_assoc($query))
+        {
+            $list[] = $item["channel"];
+        }
         return $list;
     }
 
     private static function RenderMenu()
     {
-        echo ("    <b>Channels:</b><br>\n");
+        echo ("    <b>Channels:</b><br>\n<ul>\n");
+        $channels = self::GetChannels();
+        foreach ($channels as $channel)
+        {
+            echo ("<li><a href=\"index.php?display=$channel\">$channel</a></li>\n");
+        }
+        echo ( "</ul>" );
     }
 
     private static function RenderIndex()
