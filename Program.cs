@@ -118,6 +118,11 @@ namespace wmib
                 core.Help.CreateHelp();
                 core.WriterThread = new System.Threading.Thread(StorageWriter.Core);
                 core.WriterThread.Start();
+                if (core.DatabaseServerIsAvailable)
+                {
+                    Log("Initializing MySQL");
+                    core.DB = new WMIBMySQL();
+                }
                 Log("Loading modules");
                 core.SearchMods();
                 IRCTrust.Global();

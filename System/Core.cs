@@ -413,12 +413,6 @@ namespace wmib
         /// </summary>
         public static void Connect()
         {
-            if (DatabaseServerIsAvailable)
-            {
-                Log("Initializing MySQL");
-                DB = new WMIBMySQL();
-            }
-
             irc = Instances[config.username].irc;
             // now we load all instances
             lock (Instances)
