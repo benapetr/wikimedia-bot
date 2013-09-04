@@ -97,8 +97,7 @@ namespace wmib.Properties {
         ///Wiki+=Wiki hinzugefügt;
         ///Wiki-=Wiki entfernt;
         ///Feed3=Kanal hat letzten Änderungen nicht aktiviert;
-        ///Feed4=Fehler, ;
-        ///Feed5=:Fa [rest of string was truncated]&quot;;.
+        ///Feed4=Fehler, [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string de_german {
             get {
@@ -130,7 +129,24 @@ namespace wmib.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to InvalidName=존재하지 않는 이름입니다.;
+        ///PermissionDenied=접근이 거부되었습니다.;
+        ///Authorization=죄송합니다. 이 명령을 실행할 권한이 부족합니다.;
+        ///ChannelIn=이 채널은 이미 데이터베이스에 있습니다.;
+        ///UserSc=성공적으로 추가되었습니다.;
+        ///MessageQueueWasReloaded=메시지 목록이 다시 로드되었습니다.;
+        ///Feed1=이 채널에서 이미 피드가 활성화되었습니다.;
+        ///Feed2=피드가 활성화되었습니다.;
+        ///InvalidWiki=존재하지 않는 위키입니다.;
+        ///Wiki+=위키가 추가되었습니다.;
+        ///Wiki-=위키가 삭제되었습니다.;
+        ///Feed3=채널에서 최근바뀜 수신을 활성화하지 않았습니다.;
+        ///Feed4=에러, ;
+        ///Feed5=잘못된 변수입니다;
+        ///InvalidUser=존재하지 않는 사용자입니다;
+        ///Language=이곳에선 한국어로 이야기하겠습니다;
+        ///InvalidCode=죄송합니다. 그런 언어는 몰라요;
+        ///LanguageInfo=이 명령어는  [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ko_korean {
             get {
