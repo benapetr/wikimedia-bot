@@ -180,13 +180,9 @@ namespace wmib
                             {
                                 Database.Row row = new Database.Row();
                                 row.Values.Add(new Database.Row.Value(0));
-                                DebugLog("a");
                                 row.Values.Add(new Database.Row.Value(item.ch.Name, Database.DataType.Varchar));
-                                DebugLog("b");
                                 row.Values.Add(new Database.Row.Value(item.username, Database.DataType.Varchar));
-                                DebugLog("c");
                                 row.Values.Add(new Database.Row.Value(item.time));
-                                DebugLog("d");
                                 row.Values.Add(new Database.Row.Value(item.act));
                                 row.Values.Add(new Database.Row.Value(item.message, Database.DataType.Varchar));
                                 core.DB.InsertRow("logs", row);

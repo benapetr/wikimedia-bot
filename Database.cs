@@ -39,7 +39,7 @@ namespace wmib
                 }
             }
 
-            public List<Value> Values;
+            public List<Value> Values = new List<Value>();
         }
 
         public object DatabaseLock = new object();
