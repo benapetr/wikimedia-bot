@@ -61,6 +61,7 @@ namespace wmib
             /// List of new messages
             /// </summary>
             public List<Message> newmessages = new List<Message>();
+            [NonSerialized]
             private IRC Parent;
 
             /// <summary>

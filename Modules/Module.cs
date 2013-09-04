@@ -58,6 +58,7 @@ namespace wmib
         /// <summary>
         /// Parent domain of this module
         /// </summary>
+        [NonSerialized]
         public AppDomain ParentDomain = null;
         /// <summary>
         /// Whether it has started or not

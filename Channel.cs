@@ -124,6 +124,7 @@ namespace wmib
             /// <summary>
             /// Current instance
             /// </summary>
+            [NonSerialized]
             public Instance instance = null;
 
             /// <summary>
