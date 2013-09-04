@@ -20,6 +20,7 @@ namespace wmib
 
         public override bool InsertRow(string table, Row row)
         {
+            string sql = "";
             lock (DatabaseLock)
             {
                 try
@@ -31,7 +32,7 @@ namespace wmib
                     }
 
                     MySqlCommand xx = Connection.CreateCommand();
-                    string sql = "INSERT INTO " + table + " VALUES (";
+                    sql = "INSERT INTO " + table + " VALUES (";
                     foreach (Database.Row.Value value in row.Values)
                     {
                         switch (value.Type)
@@ -59,6 +60,7 @@ namespace wmib
                 {
                     ErrorBuffer = me.Message;
                     core.DebugLog("Error while storing a row to DB " + me.ToString());
+                    core.DebugLog("SQL: " + sql);
                     return false;
                 }
             }
