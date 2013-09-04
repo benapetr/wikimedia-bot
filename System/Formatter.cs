@@ -108,7 +108,6 @@ namespace wmib
         /// Changes the content based on buffer
         /// </summary>
         /// <param name="data"></param>
-        /// <param name="network"></param>
         public void RewriteBuffer(string data)
         {
             lock (Mode)

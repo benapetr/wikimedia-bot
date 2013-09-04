@@ -76,9 +76,9 @@ namespace wmib
         }
 
         /// <summary>
-        /// Returns a <see cref="System.String"/> that represents the current <see cref="Client.SimpleMode"/>.
+        /// Returns a <see cref="System.String"/> that represents the current <see cref="wmib.SimpleMode"/>.
         /// </summary>
-        /// <returns>A <see cref="System.String"/> that represents the current <see cref="Client.SimpleMode"/>.</returns>
+        /// <returns>A <see cref="System.String"/> that represents the current <see cref="wmib.SimpleMode"/>.</returns>
         public override string ToString()
         {
             if (ContainsParameter)
@@ -110,9 +110,9 @@ namespace wmib
         public ModeType _ModeType = ModeType.Network;
 
         /// <summary>
-        /// Returns a <see cref="System.String"/> that represents the current <see cref="Client.NetworkMode"/>.
+        /// Returns a <see cref="System.String"/> that represents the current <see cref="wmib.NetworkMode"/>.
         /// </summary>
-        /// <returns>A <see cref="System.String"/> that represents the current <see cref="Client.NetworkMode"/>.</returns>
+        /// <returns>A <see cref="System.String"/> that represents the current <see cref="wmib.NetworkMode"/>.</returns>
         public override string ToString()
         {
             string _val = "";

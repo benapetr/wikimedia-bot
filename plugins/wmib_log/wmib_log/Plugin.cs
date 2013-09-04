@@ -19,30 +19,41 @@ namespace wmib
 {
     public class RegularModule : Module
     {
-        public List<char> Separator = new List<char> { ' ', ',', (char)3, '(', ')', '{', '}', (char)2, '<', '>' };
         public struct Job
         {
             public DateTime time;
-            public string HTML;
             public string message;
             public config.channel ch;
         }
 
-        public bool Unloading = false;
+        public class Item
+        {
+            public string username = null;
+            public DateTime time;
+            public string message = null;
+            public bool act = false;
+            public config.channel ch;
+        }
 
-        public List<Job> jobs = new List<Job>();
+        private List<char> Separator = new List<char> { ' ', ',', (char)3, '(', ')', '{', '}', (char)2, '<', '>' };
+
+        private bool Unloading = false;
+
+        private List<Job> jobs = new List<Job>();
+
+        private List<Item> DJ = new List<Item>();
 
         public override void Hook_ACTN(config.channel channel, User invoker, string message)
         {
-            chanLog(message, channel, invoker.Nick, invoker.Host, false);
+            ChanLog(message, channel, invoker.Nick, invoker.Host, false);
         }
 
         public override void Hook_PRIV(config.channel channel, User invoker, string message)
         {
-            chanLog(message, channel, invoker.Nick, invoker.Host);
-            if (message == "@logon")
+            ChanLog(message, channel, invoker.Nick, invoker.Host);
+            if (message == config.CommandPrefix + "logon")
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                if (channel.Users.IsApproved(invoker, "admin"))
                 {
                     if (Module.GetConfig(channel, "Logging.Enabled", false))
                     {
@@ -64,9 +75,9 @@ namespace wmib
                 return;
             }
 
-            if (message == "@logoff")
+            if (message == config.CommandPrefix + "logoff")
             {
-                if (channel.Users.isApproved(invoker.Nick, invoker.Host, "admin"))
+                if (channel.Users.IsApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (!Module.GetConfig(channel, "Logging.Enabled", false))
                     {
@@ -89,7 +100,7 @@ namespace wmib
             }
         }
 
-        public int WriteData()
+        private int WriteData()
         {
             if (jobs.Count > 0)
             {
@@ -108,7 +119,7 @@ namespace wmib
                 // write to disk
                 foreach (Job curr in line)
                 {
-                    while (!writeLog(curr.message, curr.HTML, curr.ch, curr.time))
+                    while (!WriteLog(curr.message, curr.ch, curr.time))
                     {
                         Thread.Sleep(2000);
                     }
@@ -117,7 +128,7 @@ namespace wmib
             return 2;
         }
 
-        public void Finish()
+        private void Finish()
         {
             if (jobs.Count != 0)
             {
@@ -126,6 +137,62 @@ namespace wmib
             WriteData();
             core.Log("There are no unsaved data, we can disable this module now");
             Unloading = false;
+        }
+
+        public void Writer()
+        {
+            try
+            {
+                if (!core.DatabaseServerIsAvailable)
+                {
+                    Log("No sql server is available, closing DB log writer");
+                    return;
+                }
+                while (core._Status != core.Status.ShuttingDown)
+                {
+                    if (DJ.Count > 0)
+                    {
+                        List<Item> db = new List<Item>();
+                        lock (DJ)
+                        {
+                            db.AddRange(DJ);
+                            DJ.Clear();
+                        }
+                        lock (core.DB.DatabaseLock)
+                        {
+                            core.DB.Connect();
+                            foreach (Item item in db)
+                            {
+                                Database.Row row = new Database.Row();
+                                row.Values.Add(new Database.Row.Value(0));
+                                row.Values.Add(new Database.Row.Value(item.ch.Name, Database.DataType.Varchar));
+                                row.Values.Add(new Database.Row.Value(item.username, Database.DataType.Varchar));
+                                row.Values.Add(new Database.Row.Value(item.time));
+                                row.Values.Add(new Database.Row.Value(item.act));
+                                row.Values.Add(new Database.Row.Value(item.message, Database.DataType.Varchar));
+                                row.Values.Add(new Database.Row.Value(item.message, Database.DataType.Varchar));
+                                core.DB.InsertRow("logs", row);
+                            }
+                            core.DB.Commit();
+                            core.DB.Disconnect();
+                        }
+                    }
+                }
+            }
+            catch (ThreadAbortException)
+            {
+                if (core.DatabaseServerIsAvailable)
+                {
+                    core.DB.Commit();
+                    core.DB.Disconnect();
+                }
+                Log("SQL Writer is shut down with " + DJ.Count.ToString() + " unfinished lines");
+            }
+            catch (Exception fail)
+            {
+                handleException(fail);
+                Log("SQL Writer is down!!", true);
+            }
         }
 
         public override void Load()
@@ -178,12 +245,18 @@ namespace wmib
             return true;
         }
 
-        private bool writeLog(string message, string html, config.channel channel, System.DateTime _datetime)
+        private bool WriteLog(string message, config.channel channel, System.DateTime _datetime)
         {
             try
             {
-                System.IO.File.AppendAllText(config.path_txt + channel.LogDir + _datetime.Year + timedateToString(_datetime.Month) + timedateToString(_datetime.Day) + ".txt", message);
-                System.IO.File.AppendAllText(config.path_htm + channel.LogDir + _datetime.Year + timedateToString(_datetime.Month) + timedateToString(_datetime.Day) + ".htm", html);
+                string path = GetConfig(channel, "Logs.Path", "null");
+                if (path == "null")
+                {
+                    SetConfig(channel, "Logs.Path", channel.LogDir);
+                    path = channel.LogDir;
+                }
+
+                System.IO.File.AppendAllText(config.path_txt + path + _datetime.Year + TDToString(_datetime.Month) + TDToString(_datetime.Day) + ".txt", message);
                 return true;
             }
             catch (Exception er)
@@ -195,146 +268,6 @@ namespace wmib
             return false;
         }
 
-        public int positionSeparator(string data)
-        {
-            int pi = -1;
-            int temp;
-            foreach (char separator in Separator)
-            {
-                if (data.Contains(separator.ToString()))
-                {
-                    temp = data.IndexOf(separator.ToString());
-                    if (pi == -1 || pi > temp)
-                    {
-                        pi = temp;
-                    }
-                }
-            }
-            if (pi == -1)
-            {
-                return 0;
-            }
-            return pi;
-        }
-
-        public bool includesSeparator(string text)
-        {
-            foreach (char separator in Separator)
-            {
-                if (text.Contains(separator.ToString()))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public bool matchesSeparator(string text, string data)
-        {
-            return false;
-        }
-
-        public void updateBold(ref string html)
-        {
-            bool open = false;
-            char delimiter = ((char)002);
-            int curr = 0;
-            if (html.Contains(delimiter.ToString()))
-            {
-                string temp = html;
-                string original = html;
-                try
-                {
-                    while (html.Length > curr)
-                    {
-                        if (curr > 10000)
-                        {
-                            Log("Maximal cpu on updateBold(" + html + ") aborted call");
-                            html = original;
-                            return;
-                        }
-                        if (html[curr] == delimiter)
-                        {
-                            if (open)
-                            {
-                                open = false;
-                                html.Remove(curr, 1);
-                                html.Insert(curr, "</b>");
-                                curr = curr + 3;
-                                continue;
-                            }
-                            open = true;
-                            html.Remove(curr, 1);
-                            html.Insert(curr, "<b>");
-                            curr = curr + 2;
-                            continue;
-                        }
-                        curr++;
-                    }
-                    if (open)
-                    {
-                        html += "</b>";
-                    }
-                }
-                catch (Exception b)
-                {
-                    html = original;
-                    core.handleException(b);
-                }
-            }
-        }
-
-        public void updateColor(ref string html)
-        {
-
-        }
-
-        public void updateHttp(ref string html)
-        {
-            int curr = 0;
-            if (html.Contains("https://") || html.Contains("http://"))
-            {
-                string URL;
-                string temp = html;
-                string original = html;
-                try
-                {
-                    while (temp.Length > 6)
-                    {
-                        if (curr > 10000)
-                        {
-                            Log("Maximal cpu on updateHttp(" + html + ") aborted call");
-                            html = original;
-                            return;
-                        }
-                        if (temp.StartsWith("http://") || temp.StartsWith("https://"))
-                        {
-                            URL = temp;
-                            int position = temp.Length;
-                            if (includesSeparator(temp))
-                            {
-                                URL = temp.Substring(0, positionSeparator(temp));
-                            }
-                            html = html.Insert(curr + URL.Length, "</a>");
-                            html = html.Insert(curr, "<a target=\"_new\" href=\"" + URL + "\">");
-                            curr = curr + (URL.Length * 2) + "</a><a target=\"_new\" href=\"\">".Length;
-                            temp = temp.Substring(URL.Length);
-                        }
-                        else
-                        {
-                            curr++;
-                            temp = temp.Substring(1);
-                        }
-                    }
-                }
-                catch (Exception er)
-                {
-                    handleException(er);
-                    html = original;
-                }
-            }
-        }
-
         /// <summary>
         /// Log file
         /// </summary>
@@ -343,69 +276,51 @@ namespace wmib
         /// <param name="user">User</param>
         /// <param name="host">Host</param>
         /// <param name="noac">Action (if true it's logged as message, if false it's action)</param>
-        public void chanLog(string message, config.channel channel, string user, string host, bool noac = true)
+        public void ChanLog(string message, config.channel channel, string user, string host, bool noac = true)
         {
             try
             {
+                DateTime time = DateTime.Now;
                 if (Module.GetConfig(channel, "Logging.Enabled", false))
                 {
+
+                    string log;
+                    string URL = core.Host.Host2Name(host);
+                    //updateBold(ref messagehtml);
+                    if (!noac)
+                    {
+                        log = "[" + TDToString(time.Hour) + ":" +
+                            TDToString(time.Minute) + ":" +
+                            TDToString(time.Second) + "] * " +
+                            user + " " + message + "\n";
+                    }
+                    else
+                    {
+                        log = "[" + TDToString(time.Hour) + ":"
+                            + TDToString(time.Minute) + ":" +
+                            TDToString(time.Second) + "] " + "<" +
+                            user + ">\t " + message + "\n";
+                    }
+                    Job line = new Job();
+                    line.ch = channel;
+                    line.time = time;
+                    line.message = log;
                     lock (jobs)
                     {
-                        string log;
-                        string URL = core.Host.Host2Name(host);
-                        string srcs = "";
-                        string messagehtml = System.Web.HttpUtility.HtmlEncode(message);
-                        updateHttp(ref messagehtml);
-                        //updateBold(ref messagehtml);
-                        if (!noac)
-                        {
-                            if (URL != "")
-                            {
-                                srcs = "<font class=\"date\"><b>" + timedateToString(DateTime.Now.Hour) + ":" +
-                                    timedateToString(DateTime.Now.Minute) + ":" +
-                                    timedateToString(DateTime.Now.Second) + "</b></font><font>* <a target=\"_blank\" href=\"" + URL + "\">" + user +
-                                    "</a> " + messagehtml + "</font><br>\n";
-                            }
-                            else
-                            {
-                                srcs = "<font class=\"date\"><b>" + timedateToString(DateTime.Now.Hour) + ":" +
-                                    timedateToString(DateTime.Now.Minute) + ":" +
-                                    timedateToString(DateTime.Now.Second) + "</b></font><font>* " + user + " " +
-                                    messagehtml + "</font><br>\n";
-                            }
-                            log = "[" + timedateToString(DateTime.Now.Hour) + ":" +
-                                timedateToString(DateTime.Now.Minute) + ":" +
-                                timedateToString(DateTime.Now.Second) + "] * " +
-                                user + " " + message + "\n";
-                        }
-                        else
-                        {
-                            if (URL != "")
-                            {
-                                srcs = "<font class=\"date\"><b>" + timedateToString(DateTime.Now.Hour) + ":" +
-                                        timedateToString(DateTime.Now.Minute) + ":" +
-                                        timedateToString(DateTime.Now.Second) + "</b></font><font class=\"nick\"><b> &lt;<a target=\"_blank\" href=\"" + URL +
-                                        "\">" + user + "</a>&gt; </b></font><font>" + messagehtml + "</font><br>\n";
-                            }
-                            else
-                            {
-                                srcs = "<font class=\"date\"><b>" + timedateToString(DateTime.Now.Hour) + ":" +
-                                        timedateToString(DateTime.Now.Minute) + ":" +
-                                        timedateToString(DateTime.Now.Second) + "</b></font><font class=\"nick\"><b> &lt;" + user + "&gt; </b></font><font>" +
-                                        messagehtml + "</font><br>\n";
-                            }
-
-                            log = "[" + timedateToString(DateTime.Now.Hour) + ":"
-                                + timedateToString(DateTime.Now.Minute) + ":" +
-                                timedateToString(DateTime.Now.Second) + "] " + "<" +
-                                user + ">\t " + message + "\n";
-                        }
-                        Job line = new Job();
-                        line.ch = channel;
-                        line.time = DateTime.Now;
-                        line.HTML = srcs;
-                        line.message = log;
                         jobs.Add(line);
+                    }
+                    if (core.DatabaseServerIsAvailable)
+                    {
+                        Item item = new Item();
+                        item.ch = channel;
+                        item.time = time;
+                        item.username = user;
+                        item.act = !noac;
+                        item.message = message;
+                        lock (DJ)
+                        {
+                            DJ.Add(item);
+                        }
                     }
                 }
             }
@@ -451,13 +366,13 @@ namespace wmib
 
         public override void Hook_OnSelf(config.channel channel, User self, string message)
         {
-            chanLog(message, channel, config.username, "");
+            ChanLog(message, channel, config.username, "");
         }
 
         /// <summary>
         /// Convert the number to format we want to have in log
         /// </summary>
-        private string timedateToString(int number)
+        private string TDToString(int number)
         {
             if (number <= 9 && number >= 0)
             {

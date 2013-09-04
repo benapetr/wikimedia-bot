@@ -12,6 +12,31 @@ namespace wmib
             {
                 public Database.DataType Type;
                 public string Data = null;
+
+                public Value(int number)
+                {
+                    Data = number.ToString();
+                    Type = DataType.Integer;
+                }
+
+                public Value(DateTime date)
+                {
+                    Data = date.Year.ToString() + "-" + date.Month.ToString().PadLeft(2, '0') + "-" + date.Day.ToString().PadLeft(2, '0') + " " + date.Hour.ToString().PadLeft(2, '0') + ":" 
+                        + date.Minute.ToString().PadLeft(2, '0') + ":" + date.Second.ToString().PadLeft(2, '0');
+                    Type = DataType.Date;
+                }
+
+                public Value(bool text)
+                {
+                    Data = text.ToString();
+                    Type = DataType.Boolean;
+                }
+
+                public Value(string text, Database.DataType type)
+                {
+                    Data = text;
+                    Type = type;
+                }
             }
 
             public List<Value> Values;
