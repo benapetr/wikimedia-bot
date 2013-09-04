@@ -148,6 +148,10 @@ namespace wmib
                     Log("No sql server is available, closing DB log writer");
                     return;
                 }
+                if (core.DB == null)
+                {
+                    Log("core.DB is null", true);
+                }
                 DebugLog("The SQL writer started");
                 while (core._Status != core.Status.ShuttingDown)
                 {
