@@ -148,6 +148,7 @@ namespace wmib
                     Log("No sql server is available, closing DB log writer");
                     return;
                 }
+                DebugLog("The SQL writer started");
                 while (core._Status != core.Status.ShuttingDown)
                 {
                     Thread.Sleep(2000);
