@@ -1,0 +1,105 @@
+root {
+}
+
+body {
+	background-color:#EEE9E9; /* Fallback */
+	font-family:Arial;
+}
+
+div.bkg1 { /* CSS3 */
+    display:block;
+
+    position:absolute;
+    top:0;
+    left:0;
+
+	width:100%;
+	height:100%;
+	background: -moz-linear-gradient(top, white, #EEE9E9);
+	background: -webkit-gradient(linear, left top, left bottom,color-stop(0, white), color-stop(1, #EEE9E9));
+}
+
+div.header {
+	text-align:center;
+	border-bottom:1px solid black;
+}
+
+div.headertext1 {
+	font-size:200%;
+}
+
+div.menu {
+	margin-bottom:25px;
+}
+
+div.menubuttons {
+	float:left;
+	width:100%;
+}
+
+div.menulogin {
+
+}
+div.interface {
+	/* border-top:1px solid black; */
+}
+div.queue {
+	width: 200px;
+	float:left;
+}
+
+div.content{
+	margin-left:0px;
+	background-color:white;
+	height:100%;
+	border-top:1px solid #7AC5CD;
+	border-left:1px solid #7AC5CD;
+	border-bottom:1px solid #7AC5CD;
+	overflow:scroll;
+}
+
+div.contentloggedout {
+	font-size:16pt;
+	text-align:center;
+}
+
+div.footer {
+
+}
+
+div.footertext {
+	margin-top:10px;
+	margin-left:200px;
+	font-size:8pt;
+	float:left;
+}
+
+div.footerimg {
+	margin-left:91%;
+}
+
+/* Media Queries */
+@media only screen 
+and (max-device-width : 400px) {
+	div.menubuttons {
+		text-align:center;
+		width:100%;
+	}
+	div.queue {
+		visibility:hidden;
+	}
+	div.content {
+		margin-left:0px;
+	}
+	div.menulogin {
+		text-align:center;
+	}
+	div.footerimg {
+		margin-left:40%;
+	}
+	div.footertext {
+		margin-left:0;
+		text-align:center;
+	}
+}
+
