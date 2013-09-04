@@ -5,7 +5,7 @@ using System.Text;
 
 namespace wmib
 {
-    public class MySQL : Database
+    public class WMIBMySQL : Database
     {
         MySql.Data.MySqlClient.MySqlConnection Connection = null;
         public override bool IsConnected

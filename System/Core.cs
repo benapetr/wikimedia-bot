@@ -416,7 +416,7 @@ namespace wmib
             if (DatabaseServerIsAvailable)
             {
                 Log("Initializing MySQL");
-                MySQL db = new MySQL();
+                DB = new WMIBMySQL();
             }
 
             irc = Instances[config.username].irc;
