@@ -169,7 +169,10 @@ namespace wmib
                             core.DB.Connect();
                             while (!core.DB.IsConnected)
                             {
-                                Log("Unable to connect to SQL server: " + core.DB.ErrorBuffer + " retrying in 20 seconds");
+                                if (core.DB.ErrorBuffer != null)
+                                {
+                                    Log("Unable to connect to SQL server: " + core.DB.ErrorBuffer + " retrying in 20 seconds");
+                                }
                                 Thread.Sleep(20000);
                                 core.DB.Connect();
                             }
