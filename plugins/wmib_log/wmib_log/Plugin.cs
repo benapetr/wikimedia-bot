@@ -150,6 +150,7 @@ namespace wmib
                 }
                 while (core._Status != core.Status.ShuttingDown)
                 {
+                    Thread.Sleep(2000);
                     if (DJ.Count > 0)
                     {
                         List<Item> db = new List<Item>();
@@ -161,6 +162,12 @@ namespace wmib
                         lock (core.DB.DatabaseLock)
                         {
                             core.DB.Connect();
+                            while (!core.DB.IsConnected)
+                            {
+                                Log("Unable to connect to SQL server: " + core.DB.ErrorBuffer + " retrying in 20 seconds");
+                                Thread.Sleep(20000);
+                                core.DB.Connect();
+                            }
                             foreach (Item item in db)
                             {
                                 Database.Row row = new Database.Row();
@@ -197,6 +204,9 @@ namespace wmib
 
         public override void Load()
         {
+            Thread sql = new Thread(Writer);
+            sql.Name = "sql writer";
+            sql.Start();
             Log("Writer thread started");
             int timer = 0;
             while (!Unloading)
