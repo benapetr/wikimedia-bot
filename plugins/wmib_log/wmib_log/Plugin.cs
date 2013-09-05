@@ -155,52 +155,63 @@ namespace wmib
                 DebugLog("The SQL writer started");
                 while (core._Status != core.Status.ShuttingDown)
                 {
-                    Thread.Sleep(2000);
-                    if (DJ.Count > 0)
+                    string message = "";
+                    try
                     {
-                        List<Item> db = new List<Item>();
-                        lock (DJ)
+                        Thread.Sleep(2000);
+                        if (DJ.Count > 0)
                         {
-                            db.AddRange(DJ);
-                            DJ.Clear();
-                        }
-                        lock (core.DB.DatabaseLock)
-                        {
-                            core.DB.Connect();
-                            while (!core.DB.IsConnected)
+                            List<Item> db = new List<Item>();
+                            lock (DJ)
                             {
-                                if (core.DB.ErrorBuffer != null)
-                                {
-                                    Log("Unable to connect to SQL server: " + core.DB.ErrorBuffer + " retrying in 20 seconds");
-                                }
-                                Thread.Sleep(20000);
+                                db.AddRange(DJ);
+                                DJ.Clear();
+                            }
+                            lock (core.DB.DatabaseLock)
+                            {
                                 core.DB.Connect();
+                                while (!core.DB.IsConnected)
+                                {
+                                    if (core.DB.ErrorBuffer != null)
+                                    {
+                                        Log("Unable to connect to SQL server: " + core.DB.ErrorBuffer + " retrying in 20 seconds");
+                                    }
+                                    Thread.Sleep(20000);
+                                    core.DB.Connect();
+                                }
+                                foreach (Item item in db)
+                                {
+                                    Database.Row row = new Database.Row();
+                                    message = item.message;
+                                    row.Values.Add(new Database.Row.Value(0));
+                                    row.Values.Add(new Database.Row.Value(item.ch.Name, Database.DataType.Varchar));
+                                    row.Values.Add(new Database.Row.Value(item.username, Database.DataType.Varchar));
+                                    row.Values.Add(new Database.Row.Value(item.time));
+                                    row.Values.Add(new Database.Row.Value(item.act));
+                                    row.Values.Add(new Database.Row.Value(item.message, Database.DataType.Varchar));
+                                    core.DB.InsertRow("logs", row);
+                                }
+                                core.DB.Commit();
+                                core.DB.Disconnect();
                             }
-                            foreach (Item item in db)
-                            {
-                                Database.Row row = new Database.Row();
-                                row.Values.Add(new Database.Row.Value(0));
-                                row.Values.Add(new Database.Row.Value(item.ch.Name, Database.DataType.Varchar));
-                                row.Values.Add(new Database.Row.Value(item.username, Database.DataType.Varchar));
-                                row.Values.Add(new Database.Row.Value(item.time));
-                                row.Values.Add(new Database.Row.Value(item.act));
-                                row.Values.Add(new Database.Row.Value(item.message, Database.DataType.Varchar));
-                                core.DB.InsertRow("logs", row);
-                            }
+                        }
+                    }
+                    catch (ThreadAbortException)
+                    {
+                        if (core.DatabaseServerIsAvailable)
+                        {
                             core.DB.Commit();
                             core.DB.Disconnect();
                         }
+                        Log("SQL Writer is shut down with " + DJ.Count.ToString() + " unfinished lines");
+                        return;
+                    }
+                    catch (Exception fail)
+                    {
+                        handleException(fail);
+                        Log("SQL Writer error: " + message, true);
                     }
                 }
-            }
-            catch (ThreadAbortException)
-            {
-                if (core.DatabaseServerIsAvailable)
-                {
-                    core.DB.Commit();
-                    core.DB.Disconnect();
-                }
-                Log("SQL Writer is shut down with " + DJ.Count.ToString() + " unfinished lines");
             }
             catch (Exception fail)
             {
@@ -258,7 +269,7 @@ namespace wmib
             Name = "LOGS";
             start = true;
             Reload = true;
-            Version = "1.8.0";
+            Version = "2.6.0";
             return true;
         }
 

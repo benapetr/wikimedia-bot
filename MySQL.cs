@@ -44,7 +44,7 @@ namespace wmib
                             case DataType.Varchar:
                             case DataType.Text:
                             case DataType.Date:
-                                sql += "'" + value.Data + "', ";
+                                sql += "'" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(value.Data) + "', ";
                                 break;
                         }
                     }
