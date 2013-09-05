@@ -21,12 +21,86 @@ class Logs
         }
     }
 
+    private static function auto_link_text($text)
+    {
+        $pattern  = '#\b(([\w-]+://?|www[.])[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|/)))#';
+        return preg_replace_callback($pattern, 'self::auto_link_text_callback', $text);
+    }
+
+    private static function auto_link_text_callback($matches)
+    {
+        $max_url_length = 250;
+        $max_depth_if_over_length = 20;
+        $ellipsis = '&hellip;';
+
+        $url_full = $matches[0];
+        $url_short = '';
+
+    if (strlen($url_full) > $max_url_length) {
+        $parts = parse_url($url_full);
+        $url_short = $parts['scheme'] . '://' . preg_replace('/^www\./', '', $parts['host']) . '/';
+
+        $path_components = explode('/', trim($parts['path'], '/'));
+        foreach ($path_components as $dir) {
+            $url_string_components[] = $dir . '/';
+        }
+
+        if (!empty($parts['query'])) {
+            $url_string_components[] = '?' . $parts['query'];
+        }
+
+        if (!empty($parts['fragment'])) {
+            $url_string_components[] = '#' . $parts['fragment'];
+        }
+
+        for ($k = 0; $k < count($url_string_components); $k++) {
+            $curr_component = $url_string_components[$k];
+            if ($k >= $max_depth_if_over_length || strlen($url_short) + strlen($curr_component) > $max_url_length) {
+                if ($k == 0 && strlen($url_short) < $max_url_length) {
+                    // Always show a portion of first directory
+                    $url_short .= substr($curr_component, 0, $max_url_length - strlen($url_short));
+                }
+                $url_short .= $ellipsis;
+                break;
+            }
+            $url_short .= $curr_component;
+        }
+
+    } else {
+        $url_short = $url_full;
+    }
+
+    return "<a rel=\"nofollow\" href=\"$url_full\">$url_short</a>";
+}
+
+    private static function Remove($text)
+    {
+        $c = 16;
+        while ( $c > 0 )
+        {
+            $c--;
+            $text = str_replace(chr(3) . strval($c), "", $text);
+            if ( $c < 10 )
+            {
+                $text = str_replace(chr(3) . "0" . strval($c), "", $text);
+            }
+        }
+        $text = str_replace(chr(2), "", $text);
+        $text = str_replace(chr(3), "", $text);
+        return str_replace(chr(1), "", $text); 
+    }
+
     private static function RenderLogs($logs)
     {
         echo ( "<div class=logs><table>\n" );
         foreach ($logs as $blah)
         {
-            echo ( "<tr><td>" . $blah["time"] . "</td><td>&lt;" . $blah["nick"] . "&gt;</td><td>" . htmlspecialchars($blah["contents"]) . "</td></tr>\n" );
+            if ( $blah["act"] == 1 )
+            {
+            echo ( "<tr><td width=120><b>" . $blah["time"] . "</b></td><td colspan=2>* <b>" . $blah["nick"] . "</b> " . self::auto_link_text(htmlspecialchars(self::Remove($blah["contents"]))) . "</td></tr>\n" );
+                continue;
+            }
+            echo ( "<tr><td width=120><b>" . $blah["time"] . "</b></td><td><b>&lt;" . $blah["nick"] . "&gt;</b></td><td>" . self::auto_link_text(htmlspecialchars(self::Remove($blah["contents"]))) . "</td></tr>\n" );
         }
         echo ( "</table></div>\n" );
     }
@@ -36,7 +110,7 @@ class Logs
         echo ( "<div class=logs><p>\n" );
         foreach ($logs as $blah)
         {
-            echo ( "'''" . $blah["time"] . " [" . $blah["nick"] . "]''' " . htmlspecialchars($blah["contents"]) . "&lt;br&gt;<br>\n" );
+            echo ( "'''" . $blah["time"] . " [" . $blah["nick"] . "]''' " . htmlspecialchars ( self::Remove( $blah["contents"] ) ) . "&lt;br&gt;<br>\n" );
         }
         echo ( "</p></div>\n" );
     }
@@ -82,8 +156,8 @@ class Logs
         {
             $FinishingDate = $_GET["end"];
         }
-        echo ("<tr><td>Start date</td><td><input id=\"datepicker\" value=\"" . date("m/d/Y") . "\" name=\"start\"></td></tr>\n");
-        echo ("<tr><td>End date</td><td><input id=\"datepicker2\" value=\"" . date("m/d/Y") . "\" name=\"end\"></td></tr>\n");
+        echo ("<tr><td>Start date</td><td><input id=\"datepicker\" value=\"$StartDate\" name=\"start\"></td></tr>\n");
+        echo ("<tr><td>End date</td><td><input id=\"datepicker2\" value=\"" . $FinishingDate . "\" name=\"end\"></td></tr>\n");
         $checked = "";
         if (isset ($_GET['wiki'] ) )
         {
@@ -144,7 +218,7 @@ class Logs
     public static function Render()
     {
         echo ("<!DOCTYPE html>\n<HTML>\n<head>\n  <title>" . self::$title ."</title>\n");
-        echo ("  <meta charset=\"UTF-8\">\n");
+        echo ("  <meta charset=\"ISO-8859-2\">\n");
 	echo ("  <link rel=\"stylesheet\" type=\"text/css\" href=\"./style/style.css\">\n");
 	//echo ("  <link href=\"./js/jquery-ui.css\" rel=\"stylesheet\" type=\"text/css\"/>\n");
     	//echo ("  <script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js\"></script>\n");
@@ -161,6 +235,7 @@ class Logs
         echo ("    </td>\n    <td " . 'valign="top">');
         self::RenderContent();
         echo ("    </td>\n  </tr>\n</table>\n");
+        echo ("<p align=center>Licensed under WTF PL. This site is courtesy of wm-bot.</p>");
         echo ("</div>\n</body>\n</HTML>");
         mysql_close(self::$mysql);
     }
