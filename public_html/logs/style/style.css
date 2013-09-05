@@ -15,7 +15,7 @@ div.bkg1 { /* CSS3 */
 
 	width:100%;
 	height:100%;
-	background: -moz-linear-gradient(top, white, #EEE9E9);
+	background: -moz-linear-gradient(top, white, #EEE8E9);
 	background: -webkit-gradient(linear, left top, left bottom,color-stop(0, white), color-stop(1, #EEE9E9));
 }
 
@@ -61,6 +61,10 @@ div.content{
 div.contentloggedout {
 	font-size:16pt;
 	text-align:center;
+}
+
+div.logs {
+    font-size:8pt;
 }
 
 div.footer {

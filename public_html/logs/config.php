@@ -1,6 +1,6 @@
 <?
 
-$mysql_user='wmib';
+$mysql_user='public';
 $mysql_host='bots-labs';
 $mysql_db='wmib';
-$mysql_pw='vladimir';
+$mysql_pw='blah';
