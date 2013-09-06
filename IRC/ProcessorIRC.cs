@@ -357,6 +357,25 @@ namespace wmib
                 }
                 if (target != null)
                 {
+                    lock (Module.module)
+                    {
+                        foreach (Module module in Module.module)
+                        {
+                            if (!module.working)
+                            {
+                                continue;
+                            }
+                            try
+                            {
+                                module.Hook_ChannelQuit(item, _user, value);
+                            }
+                            catch (Exception fail)
+                            {
+                                core.Log("MODULE: exception at Hook_ChannelQuit in " + module.Name, true);
+                                core.handleException(fail);
+                            }
+                        }
+                    }
                     lock (item.UserList)
                     {
                         item.UserList.Remove(target);

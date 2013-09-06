@@ -233,6 +233,17 @@ namespace wmib
         }
 
         /// <summary>
+        /// This hook is executed on user quit for each channel the user was in
+        /// </summary>
+        /// <param name="chan"></param>
+        /// <param name="user"></param>
+        /// <param name="ms"></param>
+        public virtual void Hook_ChannelQuit(config.channel channel, User user, string mesg)
+        {
+            return;
+        }
+
+        /// <summary>
         /// Event that happen when user part
         /// </summary>
         /// <param name="channel"></param>

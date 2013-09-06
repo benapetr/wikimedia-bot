@@ -169,6 +169,22 @@ namespace wmib
             }
         }
 
+        public override void Hook_ChannelQuit(config.channel channel, User user, string mesg)
+        {
+            Item item = new Item();
+            item.channel = channel;
+            item.act = false;
+            item.host = user.Host;
+            item.message = mesg;
+            item.time = DateTime.Now;
+            item.type = 1;
+            item.username = user.Nick;
+            lock (DJ)
+            {
+                DJ.Add(item);
+            }
+        }
+
         public override void Hook_Kick(config.channel channel, User source, User user)
         {
             Item item = new Item();
