@@ -146,6 +146,7 @@
 #da.wikiquote|https://da.wikiquote|da_wikiquote
 #da.wikisource|https://da.wikisource.org/w/index.php|da_wikisource
 #da.wiktionary|https://da.wiktionary.org/w/index.php|da_wiktionary
+#ddo.com|http://ddowiki.com/index.php|ddo_wiki
 #de_labs.wikimedia|https://de_labs.wikimedia|de_labs_wikimedia
 #de.wikipedia|https://de.wikipedia.org/w/index.php|de_wikipedia
 #de.wikibooks|https://de.wikibooks.org/w/index.php|de_wikibooks
@@ -438,6 +439,8 @@
 #map_bms.wikipedia|https://map_bms.wikipedia.org/w/index.php|map_bms_wikipedia
 #mdf.wikipedia|https://mdf.wikipedia.org/w/index.php|mdf_wikipedia
 #media.wikipedia|https://media.wikiwikipedia.org/w/index.php|media_wikipedia
+#mediawiki.wikimedia|https://www.mediawiki.org/w/index.php|mediawiki_wiki
+#mediawiki.wikimedia|https://www.mediawiki.org/w/index.php|mediawiki_wikimedia
 #meta.wikimedia|https://meta.wikimedia.org/w/index.php|meta_wikimedia
 #mg.wikipedia|https://mg.wikipedia.org/w/index.php|mg_wikipedia
 #mg.wikibooks|https://mg.wikibooks.org/w/index.php|mg_wikibooks
