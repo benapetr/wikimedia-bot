@@ -262,7 +262,7 @@ namespace wmib
                                     row.Values.Add(new Database.Row.Value(item.time));
                                     row.Values.Add(new Database.Row.Value(item.act));
                                     row.Values.Add(new Database.Row.Value(item.message, Database.DataType.Varchar));
-                                    row.Values.Add(new Database.Row.Value(0));
+                                    row.Values.Add(new Database.Row.Value(item.type));
                                     row.Values.Add(new Database.Row.Value(item.host, Database.DataType.Varchar));
                                     if (!core.DB.InsertRow("logs", row))
                                     {
