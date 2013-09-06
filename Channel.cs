@@ -39,7 +39,7 @@ namespace wmib
             /// List of users
             /// </summary>
             public List<User> UserList = new List<User>();
-            
+
             /// <summary>
             /// Whether the channel contains a fresh user list (in case it doesn't bot will auto reparse it from ircd)
             /// </summary>
@@ -87,7 +87,7 @@ namespace wmib
             /// Time of last message received in channel
             /// </summary>
             public DateTime last_msg = DateTime.Now;
-            
+
             /// <summary>
             /// Doesn't send any warnings on error
             /// </summary>
@@ -131,7 +131,7 @@ namespace wmib
             /// Users
             /// </summary>
             public IRCTrust Users = null;
-            private bool isRemoved = false;
+            private bool IsRemoved = false;
 
             /// <summary>
             /// Add a line to config
@@ -301,7 +301,7 @@ namespace wmib
                     foreach (XmlNode xx in data.ChildNodes[0].ChildNodes)
                     {
                         switch (xx.Name)
-                        { 
+                        {
                             case "extension":
                                 if (ExtensionData.ContainsKey(xx.Attributes[0].Value))
                                 {
@@ -321,7 +321,7 @@ namespace wmib
 
                         }
                         switch (xx.Attributes[0].Value)
-                        { 
+                        {
                             case "talkmode":
                                 suppress = bool.Parse(xx.Attributes[1].Value);
                                 break;
@@ -432,7 +432,7 @@ namespace wmib
             /// </summary>
             public void Remove()
             {
-                if (isRemoved)
+                if (IsRemoved)
                 {
                     core.DebugLog("Channel is already removed");
                     return;

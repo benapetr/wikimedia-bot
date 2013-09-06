@@ -204,7 +204,7 @@ namespace wmib
                         mm.Hook_BeforeSysWeb(ref text);
                     }
 
-                    text += "<br>Core version: " + config.version + "<br>\n";
+                    text += "<br>Core version: " + config.Version + "<br>\n";
 
                     text += "<h2>Bots</h2><table class=\"text\"><th>Name</th><th>Status</th><th>Bouncer</th>";
 

@@ -115,9 +115,15 @@ namespace wmib
                         Thread.Sleep(100);
                         try
                         {
-                            if (Directory.Exists(chan.LogDir))
+                            // let's try to remove channel logs
+                            string logdir = Module.GetConfig(chan, "Logs.Path", "null");
+                            if (logdir == "null")
                             {
-                                Directory.Delete(chan.LogDir, true);
+                                logdir = chan.LogDir;
+                            }
+                            if (Directory.Exists(logdir))
+                            {
+                                Directory.Delete(logdir, true);
                             }
                         }
                         catch (Exception fail)

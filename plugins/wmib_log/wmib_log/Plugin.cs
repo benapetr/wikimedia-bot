@@ -509,7 +509,7 @@ namespace wmib
 
         public override void Hook_OnSelf(config.channel channel, User self, string message)
         {
-            ChanLog(message, channel, config.username, "");
+            ChanLog(message, channel, config.NickName, "");
         }
 
         /// <summary>

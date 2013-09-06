@@ -1,4 +1,16 @@
-﻿﻿using System;
+﻿//This program is free software: you can redistribute it and/or modify
+//it under the terms of the GNU General Public License as published by
+//the Free Software Foundation, either version 3 of the License, or
+//(at your option) any later version.
+
+//This program is distributed in the hope that it will be useful,
+//but WITHOUT ANY WARRANTY; without even the implied warranty of
+//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//GNU General Public License for more details.
+
+// Created by Petr Bena <benapetr@gmail.com>
+
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
@@ -115,13 +127,13 @@ namespace wmib
                             break;
                         case "help":
                             Writer.WriteLine("Commands:\n"
-                            +"exit - shutdown connection\n"
-                            +"info - print information about system\n"
-                            +"halt - shutdown bot\n"
-                            +"traffic-on - turn on traffic logs\n"
-                            +"traffic-off - turn off traffic logs\n"
-                            +"kill [instance] - disconnect selected instance\n"
-                            +"conn [instance] - connect instance\n");
+                            + "exit - shutdown connection\n"
+                            + "info - print information about system\n"
+                            + "halt - shutdown bot\n"
+                            + "traffic-on - turn on traffic logs\n"
+                            + "traffic-off - turn off traffic logs\n"
+                            + "kill [instance] - disconnect selected instance\n"
+                            + "conn [instance] - connect instance\n");
                             Writer.Flush();
                             break;
                         case "halt":

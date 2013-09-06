@@ -58,9 +58,9 @@ namespace wmib
             ChannelName = channel;
             foreach (string x in db)
             {
-                if (x.Contains(config.separator))
+                if (x.Contains(config.Separator))
                 {
-                    string[] info = x.Split(Char.Parse(config.separator));
+                    string[] info = x.Split(Char.Parse(config.Separator));
                     string level = info[1];
                     string name = core.decode2(info[0]);
                     Users.Add(new core.SystemUser(level, name));
@@ -108,9 +108,9 @@ namespace wmib
                 GlobalUsers.Clear();
                 foreach (string x in dba)
                 {
-                    if (x.Contains(config.separator))
+                    if (x.Contains(config.Separator))
                     {
-                        string[] info = x.Split(Char.Parse(config.separator));
+                        string[] info = x.Split(Char.Parse(config.Separator));
                         string level = info[1];
                         string name = core.decode2(info[0]);
                         core.SystemUser user = new core.SystemUser(level, name);
@@ -172,7 +172,7 @@ namespace wmib
                 {
                     foreach (core.SystemUser u in Users)
                     {
-                        data.Append(core.encode2(u.name) + config.separator + u.level + "\n");
+                        data.Append(core.encode2(u.name) + config.Separator + u.level + "\n");
                     }
                 }
                 System.IO.File.WriteAllText(File, data.ToString());

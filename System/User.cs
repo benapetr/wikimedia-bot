@@ -50,13 +50,14 @@ namespace wmib
             /// <summary>
             /// Constructor
             /// </summary>
-            /// <param name="level"></param>
-            /// <param name="name"></param>
-            public SystemUser(string level, string name, bool Global = false)
+            /// <param name="Level"></param>
+            /// <param name="Name"></param>
+            /// <param name="Global"></param>
+            public SystemUser(string Level, string Name, bool Global = false)
             {
                 IsGlobal = Global;
-                this.level = level;
-                this.name = name;
+                this.level = Level;
+                this.name = Name;
             }
         }
     }

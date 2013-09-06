@@ -424,7 +424,7 @@ namespace wmib
                         Working = false;
                         return;
                     }
-                    if (temp_nick.ToUpper() == config.username.ToUpper())
+                    if (temp_nick.ToUpper() == config.NickName.ToUpper())
                     {
                         response = "I am right here";
                         core.irc._SlowQueue.DeliverMessage(temp_source + ": " + response, chan.Name);
@@ -682,7 +682,7 @@ namespace wmib
                     core.irc._SlowQueue.DeliverMessage(source + ": " + response, target, IRC.priority.normal);
                     return;
                 }
-                if (nick.ToUpper() == config.username.ToUpper())
+                if (nick.ToUpper() == config.NickName.ToUpper())
                 {
                     response = "I am right here";
                     core.irc._SlowQueue.DeliverMessage(source + ": " + response, target, IRC.priority.normal);

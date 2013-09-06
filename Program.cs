@@ -59,7 +59,7 @@ namespace wmib
             WriteNow("Terminated");
         }
 
-        private static void processVerbosity(string[] gs)
+        private static void ProcessVerbosity(string[] gs)
         {
             foreach (string item in gs)
             {
@@ -101,10 +101,10 @@ namespace wmib
             {
                 Thread logger = new Thread(Logging.Exec);
                 core.domain = AppDomain.CurrentDomain;
-                WriteNow(config.version);
+                WriteNow(config.Version);
                 WriteNow("Loading...");
                 config.UpTime = DateTime.Now;
-                processVerbosity(args);
+                ProcessVerbosity(args);
                 logger.Start();
                 Console.CancelKeyPress += myHandler;
                 messages.LoadLD();

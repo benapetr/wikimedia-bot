@@ -186,9 +186,9 @@ namespace wmib
                 string[] db = File.ReadAllLines(datafile_raw);
                 foreach (string x in db)
                 {
-                    if (x.Contains(config.separator))
+                    if (x.Contains(config.Separator))
                     {
-                        string[] info = x.Split(Char.Parse(config.separator));
+                        string[] info = x.Split(Char.Parse(config.Separator));
                         string type = info[2];
                         string value = info[1];
                         string name = info[0];

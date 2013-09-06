@@ -25,12 +25,12 @@ namespace wmib
         /// <summary>
         /// Network the bot is connecting to
         /// </summary>
-        public static string network = "irc.freenode.net";
+        public static string NetworkHost = "irc.freenode.net";
 
         /// <summary>
         /// Nick name
         /// </summary>
-        public static string username = "wm-bot";
+        public static string NickName = "wm-bot";
 
         /// <summary>
         /// Uptime
@@ -75,12 +75,12 @@ namespace wmib
         /// <summary>
         /// Login name
         /// </summary>
-        public static string login = null;
+        public static string LoginNick = null;
 
         /// <summary>
         /// Login pw
         /// </summary>
-        public static string password = "";
+        public static string LoginPw = "";
 
         /// <summary>
         /// Whether the bot is using external network module
@@ -120,17 +120,17 @@ namespace wmib
         /// <summary>
         /// Version
         /// </summary>
-        public static string version = "wikimedia bot v. 1.20.1.0";
+        public static string Version = "wikimedia bot v. 1.20.1.0";
 
         /// <summary>
         /// Separator for system db
         /// </summary>
-        public static string separator = "|";
+        public static string Separator = "|";
 
         /// <summary>
         /// User name
         /// </summary>
-        public static string name = "wm-bot";
+        public static string Username = "wm-bot";
 
         /// <summary>
         /// This is a port for network bouncer
@@ -147,6 +147,9 @@ namespace wmib
         /// </summary>
         public static List<channel> channels = new List<channel>();
 
+        /// <summary>
+        /// Interval between messages are sent to server
+        /// </summary>
         public static int Interval = 800;
 
         /// <summary>
@@ -176,6 +179,11 @@ namespace wmib
         public static bool Colors = true;
 
         /// <summary>
+        /// How verbose the debugging is
+        /// </summary>
+        public static int SelectedVerbosity = 0;
+
+        /// <summary>
         /// Add line to the config file
         /// </summary>
         /// <param name="key"></param>
@@ -190,26 +198,21 @@ namespace wmib
         }
 
         /// <summary>
-        /// How verbose the debugging is
-        /// </summary>
-        public static int SelectedVerbosity = 0;
-
-        /// <summary>
-        /// Save a channel config
+        /// Save a wm-bot config
         /// </summary>
         public static void Save()
         {
             StringBuilder text = new StringBuilder("");
-            AddConfig("username", username, text);
-            AddConfig("password", password, text);
+            AddConfig("username", NickName, text);
+            AddConfig("password", LoginPw, text);
             AddConfig("web", WebpageURL, text);
             AddConfig("serverIO", UsingNetworkIOLayer.ToString(), text);
             AddConfig("debug", DebugChan, text);
-            AddConfig("network", network, text);
+            AddConfig("network", NetworkHost, text);
             AddConfig("bouncerp", BouncerPort.ToString(), text);
             AddConfig("style_html_file", css, text);
             AddConfig("interval", Interval.ToString(), text);
-            AddConfig("nick", login, text);
+            AddConfig("nick", LoginNick, text);
             AddConfig("mysql_user", MysqlUser, text);
             AddConfig("mysql_host", MysqlHost, text);
             AddConfig("mysql_pw", MysqlPw, text);
@@ -236,7 +239,7 @@ namespace wmib
                 int current = 0;
                 foreach (Instance blah in core.Instances.Values)
                 {
-                    if (blah.Nick != username)
+                    if (blah.Nick != NickName)
                     {
                         AddConfig("instancename" + current.ToString(), blah.Nick, text);
                         AddConfig("instanceport" + current.ToString(), blah.Port.ToString(), text);
@@ -333,15 +336,15 @@ namespace wmib
             Dictionary<string, string> Configuration = File2Dict();
             if (Configuration.ContainsKey("username"))
             {
-                username = Configuration["username"];
+                NickName = Configuration["username"];
             }
             if (Configuration.ContainsKey("network"))
             {
-                network = Configuration["network"];
+                NetworkHost = Configuration["network"];
             }
             if (Configuration.ContainsKey("nick"))
             {
-                login = Configuration["nick"];
+                LoginNick = Configuration["nick"];
             }
             if (Configuration.ContainsKey("debug"))
             {
@@ -349,7 +352,7 @@ namespace wmib
             }
             if (Configuration.ContainsKey("bouncerp"))
             {
-                BouncerPort =  int.Parse(Configuration["bouncerp"]);
+                BouncerPort = int.Parse(Configuration["bouncerp"]);
             }
             if (Configuration.ContainsKey("style_html_file"))
             {
@@ -361,7 +364,7 @@ namespace wmib
             }
             if (Configuration.ContainsKey("password"))
             {
-                password = Configuration["password"];
+                LoginPw = Configuration["password"];
             }
             if (Configuration.ContainsKey("mysql_pw"))
             {
@@ -387,17 +390,17 @@ namespace wmib
             {
                 MysqlHost = Configuration["mysql_host"];
             }
-            if (string.IsNullOrEmpty(login))
+            if (string.IsNullOrEmpty(LoginNick))
             {
                 Console.WriteLine("Error there is no login for bot");
                 return 1;
             }
-            if (string.IsNullOrEmpty(network))
+            if (string.IsNullOrEmpty(NetworkHost))
             {
                 Console.WriteLine("Error irc server is wrong");
                 return 4;
             }
-            if (string.IsNullOrEmpty(username))
+            if (string.IsNullOrEmpty(NickName))
             {
                 Console.WriteLine("Error there is no username for bot");
                 return 6;
@@ -407,7 +410,7 @@ namespace wmib
                 UsingNetworkIOLayer = bool.Parse(Configuration["serverIO"]);
             }
             core.Log("Creating instances");
-            core.CreateInstance(username, BouncerPort); // primary instance
+            core.CreateInstance(NickName, BouncerPort); // primary instance
             int CurrentInstance = 0;
             while (CurrentInstance < 20)
             {

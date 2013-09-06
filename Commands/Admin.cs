@@ -163,7 +163,7 @@ namespace wmib
                     ShowHelp(parameter, chan);
                     return;
                 }
-                irc._SlowQueue.DeliverMessage("I am running http://meta.wikimedia.org/wiki/WM-Bot version " + config.version + " my source code is licensed under GPL and located at https://github.com/benapetr/wikimedia-bot I will be very happy if you fix my bugs or implement new features", chan);
+                irc._SlowQueue.DeliverMessage("I am running http://meta.wikimedia.org/wiki/WM-Bot version " + config.Version + " my source code is licensed under GPL and located at https://github.com/benapetr/wikimedia-bot I will be very happy if you fix my bugs or implement new features", chan);
                 return;
             }
 

@@ -474,7 +474,7 @@ namespace wmib
                         {
                             if (module.working)
                             {
-                                module.Hook_OnSelf(curr, new User(config.username, "wikimedia/bot/wm-bot", "wmib"), message);
+                                module.Hook_OnSelf(curr, new User(config.NickName, "wikimedia/bot/wm-bot", "wmib"), message);
                             }
                         }
                         catch (Exception fail)
@@ -579,7 +579,7 @@ namespace wmib
                     System.Threading.Thread.Sleep(20000);
                     if (!config.UsingNetworkIOLayer)
                     {
-                        SendData("PING :" + config.network);
+                        SendData("PING :" + config.NetworkHost);
                     }
                 }
                 catch (ThreadAbortException)
@@ -659,9 +659,9 @@ namespace wmib
         /// <returns></returns>
         public bool Authenticate()
         {
-            if (config.password != "")
+            if (config.LoginPw != "")
             {
-                SendData("PRIVMSG nickserv :identify " + config.login + " " + config.password);
+                SendData("PRIVMSG nickserv :identify " + config.LoginNick + " " + config.LoginPw);
                 System.Threading.Thread.Sleep(4000);
             }
             return true;
@@ -850,7 +850,7 @@ namespace wmib
                                         }
                                         if (message.StartsWith(" :" + delimiter.ToString() + "VERSION"))
                                         {
-                                            SendData("NOTICE " + nick + " :" + delimiter.ToString() + "VERSION " + config.version);
+                                            SendData("NOTICE " + nick + " :" + delimiter.ToString() + "VERSION " + config.Version);
                                             continue;
                                         }
                                         // store which instance this message was from so that we can send it using same instance

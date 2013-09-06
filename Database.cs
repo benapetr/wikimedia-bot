@@ -19,15 +19,29 @@ namespace wmib
             /// </summary>
             public class Value
             {
+                /// <summary>
+                /// Type
+                /// </summary>
                 public Database.DataType Type;
+                /// <summary>
+                /// Data
+                /// </summary>
                 public string Data = null;
 
+                /// <summary>
+                /// Creates a new value of type int
+                /// </summary>
+                /// <param name="number"></param>
                 public Value(int number)
                 {
                     Data = number.ToString();
                     Type = DataType.Integer;
                 }
 
+                /// <summary>
+                /// Creates a new value of type date
+                /// </summary>
+                /// <param name="date"></param>
                 public Value(DateTime date)
                 {
                     Data = date.Year.ToString() + "-" + date.Month.ToString().PadLeft(2, '0') + "-" + date.Day.ToString().PadLeft(2, '0') + " " + date.Hour.ToString().PadLeft(2, '0') + ":" 
@@ -35,12 +49,21 @@ namespace wmib
                     Type = DataType.Date;
                 }
 
+                /// <summary>
+                /// Creates a new value of type bool
+                /// </summary>
+                /// <param name="text"></param>
                 public Value(bool text)
                 {
                     Data = text.ToString();
                     Type = DataType.Boolean;
                 }
 
+                /// <summary>
+                /// Creates a new value of type text
+                /// </summary>
+                /// <param name="text"></param>
+                /// <param name="type"></param>
                 public Value(string text, Database.DataType type)
                 {
                     Data = text;
@@ -88,12 +111,30 @@ namespace wmib
             return false;
         }
 
+        /// <summary>
+        /// Data type
+        /// </summary>
         public enum DataType
         {
+            /// <summary>
+            /// Text SQL
+            /// </summary>
             Text,
+            /// <summary>
+            /// Varchar SQL
+            /// </summary>
             Varchar,
+            /// <summary>
+            /// Integer SQL
+            /// </summary>
             Integer,
+            /// <summary>
+            /// Boolean SQL
+            /// </summary>
             Boolean,
+            /// <summary>
+            /// Date SQL
+            /// </summary>
             Date,
         }
     }

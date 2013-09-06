@@ -84,7 +84,7 @@ namespace wmib
         public static void TrafficLog(string text)
         {
             if (config.Logging)
-            { 
+            {
                 StorageWriter.InsertLine("trafficlog.dat", DateTime.Now.ToString() + ": " + text, false);
             }
         }
@@ -370,7 +370,7 @@ namespace wmib
                         Program.Log("Restoring unfinished transaction of " + ch + " for db_" + name);
                         File.Copy(config.tempName(name), name, true);
                         return true;
-                        
+
                     }
                     Program.Log("Unfinished transaction could not be restored! DB of " + name + " is probably broken", true);
                 }
@@ -389,7 +389,7 @@ namespace wmib
         /// </summary>
         public static void Connect()
         {
-            irc = Instances[config.username].irc;
+            irc = Instances[config.NickName].irc;
             // now we load all instances
             lock (Instances)
             {
@@ -495,7 +495,7 @@ namespace wmib
                 irc.Disconnect();
                 irc._SlowQueue.Exit();
                 StorageWriter.isRunning = false;
-                Thread modules = new Thread(Terminate) {Name = "KERNEL: Core helper shutdown thread"};
+                Thread modules = new Thread(Terminate) { Name = "KERNEL: Core helper shutdown thread" };
                 modules.Start();
                 Program.WriteNow("Giving grace time for all modules to finish ok");
                 int kill = 0;
@@ -570,7 +570,7 @@ namespace wmib
                 ParseAdmin(curr, nick, host, message);
                 if (curr.respond_message)
                 {
-                    if (message.StartsWith(config.username + ":"))
+                    if (message.StartsWith(config.NickName + ":"))
                     {
                         System.DateTime time = curr.last_msg;
                         if (System.DateTime.Now >= time.AddSeconds(curr.respond_wait))

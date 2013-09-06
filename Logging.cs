@@ -1,4 +1,16 @@
-﻿using System;
+﻿//This program is free software: you can redistribute it and/or modify
+//it under the terms of the GNU General Public License as published by
+//the Free Software Foundation, either version 3 of the License, or
+//(at your option) any later version.
+
+//This program is distributed in the hope that it will be useful,
+//but WITHOUT ANY WARRANTY; without even the implied warranty of
+//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//GNU General Public License for more details.
+
+// Created by Petr Bena <benapetr@gmail.com>
+
+using System;
 using System.Threading;
 using System.Collections.Generic;
 using System.Text;
@@ -19,7 +31,7 @@ namespace wmib
             /// <summary>
             /// Time
             /// </summary>
-            public DateTime T;
+            public DateTime Time;
             /// <summary>
             /// Message
             /// </summary>
@@ -38,7 +50,7 @@ namespace wmib
             public Message(string text, DateTime time, bool warning)
             {
                 Text = text;
-                T = time;
+                Time = time;
                 Warning = warning;
             }
         }
@@ -117,7 +129,7 @@ namespace wmib
                         }
                         foreach (Message message in priv)
                         {
-                            Display(message.T, message.Text, message.Warning);
+                            Display(message.Time, message.Text, message.Warning);
                         }
                     }
                     Thread.Sleep(100);
