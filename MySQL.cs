@@ -60,7 +60,7 @@ namespace wmib
                 catch (MySqlException me)
                 {
                     ErrorBuffer = me.Message;
-                    core.DebugLog("Error while storing a row to DB " + me.ToString());
+                    core.Log("Error while storing a row to DB " + me.ToString(), true);
                     core.DebugLog("SQL: " + sql);
                     return false;
                 }
