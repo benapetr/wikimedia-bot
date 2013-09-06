@@ -23,7 +23,7 @@ namespace wmib
         {
             public DateTime time;
             public string message;
-            public config.channel ch;
+            public config.channel channel;
         }
 
         public class Item
@@ -32,9 +32,16 @@ namespace wmib
             public DateTime time;
             public string message = null;
             public bool act = false;
+            // 0 chat
+            // 1 quit
+            // 2 join
+            // 3 part
+            // 4 kick
+            // 5 topic change
+            // 6 nick change
             public int type;
             public string host;
-            public config.channel ch;
+            public config.channel channel;
         }
 
         private List<char> Separator = new List<char> { ' ', ',', (char)3, '(', ')', '{', '}', (char)2, '<', '>' };
@@ -121,13 +128,77 @@ namespace wmib
                 // write to disk
                 foreach (Job curr in line)
                 {
-                    while (!WriteLog(curr.message, curr.ch, curr.time))
+                    while (!WriteLog(curr.message, curr.channel, curr.time))
                     {
                         Thread.Sleep(2000);
                     }
                 }
             }
             return 2;
+        }
+
+        public override void Hook_Nick(config.channel channel, User Target, string OldNick)
+        {
+            Item item = new Item();
+            item.channel = channel;
+            item.act = false;
+            item.host = Target.Host;
+            item.message = OldNick;
+            item.time = DateTime.Now;
+            item.type = 6;
+            item.username = Target.Nick;
+            lock (DJ)
+            {
+                DJ.Add(item);
+            }
+        }
+
+        public override void Hook_Part(config.channel channel, User user)
+        {
+            Item item = new Item();
+            item.channel = channel;
+            item.act = false;
+            item.host = user.Host;
+            item.message = "";
+            item.time = DateTime.Now;
+            item.type = 3;
+            item.username = user.Nick;
+            lock (DJ)
+            {
+                DJ.Add(item);
+            }
+        }
+
+        public override void Hook_Kick(config.channel channel, User source, User user)
+        {
+            Item item = new Item();
+            item.channel = channel;
+            item.act = false;
+            item.host = user.Host;
+            item.message = source.Nick;
+            item.time = DateTime.Now;
+            item.type = 4;
+            item.username = user.Nick;
+            lock (DJ)
+            {
+                DJ.Add(item);
+            }
+        }
+
+        public override void Hook_Join(config.channel channel, User user)
+        {
+            Item item = new Item();
+            item.channel = channel;
+            item.act = false;
+            item.host = user.Host;
+            item.message = "";
+            item.time = DateTime.Now;
+            item.type = 2;
+            item.username = user.Nick;
+            lock (DJ)
+            {
+                DJ.Add(item);
+            }
         }
 
         private void Finish()
@@ -186,7 +257,7 @@ namespace wmib
                                     Database.Row row = new Database.Row();
                                     message = item.message;
                                     row.Values.Add(new Database.Row.Value(0));
-                                    row.Values.Add(new Database.Row.Value(item.ch.Name, Database.DataType.Varchar));
+                                    row.Values.Add(new Database.Row.Value(item.channel.Name, Database.DataType.Varchar));
                                     row.Values.Add(new Database.Row.Value(item.username, Database.DataType.Varchar));
                                     row.Values.Add(new Database.Row.Value(item.time));
                                     row.Values.Add(new Database.Row.Value(item.act));
@@ -341,7 +412,7 @@ namespace wmib
                             user + ">\t " + message + "\n";
                     }
                     Job line = new Job();
-                    line.ch = channel;
+                    line.channel = channel;
                     line.time = time;
                     line.message = log;
                     lock (jobs)
@@ -351,7 +422,7 @@ namespace wmib
                     if (core.DatabaseServerIsAvailable)
                     {
                         Item item = new Item();
-                        item.ch = channel;
+                        item.channel = channel;
                         item.time = time;
                         item.username = user;
                         item.act = !noac;
