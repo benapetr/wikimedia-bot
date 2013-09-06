@@ -166,6 +166,7 @@ evowiki|https://wiki.cotch.net/index.php/$1
 exotica|https://www.exotica.org.uk/wiki/$1
 ext|https://ext.wikipedia.org/wiki/$1
 fa|https://fa.wikipedia.org/wiki/$1
+facebook|https://www.facebook.com/$1
 fanimutationwiki|https://wiki.animutationportal.com/index.php/$1
 ff|https://ff.wikipedia.org/wiki/$1
 fi|https://fi.wikipedia.org/wiki/$1
@@ -200,6 +201,7 @@ gd|https://gd.wikipedia.org/wiki/$1
 gentoo-wiki|https://gentoo-wiki.com/$1
 genwiki|https://wiki.genealogy.net/index.php/$1
 gh|https://github.com/$1
+github|https://github.com/$1
 gl|https://gl.wikipedia.org/wiki/$1
 glk|https://glk.wikipedia.org/wiki/$1
 globalvoices|https://cyber.law.harvard.edu/dyn/globalvoices/wiki/$1
@@ -650,6 +652,7 @@ wikiversity|https://en.wikiversity.org/wiki/$1
 wikiwikiweb|https://c2.com/cgi/wiki?$1
 wikt|https://en.wiktionary.org/wiki/$1
 wiktionary|https://en.wiktionary.org/wiki/$1
+wikivoyage|https://en.wikivoyage.org/wiki/$1
 wipipedia|https://www.londonfetishscene.com/wipi/index.php/$1
 wlug|https://www.wlug.org.nz/$1
 wm2005|https://wikimania2005.wikimedia.org/wiki/$1
