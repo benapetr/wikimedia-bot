@@ -139,81 +139,96 @@ namespace wmib
 
         public override void Hook_Nick(config.channel channel, User Target, string OldNick)
         {
-            Item item = new Item();
-            item.channel = channel;
-            item.act = false;
-            item.host = Target.Host;
-            item.message = OldNick;
-            item.time = DateTime.Now;
-            item.type = 6;
-            item.username = Target.Nick;
-            lock (DJ)
+            if (Module.GetConfig(channel, "Logging.Enabled", false))
             {
-                DJ.Add(item);
+                Item item = new Item();
+                item.channel = channel;
+                item.act = false;
+                item.host = Target.Host;
+                item.message = OldNick;
+                item.time = DateTime.Now;
+                item.type = 6;
+                item.username = Target.Nick;
+                lock (DJ)
+                {
+                    DJ.Add(item);
+                }
             }
         }
 
         public override void Hook_Part(config.channel channel, User user)
         {
-            Item item = new Item();
-            item.channel = channel;
-            item.act = false;
-            item.host = user.Host;
-            item.message = "";
-            item.time = DateTime.Now;
-            item.type = 3;
-            item.username = user.Nick;
-            lock (DJ)
+            if (Module.GetConfig(channel, "Logging.Enabled", false))
             {
-                DJ.Add(item);
+                Item item = new Item();
+                item.channel = channel;
+                item.act = false;
+                item.host = user.Host;
+                item.message = "";
+                item.time = DateTime.Now;
+                item.type = 3;
+                item.username = user.Nick;
+                lock (DJ)
+                {
+                    DJ.Add(item);
+                }
             }
         }
 
         public override void Hook_ChannelQuit(config.channel channel, User user, string mesg)
         {
-            Item item = new Item();
-            item.channel = channel;
-            item.act = false;
-            item.host = user.Host;
-            item.message = mesg;
-            item.time = DateTime.Now;
-            item.type = 1;
-            item.username = user.Nick;
-            lock (DJ)
+            if (Module.GetConfig(channel, "Logging.Enabled", false))
             {
-                DJ.Add(item);
+                Item item = new Item();
+                item.channel = channel;
+                item.act = false;
+                item.host = user.Host;
+                item.message = mesg;
+                item.time = DateTime.Now;
+                item.type = 1;
+                item.username = user.Nick;
+                lock (DJ)
+                {
+                    DJ.Add(item);
+                }
             }
         }
 
         public override void Hook_Kick(config.channel channel, User source, User user)
         {
-            Item item = new Item();
-            item.channel = channel;
-            item.act = false;
-            item.host = user.Host;
-            item.message = source.Nick;
-            item.time = DateTime.Now;
-            item.type = 4;
-            item.username = user.Nick;
-            lock (DJ)
+            if (Module.GetConfig(channel, "Logging.Enabled", false))
             {
-                DJ.Add(item);
+                Item item = new Item();
+                item.channel = channel;
+                item.act = false;
+                item.host = user.Host;
+                item.message = source.Nick;
+                item.time = DateTime.Now;
+                item.type = 4;
+                item.username = user.Nick;
+                lock (DJ)
+                {
+                    DJ.Add(item);
+                }
             }
         }
 
         public override void Hook_Join(config.channel channel, User user)
         {
-            Item item = new Item();
-            item.channel = channel;
-            item.act = false;
-            item.host = user.Host;
-            item.message = "";
-            item.time = DateTime.Now;
-            item.type = 2;
-            item.username = user.Nick;
-            lock (DJ)
+            if (Module.GetConfig(channel, "Logging.Enabled", false))
             {
-                DJ.Add(item);
+                Item item = new Item();
+                item.channel = channel;
+                item.act = false;
+                item.host = user.Host;
+                item.message = "";
+                item.time = DateTime.Now;
+                item.type = 2;
+                item.username = user.Nick;
+                lock (DJ)
+                {
+                    DJ.Add(item);
+                }
             }
         }
 
