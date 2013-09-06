@@ -36,8 +36,16 @@ namespace wmib
                 return false;
             }
         }
+
         public Thread JoinThread = null;
+        /// <summary>
+        /// Each instance is running in its own thread, this is pointer to that thread
+        /// </summary>
         public Thread thread = null;
+
+        /// <summary>
+        /// List of channels this instance is in
+        /// </summary>
         public List<config.channel> ChannelList
         {
             get
@@ -56,6 +64,7 @@ namespace wmib
                 return list;
             }
         }
+
         /// <summary>
         /// Whether this instance is working
         /// </summary>
@@ -87,12 +96,17 @@ namespace wmib
                 return Channels;
             }
         }
+
+        /// <summary>
+        /// Pointer to IRC handler for this instance
+        /// </summary>
         public IRC irc = null;
 
         /// <summary>
         /// Creates a new bot instance but not connect it to IRC
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="name">Name</param>
+        /// <param name="port">Port</param>
         public Instance(string name, int port = 0)
         {
             Nick = name;
@@ -102,6 +116,9 @@ namespace wmib
             irc.BouncerPort = Port;
         }
 
+        /// <summary>
+        /// Join all channels
+        /// </summary>
         public void Join()
         {
             JoinThread = new Thread(JoinAll);
@@ -110,7 +127,7 @@ namespace wmib
         }
 
         /// <summary>
-        /// Join all channels
+        /// This is a private handler for channel joining, never call it directly, use Join() for that
         /// </summary>
         private void JoinAll()
         {
@@ -136,6 +153,9 @@ namespace wmib
             irc.ChannelThread.Start();
         }
 
+        /// <summary>
+        /// Create this instance
+        /// </summary>
         public void Init()
         {
             thread = new Thread(Connect);
@@ -143,11 +163,18 @@ namespace wmib
             thread.Start();
         }
 
+        /// <summary>
+        /// Shut down
+        /// </summary>
         public void Shut()
         {
             if (thread != null)
             {
                 thread.Abort();
+            }
+            if (irc != null)
+            {
+                irc.Disconnect();
             }
         }
 

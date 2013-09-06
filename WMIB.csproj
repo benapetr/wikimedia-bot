@@ -72,6 +72,7 @@
     <Compile Include="System\Formatter.cs" />
     <Compile Include="System\Regex_Core.cs" />
     <Compile Include="System\StorageWriter.cs" />
+    <Compile Include="System\User.cs" />
     <Compile Include="System\Variables.cs" />
     <Compile Include="Terminal.cs" />
     <Compile Include="UserInfo.cs" />

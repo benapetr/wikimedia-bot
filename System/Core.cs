@@ -22,36 +22,6 @@ namespace wmib
     public partial class core : MarshalByRefObject
     {
         /// <summary>
-        /// System user
-        /// </summary>
-        [Serializable]
-        public class SystemUser
-        {
-            /// <summary>
-            /// Regex
-            /// </summary>
-            public string name;
-            /// <summary>
-            /// Level
-            /// </summary>
-            public string level;
-            public string UserName = null;
-            public string Password = null;
-            public bool IsGlobal;
-
-            /// <summary>
-            /// Constructor
-            /// </summary>
-            /// <param name="level"></param>
-            /// <param name="name"></param>
-            public SystemUser(string level, string name, bool Global = false)
-            {
-                IsGlobal = Global;
-                this.level = level;
-                this.name = name;
-            }
-        }
-        /// <summary>
         /// Return true if database server is available
         /// </summary>
         public static bool DatabaseServerIsAvailable
@@ -119,6 +89,12 @@ namespace wmib
             }
         }
 
+        /// <summary>
+        /// Creates a new instance
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="port"></param>
+        /// <returns></returns>
         public static int CreateInstance(string name, int port = 0)
         {
             core.DebugLog("Creating instance " + name + " with port " + port.ToString());

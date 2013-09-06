@@ -47,14 +47,29 @@ namespace wmib
         /// </summary>
         public static string css = null;
 
+        /// <summary>
+        /// Mysql user
+        /// </summary>
         public static string MysqlUser = null;
 
+        /// <summary>
+        /// Mysql pw
+        /// </summary>
         public static string MysqlPw = null;
 
+        /// <summary>
+        /// Mysql host
+        /// </summary>
         public static string MysqlHost = null;
 
+        /// <summary>
+        /// Mysql db
+        /// </summary>
         public static string Mysqldb = null;
 
+        /// <summary>
+        /// Mysql port
+        /// </summary>
         public static int MysqlPort = 3306;
 
         /// <summary>
@@ -163,13 +178,14 @@ namespace wmib
         /// <summary>
         /// Add line to the config file
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        private static void AddConfig(string a, string b, StringBuilder text)
+        /// <param name="key"></param>
+        /// <param name="data"></param>
+        /// <param name="text"></param>
+        private static void AddConfig(string key, string data, StringBuilder text)
         {
-            if (b != null)
+            if (data != null)
             {
-                text.Append(a + "=" + b + ";\n");
+                text.Append(key + "=" + data + ";\n");
             }
         }
 

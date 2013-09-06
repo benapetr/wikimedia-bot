@@ -11,6 +11,9 @@ namespace wmib
     /// </summary>
     public class Logging
     {
+        /// <summary>
+        /// Message that needs to be printed
+        /// </summary>
         public class Message
         {
             /// <summary>

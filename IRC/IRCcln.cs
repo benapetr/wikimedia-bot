@@ -319,7 +319,14 @@ namespace wmib
                 }
             }
         }
+
+        /// <summary>
+        /// Instance that owns this handler
+        /// </summary>
         public Instance ParentInstance = null;
+        /// <summary>
+        /// If false is returned it means this handler is defunct
+        /// </summary>
         public bool IsWorking = false;
         public string Bouncer = "127.0.0.1";
         /// <summary>
@@ -330,6 +337,9 @@ namespace wmib
         /// Server addr
         /// </summary>
         public string Server;
+        /// <summary>
+        /// Port to bouncer
+        /// </summary>
         public int BouncerPort = 6667;
         /// <summary>
         /// Nick
@@ -423,7 +433,8 @@ namespace wmib
         /// <param name="_nick">Nickname to use</param>
         /// <param name="_ident">Ident</param>
         /// <param name="_username">Username</param>
-        public IRC(string _server, string _nick, string _ident, string _username, Instance instance)
+        /// <param name="_instance">Instance</param>
+        public IRC(string _server, string _nick, string _ident, string _username, Instance _instance)
         {
             Server = _server;
             Password = "";
@@ -431,7 +442,7 @@ namespace wmib
             UserName = _username;
             NickName = _nick;
             Ident = _ident;
-            ParentInstance = instance;
+            ParentInstance = _instance;
         }
 
         /// <summary>
@@ -966,13 +977,28 @@ namespace wmib
         {
             if (IsConnected)
             {
-                connected = false;
                 try
                 {
                     core.DebugLog("Closing");
-                    streamWriter.Close();
-                    streamReader.Close();
-                    networkStream.Close();
+                    if (streamWriter != null)
+                    {
+                        streamWriter.Close();
+                        streamWriter.Dispose();
+                        streamWriter = null;
+                    }
+                    if (streamReader != null)
+                    {
+                        streamReader.Close();
+                        streamReader.Dispose();
+                        streamReader = null;
+                    }
+                    if (networkStream != null)
+                    {
+                        networkStream.Close();
+                        networkStream.Dispose();
+                        networkStream = null;
+                    }
+                    connected = false;
                 }
                 catch (Exception fail)
                 {

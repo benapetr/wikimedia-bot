@@ -5,9 +5,15 @@ using System.Text;
 
 namespace wmib
 {
+    /// <summary>
+    /// Mysql
+    /// </summary>
     public class WMIBMySQL : Database
     {
         MySql.Data.MySqlClient.MySqlConnection Connection = null;
+        /// <summary>
+        /// Return true if mysql is connected to server
+        /// </summary>
         public override bool IsConnected
         {
             get

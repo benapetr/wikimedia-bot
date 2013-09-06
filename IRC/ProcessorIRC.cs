@@ -20,6 +20,9 @@ namespace wmib
     public class ProcessorIRC
     {
         private string text;
+        /// <summary>
+        /// Instance this processor is attached to
+        /// </summary>
         public Instance instance;
 
         private void Ping()
