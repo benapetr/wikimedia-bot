@@ -32,6 +32,8 @@ namespace wmib
             public DateTime time;
             public string message = null;
             public bool act = false;
+            public int type;
+            public string host;
             public config.channel ch;
         }
 
@@ -189,7 +191,16 @@ namespace wmib
                                     row.Values.Add(new Database.Row.Value(item.time));
                                     row.Values.Add(new Database.Row.Value(item.act));
                                     row.Values.Add(new Database.Row.Value(item.message, Database.DataType.Varchar));
-                                    core.DB.InsertRow("logs", row);
+                                    row.Values.Add(new Database.Row.Value(0));
+                                    row.Values.Add(new Database.Row.Value(item.host, Database.DataType.Varchar));
+                                    if (!core.DB.InsertRow("logs", row))
+                                    {
+                                        Log("Failed to insert row, recycling: " + message);
+                                        lock (DJ)
+                                        {
+                                            DJ.Add(item);
+                                        }
+                                    }
                                 }
                                 core.DB.Commit();
                                 core.DB.Disconnect();
@@ -344,6 +355,8 @@ namespace wmib
                         item.time = time;
                         item.username = user;
                         item.act = !noac;
+                        item.host = host;
+                        item.type = 0;
                         item.message = message;
                         lock (DJ)
                         {
