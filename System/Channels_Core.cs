@@ -101,7 +101,7 @@ namespace wmib
                 {
                     origin = chan.Name;
                 }
-                if (chan.Name == config.DebugChannel)
+                if (chan.Name == config.DebugChan)
                 {
                     chan.instance.irc._SlowQueue.DeliverMessage("Covardly refusing to part this channel, because I love it :3", chan);
                     return;
