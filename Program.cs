@@ -68,12 +68,17 @@ namespace wmib
                     config.Colors = false;
                     continue;
                 }
+                if (item == "--traffic" )
+                {
+                    config.Logging = true;
+                }
                 if (item == "-h" || item == "--help")
                 {
                     Console.WriteLine("This is a wikimedia bot binary\n\n" +
                         "Parameters:\n" +
                         "    --nocolors: Disable colors in system logs\n" +
                         "    -h [--help]: Display help\n" +
+                        "    --traffic: Enable traffic logs\n" +
                         "    -v: Increases verbosity\n\n" +
                         "This software is open source, licensed under GPLv3");
                     Environment.Exit(0);
@@ -99,12 +104,12 @@ namespace wmib
         {
             try
             {
+                config.UpTime = DateTime.Now;
                 Thread logger = new Thread(Logging.Exec);
                 core.domain = AppDomain.CurrentDomain;
+                ProcessVerbosity(args);
                 WriteNow(config.Version);
                 WriteNow("Loading...");
-                config.UpTime = DateTime.Now;
-                ProcessVerbosity(args);
                 logger.Start();
                 Console.CancelKeyPress += myHandler;
                 messages.LoadLD();
