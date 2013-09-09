@@ -146,6 +146,7 @@
 #da.wikiquote|https://da.wikiquote|da_wikiquote
 #da.wikisource|https://da.wikisource.org/w/index.php|da_wikisource
 #da.wiktionary|https://da.wiktionary.org/w/index.php|da_wiktionary
+#ddo.com|http://ddowiki.com/index.php|ddo_wiki
 #de_labs.wikimedia|https://de_labs.wikimedia|de_labs_wikimedia
 #de.wikipedia|https://de.wikipedia.org/w/index.php|de_wikipedia
 #de.wikibooks|https://de.wikibooks.org/w/index.php|de_wikibooks
@@ -381,6 +382,7 @@
 #ko.wikiquote|https://ko.wikiquote|ko_wikiquote
 #ko.wikisource|https://ko.wikisource.org/w/index.php|ko_wikisource
 #ko.wiktionary|https://ko.wiktionary.org/w/index.php|ko_wiktionary
+#ko.wikiversity|https://ko.wikiversity.org/w/index.php|ko_wikiversity
 #krc.wikipedia|https://krc.wikipedia.org/w/index.php|krc_wikipedia
 #kr.wikipedia|https://kr.wikipedia.org/w/index.php|kr_wikipedia
 #kr.wikiquote|https://kr.wikiquote|kr_wikiquote
@@ -438,6 +440,8 @@
 #map_bms.wikipedia|https://map_bms.wikipedia.org/w/index.php|map_bms_wikipedia
 #mdf.wikipedia|https://mdf.wikipedia.org/w/index.php|mdf_wikipedia
 #media.wikipedia|https://media.wikiwikipedia.org/w/index.php|media_wikipedia
+#mediawiki.wikimedia|https://www.mediawiki.org/w/index.php|mediawiki_wiki
+#mediawiki.wikimedia|https://www.mediawiki.org/w/index.php|mediawiki_wikimedia
 #meta.wikimedia|https://meta.wikimedia.org/w/index.php|meta_wikimedia
 #mg.wikipedia|https://mg.wikipedia.org/w/index.php|mg_wikipedia
 #mg.wikibooks|https://mg.wikibooks.org/w/index.php|mg_wikibooks
@@ -775,6 +779,7 @@
 #vi.wikiquote|https://vi.wikiquote|vi_wikiquote
 #vi.wikisource|https://vi.wikisource.org/w/index.php|vi_wikisource
 #vi.wiktionary|https://vi.wiktionary.org/w/index.php|vi_wiktionary
+#vi.wikivoyage|https://vi.wikivoyage.org/w/index.php|vi_wikivoyage
 #vls.wikipedia|https://vls.wikipedia.org/w/index.php|vls_wikipedia
 #vo.wikipedia|https://vo.wikipedia.org/w/index.php|vo_wikipedia
 #vo.wikibooks|https://vo.wikibooks.org/w/index.php|vo_wikibooks
