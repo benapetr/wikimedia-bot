@@ -554,20 +554,42 @@ namespace wmib
             config.channel curr = getChannel(channel);
             if (curr != null)
             {
-                if (curr.ignore_unknown)
+                bool ignore = false;
+                if (curr.IgnoreUnknown)
                 {
                     if (!curr.Users.IsApproved(nick, host, "trust"))
                     {
-                        return false;
+                        ignore = true;
                     }
                 }
-                if (message.StartsWith(config.CommandPrefix))
+                if (!ignore)
                 {
-                    ModifyRights(message, curr, nick, host);
-                    addChannel(curr, nick, host, message);
-                    partChannel(curr, nick, host, message);
+                    if (message.StartsWith(config.CommandPrefix))
+                    {
+                        ModifyRights(message, curr, nick, host);
+                        addChannel(curr, nick, host, message);
+                        partChannel(curr, nick, host, message);
+                    }
+                    ParseAdmin(curr, nick, host, message);
                 }
-                ParseAdmin(curr, nick, host, message);
+                lock (Module.module)
+                {
+                    foreach (Module _Module in Module.module)
+                    {
+                        try
+                        {
+                            if (_Module.working)
+                            {
+                                _Module.Hook_PRIV(curr, new User(nick, host, ""), message);
+                            }
+                        }
+                        catch (Exception f)
+                        {
+                            core.Log("MODULE: exception at Hook_PRIV in " + _Module.Name, true);
+                            core.handleException(f);
+                        }
+                    }
+                }
                 if (curr.respond_message)
                 {
                     if (message.StartsWith(config.NickName + ":"))

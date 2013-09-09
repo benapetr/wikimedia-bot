@@ -188,6 +188,7 @@ namespace wmib
                                 }
                                 Writer.WriteLine("Joining channels");
                                 Writer.Flush();
+                                core.Instances[parameters].irc.ChannelsJoined = false;
                                 core.Instances[parameters].Join();
                                 curr = 0;
                                 while (curr < core.Instances[parameters].ChannelCount && !core.Instances[parameters].irc.ChannelsJoined)

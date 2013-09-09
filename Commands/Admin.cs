@@ -353,7 +353,7 @@ namespace wmib
                             case "ignore-unknown":
                                 if (bool.TryParse(value, out _temp_a))
                                 {
-                                    chan.ignore_unknown = _temp_a;
+                                    chan.IgnoreUnknown = _temp_a;
                                     irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, name }), chan);
                                     chan.SaveConfig();
                                     return;
@@ -428,7 +428,7 @@ namespace wmib
                         switch (text)
                         {
                             case "ignore-unknown":
-                                irc._SlowQueue.DeliverMessage(messages.get("Responses-Conf", chan.Language, new List<string> { text, chan.ignore_unknown.ToString() } ), chan);
+                                irc._SlowQueue.DeliverMessage(messages.get("Responses-Conf", chan.Language, new List<string> { text, chan.IgnoreUnknown.ToString() } ), chan);
                                 return;
                             case "respond-message":
                                 irc._SlowQueue.DeliverMessage(messages.get("Responses-Conf", chan.Language, new List<string> { text, chan.respond_message.ToString() }), chan);
@@ -559,25 +559,6 @@ namespace wmib
                 {
                     config.channel channel = core.getChannel(message.Substring("@join ".Length));
                     irc.Join(channel);
-                }
-            }
-
-            lock (Module.module)
-            {
-                foreach (Module _Module in Module.module)
-                {
-                    try
-                    {
-                        if (_Module.working)
-                        {
-                            _Module.Hook_PRIV(chan, invoker, message);
-                        }
-                    }
-                    catch (Exception f)
-                    {
-                        core.Log("MODULE: exception at Hook_PRIV in " + _Module.Name, true);
-                        core.handleException(f);
-                    }
                 }
             }
 

@@ -104,7 +104,7 @@ namespace wmib
             /// <summary>
             /// Whether unknown users should be ignored or not
             /// </summary>
-            public bool ignore_unknown = false;
+            public bool IgnoreUnknown = false;
 
             /// <summary>
             /// Target db of shared infobot
@@ -332,7 +332,7 @@ namespace wmib
                                 respond_message = bool.Parse(xx.Attributes[1].Value);
                                 break;
                             case "ignore-unknown":
-                                ignore_unknown = bool.Parse(xx.Attributes[1].Value);
+                                IgnoreUnknown = bool.Parse(xx.Attributes[1].Value);
                                 break;
                             case "suppress-warnings":
                                 suppress_warnings = bool.Parse(xx.Attributes[1].Value);
@@ -380,7 +380,7 @@ namespace wmib
                     InsertData("talkmode", suppress.ToString(), ref data, ref xmlnode);
                     InsertData("langcode", Language, ref data, ref xmlnode);
                     InsertData("respond_message", respond_message.ToString(), ref data, ref xmlnode);
-                    InsertData("ignore-unknown", ignore_unknown.ToString(), ref data, ref xmlnode);
+                    InsertData("ignore-unknown", IgnoreUnknown.ToString(), ref data, ref xmlnode);
                     InsertData("suppress-warnings", suppress_warnings.ToString(), ref data, ref xmlnode);
                     InsertData("respond_wait", respond_wait.ToString(), ref data, ref xmlnode);
                     InsertData("sharedinfo", shared, ref data, ref xmlnode);
