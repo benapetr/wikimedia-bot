@@ -110,6 +110,7 @@ namespace wmib
         public override bool Hook_OnRegister()
         {
             bool success = true;
+            DebugLog("Registering channels");
             try
             {
                 if (!Directory.Exists(SnapshotsDirectory))

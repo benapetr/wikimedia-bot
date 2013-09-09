@@ -101,9 +101,9 @@ namespace wmib
                 {
                     origin = chan.Name;
                 }
-                if (chan.Name == config.DebugChan)
+                if (chan.Name == config.DebugChan && (message == config.CommandPrefix + "part"  || message == config.CommandPrefix + "drop"))
                 {
-                    chan.instance.irc._SlowQueue.DeliverMessage("Covardly refusing to part this channel, because I love it :3", chan);
+                    chan.instance.irc._SlowQueue.DeliverMessage("Cowardly refusing to part this channel, because I love it :3", chan);
                     return;
                 }
                 if (message == config.CommandPrefix + "drop")
@@ -181,6 +181,7 @@ namespace wmib
                     irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), origin);
                     return;
                 }
+
                 if (message == config.CommandPrefix + "part")
                 {
                     if (chan.Users.IsApproved(user, host, "admin"))
