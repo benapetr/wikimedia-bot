@@ -33,7 +33,9 @@ namespace wmib
                 }
                 DebugLog(time);
                 DateTime n = DateTime.Now;
-                double now = double.Parse(n.Year.ToString() + Double(n.Month) + Double(n.Day) + Double(n.Hour) + Double(n.Minute) + Double(n.Second));
+                string x = n.Year.ToString() + Double(n.Month) + Double(n.Day) + Double(n.Hour) + Double(n.Minute) + Double(n.Second);
+                DebugLog(x);
+                double now = double.Parse(x);
                 return (now - double.Parse(time)).ToString() + " seconds";
             }
             catch (Exception fail)
