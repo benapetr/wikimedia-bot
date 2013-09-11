@@ -36,6 +36,41 @@ namespace wmib
 
         private bool connected = false;
 
+        public override string Select(string table, string rows, string query, int columns, char separator = '|')
+        {
+            string sql = "";
+            string result = "";
+            lock (DatabaseLock)
+            {
+                if (!IsConnected)
+                {
+                    ErrorBuffer = "Not connected";
+                    return null;
+                }
+                sql = "SELECT " + rows + " FROM " + table + " " + query;
+                MySqlCommand xx = Connection.CreateCommand();
+                xx.CommandText = sql;
+                MySqlDataReader r = xx.ExecuteReader();
+                while (r.Read())
+                {
+                    int i = 0;
+                    while (i < columns)
+                    {
+                        if (result == "")
+                        {
+                            result += r.GetString(i);
+                        }
+                        else
+                        {
+                            result += separator.ToString() + r.GetString(i);
+                        }
+                        i++;
+                    }
+                }
+                return result;
+            }
+        }
+
         /// <summary>
         /// Insert row
         /// </summary>

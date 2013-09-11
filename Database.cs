@@ -112,6 +112,21 @@ namespace wmib
         }
 
         /// <summary>
+        /// Select a data from db
+        /// </summary>
+        /// <param name="table">name of table</param>
+        /// <param name="rows">Rows separated by comma</param>
+        /// <param name="query">Conditions</param>
+        /// <param name="columns"></param>
+        /// <param name="separator"></param>
+        /// <returns></returns>
+        public virtual string Select(string table, string rows, string query, int columns, char separator = '|')
+        {
+            ErrorBuffer = "SELECT: function is not implemented";
+            return null;
+        }
+
+        /// <summary>
         /// Data type
         /// </summary>
         public enum DataType

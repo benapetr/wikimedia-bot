@@ -64,6 +64,10 @@ namespace wmib
         /// Whether it has started or not
         /// </summary>
         public bool start = false;
+        /// <summary>
+        /// If this module contains own thread
+        /// </summary>
+        public bool HasSeparateThreadInstance = true;
 
         /// <summary>
         /// Creates a new instance of module
@@ -113,10 +117,13 @@ namespace wmib
         {
             try
             {
-                thread = new Thread(Exec) {Name = "Module " + Name};
                 working = true;
                 Hook_OnRegister();
-                thread.Start();
+                if (HasSeparateThreadInstance)
+                {
+                    thread = new Thread(Exec) { Name = "Module " + Name };
+                    thread.Start();
+                }
             }
             catch (Exception f)
             {
