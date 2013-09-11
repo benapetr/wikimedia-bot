@@ -7,6 +7,8 @@ advisory|https://advisory.wikimedia.org/wiki/$1
 advogato|https://www.advogato.org/$1
 aew|https://wiki.arabeyes.org/$1
 af|https://af.wikipedia.org/wiki/$1
+afc-enwp|https://en.wikpedia.org/wiki/Wikipedia_talk:Articles_for_creation/$1
+afc-test|https://test.wikpedia.org/wiki/Wikipedia_talk:Articles_for_creation/$1
 airwarfare|https://airwarfare.com/mediawiki-1.4.5/index.php?$1
 aiwiki|https://www.ifi.unizh.ch/ailab/aiwiki/aiw.cgi?$1
 ak|https://ak.wikipedia.org/wiki/$1
