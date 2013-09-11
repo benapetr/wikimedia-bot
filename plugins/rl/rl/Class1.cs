@@ -31,12 +31,10 @@ namespace wmib
                 {
                     return "ERROR: unable to retrieve the data because " + core.DB.ErrorBuffer;
                 }
-                DebugLog(time);
                 DateTime n = DateTime.Now;
-                string x = n.Year.ToString() + Double(n.Month) + Double(n.Day) + Double(n.Hour) + Double(n.Minute) + Double(n.Second);
-                DebugLog(x);
-                double now = double.Parse(x);
-                return (now - double.Parse(time)).ToString() + " seconds";
+                DateTime replica = new DateTime(int.Parse(time.Substring(0, 4)), int.Parse(time.Substring(4, 2)), int.Parse(time.Substring(6, 2)), int.Parse(time.Substring(8, 2)), int.Parse(time.Substring(10, 2)), int.Parse(time.Substring(12, 2)));
+                //string x = n.Year.ToString() + Double(n.Month) + Double(n.Day) + Double(n.Hour) + Double(n.Minute) + Double(n.Second);
+                return (n - replica).ToString();
             }
             catch (Exception fail)
             {
