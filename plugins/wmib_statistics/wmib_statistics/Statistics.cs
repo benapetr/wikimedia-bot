@@ -133,8 +133,8 @@ namespace wmib
                             }
                             Log("NULL pointer at statistics for " + chan.Name, true);
                         }
-                        Thread.Sleep(8000);
                     }
+                    Thread.Sleep(8000);
                 }
                 catch (ThreadAbortException)
                 {
