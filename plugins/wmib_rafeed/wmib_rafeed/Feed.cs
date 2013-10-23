@@ -61,11 +61,11 @@ namespace wmib
         public class Item
         {
             public static int Count = 0;
-            public string name;
-            public string URL;
+            public string name = "";
+            public string URL = "";
             public List<RssFeedItem> data = null;
-            public bool disabled;
-            public string message = "";
+            public bool disabled = false;
+            public string template = "";
             public bool ScannerOnly = false;
             public int retries = 0;
             public void reset()
@@ -117,22 +117,30 @@ namespace wmib
                         foreach (System.Xml.XmlNode xx in data.ChildNodes[0].ChildNodes)
                         {
                             Item i = new Item();
-                            i.name = xx.Attributes[0].Value;
-                            i.URL = xx.Attributes[1].Value;
-                            try
-                            {
-                                if (xx.Attributes.Count > 2)
-                                {
-                                    i.disabled = bool.Parse(xx.Attributes[2].Value);
-                                }
-                                if (xx.Attributes.Count > 3)
-                                {
-                                    i.message = xx.Attributes[3].Value;
-                                }
-                                if (xx.Attributes.Count > 4)
-                                {
-                                    i.ScannerOnly = bool.Parse(xx.Attributes[4].Value);
-                                }
+							try
+							{
+								foreach (System.Xml.XmlAttribute property in xx.Attributes)
+								{
+									switch (property.Name)
+									{
+									case "name":
+										i.name = property.Value;
+										break;
+									case "url":
+										i.URL = property.Value;
+										break;
+									case "disb":
+									case "disabled":
+										i.disabled = bool.Parse(property.Value);
+										break;
+									case "template":
+										i.template = property.Value;
+										break;
+									case "so":
+										i.ScannerOnly = bool.Parse(property.Value);
+										break;
+									}
+								}
                             }
                             catch (Exception)
                             {
@@ -173,16 +181,16 @@ namespace wmib
                         name.Value = key.name;
                         XmlAttribute url = data.CreateAttribute("url");
                         url.Value = key.URL;
-                        XmlAttribute rn = data.CreateAttribute("disb");
-                        rn.Value = key.disabled.ToString();
+                        XmlAttribute disabled = data.CreateAttribute("disb");
+						disabled.Value = key.disabled.ToString();
                         XmlAttribute template = data.CreateAttribute("template");
-                        template.Value = key.message;
+                        template.Value = key.template;
                         XmlAttribute scan = data.CreateAttribute("so");
                         template.Value = key.ScannerOnly.ToString();
                         System.Xml.XmlNode db = data.CreateElement("data");
                         db.Attributes.Append(name);
                         db.Attributes.Append(url);
-                        db.Attributes.Append(rn);
+						db.Attributes.Append(disabled);
                         db.Attributes.Append(template);
                         db.Attributes.Append(scan);
                         xmlnode.AppendChild(db);
@@ -275,9 +283,9 @@ namespace wmib
 
                                     string temp = Module.GetConfig(owner, "Rss.Style", "[$name] $title: $description $link");
 
-                                    if (curr.message != "")
+                                    if (curr.template != "")
                                     {
-                                        temp = curr.message;
+                                        temp = curr.template;
                                     }
 
                                     message = temp.Replace("$link", di.Link)
@@ -330,7 +338,7 @@ namespace wmib
                 }
                 if (rm != null)
                 {
-                    rm.message = temp;
+                    rm.template = temp;
                     Save();
                     core.irc._SlowQueue.DeliverMessage("Item now has a different style you can restore the default style by removing this value", owner.Name);
                     return;
@@ -393,6 +401,7 @@ namespace wmib
                 Item.name = name;
                 Item.ScannerOnly = scan;
                 Item.URL = url;
+				Item.template = "";
                 lock (Content)
                 {
                     Content.Add(Item);

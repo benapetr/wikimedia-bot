@@ -309,7 +309,7 @@ namespace wmib
                 {
                     foreach (Feed.Item feed in list.Content)
                     {
-                        HTML += "\n<tr><td>" + feed.name + "</td><td><a href=\"" + feed.URL + "\">" + feed.URL + "</a></td><td>" + feed.message + "</td><td>" + (!feed.disabled).ToString() + "</td></tr>";
+                        HTML += "\n<tr><td>" + feed.name + "</td><td><a href=\"" + feed.URL + "\">" + feed.URL + "</a></td><td>" + feed.template + "</td><td>" + (!feed.disabled).ToString() + "</td></tr>";
                     }
                 }
                 HTML += "</table>\n";
@@ -383,7 +383,7 @@ namespace wmib
             start = true;
             m = this;
             Name = "Feed";
-            Version = "1.0.12.21";
+            Version = "1.0.12.26";
             return true;
         }
 
