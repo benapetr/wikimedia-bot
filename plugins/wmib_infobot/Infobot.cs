@@ -508,6 +508,7 @@ namespace wmib
 				if (original.Contains ("|") && !raw)
 				{
 					original = original.Substring (0, original.IndexOf ("|"));
+					original = original.Trim ();
 				}
                 keyv = keyv.Replace("$*", original);
                 keyv = keyv.Replace("$url_encoded_*", System.Web.HttpUtility.UrlEncode(original));
