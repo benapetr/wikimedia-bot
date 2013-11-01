@@ -505,6 +505,10 @@ namespace wmib
                     }
                     curr++;
                 }
+				if (original.Contains ("|") && !raw)
+				{
+					original = original.Substring (0, original.IndexOf ("|"));
+				}
                 keyv = keyv.Replace("$*", original);
                 keyv = keyv.Replace("$url_encoded_*", System.Web.HttpUtility.UrlEncode(original));
                 keyv = keyv.Replace("$wiki_encoded_*", System.Web.HttpUtility.UrlEncode(original).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")"));
