@@ -168,7 +168,11 @@ class LogsHtml
 
     private static function RenderIndex()
     {
-        echo("    <p>This is a wikimedia logs browser, please pick a channel from menu on left side. This page is open source, if you don't like it, please fix it instead of complains!</p>");
+        echo("
+        	<p>This is a wikimedia logs browser, please pick a channel from menu on left side.</p>
+        	<p>This page is open source, if you don't like it, please fix it instead of complaining!</p>
+        	<p>The source code is <a href='https://github.com/benapetr/wikimedia-bot/tree/master/public_html/logs'>available on GitHub</a>.</p>
+        ");
     }
 
     private static function RenderChan()
