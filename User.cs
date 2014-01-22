@@ -15,7 +15,8 @@ using System;
 namespace wmib
 {
     /// <summary>
-    /// Network user
+    /// Network user, keep in mind that bot is also recognizing own users
+	/// that are defined in System/User.cs only for core
     /// </summary>
     [Serializable]
     public class User : IComparable

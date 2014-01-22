@@ -73,9 +73,9 @@
     <Compile Include="System\User.cs" />
     <Compile Include="System\Variables.cs" />
     <Compile Include="Terminal.cs" />
-    <Compile Include="UserInfo.cs" />
     <Compile Include="Syslog\Logging.cs" />
     <Compile Include="System\SystemHooks.cs" />
+    <Compile Include="User.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
