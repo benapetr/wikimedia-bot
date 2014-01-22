@@ -294,7 +294,7 @@ namespace wmib
                 System.Net.Sockets.TcpListener server = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Any, config.SystemPort);
                 server.Start();
 				Online = true;
-                Syslog.Log("Network console is online on port: " + config.SystemPort.ToString());
+                Syslog.WriteNow("Network console is online on port: " + config.SystemPort.ToString());
                 while (Running)
                 {
                     System.Net.Sockets.TcpClient connection = server.AcceptTcpClient();
@@ -306,7 +306,7 @@ namespace wmib
             catch (Exception fail)
             {
 				Online = false;
-				Syslog.WarningLog("Network console is down");
+				Syslog.WriteNow("Network console is down", true);
                 core.handleException(fail);
             }
         }
