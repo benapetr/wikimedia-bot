@@ -53,7 +53,7 @@ namespace wmib
         /// Number of current connections to this console
         /// </summary>
         public static int Connections = 0;
-		private static object lConnections;
+		private static object lConnections = new object();
 
 		/// <summary>
 		/// Decreases the connections.
