@@ -28,6 +28,23 @@ namespace wmib
         /// Thread this console run in
         /// </summary>
         public static Thread thread;
+		/// <summary>
+		/// Gets a value indicating whether this instance is online.
+		/// </summary>
+		/// <value>
+		/// <c>true</c> if this instance is online; otherwise, <c>false</c>.
+		/// </value>
+		public static bool IsOnline
+		{
+			get
+			{
+				return Online;
+			}
+		}
+		/// <summary>
+		/// Whether the console is online or not
+		/// </summary>
+		private static bool Online = false;
         /// <summary>
         /// Whether the console is running or not
         /// </summary>
@@ -36,13 +53,36 @@ namespace wmib
         /// Number of current connections to this console
         /// </summary>
         public static int Connections = 0;
+		private static object lConnections;
+
+		/// <summary>
+		/// Decreases the connections.
+		/// </summary>
+		private static void DecreaseConnections()
+		{
+			lock(lConnections)
+			{
+				Connections--;
+			}
+		}
+
+		/// <summary>
+		/// Increases the connections.
+		/// </summary>
+		private static void IncreaseConnections()
+		{
+			lock(lConnections)
+			{
+				Connections++;
+			}
+		}
 
         /// <summary>
         /// This will start the console
         /// </summary>
         public static void Init()
         {
-            thread = new System.Threading.Thread(thrd);
+            thread = new System.Threading.Thread(ExecuteThread);
             thread.Start();
         }
 
@@ -52,7 +92,7 @@ namespace wmib
             {
                 System.Net.Sockets.TcpClient connection = (System.Net.Sockets.TcpClient)data;
                 Syslog.DebugLog("Incoming connection from: " + connection.Client.RemoteEndPoint.ToString());
-                Connections++;
+				IncreaseConnections();
                 connection.NoDelay = true;
                 System.Net.Sockets.NetworkStream ns = connection.GetStream();
                 System.IO.StreamReader Reader = new System.IO.StreamReader(ns);
@@ -80,7 +120,7 @@ namespace wmib
                     Writer.WriteLine("Invalid user or password, bye");
                     Writer.Flush();
                     connection.Close();
-                    Connections--;
+					DecreaseConnections();
                     return;
                 }
 
@@ -109,14 +149,16 @@ namespace wmib
                             Writer.WriteLine("Good bye");
                             Writer.Flush();
                             connection.Close();
-                            Connections--;
+							DecreaseConnections();
                             return;
                         case "info":
-                            string result = "Uptime: " + core.getUptime() + Environment.NewLine + "Instances:" + Environment.NewLine;
+                            string result = "Uptime: " + core.getUptime() + " Version: " + config.Version + Environment.NewLine + "Instances:" + Environment.NewLine;
+							Syslog.DebugLog("Retrieving information for user " + username + " in system");
                             lock (core.Instances)
                             {
                                 foreach (Instance instance in core.Instances.Values)
                                 {
+									Syslog.DebugLog("Retrieving information for user " + username + " of instance " +  instance.Nick, 2);
                                     result += instance.Nick + " channels: " + instance.ChannelCount.ToString() +
                                         " connected: " + instance.IsConnected.ToString() + " working: " +
                                         instance.IsWorking.ToString() + "\n";
@@ -143,12 +185,12 @@ namespace wmib
                             return;
                         case "traffic-on":
                             config.Logging = true;
-                            Writer.WriteLine("Dumping traffic");
+                            Writer.WriteLine("Dumping traffic into datafile");
                             Writer.Flush();
                             break;
                         case "traffic-off":
                             config.Logging = false;
-                            Writer.WriteLine("Disabled traf");
+                            Writer.WriteLine("Disabled traffic");
                             Writer.Flush();
                             break;
                         case "kill":
@@ -242,15 +284,16 @@ namespace wmib
             {
                 core.handleException(fail);
             }
-            Connections--;
+			DecreaseConnections();
         }
 
-        private static void thrd()
+        private static void ExecuteThread()
         {
             try
             {
                 System.Net.Sockets.TcpListener server = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Any, config.SystemPort);
                 server.Start();
+				Online = true;
                 Syslog.Log("Network console is online on port: " + config.SystemPort.ToString());
                 while (Running)
                 {
@@ -262,6 +305,8 @@ namespace wmib
             }
             catch (Exception fail)
             {
+				Online = false;
+				Syslog.WarningLog("Network console is down");
                 core.handleException(fail);
             }
         }

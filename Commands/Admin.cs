@@ -33,24 +33,7 @@ namespace wmib
                 if (chan.Users.IsApproved(invoker, "admin"))
                 {
                     chan.LoadConfig();
-                    lock (Module.module)
-                    {
-                        foreach (Module xx in Module.module)
-                        {
-                            try
-                            {
-                                if (xx.working)
-                                {
-                                    xx.Hook_ReloadConfig(chan);
-                                }
-                            }
-                            catch (Exception fail)
-                            {
-                                Syslog.Log("Crash on Hook_Reload in " + xx.Name);
-                                handleException(fail);
-                            }
-                        }
-                    }
+					SystemHooks.IrcReloadChannelConf(chan);
                     irc._SlowQueue.DeliverMessage(messages.get("Config", chan.Language), chan);
                     return;
                 }

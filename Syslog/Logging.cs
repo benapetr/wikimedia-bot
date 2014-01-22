@@ -31,6 +31,7 @@ namespace wmib
         public static bool Log(string Message, bool Warning = false)
         {
             Logging.Write(Message, Warning);
+			SystemHooks.SystemLog(Message, Warning);
             return true;
         }
 
@@ -61,6 +62,7 @@ namespace wmib
 		public static bool WriteNow(string Message, bool Warning = false)
         {
             Logging.Display(DateTime.Now, Message, Warning);
+			SystemHooks.SystemLog(Message, Warning);
             return true;
         }
 

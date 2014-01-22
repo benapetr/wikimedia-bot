@@ -75,6 +75,7 @@
     <Compile Include="Terminal.cs" />
     <Compile Include="UserInfo.cs" />
     <Compile Include="Syslog\Logging.cs" />
+    <Compile Include="System\SystemHooks.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -82,13 +83,13 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="translation\cs_czech.txt" />
-    <EmbeddedResource Include="translation\de_german.txt" />
-    <EmbeddedResource Include="translation\english.txt" />
+    <EmbeddedResource Include="Translation\cs_czech.txt" />
+    <EmbeddedResource Include="Translation\de_german.txt" />
+    <EmbeddedResource Include="Translation\english.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="translation\ko_korean.txt" />
-    <Content Include="translation\zh_chinese.txt" />
+    <Content Include="Translation\ko_korean.txt" />
+    <Content Include="Translation\zh_chinese.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

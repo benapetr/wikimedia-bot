@@ -397,8 +397,8 @@ namespace wmib
             _host = source.Substring(source.IndexOf("@") + 1);
             _ident = source.Substring(source.IndexOf("!") + 1);
             _ident = _ident.Substring(0, _ident.IndexOf("@"));
-            User user01 = new User(user, "", "");
-            User sr = new User(user2, _host, _ident);
+            User Target = new User(user, "", "");
+            User Source = new User(user2, _host, _ident);
             // petan!pidgeon@petan.staff.tm-irc.org KICK #support HelpBot :Removed from the channel
             string chan = parameters.Substring(0, parameters.IndexOf(" "));
             if (chan == config.DebugChan && instance.Nick != core.irc.NickName)
@@ -408,25 +408,7 @@ namespace wmib
             config.channel channel = core.getChannel(chan);
             if (channel != null)
             {
-                lock (Module.module)
-                {
-                    foreach (Module module in Module.module)
-                    {
-                        if (!module.working)
-                        {
-                            continue;
-                        }
-                        try
-                        {
-                            module.Hook_Kick(channel, sr, user01);
-                        }
-                        catch (Exception fail)
-                        {
-                            Syslog.Log("MODULE: exception at Hook_Kick in " + module.Name, true);
-                            core.handleException(fail);
-                        }
-                    }
-                }
+				SystemHooks.IrcKick(channel, Source, Target);
                 if (channel.containsUser(user))
                 {
                     User delete = null;

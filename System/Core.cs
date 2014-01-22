@@ -75,7 +75,7 @@ namespace wmib
         /// <summary>
         /// Target's of each instance
         /// </summary>
-        public static Dictionary<string, Instance> TargetBuffer = new Dictionary<string, Instance>();
+		public static Dictionary<string, Instance> TargetBuffer = new Dictionary<string, Instance>();
 
         /// <summary>
         /// Store a traffic log to a file
