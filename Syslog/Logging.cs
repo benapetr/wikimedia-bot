@@ -75,7 +75,7 @@ namespace wmib
         {
             if (config.SelectedVerbosity >= Verbosity)
             {
-                Syslog.Log("DEBUG: " + Message);
+                Syslog.Log("DEBUG <" + Verbosity.ToString() + ">: " + Message);
             }
         }
 
@@ -88,7 +88,7 @@ namespace wmib
         {
             if (config.SelectedVerbosity >= Verbosity)
             {
-                Syslog.WriteNow("DEBUG: " + Message);
+                Syslog.WriteNow("DEBUG <" + Verbosity.ToString() + ">: " + Message);
             }
         }
 	}
