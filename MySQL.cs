@@ -86,7 +86,7 @@ namespace wmib
                 {
                     if (!IsConnected)
                     {
-                        core.DebugLog("Ignoring request to insert a row into database which is not connected");
+                        Syslog.DebugLog("Ignoring request to insert a row into database which is not connected");
                         return false;
                     }
 
@@ -119,8 +119,8 @@ namespace wmib
                 catch (MySqlException me)
                 {
                     ErrorBuffer = me.Message;
-                    core.Log("Error while storing a row to DB " + me.ToString(), true);
-                    core.DebugLog("SQL: " + sql);
+                    Syslog.Log("Error while storing a row to DB " + me.ToString(), true);
+                    Syslog.DebugLog("SQL: " + sql);
                     return false;
                 }
             }
@@ -165,7 +165,7 @@ namespace wmib
                 }
                 catch (MySql.Data.MySqlClient.MySqlException ex)
                 {
-                    core.Log("MySQL: Unable to connect to server: " + ex.ToString(), true);
+                    Syslog.Log("MySQL: Unable to connect to server: " + ex.ToString(), true);
                     connected = false;
                 }
             }

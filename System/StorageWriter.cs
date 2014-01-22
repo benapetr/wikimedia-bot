@@ -40,7 +40,7 @@ namespace wmib
             }
             catch (Exception crashed)
             {
-                core.Log("Unable to write data into " + item.file + " skipping this", true);
+                Syslog.Log("Unable to write data into " + item.file + " skipping this", true);
                 Console.WriteLine(crashed.ToString());
                 return false;
             }
@@ -81,7 +81,7 @@ namespace wmib
                 {
                     while (!Write(item))
                     {
-                        core.Log("Unable to write data, delaying write", true);
+                        Syslog.Log("Unable to write data, delaying write", true);
                         Thread.Sleep(6000);
                     }
                 }
@@ -99,7 +99,7 @@ namespace wmib
         {
             try
             {
-                core.Log("KERNEL: loaded writer thread");
+                Syslog.Log("KERNEL: loaded writer thread");
                 while (isRunning)
                 {
                     try
@@ -122,21 +122,21 @@ namespace wmib
                 }
                 if (Data.Count > 0)
                 {
-                    core.Log("KERNEL: Writer thread was requested to stop, but there is still some data to write");
+                    Syslog.Log("KERNEL: Writer thread was requested to stop, but there is still some data to write");
                     WriteData();
-                    core.Log("No remaining data, stopping writer thread");
+                    Syslog.Log("No remaining data, stopping writer thread");
                     return;
                 }
                 else
                 {
-                    core.Log("No remaining data, stopping writer thread");
+                    Syslog.Log("No remaining data, stopping writer thread");
                     return;
                 }
             }
             catch (Exception fail)
             {
                 core.handleException(fail);
-                core.Log("KERNEL: The writer thread was terminated", true);
+                Syslog.Log("KERNEL: The writer thread was terminated", true);
                 return;
             }
         }

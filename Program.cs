@@ -19,34 +19,76 @@ namespace wmib
 {
     internal class Program
     {
+		/// <summary>
+		/// Log the specified message
+		/// </summary>
+		/// <param name='msg'>
+		/// Message that you want to log.
+		/// </param>
+		/// <param name='warn'>
+		/// If this is true the message will be classified as a warning.
+		/// </param>
+		[Obsolete]
         public static bool Log(string msg, bool warn = false)
         {
             Logging.Write(msg, warn);
             return true;
         }
 
-        public static bool WriteNow(string msg, bool warn = false)
+		/// <summary>
+		/// Writes the message immediately to console with no thread sync
+		/// </summary>
+		/// <returns>
+		/// The now.
+		/// </returns>
+		/// <param name='msg'>
+		/// Message that you want to log.
+		/// </param>
+		/// <param name='warn'>
+		/// If this is true the message will be classified as a warning.
+		/// </param>
+        [Obsolete]
+		public static bool WriteNow(string msg, bool warn = false)
         {
             Logging.Display(DateTime.Now, msg, warn);
             return true;
         }
 
+		/// <summary>
+		/// Copy the selected file to a temporary file name
+		/// 
+		/// this function is used mostly for restore of corrupted data,
+		/// so that the corrupted version of file can be stored in /tmp
+		/// for debugging
+		/// </summary>
+		/// <param name='file'>
+		/// File
+		/// </param>
         public static bool Temp(string file)
         {
             string path = System.IO.Path.GetTempFileName();
             System.IO.File.Copy(file, path, true);
             if (System.IO.File.Exists(path))
             {
-                Log("Unfinished transaction from " + file + " was stored as " + path);
+                Syslog.Log("Unfinished transaction from " + file + " was stored as " + path);
                 return true;
             }
             return false;
         }
 
+		/// <summary>
+		/// This is used to handle UNIX signals
+		/// </summary>
+		/// <param name='sender'>
+		/// Sender.
+		/// </param>
+		/// <param name='args'>
+		/// Arguments.
+		/// </param>
         protected static void myHandler(object sender, ConsoleCancelEventArgs args)
         {
-            WriteNow("SIGINT");
-            WriteNow("Shutting down");
+            Syslog.WriteNow("SIGINT");
+            Syslog.WriteNow("Shutting down");
             try
             {
                 core.Kill();
@@ -56,9 +98,15 @@ namespace wmib
                 core.irc.Disconnect();
                 core._Status = core.Status.ShuttingDown;
             }
-            WriteNow("Terminated");
+            Syslog.WriteNow("Terminated");
         }
 
+		/// <summary>
+		/// Processes the terminal parameters
+		/// </summary>
+		/// <param name='gs'>
+		/// Gs.
+		/// </param>
         private static void ProcessVerbosity(string[] gs)
         {
             foreach (string item in gs)
@@ -96,10 +144,16 @@ namespace wmib
             }
             if (config.SelectedVerbosity >= 1)
             {
-                core.DebugLog("System verbosity: " + config.SelectedVerbosity.ToString());
+                Syslog.DebugLog("System verbosity: " + config.SelectedVerbosity.ToString());
             }
         }
 
+		/// <summary>
+		/// The entry point of the program, where the program control starts and ends.
+		/// </summary>
+		/// <param name='args'>
+		/// The command-line arguments.
+		/// </param>
         private static void Main(string[] args)
         {
             try
@@ -108,14 +162,14 @@ namespace wmib
                 Thread logger = new Thread(Logging.Exec);
                 core.domain = AppDomain.CurrentDomain;
                 ProcessVerbosity(args);
-                WriteNow(config.Version);
-                WriteNow("Loading...");
+                Syslog.WriteNow(config.Version);
+                Syslog.WriteNow("Loading...");
                 logger.Start();
                 Console.CancelKeyPress += myHandler;
                 messages.LoadLD();
                 if (config.Load() != 0)
                 {
-                    WriteNow("Error while loading the config file, exiting", true);
+                    Syslog.WriteNow("Error while loading the config file, exiting", true);
                     Environment.Exit(-2);
                     return;
                 }
@@ -125,18 +179,18 @@ namespace wmib
                 core.WriterThread.Start();
                 if (core.DatabaseServerIsAvailable)
                 {
-                    Log("Initializing MySQL");
+                    Syslog.Log("Initializing MySQL");
                     core.DB = new WMIBMySQL();
                 }
-                Log("Loading modules");
+                Syslog.Log("Loading modules");
                 core.SearchMods();
                 IRCTrust.Global();
-                Log("Connecting");
+                Syslog.Log("Connecting");
                 core.Connect();
             }
             catch (Exception fatal)
             {
-                WriteNow("ERROR: bot crashed, bellow is debugging information");
+                Syslog.WriteNow("ERROR: bot crashed, bellow is debugging information");
                 Console.WriteLine("------------------------------------------------------------------------");
                 Console.WriteLine("Description: " + fatal.Message);
                 Console.WriteLine("Stack trace: " + fatal.StackTrace);

@@ -87,7 +87,7 @@ namespace wmib
                     config.channel ch = core.getChannel(Channel);
                     if (ch == null)
                     {
-                        core.Log("Not sending message to unknown channel: " + Channel);
+                        Syslog.Log("Not sending message to unknown channel: " + Channel);
                         return;
                     }
                     // this is wrong instance so let's put this message to correct one
@@ -132,7 +132,7 @@ namespace wmib
                     config.channel ch = core.getChannel(Channel);
                     if (ch == null)
                     {
-                        core.Log("Not sending message to unknown channel: " + Channel);
+                        Syslog.Log("Not sending message to unknown channel: " + Channel);
                         return;
                     }
                     // this is wrong instance so let's put this message to correct one
@@ -188,7 +188,7 @@ namespace wmib
             {
                 if (Channel == null)
                 {
-                    core.Log("Not sending message to unknown channel");
+                    Syslog.Log("Not sending message to unknown channel");
                     return;
                 }
                 // this is wrong instance so let's put this message to correct one
@@ -210,7 +210,7 @@ namespace wmib
             public void Exit()
             {
                 running = false;
-                core.Log("Turning off the message queue of instance " + Parent.ParentInstance.Nick + " with " + (newmessages.Count + messages.Count).ToString() + " untransfered data");
+                Syslog.Log("Turning off the message queue of instance " + Parent.ParentInstance.Nick + " with " + (newmessages.Count + messages.Count).ToString() + " untransfered data");
                 lock (messages)
                 {
                     messages.Clear();
@@ -458,7 +458,7 @@ namespace wmib
                 config.channel curr = core.getChannel(channel);
                 if (curr == null && channel.StartsWith("#"))
                 {
-                    Program.Log("Attempt to send a message to non existing channel: " + channel + " " + message, true);
+                    Syslog.Log("Attempt to send a message to non existing channel: " + channel + " " + message, true);
                     return true;
                 }
                 if (curr != null && curr.suppress)
@@ -502,7 +502,7 @@ namespace wmib
             {
                 if (Channel.instance != ParentInstance)
                 {
-                    core.DebugLog("Fixing instance for " + Channel.Name);
+                    Syslog.DebugLog("Fixing instance for " + Channel.Name);
                     Channel.instance.irc.Join(Channel);
                     return false;
                 }
@@ -547,7 +547,7 @@ namespace wmib
                     {
                         foreach (string xx in channels)
                         {
-                            Program.Log("requesting user list on " + ParentInstance.Nick + " for channel: " + xx);
+                            Syslog.Log("requesting user list on " + ParentInstance.Nick + " for channel: " + xx);
                             // Send the request with low priority
                             _SlowQueue.Send("WHO " + xx, priority.low);
                         }
@@ -601,7 +601,7 @@ namespace wmib
         {
             if (core._Status == core.Status.ShuttingDown)
             {
-                core.Log("Ignoring request to reconnect because bot is shutting down");
+                Syslog.Log("Ignoring request to reconnect because bot is shutting down");
                 return false;
             }
             _Queue.Abort();
@@ -649,7 +649,7 @@ namespace wmib
             }
             else
             {
-                core.Log("DEBUG: didn't send data to network, because it's not connected");
+                Syslog.Log("DEBUG: didn't send data to network, because it's not connected");
             }
         }
 
@@ -681,9 +681,9 @@ namespace wmib
                 }
                 else
                 {
-                    core.Log(ParentInstance.Nick + " is using personal bouncer port " + BouncerPort.ToString());
+                    Syslog.Log(ParentInstance.Nick + " is using personal bouncer port " + BouncerPort.ToString());
                     networkStream = new System.Net.Sockets.TcpClient(Bouncer, BouncerPort).GetStream();
-                    Program.Log("System is using external bouncer");
+                    Syslog.Log("System is using external bouncer");
                 }
                 connected = true;
                 streamReader = new System.IO.StreamReader(networkStream, System.Text.Encoding.UTF8);
@@ -696,13 +696,14 @@ namespace wmib
                 if (config.UsingNetworkIOLayer)
                 {
                     SendData("CONTROL: STATUS");
-                    Program.Log("CACHE: Waiting for buffer");
+                    Syslog.Log("CACHE: Waiting for buffer (network bouncer) of instance " + this.ParentInstance.Nick);
                     bool done = true;
                     while (done)
                     {
                         string response = streamReader.ReadLine();
                         if (response == "CONTROL: TRUE")
                         {
+							Syslog.DebugLog("Resumming previous session on " + this.ParentInstance.Nick);
                             done = false;
                             Auth = false;
                             ChannelsJoined = true;
@@ -714,6 +715,7 @@ namespace wmib
                         }
                         else if (response == "CONTROL: FALSE")
                         {
+							Syslog.DebugLog("Bouncer is not connected, starting new session on " + this.ParentInstance.Nick);
                             done = false;
                             SendData("CONTROL: CREATE");
                             streamWriter.Flush();
@@ -770,10 +772,11 @@ namespace wmib
                                     {
                                         SendData("CONTROL: CREATE");
                                         streamWriter.Flush();
-                                        Console.WriteLine("CACHE: Lost connection to remote, reconnecting");
+                                        Syslog.Log("CACHE: Lost connection to remote on " + this.ParentInstance.Nick + ", creating new session on remote");
                                         bool Connected = false;
                                         while (!Connected)
                                         {
+
                                             System.Threading.Thread.Sleep(800);
                                             SendData("CONTROL: STATUS");
                                             string response = streamReader.ReadLine();
@@ -892,11 +895,11 @@ namespace wmib
                                         if (respond)
                                         {
                                             _SlowQueue.DeliverMessage("Hi, I am robot, this command was not understood. Please bear in mind that every message you send to me will be logged for debuging purposes. See documentation at http://meta.wikimedia.org/wiki/WM-Bot for explanation of commands", nick, priority.low);
-                                            Program.Log("Ignoring private message: (" + nick + ") " + message.Substring(2), false);
+                                            Syslog.Log("Ignoring private message: (" + nick + ") " + message.Substring(2), false);
                                         }
                                         else
                                         {
-                                            Program.Log("Private message: (handled by " + modules + " from " + nick + ") " + message.Substring(2), false);
+                                            Syslog.Log("Private message: (handled by " + modules + " from " + nick + ") " + message.Substring(2), false);
                                         }
                                         continue;
                                     }
@@ -925,7 +928,7 @@ namespace wmib
                                                     if (config.channels.Contains(chan))
                                                     {
                                                         config.channels.Remove(chan);
-                                                        Program.Log("I was kicked from " + parts[1]);
+                                                        Syslog.Log("I was kicked from " + parts[1]);
                                                         config.Save();
                                                     }
                                                 }
@@ -936,14 +939,14 @@ namespace wmib
                             }
                             System.Threading.Thread.Sleep(50);
                         }
-                        Program.Log("Reconnecting, end of data stream");
+                        Syslog.Log("Reconnecting, end of data stream");
                         IsWorking = false;
                         connected = false;
                         Reconnect();
                     }
                     catch (System.IO.IOException xx)
                     {
-                        Program.Log("Reconnecting, connection failed " + xx.Message + xx.StackTrace);
+                        Syslog.Log("Reconnecting, connection failed " + xx.Message + xx.StackTrace);
                         IsWorking = false;
                         connected = false;
                         Reconnect();
@@ -951,7 +954,7 @@ namespace wmib
                     catch (Exception xx)
                     {
                         core.handleException(xx, channel);
-                        core.Log("IRC: Connection error!! Terminating instance " + ParentInstance.Nick);
+                        Syslog.Log("IRC: Connection error!! Terminating instance " + ParentInstance.Nick);
                         IsWorking = false;
                         connected = false;
                         return;
@@ -961,7 +964,7 @@ namespace wmib
             catch (Exception fail)
             {
                 core.handleException(fail);
-                core.Log("IRC: Connection error!! Terminating instance " + ParentInstance.Nick);
+                Syslog.Log("IRC: Connection error!! Terminating instance " + ParentInstance.Nick);
                 IsWorking = false;
                 connected = false;
                 // there is no point for being up when connection is dead and can't be reconnected
@@ -979,7 +982,7 @@ namespace wmib
             {
                 try
                 {
-                    core.DebugLog("Closing");
+                    Syslog.DebugLog("Closing");
                     if (streamWriter != null)
                     {
                         streamWriter.Close();

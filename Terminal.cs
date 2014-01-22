@@ -51,7 +51,7 @@ namespace wmib
             try
             {
                 System.Net.Sockets.TcpClient connection = (System.Net.Sockets.TcpClient)data;
-                core.DebugLog("Incoming connection from: " + connection.Client.RemoteEndPoint.ToString());
+                Syslog.DebugLog("Incoming connection from: " + connection.Client.RemoteEndPoint.ToString());
                 Connections++;
                 connection.NoDelay = true;
                 System.Net.Sockets.NetworkStream ns = connection.GetStream();
@@ -251,7 +251,7 @@ namespace wmib
             {
                 System.Net.Sockets.TcpListener server = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Any, config.SystemPort);
                 server.Start();
-                Program.Log("Network console is online on port: " + config.SystemPort.ToString());
+                Syslog.Log("Network console is online on port: " + config.SystemPort.ToString());
                 while (Running)
                 {
                     System.Net.Sockets.TcpClient connection = server.AcceptTcpClient();

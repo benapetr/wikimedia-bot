@@ -44,7 +44,11 @@ namespace wmib
 
         /// <summary>
         /// Link to css
+		/// 
+		/// This file is used by html plugin for all generated pages, it should be
+		/// located in html plugin
         /// </summary>
+		[Obsolete]
         public static string css = null;
 
         /// <summary>
@@ -105,6 +109,7 @@ namespace wmib
         /// <summary>
         /// Path to txt logs
         /// </summary>
+		[Obsolete]
         public static string path_txt = "log";
 
         /// <summary>
@@ -120,7 +125,7 @@ namespace wmib
         /// <summary>
         /// Version
         /// </summary>
-        public static string Version = "wikimedia bot v. 1.20.2.0";
+        public static string Version = "wikimedia bot v. 1.20.2.1";
 
         /// <summary>
         /// Separator for system db
@@ -133,7 +138,9 @@ namespace wmib
         public static string Username = "wm-bot";
 
         /// <summary>
-        /// This is a port for network bouncer
+        /// This is a port for default network bouncer
+		/// 
+		/// This is needed basically for single instance use only
         /// </summary>
         public static int BouncerPort = 6667;
 
@@ -251,9 +258,9 @@ namespace wmib
         }
 
         /// <summary>
-        /// Return a temporary name
+        /// Return a temporary name for a file
         /// </summary>
-        /// <param name="file">File you need to have temp for</param>
+        /// <param name="file">File you need to have temporary name for</param>
         /// <returns></returns>
         public static string tempName(string file)
         {
@@ -276,7 +283,7 @@ namespace wmib
                 {
                     continue;
                 }
-                core.DebugWrite("Parsing line: " + line, 8);
+                Syslog.DebugWrite("Parsing line: " + line, 8);
                 if (LastName == null && line.Contains("="))
                 {
                     LastName = line.Substring(0, line.IndexOf("="));
@@ -290,7 +297,7 @@ namespace wmib
                         content = content.Substring(0, content.IndexOf(";"));
                     }
                     Values.Add(LastName, content);
-                    core.DebugWrite("Stored config value: " + LastName + ": " + content);
+                    Syslog.DebugWrite("Stored config value: " + LastName + ": " + content);
                     if (line.Contains(";"))
                     {
                         LastName = null;
@@ -302,19 +309,19 @@ namespace wmib
                     content = line;
                     if (!content.Contains(";"))
                     {
-                        core.DebugWrite("Append config value: " + LastName + ": " + content);
+                        Syslog.DebugWrite("Append config value: " + LastName + ": " + content);
                         Values[LastName] += "\n" + content;
                     }
                     else
                     {
                         content = content.Substring(0, content.IndexOf(";"));
                         Values[LastName] += "\n" + content;
-                        core.DebugWrite("Append config value: " + LastName + ": " + content);
+                        Syslog.DebugWrite("Append config value: " + LastName + ": " + content);
                         LastName = null;
                     }
                     continue;
                 }
-                Program.WriteNow("Invalid configuration line: " + line, true);
+                Syslog.WriteNow("Invalid configuration line: " + line, true);
             }
             return Values;
         }
@@ -409,7 +416,7 @@ namespace wmib
             {
                 UsingNetworkIOLayer = bool.Parse(Configuration["serverIO"]);
             }
-            core.Log("Creating instances");
+            Syslog.Log("Creating instances");
             core.CreateInstance(NickName, BouncerPort); // primary instance
             int CurrentInstance = 0;
             while (CurrentInstance < 20)
@@ -419,13 +426,13 @@ namespace wmib
                     break;
                 }
                 string InstanceName = Configuration["instancename" + CurrentInstance.ToString()];
-                core.DebugLog("Instance found: " + InstanceName);
+                Syslog.DebugLog("Instance found: " + InstanceName);
                 if (UsingNetworkIOLayer)
                 {
-                    core.DebugLog("Using bouncer, looking for instance port");
+                    Syslog.DebugLog("Using bouncer, looking for instance port");
                     if (!Configuration.ContainsKey("instanceport" + CurrentInstance.ToString()))
                     {
-                        Program.WriteNow("Instance " + InstanceName + " has invalid port, not using", true);
+                        Syslog.WriteNow("Instance " + InstanceName + " has invalid port, not using", true);
                         continue;
                     }
                     string InstancePort = Configuration["instanceport" + CurrentInstance.ToString()];
@@ -449,7 +456,7 @@ namespace wmib
                     }
                 }
             }
-            Program.WriteNow("Channels were all loaded");
+            Syslog.WriteNow("Channels were all loaded");
 
             // Now when all chans are loaded let's link them together
             foreach (channel ch in channels)
@@ -457,7 +464,7 @@ namespace wmib
                 ch.Shares();
             }
 
-            Program.WriteNow("Channel db's working");
+            Syslog.WriteNow("Channel db's working");
             if (!Directory.Exists(DumpDir))
             {
                 Directory.CreateDirectory(DumpDir);

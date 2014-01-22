@@ -35,7 +35,7 @@ namespace wmib
                     {
                         while (!core.FinishedJoining)
                         {
-                            core.Log("Postponing request to join because bot is still loading", true);
+                            Syslog.Log("Postponing request to join because bot is still loading", true);
                             Thread.Sleep(2000);
                         }
                         if (message.Contains(" "))
@@ -112,11 +112,11 @@ namespace wmib
                     {
                         while (!core.FinishedJoining)
                         {
-                            core.Log("Postponing request to part " + chan.Name + " because bot is still loading", true);
+                            Syslog.Log("Postponing request to part " + chan.Name + " because bot is still loading", true);
                             Thread.Sleep(2000);
                         }
                         chan.instance.irc.SendData("PART " + chan.Name + " :" + "dropped by " + user + " from " + origin);
-                        Program.Log("Dropped " + chan.Name + " dropped by " + user + " from " + origin);
+                        Syslog.Log("Dropped " + chan.Name + " dropped by " + user + " from " + origin);
                         Thread.Sleep(100);
                         try
                         {
@@ -133,7 +133,7 @@ namespace wmib
                         }
                         catch (Exception fail)
                         {
-                            Log(fail.ToString(), true);
+                            Syslog.Log(fail.ToString(), true);
                         }
                         try
                         {
@@ -160,7 +160,7 @@ namespace wmib
                                     }
                                     catch (Exception fail)
                                     {
-                                        core.Log("MODULE: exception at Hook_ChannelDrop in " + curr.Name, true);
+                                        Syslog.Log("MODULE: exception at Hook_ChannelDrop in " + curr.Name, true);
                                         core.handleException(fail);
                                     }
                                 }
@@ -168,7 +168,7 @@ namespace wmib
                         }
                         catch (Exception error)
                         {
-                            Log(error.ToString(), true);
+                            Syslog.Log(error.ToString(), true);
                         }
                         lock (config.channels)
                         {
@@ -188,11 +188,11 @@ namespace wmib
                     {
                         while (!core.FinishedJoining)
                         {
-                            core.Log("Postponing request to part " + chan.Name + " because bot is still loading", true);
+                            Syslog.Log("Postponing request to part " + chan.Name + " because bot is still loading", true);
                             Thread.Sleep(2000);
                         }
                         chan.instance.irc.SendData("PART " + chan.Name + " :" + "removed by " + user + " from " + origin);
-                        Program.Log("Removed " + chan.Name + " removed by " + user + " from " + origin);
+                        Syslog.Log("Removed " + chan.Name + " removed by " + user + " from " + origin);
                         Thread.Sleep(100);
                         config.channels.Remove(chan);
                         config.Save();

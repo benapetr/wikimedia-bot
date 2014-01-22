@@ -51,7 +51,7 @@ namespace wmib
             if (!System.IO.File.Exists(File))
             {
                 // Create db
-                Program.Log("Creating user file for " + channel);
+                Syslog.Log("Creating user file for " + channel);
                 System.IO.File.WriteAllText(File, "");
             }
             string[] db = System.IO.File.ReadAllLines(File);
@@ -120,7 +120,7 @@ namespace wmib
                             user.Password = info[2];
                         }
                         GlobalUsers.Add(user);
-                        core.DebugLog("Registered global user (" + level + "): " + name, 2);
+                        Syslog.DebugLog("Registered global user (" + level + "): " + name, 2);
                     }
                 }
             }
@@ -133,7 +133,7 @@ namespace wmib
         /// <param name="e"></param>
         private static void GlobalChanged(object sender, EventArgs e)
         {
-            core.Log("Global user list has been changed");
+            Syslog.Log("Global user list has been changed");
             GlobalLoad();
         }
 
@@ -145,11 +145,11 @@ namespace wmib
             if (!System.IO.File.Exists(variables.config + System.IO.Path.DirectorySeparatorChar + "admins"))
             {
                 // Create db
-                Program.Log("Creating user file for admins");
+                Syslog.Log("Creating user file for admins");
                 System.IO.File.WriteAllText(variables.config + System.IO.Path.DirectorySeparatorChar + "admins", "");
             }
             GlobalLoad();
-            core.DebugLog("Registering fs watcher");
+            Syslog.DebugLog("Registering fs watcher");
             fs.Path = variables.config;
             fs.Changed += GlobalChanged;
             fs.Created += GlobalChanged;
@@ -163,7 +163,7 @@ namespace wmib
         /// <returns></returns>
         public bool Save()
         {
-            core.DebugLog("Saving user file of " + ChannelName);
+            Syslog.DebugLog("Saving user file of " + ChannelName);
             core.backupData(File);
             try
             {
@@ -208,7 +208,7 @@ namespace wmib
         {
             if (!misc.IsValidRegex(user))
             {
-                core.Log("Unable to create user " + user + " because the regex is invalid", true);
+                Syslog.Log("Unable to create user " + user + " because the regex is invalid", true);
                 core.irc._SlowQueue.DeliverMessage("Unable to add user because this regex is a piece of shit", ChannelName);
                 return false;
             }

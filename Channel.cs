@@ -351,7 +351,7 @@ namespace wmib
                 }
                 catch (Exception fail)
                 {
-                    core.Log("Unable to load the config of " + Name, true);
+                    Syslog.Log("Unable to load the config of " + Name, true);
                     core.handleException(fail);
                 }
             }
@@ -411,7 +411,7 @@ namespace wmib
                         core.backupData(variables.config + "/" + Name + ".setting");
                         if (!File.Exists(tempName(variables.config + "/" + Name + ".setting")))
                         {
-                            core.Log("Unable to create backup file for " + Name);
+                            Syslog.Log("Unable to create backup file for " + Name);
                         }
                     }
                     data.AppendChild(xmlnode);
@@ -434,7 +434,7 @@ namespace wmib
             {
                 if (IsRemoved)
                 {
-                    core.DebugLog("Channel is already removed");
+                    Syslog.DebugLog("Channel is already removed");
                     return;
                 }
                 Users = null;
@@ -519,7 +519,7 @@ namespace wmib
                     {
                         if (!core.Instances.ContainsKey(DefaultInstance))
                         {
-                            core.DebugLog("There is no instance " + DefaultInstance);
+                            Syslog.DebugLog("There is no instance " + DefaultInstance);
                             instance = core.getInstance();
                         }
                         else
@@ -560,7 +560,7 @@ namespace wmib
                         }
                         catch (Exception fail)
                         {
-                            core.Log("MODULE: exception at Hook_Channel in " + module.Name, true);
+                            Syslog.Log("MODULE: exception at Hook_Channel in " + module.Name, true);
                             core.handleException(fail);
                         }
                     }

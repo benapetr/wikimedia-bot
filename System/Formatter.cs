@@ -143,7 +143,7 @@ namespace wmib
                                 {
                                     if (parts.Count < CurrentParam + 1)
                                     {
-                                        core.DebugLog("Mode: " + xx + " is invalid and can't be parsed");
+                                        Syslog.DebugLog("Mode: " + xx + " is invalid and can't be parsed");
                                         return;
                                     }
 
@@ -165,7 +165,7 @@ namespace wmib
                                 {
                                     if (parts.Count < CurrentParam + 1)
                                     {
-                                        core.DebugLog("Mode: " + xx + " is invalid and can't be parsed");
+                                        Syslog.DebugLog("Mode: " + xx + " is invalid and can't be parsed");
                                         return;
                                     }
 

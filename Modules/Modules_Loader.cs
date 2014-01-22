@@ -25,20 +25,20 @@ namespace wmib
         {
             if (string.IsNullOrEmpty(module.Name))
             {
-                Log("This module has invalid name and was terminated to prevent troubles", true);
+                Syslog.Log("This module has invalid name and was terminated to prevent troubles", true);
                 throw new Exception("Invalid name");
             }
             module.Date = DateTime.Now;
             if (Module.Exist(module.Name))
             {
-                Log("This module is already registered " + module.Name + " this new instance was terminated to prevent troubles", true);
+                Syslog.Log("This module is already registered " + module.Name + " this new instance was terminated to prevent troubles", true);
                 throw new Exception("This module is already registered");
             }
             try
             {
                 lock (module)
                 {
-                    core.Log("Loading module: " + module.Name + " v" + module.Version);
+                    Syslog.Log("Loading module: " + module.Name + " v" + module.Version);
                     Module.module.Add(module);
                 }
                 if (module.start)
@@ -49,7 +49,7 @@ namespace wmib
             catch (Exception fail)
             {
                 module.working = false;
-                core.Log("Unable to create instance of " + module.Name);
+                Syslog.Log("Unable to create instance of " + module.Name);
                 core.handleException(fail);
             }
         }
@@ -69,7 +69,7 @@ namespace wmib
 
                     if (library == null)
                     {
-                        Program.Log("Unable to load " + path + " because the file can't be read", true);
+                        Syslog.Log("Unable to load " + path + " because the file can't be read", true);
                         return false;
                     }
                     Type[] types = library.GetTypes();
@@ -98,7 +98,7 @@ namespace wmib
 
                     if (pluginInfo == null)
                     {
-                        Program.Log("Unable to load " + path + " because the library contains no module", true);
+                        Syslog.Log("Unable to load " + path + " because the library contains no module", true);
                         return false;
                     }
 
@@ -107,7 +107,7 @@ namespace wmib
                     _plugin.ParentDomain = core.domain;
                     if (!_plugin.Construct())
                     {
-                        core.Log("Invalid module", true);
+                        Syslog.Log("Invalid module", true);
                         _plugin.Exit();
                         return false;
                     }
@@ -115,7 +115,7 @@ namespace wmib
                     InitialiseMod(_plugin);
                     return true;
                 }
-                Program.Log("Unable to load " + path + " because the file can't be read", true);
+                Syslog.Log("Unable to load " + path + " because the file can't be read", true);
             }
             catch (Exception fail)
             {
@@ -138,7 +138,7 @@ namespace wmib
                     LoadMod(dll);
                 }
             }
-            Program.Log("Modules loaded");
+            Syslog.Log("Modules loaded");
         }
 
         /// <summary>

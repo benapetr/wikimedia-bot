@@ -97,7 +97,7 @@ namespace wmib
         /// <returns></returns>
         public static int CreateInstance(string name, int port = 0)
         {
-            core.DebugLog("Creating instance " + name + " with port " + port.ToString());
+            Syslog.DebugLog("Creating instance " + name + " with port " + port.ToString());
             lock (Instances)
             {
                 if (Instances.ContainsKey(name))
@@ -156,9 +156,10 @@ namespace wmib
         /// </summary>
         /// <param name="text">Text of log</param>
         /// <param name="error">Should be considered warning</param>
-        public static void Log(string text, bool error = false)
+        [Obsolete]
+		public static void Log(string text, bool error = false)
         {
-            Program.Log(text, error);
+            Syslog.Log(text, error);
         }
 
         /// <summary>
@@ -166,11 +167,12 @@ namespace wmib
         /// </summary>
         /// <param name="text"></param>
         /// <param name="verbosity"></param>
-        public static void DebugLog(string text, int verbosity = 1)
+        [Obsolete]
+		public static void DebugLog(string text, int verbosity = 1)
         {
             if (config.SelectedVerbosity >= verbosity)
             {
-                Log("DEBUG: " + text);
+                Syslog.Log("DEBUG: " + text);
             }
         }
 
@@ -179,11 +181,12 @@ namespace wmib
         /// </summary>
         /// <param name="text"></param>
         /// <param name="verbosity"></param>
-        public static void DebugWrite(string text, int verbosity = 1)
+        [Obsolete]
+		public static void DebugWrite(string text, int verbosity = 1)
         {
             if (config.SelectedVerbosity >= verbosity)
             {
-                Program.WriteNow("DEBUG: " + text);
+                Syslog.WriteNow("DEBUG: " + text);
             }
         }
 
@@ -200,7 +203,7 @@ namespace wmib
                 {
                     irc._SlowQueue.DeliverMessage("DEBUG Exception in module " + module + ": " + ex.Message + " last input was " + LastText, config.DebugChan);
                 }
-                Program.Log("DEBUG Exception in module " + module + ": " + ex.Message + ex.Source + ex.StackTrace, true);
+                Syslog.Log("DEBUG Exception in module " + module + ": " + ex.Message + ex.Source + ex.StackTrace, true);
             }
             catch (Exception) // exception happened while we tried to handle another one, ignore that (probably issue with logging)
             { }
@@ -218,7 +221,7 @@ namespace wmib
                 {
                     irc._SlowQueue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText, config.DebugChan);
                 }
-                Program.WriteNow("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace, true);
+                Syslog.WriteNow("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace, true);
             }
             catch (Exception) // exception happened while we tried to handle another one, ignore that (probably issue with logging)
             { }
@@ -271,7 +274,7 @@ namespace wmib
                         }
                         catch (Exception fail)
                         {
-                            Program.Log("Exception on Hook_ACTN in module: " + curr.Name);
+                            Syslog.Log("Exception on Hook_ACTN in module: " + curr.Name);
                             core.handleException(fail);
                         }
                     }
@@ -302,7 +305,7 @@ namespace wmib
             {
                 string temp = System.IO.Path.GetTempFileName();
                 File.Copy(config.tempName(FileName), temp, true);
-                Program.Log("Unfinished transaction from " + FileName + "~ was stored as " + temp);
+                Syslog.Log("Unfinished transaction from " + FileName + "~ was stored as " + temp);
                 return true;
             }
             return false;
@@ -321,7 +324,7 @@ namespace wmib
             {
                 string temp = System.IO.Path.GetTempFileName();
                 File.Copy(config.tempName(name), temp, true);
-                Program.Log("Unfinished transaction from " + name + "~ was stored as " + temp);
+                Syslog.Log("Unfinished transaction from " + name + "~ was stored as " + temp);
                 return true;
             }
             return false;
@@ -329,6 +332,11 @@ namespace wmib
 
         /// <summary>
         /// Create a backup file
+		/// 
+		/// This is very useful function in case you need to overwrite some file. In that case
+		/// there is a chance for program to crash during the write and this would left the
+		/// file corrupted, this function will create a copy of a file using config.tempName()
+		/// which later needs to be deleted (after you finish your write operation).
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
@@ -367,19 +375,19 @@ namespace wmib
                 {
                     if (Program.Temp(name))
                     {
-                        Program.Log("Restoring unfinished transaction of " + ch + " for db_" + name);
+                        Syslog.Log("Restoring unfinished transaction of " + ch + " for db_" + name);
                         File.Copy(config.tempName(name), name, true);
                         return true;
 
                     }
-                    Program.Log("Unfinished transaction could not be restored! DB of " + name + " is probably broken", true);
+                    Syslog.Log("Unfinished transaction could not be restored! DB of " + name + " is probably broken", true);
                 }
                 return false;
             }
             catch (Exception b)
             {
                 core.handleException(b);
-                Program.Log("Unfinished transaction could not be restored! DB of " + name + " is now broken");
+                Syslog.Log("Unfinished transaction could not be restored! DB of " + name + " is now broken");
                 return false;
             }
         }
@@ -399,7 +407,7 @@ namespace wmib
                     instance.Init();
                 }
                 // now we need to wait for all instances to connect
-                core.Log("Waiting for all instances to connect to irc");
+                Syslog.Log("Waiting for all instances to connect to irc");
                 bool IsOk = false;
                 while (!IsOk)
                 {
@@ -407,14 +415,14 @@ namespace wmib
                     {
                         if (!instance.IsWorking)
                         {
-                            core.DebugLog("Waiting for " + instance.Nick);
+                            Syslog.DebugLog("Waiting for " + instance.Nick);
                             Thread.Sleep(1000);
                             IsOk = false;
                             break;
                         }
                         else
                         {
-                            core.DebugLog("Connected to " + instance.Nick);
+                            Syslog.DebugLog("Connected to " + instance.Nick);
                             IsOk = true;
                         }
                     }
@@ -426,7 +434,7 @@ namespace wmib
                 }
 
                 // wait for all instances to join their channels
-                core.Log("Waiting for all instances to join channels");
+                Syslog.Log("Waiting for all instances to join channels");
                 IsOk = false;
                 while (!IsOk)
                 {
@@ -441,7 +449,7 @@ namespace wmib
                         IsOk = true;
                     }
                 }
-                core.Log("All instances joined their channels");
+                Syslog.Log("All instances joined their channels");
             }
 
             core.FinishedJoining = true;
@@ -488,7 +496,7 @@ namespace wmib
             {
                 if (_Status == Status.ShuttingDown)
                 {
-                    DebugLog("Attempt to kill bot while it's already being killed", 2);
+                    Syslog.DebugLog("Attempt to kill bot while it's already being killed", 2);
                     return;
                 }
                 _Status = Status.ShuttingDown;
@@ -497,33 +505,33 @@ namespace wmib
                 StorageWriter.isRunning = false;
                 Thread modules = new Thread(Terminate) { Name = "KERNEL: Core helper shutdown thread" };
                 modules.Start();
-                Program.WriteNow("Giving grace time for all modules to finish ok");
+                Syslog.WriteNow("Giving grace time for all modules to finish ok");
                 int kill = 0;
                 while (kill < 20)
                 {
                     kill++;
                     if (Module.module.Count == 0)
                     {
-                        Program.WriteNow("KERNEL: Modules are all down");
+                        Syslog.WriteNow("KERNEL: Modules are all down");
                         if (WriterThread.ThreadState == ThreadState.Running || WriterThread.ThreadState == ThreadState.WaitSleepJoin)
                         {
-                            Program.WriteNow("KERNEL: Writer thread didn't shut down gracefully, waiting 2 seconds", true);
+                            Syslog.WriteNow("KERNEL: Writer thread didn't shut down gracefully, waiting 2 seconds", true);
                             Thread.Sleep(2000);
                             if (WriterThread.ThreadState == ThreadState.Running || WriterThread.ThreadState == ThreadState.WaitSleepJoin)
                             {
-                                Program.WriteNow("KERNEL: Writer thread didn't shut down gracefully, killing", true);
+                                Syslog.WriteNow("KERNEL: Writer thread didn't shut down gracefully, killing", true);
                                 WriterThread.Abort();
                             }
                             else
                             {
-                                Program.WriteNow("KERNEL: Writer thread is shut down", true);
+                                Syslog.WriteNow("KERNEL: Writer thread is shut down", true);
                             }
                         }
                         else
                         {
-                            Program.WriteNow("KERNEL: Writer thread is down ok");
+                            Syslog.WriteNow("KERNEL: Writer thread is down ok");
                         }
-                        Program.WriteNow("KERNEL: Terminated");
+                        Syslog.WriteNow("KERNEL: Terminated");
                         System.Diagnostics.Process.GetCurrentProcess().Kill();
                         break;
                     }
@@ -535,8 +543,8 @@ namespace wmib
                 core.handleException(fail);
 
             }
-            Program.WriteNow("There was problem shutting down " + Module.module.Count.ToString() + " modules, terminating process");
-            Program.WriteNow("Terminated");
+            Syslog.WriteNow("There was problem shutting down " + Module.module.Count.ToString() + " modules, terminating process");
+            Syslog.WriteNow("Terminated");
             System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
 
@@ -585,7 +593,7 @@ namespace wmib
                         }
                         catch (Exception f)
                         {
-                            core.Log("MODULE: exception at Hook_PRIV in " + _Module.Name, true);
+                            Syslog.Log("MODULE: exception at Hook_PRIV in " + _Module.Name, true);
                             core.handleException(f);
                         }
                     }

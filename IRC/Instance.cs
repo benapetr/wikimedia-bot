@@ -153,7 +153,7 @@ namespace wmib
                 {
                     if (channel.Name != "" && channel.Name != config.DebugChan)
                     {
-                        core.DebugLog("Joining " + channel.Name + " on " + Nick);
+                        Syslog.DebugLog("Joining " + channel.Name + " on " + Nick);
                         irc.Join(channel);
                         Thread.Sleep(2000);
                     }

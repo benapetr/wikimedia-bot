@@ -46,7 +46,7 @@ namespace wmib
                             }
                             catch (Exception fail)
                             {
-                                Program.Log("Crash on Hook_Reload in " + xx.Name);
+                                Syslog.Log("Crash on Hook_Reload in " + xx.Name);
                                 handleException(fail);
                             }
                         }
@@ -318,7 +318,7 @@ namespace wmib
                 if (chan.Users.IsApproved(invoker, "root"))
                 {
                     irc.Message("System is shutting down, requested by " + invoker.Nick + " from " + chan.Name, config.DebugChan);
-                    Program.Log("System is shutting down, requested by " + invoker.Nick + " from " + chan.Name);
+                    Syslog.Log("System is shutting down, requested by " + invoker.Nick + " from " + chan.Name);
                     Kill();
                     return;
                 }
@@ -412,7 +412,7 @@ namespace wmib
                                 }
                                 catch (Exception fail)
                                 {
-                                    Program.Log("Error on Hook_SetConfig module " + curr.Name);
+                                    Syslog.Log("Error on Hook_SetConfig module " + curr.Name);
                                     core.handleException(fail);
                                 }
                             }
@@ -454,7 +454,7 @@ namespace wmib
                                 }
                                 catch (Exception fail)
                                 {
-                                    Program.Log("Error on Hook_GetConfig module " + curr.Name);
+                                    Syslog.Log("Error on Hook_GetConfig module " + curr.Name);
                                     core.handleException(fail);
                                 }
                             }

@@ -61,7 +61,7 @@ namespace wmib
                 config.channel channel = core.getChannel(code[3]);
                 if (channel != null)
                 {
-                    Program.Log("Finished parsing for " + channel.Name + " parsed totaly: " + channel.UserList.Count.ToString());
+                    Syslog.Log("Finished parsing for " + channel.Name + " parsed totaly: " + channel.UserList.Count.ToString());
                     if (config.SelectedVerbosity > 8)
                     {
                         string list = "";
@@ -72,7 +72,7 @@ namespace wmib
                                 list = list + u.Nick + ", ";
                             }
                         }
-                        core.DebugLog("Parsed: " + list, 8);
+                        Syslog.DebugLog("Parsed: " + list, 8);
                     }
                     channel.FreshList = true;
                 }
@@ -234,7 +234,7 @@ namespace wmib
                                     }
                                     catch (Exception er)
                                     {
-                                        core.Log("Error on hook in " + xx.Name, true);
+                                        Syslog.Log("Error on hook in " + xx.Name, true);
                                         core.handleException(er);
                                     }
                                 }
@@ -324,7 +324,7 @@ namespace wmib
             _ident = source.Substring(source.IndexOf("!") + 1);
             _ident = _ident.Substring(0, _ident.IndexOf("@"));
             User _user = new User(user, _host, _ident);
-            string _new = value;
+            //string _new = value;
             lock (Module.module)
             {
                 foreach (Module module in Module.module)
@@ -339,7 +339,7 @@ namespace wmib
                     }
                     catch (Exception fail)
                     {
-                        core.Log("MODULE: exception at Hook_Quit in " + module.Name, true);
+                        Syslog.Log("MODULE: exception at Hook_Quit in " + module.Name, true);
                         core.handleException(fail);
                     }
                 }
@@ -374,7 +374,7 @@ namespace wmib
                             }
                             catch (Exception fail)
                             {
-                                core.Log("MODULE: exception at Hook_ChannelQuit in " + module.Name, true);
+                                Syslog.Log("MODULE: exception at Hook_ChannelQuit in " + module.Name, true);
                                 core.handleException(fail);
                             }
                         }
@@ -422,7 +422,7 @@ namespace wmib
                         }
                         catch (Exception fail)
                         {
-                            core.Log("MODULE: exception at Hook_Kick in " + module.Name, true);
+                            Syslog.Log("MODULE: exception at Hook_Kick in " + module.Name, true);
                             core.handleException(fail);
                         }
                     }
@@ -457,7 +457,7 @@ namespace wmib
             {
                 string chan = parameters.Substring(0, parameters.IndexOf(" "));
                 chan = chan.Replace(" ", "");
-                string user = source;
+                //string user = source;
                 if (chan.StartsWith("#"))
                 {
                     if (chan == config.DebugChan && instance.Nick != core.irc.NickName)
@@ -547,7 +547,7 @@ namespace wmib
                         }
                         catch (Exception fail)
                         {
-                            core.Log("MODULE: exception at Hook_Join in " + module.Name, true);
+                            Syslog.Log("MODULE: exception at Hook_Join in " + module.Name, true);
                             core.handleException(fail);
                         }
                     }
@@ -637,7 +637,7 @@ namespace wmib
                                 break;
                             case "439":
                             case "707":
-                                core.Log("Unable to send data to irc: " + text, true);
+                                Syslog.Log("Unable to send data to irc: " + text, true);
                                 break;
                             case "PONG":
                                 Ping();

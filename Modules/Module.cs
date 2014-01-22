@@ -98,7 +98,7 @@ namespace wmib
                     core.Domains.Remove(this);
                 }
             }
-            core.Log("Module was unloaded: " + this.Name);
+            Syslog.Log("Module was unloaded: " + this.Name);
         }
 
         /// <summary>
@@ -382,7 +382,7 @@ namespace wmib
         /// <param name="verbosity"></param>
         public void DebugLog(string text, int verbosity = 1)
         {
-            core.DebugLog(text, verbosity);
+            Syslog.DebugLog(text, verbosity);
         }
 
         /// <summary>
@@ -392,7 +392,7 @@ namespace wmib
         /// <param name="warning"></param>
         public void Log(string text, bool warning = false)
         {
-            core.Log(Name + ": " + text, warning);
+            Syslog.Log(Name + ": " + text, warning);
         }
 
         /// <summary>
@@ -457,7 +457,7 @@ namespace wmib
                 {
                     core.irc._SlowQueue.DeliverMessage("DEBUG Exception in plugin " + Name + ": " + ex.Message + " last input was " + core.LastText, config.DebugChan);
                 }
-                Program.Log("DEBUG Exception in module " + Name + ": " + ex.Message + ex.Source + ex.StackTrace, true);
+                Syslog.Log("DEBUG Exception in module " + Name + ": " + ex.Message + ex.Source + ex.StackTrace, true);
             }
             catch (Exception) // exception happened while we tried to handle another one, ignore that (probably issue with logging)
             { }
@@ -518,19 +518,19 @@ namespace wmib
             try
             {
                 Load();
-                core.Log("Module terminated: " + Name, true);
+                Syslog.Log("Module terminated: " + Name, true);
                 working = false;
             }
             catch (ThreadAbortException)
             {
-                core.Log("Module terminated: " + Name, true);
+                Syslog.Log("Module terminated: " + Name, true);
                 return;
             }
             catch (Exception f)
             {
                 core.handleException(f);
                 working = false;
-                core.Log("Module crashed: " + Name, true);
+                Syslog.Log("Module crashed: " + Name, true);
             }
             while (Reload)
             {
@@ -538,21 +538,21 @@ namespace wmib
                 {
                     Warning = true;
                     working = true;
-                    core.Log("Restarting the module: " + Name, true);
+                    Syslog.Log("Restarting the module: " + Name, true);
                     Load();
-                    core.Log("Module terminated: " + Name, true);
+                    Syslog.Log("Module terminated: " + Name, true);
                     working = false;
                 }
                 catch (ThreadAbortException)
                 {
-                    core.Log("Module terminated: " + Name, true);
+                    Syslog.Log("Module terminated: " + Name, true);
                     return;
                 }
                 catch (Exception f)
                 {
                     core.handleException(f);
                     working = false;
-                    core.Log("Module crashed: " + Name, true);
+                    Syslog.Log("Module crashed: " + Name, true);
                 }
             }
         }
@@ -573,7 +573,7 @@ namespace wmib
         /// </summary>
         public virtual void Load()
         { 
-            core.Log("Module " + Name + " is missing core thread, terminated", true);
+            Syslog.Log("Module " + Name + " is missing core thread, terminated", true);
             Reload = false;
             working = false;
             return;
@@ -584,12 +584,12 @@ namespace wmib
         /// </summary>
         public void Exit()
         {
-            core.Log("Unloading module: " + Name);
+            Syslog.Log("Unloading module: " + Name);
             try
             {
                 if (!Hook_OnUnload())
                 {
-                    core.Log("Unable to unload module, forcefully removed from memory: " + Name, true);
+                    Syslog.Log("Unable to unload module, forcefully removed from memory: " + Name, true);
                 }
                 working = false;
                 Reload = false;
@@ -597,7 +597,7 @@ namespace wmib
                 {
                     if (thread.ThreadState == System.Threading.ThreadState.Running)
                     {
-                        core.Log("Terminating module: " + Name, true);
+                        Syslog.Log("Terminating module: " + Name, true);
                         if (Reload)
                         {
                             Reload = false;
