@@ -8,27 +8,26 @@ using System.Xml;
 
 namespace wmib
 {
-    public class RequestLabs
+    public class RequestsPlugin : Module
     {
-        public string user = null;
-        public DateTime time;
-        public static readonly string RequestCh = "#wikimedia-labs-requests";
-    }
-
-    public class RegularModule : Module
-    {
-        public Thread notifications = null;
-        public config.channel ch = null;
+		/// <summary>
+		/// This is a reference / pointer to channel object where we want to report
+		/// the requests to if it exists
+		/// </summary>
+        public config.channel pRequestsChannel = null;
+		private Thread PendingRequests = null;
+		private List<string> WaitingRequests = new List<string>();
+		public static readonly string RequestChannel = "#wikimedia-labs-requests";
 
         public override bool Construct()
         {
             Name = "Requests";
             start = true;
-            Version = "1.10.0";
+            Version = "1.20.0";
             return true;
         }
 
-        static ArrayList getWaitingUsernames(string categoryName, string usernamePrintout)
+        private static ArrayList getWaitingUsernames(string categoryName, string usernamePrintout)
         {
             WebClient client = new WebClient();
             client.Headers.Add("User-Agent", "wm-bot (https://meta.wikimedia.org/wiki/Wm-bot)");
@@ -37,10 +36,9 @@ namespace wmib
             // "action=askargs" and add "?Modification date#ISO" to
             // the printouts to calculate "Waiting for x minutes"
             // data.
-            string Url = "https://wikitech.wikimedia.org/w/api.php" +
-                         "?action=ask" +
-                         "&query=" + Uri.EscapeUriString("[[Category:" + categoryName + "]] [[Is Completed::No]]|?" + usernamePrintout) +
-                         "&format=wddx";
+            string Url = "https://wikitech.wikimedia.org/w/api.php" + "?action=ask" + "&query=" + 
+				Uri.EscapeUriString("[[Category:" + categoryName + "]] [[Is Completed::No]]|?" + 
+				                    usernamePrintout) + "&format=wddx";
 
             // Get the query results.
             string Result = client.DownloadString(Url);
@@ -58,7 +56,7 @@ namespace wmib
             return r;
         }
 
-        static string formatReportLine(ArrayList usernames, string requestedAccess)
+        private static string formatReportLine(ArrayList usernames, string requestedAccess)
         {
             int displayed = 0;
             string info = "";
@@ -85,41 +83,44 @@ namespace wmib
             return info;
         }
 
-        static Boolean displayWaiting(Boolean reportNoUsersWaiting)
+        private static Boolean displayWaiting(Boolean reportNoUsersWaiting)
         {
             ArrayList shellRequests = getWaitingUsernames("Shell Access Requests", "Shell Request User Name");
             ArrayList toolsRequests = getWaitingUsernames("Tools Access Requests", "Tools Request User Name");
 
             if (shellRequests.Count != 0 || reportNoUsersWaiting)
-                core.irc._SlowQueue.DeliverMessage(formatReportLine(shellRequests, "shell access"), RequestLabs.RequestCh);
+                core.irc._SlowQueue.DeliverMessage(formatReportLine(shellRequests, "shell access"), RequestChannel);
             if (toolsRequests.Count != 0 || reportNoUsersWaiting)
-                core.irc._SlowQueue.DeliverMessage(formatReportLine(toolsRequests, "Tools access"), RequestLabs.RequestCh);
+                core.irc._SlowQueue.DeliverMessage(formatReportLine(toolsRequests, "Tools access"), RequestChannel);
 
             return shellRequests.Count != 0 || toolsRequests.Count != 0;
         }
 
-        public void Run()
-        {
-            try
+		private void Run()
+		{
+			try
             {
-                Thread.Sleep(60000);
-                while (true)
-                {
-                    if (GetConfig(ch, "Requests.Enabled", false) && displayWaiting(false))
-                        Thread.Sleep(800000);
-                    else
-                        Thread.Sleep(20000);
-                }
-            }
-            catch (ThreadAbortException)
-            {
-                return;
-            }
-            catch (Exception fail)
+				List<string> requests = new List<string>();
+				// first copy all requests so that we don't keep the array locked for too long
+				// because it can be locked by main thread, we need to acquire the lock for shortest time
+				lock (this.WaitingRequests)
+				{
+					requests.AddRange(this.WaitingRequests);
+					this.WaitingRequests.Clear();
+				}
+
+				foreach (string channel in requests)
+				{
+					// TODO: here we should implement the channel parameter so that we could use this module
+					// in more channels than one
+					displayWaiting(true);
+				}
+			}
+			catch (Exception fail)
             {
                 handleException(fail);
             }
-        }
+		}
 
         public override void Load()
         {
@@ -129,26 +130,35 @@ namespace wmib
                 // Mono.
                 ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => { return true; };
 
-                ch = core.getChannel(RequestLabs.RequestCh);
-                if (ch == null)
+                pRequestsChannel = core.getChannel(RequestChannel);
+                if (pRequestsChannel == null)
                 {
-                    Log("CRITICAL: the bot isn't in " + RequestLabs.RequestCh + " unloading requests", true);
+                    Log("CRITICAL: the bot isn't in " + RequestChannel + " unloading requests", true);
                     return;
                 }
-                RequestCache.Load();
-                notifications = new Thread(Run);
-                notifications.Start();
+
+				this.PendingRequests = new Thread(Run);
+				this.PendingRequests.Name = "Pending queries thread for requests extension";
+				this.PendingRequests.Start();
+
+                Thread.Sleep(60000);
+                while (this.working)
+                {
+                    if (GetConfig(pRequestsChannel, "Requests.Enabled", false) && displayWaiting(false))
+                        Thread.Sleep(800000);
+                    else
+                        Thread.Sleep(20000);
+                }
             }
             catch (Exception fail)
             {
                 handleException(fail);
-                notifications.Abort();
             }
         }
 
         public override void Hook_PRIV(config.channel channel, User invoker, string message)
         {
-            if (channel.Name != RequestLabs.RequestCh)
+            if (channel.Name != RequestChannel)
             {
                 return;
             }
@@ -200,8 +210,10 @@ namespace wmib
 
             if (message == "@requests")
             {
-                displayWaiting(true);
-
+                lock (this.WaitingRequests)
+				{
+					this.WaitingRequests.Add(channel.Name);
+				}
                 return;
             }
         }
