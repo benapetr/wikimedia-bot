@@ -100,20 +100,24 @@ namespace wmib
 		{
 			try
             {
-				List<string> requests = new List<string>();
-				// first copy all requests so that we don't keep the array locked for too long
-				// because it can be locked by main thread, we need to acquire the lock for shortest time
-				lock (this.WaitingRequests)
+				while (this.working)
 				{
-					requests.AddRange(this.WaitingRequests);
-					this.WaitingRequests.Clear();
-				}
+					List<string> requests = new List<string>();
+					// first copy all requests so that we don't keep the array locked for too long
+					// because it can be locked by main thread, we need to acquire the lock for shortest time
+					lock (this.WaitingRequests)
+					{
+						requests.AddRange(this.WaitingRequests);
+						this.WaitingRequests.Clear();
+					}
 
-				foreach (string channel in requests)
-				{
-					// TODO: here we should implement the channel parameter so that we could use this module
-					// in more channels than one
-					displayWaiting(true);
+					foreach (string channel in requests)
+					{
+						// TODO: here we should implement the channel parameter so that we could use this module
+						// in more channels than one
+						displayWaiting(true);
+					}
+					Thread.Sleep(600);
 				}
 			}
 			catch (Exception fail)
