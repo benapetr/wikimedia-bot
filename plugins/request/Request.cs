@@ -209,9 +209,23 @@ namespace wmib
             }
 
             if (message == "@requests")
-            {
+			{
+				if (GetConfig(channel, "Requests.Enabled", false))
+                {
+					core.irc._SlowQueue.DeliverMessage("You need to enable requests in this channel for this command to work", channel.Name);
+					return;
+				}
                 lock (this.WaitingRequests)
 				{
+					if (this.WaitingRequests.Contains(channel.Name))
+				    {
+						core.irc._SlowQueue.DeliverMessage("I am already fetching the list of waiting users for this channel", channel.Name);
+						return;
+					} else
+					{
+						core.irc._SlowQueue.DeliverMessage("I am fetching the list of waiting users...", channel.Name);
+					}
+
 					this.WaitingRequests.Add(channel.Name);
 				}
                 return;
