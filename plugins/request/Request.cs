@@ -210,7 +210,7 @@ namespace wmib
 
             if (message == "@requests")
 			{
-				if (GetConfig(channel, "Requests.Enabled", false))
+				if (!GetConfig(channel, "Requests.Enabled", false))
                 {
 					core.irc._SlowQueue.DeliverMessage("You need to enable requests in this channel for this command to work", channel.Name);
 					return;
