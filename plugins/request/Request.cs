@@ -1,9 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
-using System.Xml;
 using System.Threading;
-using DotNetWikiBot;
+using System.Xml;
 
 namespace wmib
 {
@@ -12,59 +13,12 @@ namespace wmib
         public string user = null;
         public DateTime time;
         public static readonly string RequestCh = "#wikimedia-labs-requests";
-
-        public RequestLabs(string us)
-        {
-            time = DateTime.Now;
-            user = us;
-        }
-
-        public string WaitingTime()
-        {
-            string text = (DateTime.Now - time).TotalMinutes.ToString();
-            if (text.Contains("."))
-            {
-                text = text.Substring(0, text.IndexOf("."));
-            }
-            return text + " minutes";
-        }
     }
 
     public class RegularModule : Module
     {
-        public static List<RequestLabs> Shell = new List<RequestLabs>();
-        public static List<RequestLabs> Tools = new List<RequestLabs>();
         public Thread notifications = null;
         public config.channel ch = null;
-
-        public RequestLabs Contains(string user)
-        {
-            lock (Shell)
-            {
-                foreach (RequestLabs r in Shell)
-                {
-                    if (r.user == user)
-                    {
-                        return r;
-                    }
-                }
-            }
-            return null;
-        }
-
-        
-
-        public RequestLabs getUser(string user, List<RequestLabs> list)
-        {
-            foreach (RequestLabs r in list)
-            {
-                if (r.user == user)
-                {
-                    return r;
-                }
-            }
-            return null;
-        }
 
         public override bool Construct()
         {
@@ -74,72 +28,74 @@ namespace wmib
             return true;
         }
 
-        public RequestLabs ContainsLabs(string user)
+        static ArrayList getWaitingUsernames(string categoryName, string usernamePrintout)
         {
-            lock (Tools)
+            WebClient client = new WebClient();
+            client.Headers.Add("User-Agent", "wm-bot (https://meta.wikimedia.org/wiki/Wm-bot)");
+
+            // TODO: When wikitech is updated to SMW 1.9, use
+            // "action=askargs" and add "?Modification date#ISO" to
+            // the printouts to calculate "Waiting for x minutes"
+            // data.
+            string Url = "https://wikitech.wikimedia.org/w/api.php" +
+                         "?action=ask" +
+                         "&query=" + Uri.EscapeUriString("[[Category:" + categoryName + "]] [[Is Completed::No]]|?" + usernamePrintout) +
+                         "&format=wddx";
+
+            // Get the query results.
+            string Result = client.DownloadString(Url);
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(Result);
+
+            // Fill ArrayList.
+            ArrayList r = new ArrayList();
+            foreach (XmlElement r1 in doc.SelectNodes("//var[@name='results']/struct/var"))
             {
-                foreach (RequestLabs r in Tools)
-                {
-                    if (r.user == user)
-                    {
-                        return r;
-                    }
-                }
+                string username = r1.SelectNodes("struct/var[@name = 'printouts']/struct/var[@name = '" + usernamePrintout + "']/array/string").Item(0).InnerText;
+                r.Add(username);
             }
-            return null;
+
+            return r;
         }
 
-        public void DisplayWaiting()
+        static string formatReportLine(ArrayList usernames, string requestedAccess)
         {
-            if (Shell.Count > 0)
+            int displayed = 0;
+            string info = "";
+
+            foreach (string username in usernames)
             {
-                int requestCount = Shell.Count;
-                int displayed = 0;
-                string info = "";
-                foreach (RequestLabs u in Shell)
-                {
-                    displayed++;
-                    info += u.user + " (waiting " + u.WaitingTime() + ") ";
-                    if (info.Length > 160)
-                    {
-                        break;
-                    }
-                }
-                if (displayed == 1)
-                {
-                    info = "Warning: There is " + requestCount.ToString() + " user waiting for shell: " + info;
-                }
-                else
-                {
-                    info = "Warning: There are " + requestCount.ToString() + " users waiting for shell, displaying last " + displayed.ToString() + ": " + info;
-                }
-                core.irc._SlowQueue.DeliverMessage(info, RequestLabs.RequestCh);
+                if (info != "")
+                    info += ", ";
+                info += username;   // TODO: Add " (waiting " + (time since Modification_date) + ")".
+                displayed++;
+                if (info.Length > 160)
+                    break;
             }
 
-            if (Tools.Count > 0)
-            {
-                int requestCount = Tools.Count;
-                int displayed = 0;
-                string info = "";
-                foreach (RequestLabs u in Tools)
-                {
-                    displayed++;
-                    info += u.user + " (waiting " + u.WaitingTime() + ") ";
-                    if (info.Length > 160)
-                    {
-                        break;
-                    }
-                }
-                if (displayed == 1)
-                {
-                    info = "Warning: There is " + requestCount.ToString() + " user waiting for access to tools project: " + info;
-                }
-                else
-                {
-                    info = "Warning: There are " + requestCount.ToString() + " users waiting for access to tools project, displaying last " + displayed.ToString() + ": " + info;
-                }
-                core.irc._SlowQueue.DeliverMessage(info, RequestLabs.RequestCh);
-            }
+            if (usernames.Count == 0)
+                info = "There are no users waiting for " + requestedAccess + ".";
+            else if (usernames.Count == 1)
+                info = "There is one user waiting for " + requestedAccess + ": " + info + ".";
+            else if (displayed == usernames.Count)
+                info = "There are " + usernames.Count.ToString() + " users waiting for " + requestedAccess + ": " + info + ".";
+            else
+                info = "There are " + usernames.Count.ToString() + " users waiting for " + requestedAccess + ", displaying last " + displayed.ToString() + ": " + info + ".";
+
+            return info;
+        }
+
+        static Boolean displayWaiting(Boolean reportNoUsersWaiting)
+        {
+            ArrayList shellRequests = getWaitingUsernames("Shell Access Requests", "Shell Request User Name");
+            ArrayList toolsRequests = getWaitingUsernames("Tools Access Requests", "Tools Request User Name");
+
+            if (shellRequests.Count != 0 || reportNoUsersWaiting)
+                core.irc._SlowQueue.DeliverMessage(formatReportLine(shellRequests, "shell access"), RequestLabs.RequestCh);
+            if (toolsRequests.Count != 0 || reportNoUsersWaiting)
+                core.irc._SlowQueue.DeliverMessage(formatReportLine(toolsRequests, "Tools access"), RequestLabs.RequestCh);
+
+            return shellRequests.Count != 0 || toolsRequests.Count != 0;
         }
 
         public void Run()
@@ -149,21 +105,10 @@ namespace wmib
                 Thread.Sleep(60000);
                 while (true)
                 {
-                    if (GetConfig(ch, "Requests.Enabled", false))
-                    {
-                        lock (Shell)
-                        {
-                            DisplayWaiting();
-                        }
-                    }
-                    if (Shell.Count > 0 || Tools.Count > 0)
-                    {
+                    if (GetConfig(ch, "Requests.Enabled", false) && displayWaiting(false))
                         Thread.Sleep(800000);
-                    }
                     else
-                    {
                         Thread.Sleep(20000);
-                    }
                 }
             }
             catch (ThreadAbortException)
@@ -176,19 +121,14 @@ namespace wmib
             }
         }
 
-        public bool Matches(string text)
-        {
-            if (text.Contains("|Completed=No") || text.Contains("|Completed=false") || text.Contains("|Completed=no") || text.Contains("|Completed=False"))
-            {
-                return true;
-            }
-            return false;
-        }
-
         public override void Load()
         {
             try
             {
+                // TODO: Install CA certificate used by wikitech to
+                // Mono.
+                ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => { return true; };
+
                 ch = core.getChannel(RequestLabs.RequestCh);
                 if (ch == null)
                 {
@@ -198,104 +138,6 @@ namespace wmib
                 RequestCache.Load();
                 notifications = new Thread(Run);
                 notifications.Start();
-                Site wikitech = new Site("https://wikitech.wikimedia.org", "wmib", "");
-                while (true)
-                {
-                    try
-                    {
-                        List<string> shell = new List<string>();
-                        List<string> tooldata = new List<string>();
-                        PageList requests = new PageList(wikitech);
-                        requests.FillAllFromCategory("Shell Access Requests");
-                        foreach (Page page in requests)
-                        {
-                            string title = page.title.Replace("Shell Request/", "");
-                            if (RequestCache.Contains(title))
-                            {
-                                continue;
-                            }
-                            page.Load();
-                            if (!Matches(page.text))
-                            {
-                                RequestCache.Insert(title);
-                                lock (Shell)
-                                {
-                                    // this one was already processed
-                                    RequestLabs previous = Contains(title);
-                                    if (previous != null)
-                                    {
-                                        Shell.Remove(previous);
-                                    }
-                                }
-                                continue;
-                            }
-                            else
-                            {
-                                if (!shell.Contains(title))
-                                {
-                                    shell.Add(title);
-                                }
-                                lock (Shell)
-                                {
-                                    if (Contains(title) == null)
-                                    {
-                                        Shell.Add(new RequestLabs(title));
-                                    }
-                                }
-                            }
-                        }
-
-                        requests = new PageList(wikitech);
-                        requests.FillAllFromCategory("Tools_Access_Requests");
-                        foreach (Page page in requests)
-                        {
-                            string title = page.title.Replace("Nova Resource:Tools/Access Request/", "");
-                            if (RequestCache.ContainsLabs(title))
-                            {
-                                continue;
-                            }
-                            page.Load();
-                            if (!(Matches(page.text)))
-                            {
-                                RequestCache.InsertLabs(title);
-                                lock (Tools)
-                                {
-                                    // this one was already processed
-                                    RequestLabs previous = ContainsLabs(title);
-                                    if (previous != null)
-                                    {
-                                        Tools.Remove(previous);
-                                    }
-                                }
-                                continue;
-                            }
-                            else
-                            {
-                                if (!tooldata.Contains(title))
-                                {
-                                    tooldata.Add(title);
-                                }
-                                lock (Tools)
-                                {
-                                    if (ContainsLabs(title) == null)
-                                    {
-                                        Tools.Add(new RequestLabs(title));
-                                    }
-                                }
-                            }
-                        }
-                        Thread.Sleep(60000);
-                    }
-                    catch (ThreadAbortException)
-                    {
-                        notifications.Abort();
-                        return;
-                    }
-                    catch (Exception fail)
-                    {
-                        handleException(fail);
-                    }
-                }
             }
             catch (Exception fail)
             {
@@ -310,7 +152,7 @@ namespace wmib
             {
                 return;
             }
-            
+
             if (message == "@requests-off")
             {
                 if (channel.Users.IsApproved(invoker.Nick, invoker.Host, "admin"))
@@ -358,17 +200,8 @@ namespace wmib
 
             if (message == "@requests")
             {
-                lock (Shell)
-                {
-                    if (Shell.Count > 0 || Tools.Count > 0)
-                    {
-                        DisplayWaiting();
-                    }
-                    else
-                    {
-                        core.irc._SlowQueue.DeliverMessage("There are no shell requests waiting", RequestLabs.RequestCh);
-                    }
-                }
+                displayWaiting(true);
+
                 return;
             }
         }
