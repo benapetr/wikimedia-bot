@@ -17,7 +17,7 @@ namespace wmib
     /// <summary>
     /// Kernel
     /// </summary>
-    public partial class core
+    public partial class Commands
     {
         /// <summary>
         /// Change rights of user
@@ -27,51 +27,51 @@ namespace wmib
         /// <param name="user">User</param>
         /// <param name="host">Host</param>
         /// <returns></returns>
-        public static int ModifyRights(string message, config.channel channel, string user, string host)
+        public static int ModifyRights(string message, Channel channel, string user, string host)
         {
             try
             {
-                if (message.StartsWith(config.CommandPrefix + "trustadd"))
+                if (message.StartsWith(Configuration.System.CommandPrefix + "trustadd"))
                 {
                     string[] rights_info = message.Split(' ');
                     if (channel.Users.IsApproved(user, host, "trustadd"))
                     {
                         if (rights_info.Length < 3)
                         {
-                            irc._SlowQueue.DeliverMessage(messages.get("Trust1", channel.Language), channel);
+                            Core.irc._SlowQueue.DeliverMessage(messages.get("Trust1", channel.Language), channel);
                             return 0;
                         }
                         if (!(rights_info[2] == "admin" || rights_info[2] == "trusted"))
                         {
-                            irc._SlowQueue.DeliverMessage(messages.get("Unknown1", channel.Language), channel);
+                            Core.irc._SlowQueue.DeliverMessage(messages.get("Unknown1", channel.Language), channel);
                             return 2;
                         }
                         if (rights_info[2] == "admin")
                         {
                             if (!channel.Users.IsApproved(user, host, "admin"))
                             {
-                                irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel);
+                                Core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel);
                                 return 2;
                             }
                         }
-                        if (channel.Users.addUser(rights_info[2], rights_info[1]))
+                        if (channel.Users.AddUser(rights_info[2], rights_info[1]))
                         {
-                            irc._SlowQueue.DeliverMessage(messages.get("UserSc", channel.Language) + rights_info[1], channel);
+                            Core.irc._SlowQueue.DeliverMessage(messages.get("UserSc", channel.Language) + rights_info[1], channel);
                             return 0;
                         }
                     }
                     else
                     {
-                        irc._SlowQueue.DeliverMessage(messages.get("Authorization", channel.Language), channel.Name);
+                        Core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", channel.Language), channel.Name);
                         return 0;
                     }
                 }
-                if (message.StartsWith(config.CommandPrefix + "trusted"))
+                if (message.StartsWith(Configuration.System.CommandPrefix + "trusted"))
                 {
                     channel.Users.listAll();
                     return 0;
                 }
-                if (message.StartsWith(config.CommandPrefix + "trustdel"))
+                if (message.StartsWith(Configuration.System.CommandPrefix + "trustdel"))
                 {
                     string[] rights_info = message.Split(' ');
                     if (rights_info.Length > 1)
@@ -81,15 +81,15 @@ namespace wmib
                             channel.Users.delUser(channel.Users.getUser(user + "!@" + host), rights_info[1]);
                             return 0;
                         }
-                        irc._SlowQueue.DeliverMessage(messages.get("Authorization", channel.Language), channel);
+                        Core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", channel.Language), channel);
                         return 0;
                     }
-                    irc._SlowQueue.DeliverMessage(messages.get("InvalidUser", channel.Language), channel);
+                    Core.irc._SlowQueue.DeliverMessage(messages.get("InvalidUser", channel.Language), channel);
                 }
             }
             catch (Exception b)
             {
-                handleException(b);
+                Core.HandleException(b);
             }
             return 0;
         }

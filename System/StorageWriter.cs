@@ -63,7 +63,7 @@ namespace wmib
             }
             catch (Exception crashed)
             {
-                core.handleException(crashed);
+                Core.HandleException(crashed);
             }
         }
 
@@ -95,7 +95,7 @@ namespace wmib
         /// <summary>
         /// Thread
         /// </summary>
-        public static void Core()
+        public static void Exec()
         {
             try
             {
@@ -117,7 +117,7 @@ namespace wmib
                     }
                     catch (Exception fail)
                     {
-                        core.handleException(fail);
+                        Core.HandleException(fail);
                     }
                 }
                 if (Data.Count > 0)
@@ -135,7 +135,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail);
                 Syslog.Log("KERNEL: The writer thread was terminated", true);
                 return;
             }

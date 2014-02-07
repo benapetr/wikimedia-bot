@@ -18,8 +18,8 @@ using System.IO;
 namespace wmib
 {
 	[Serializable]
-	public partial class core : MarshalByRefObject
-	{
+		public partial class Core : MarshalByRefObject
+	    {
 		/// <summary>
 		/// Return true if database server is available
 		/// </summary>
@@ -27,7 +27,7 @@ namespace wmib
 		{
 			get
 			{
-				if (config.MysqlHost == null || config.MysqlUser == null)
+				if (Configuration.MySQL.MysqlHost == null || Configuration.MySQL.MysqlUser == null)
 				{
 					return false;
 				}
@@ -82,7 +82,7 @@ namespace wmib
 		/// <param name="text"></param>
 		public static void TrafficLog(string text)
 		{
-			if (config.Logging)
+			if (Configuration.Network.Logging)
 			{
 				StorageWriter.InsertLine("trafficlog.dat", DateTime.Now.ToString() + ": " + text, false);
 			}
@@ -169,7 +169,7 @@ namespace wmib
 		[Obsolete]
 		public static void DebugLog(string text, int verbosity = 1)
 		{
-			if (config.SelectedVerbosity >= verbosity)
+			if (Configuration.System.SelectedVerbosity >= verbosity)
 			{
 				Syslog.Log("DEBUG: " + text);
 			}
@@ -183,7 +183,7 @@ namespace wmib
 		[Obsolete]
 		public static void DebugWrite(string text, int verbosity = 1)
 		{
-			if (config.SelectedVerbosity >= verbosity)
+			if (Configuration.System.SelectedVerbosity >= verbosity)
 			{
 				Syslog.WriteNow("DEBUG: " + text);
 			}
@@ -194,17 +194,22 @@ namespace wmib
 		/// </summary>
 		/// <param name="ex">Exception pointer</param>
 		/// <param name="module">Channel name</param>
-		public static void handleException(Exception ex, string module)
+		public static void HandleException(Exception ex, string module)
 		{
 			try
 			{
-				if (!string.IsNullOrEmpty(config.DebugChan))
+				if (!string.IsNullOrEmpty(Configuration.System.DebugChan))
 				{
-					irc._SlowQueue.DeliverMessage("DEBUG Exception in module " + module + ": " + ex.Message + " last input was " + LastText, config.DebugChan);
+					irc._SlowQueue.DeliverMessage("DEBUG Exception in module " + module + ": " 
+					                              + ex.Message + " last input was "
+					                              + LastText,
+					                              Configuration.System.DebugChan);
 				}
 				Syslog.Log("DEBUG Exception in module " + module + ": " + ex.Message + ex.Source + ex.StackTrace, true);
-			} catch (Exception) // exception happened while we tried to handle another one, ignore that (probably issue with logging)
+			} catch (Exception fail)
 			{
+				// exception happened while we tried to handle another one, ignore that (probably issue with logging
+				Console.WriteLine(fail.ToString());
 			}
 		}
 
@@ -212,17 +217,20 @@ namespace wmib
 		/// Exception handler
 		/// </summary>
 		/// <param name="ex">Exception pointer</param>
-		public static void handleException(Exception ex)
+		public static void HandleException(Exception ex)
 		{
 			try
 			{
-				if (!string.IsNullOrEmpty(config.DebugChan))
+				if (!string.IsNullOrEmpty(Configuration.System.DebugChan))
 				{
-					irc._SlowQueue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText, config.DebugChan);
+					irc._SlowQueue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText,
+					                              Configuration.System.DebugChan);
 				}
 				Syslog.WriteNow("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace, true);
-			} catch (Exception) // exception happened while we tried to handle another one, ignore that (probably issue with logging)
+			} catch (Exception fail)
 			{
+				// exception happened while we tried to handle another one, ignore that (probably issue with logging)
+				Console.WriteLine(fail.ToString());
 			}
 		}
 
@@ -231,11 +239,11 @@ namespace wmib
 		/// </summary>
 		/// <param name="name">Name</param>
 		/// <returns></returns>
-		public static config.channel getChannel(string name)
+		public static Channel GetChannel(string name)
 		{
-			lock(config.channels)
+			lock(Configuration.Channels)
 			{
-				foreach (config.channel current in config.channels)
+				foreach (Channel current in Configuration.Channels)
 				{
 					if (current.Name.ToLower() == name.ToLower())
 					{
@@ -256,7 +264,7 @@ namespace wmib
 		/// <returns></returns>
 		public static bool getAction(string message, string Channel, string host, string nick)
 		{
-			config.channel channel = getChannel(Channel);
+			Channel channel = GetChannel(Channel);
 			if (channel != null)
 			{
 				lock(Module.module)
@@ -273,7 +281,7 @@ namespace wmib
 						} catch (Exception fail)
 						{
 							Syslog.Log("Exception on Hook_ACTN in module: " + curr.Name);
-							core.handleException(fail);
+							Core.HandleException(fail);
 						}
 					}
 				}
@@ -299,10 +307,10 @@ namespace wmib
 		/// <returns></returns>
 		public static bool backupRecovery(string FileName)
 		{
-			if (File.Exists(config.tempName(FileName)))
+			if (File.Exists(Configuration.TempName(FileName)))
 			{
 				string temp = System.IO.Path.GetTempFileName();
-				File.Copy(config.tempName(FileName), temp, true);
+				File.Copy(Configuration.TempName(FileName), temp, true);
 				Syslog.Log("Unfinished transaction from " + FileName + "~ was stored as " + temp);
 				return true;
 			}
@@ -318,10 +326,10 @@ namespace wmib
 		[Obsolete]
 		public static bool backupRecovery(string name, string ch = "unknown object")
 		{
-			if (File.Exists(config.tempName(name)))
+			if (File.Exists(Configuration.TempName(name)))
 			{
 				string temp = System.IO.Path.GetTempFileName();
-				File.Copy(config.tempName(name), temp, true);
+				File.Copy(Configuration.TempName(name), temp, true);
 				Syslog.Log("Unfinished transaction from " + name + "~ was stored as " + temp);
 				return true;
 			}
@@ -346,14 +354,14 @@ namespace wmib
 				{
 					return false;
 				}
-				if (File.Exists(config.tempName(name)))
+				if (File.Exists(Configuration.TempName(name)))
 				{
 					backupRecovery(name);
 				}
-				File.Copy(name, config.tempName(name), true);
+				File.Copy(name, Configuration.TempName(name), true);
 			} catch (Exception b)
 			{
-				core.handleException(b);
+				Core.HandleException(b);
 			}
 			return true;
 		}
@@ -368,12 +376,12 @@ namespace wmib
 		{
 			try
 			{
-				if (File.Exists(config.tempName(name)))
+				if (File.Exists(Configuration.TempName(name)))
 				{
 					if (Program.Temp(name))
 					{
 						Syslog.Log("Restoring unfinished transaction of " + ch + " for db_" + name);
-						File.Copy(config.tempName(name), name, true);
+						File.Copy(Configuration.TempName(name), name, true);
 						return true;
 
 					}
@@ -382,7 +390,7 @@ namespace wmib
 				return false;
 			} catch (Exception b)
 			{
-				core.handleException(b);
+				Core.HandleException(b);
 				Syslog.Log("Unfinished transaction could not be restored! DB of " + name + " is now broken");
 				return false;
 			}
@@ -393,7 +401,7 @@ namespace wmib
 		/// </summary>
 		public static void Connect()
 		{
-			irc = Instances[config.NickName].irc;
+			irc = Instances[Configuration.IRC.NickName].irc;
 			// now we load all instances
 			foreach (Instance instance in Instances.Values)
 			{
@@ -444,7 +452,7 @@ namespace wmib
 			}
 			Syslog.Log("All instances joined their channels");
 
-			core.FinishedJoining = true;
+			Core.FinishedJoining = true;
 
 			while (_Status == Status.OK)
 			{
@@ -468,12 +476,12 @@ namespace wmib
 						d.Exit();
 					} catch (Exception fail)
 					{
-						core.handleException(fail);
+						Core.HandleException(fail);
 					}
 				}
 			} catch (Exception fail)
 			{
-				core.handleException(fail);
+				Core.HandleException(fail);
 			}
 		}
 
@@ -527,7 +535,7 @@ namespace wmib
 				}
 			} catch (Exception fail)
 			{
-				core.handleException(fail);
+				Core.HandleException(fail);
 
 			}
 			Syslog.WriteNow("There was problem shutting down " + Module.module.Count.ToString() + " modules, terminating process");
@@ -546,7 +554,7 @@ namespace wmib
 		public static bool getMessage(string channel, string nick, string host, string message)
 		{
 			LastText = nick + " chan: " + channel + " " + message;
-			config.channel curr = getChannel(channel);
+			Channel curr = GetChannel(channel);
 			if (curr != null)
 			{
 				bool ignore = false;
@@ -559,11 +567,11 @@ namespace wmib
 				}
 				if (!ignore)
 				{
-					if (message.StartsWith(config.CommandPrefix))
+					if (message.StartsWith(Configuration.System.CommandPrefix))
 					{
 						ModifyRights(message, curr, nick, host);
-						addChannel(curr, nick, host, message);
-						partChannel(curr, nick, host, message);
+						AddChannel(curr, nick, host, message);
+						PartChannel(curr, nick, host, message);
 					}
 					ParseAdmin(curr, nick, host, message);
 				}
@@ -580,19 +588,19 @@ namespace wmib
 						} catch (Exception f)
 						{
 							Syslog.Log("MODULE: exception at Hook_PRIV in " + _Module.Name, true);
-							core.handleException(f);
+							Core.HandleException(f);
 						}
 					}
 				}
 				if (curr.respond_message)
 				{
-					if (message.StartsWith(config.NickName + ":"))
+					if (message.StartsWith(Configuration.IRC.NickName + ":"))
 					{
-						System.DateTime time = curr.last_msg;
+						System.DateTime time = curr.TimeOfLastMsg;
 						if (System.DateTime.Now >= time.AddSeconds(curr.respond_wait))
 						{
 							irc._SlowQueue.DeliverMessage(messages.get("hi", curr.Language, new List<string> { nick }), curr.Name);
-							curr.last_msg = System.DateTime.Now;
+							curr.TimeOfLastMsg = System.DateTime.Now;
 						}
 					}
 				}
@@ -734,7 +742,7 @@ namespace wmib
 			irc._SlowQueue.DeliverMessage("Info for " + name + ": " + info, channel);
 		}
 
-		private static bool ShowHelp(string parameter, config.channel channel)
+		public static bool ShowHelp(string parameter, Channel channel)
 		{
 			if (parameter.StartsWith("@"))
 			{
@@ -763,8 +771,9 @@ namespace wmib
 		/// <returns></returns>
 		public static string getUptime()
 		{
-			System.TimeSpan uptime = System.DateTime.Now - config.UpTime;
-			return uptime.Days.ToString() + " days  " + uptime.Hours.ToString() + " hours since " + config.UpTime.ToString();
+			System.TimeSpan uptime = System.DateTime.Now - Configuration.System.UpTime;
+			return uptime.Days.ToString() + " days  " + uptime.Hours.ToString() + " hours since " +
+				Configuration.System.UpTime.ToString();
 		}
 
 		/// <summary>
@@ -780,7 +789,9 @@ namespace wmib
 			/// <returns></returns>
 			public static string AddLink(string name, string value)
 			{
-				return "<tr><td>" + System.Web.HttpUtility.HtmlEncode(name) + "</td><td><a href=\"#" + System.Web.HttpUtility.HtmlEncode(value) + "\">" + System.Web.HttpUtility.HtmlEncode(value) + "</a></td></tr>\n";
+				return "<tr><td>" + System.Web.HttpUtility.HtmlEncode(name) + "</td><td><a href=\"#" +
+					    System.Web.HttpUtility.HtmlEncode(value) + "\">" + 
+				        System.Web.HttpUtility.HtmlEncode(value) + "</a></td></tr>\n";
 			}
 
 			/// <summary>
@@ -791,7 +802,8 @@ namespace wmib
 			/// <returns></returns>
 			public static string AddKey(string name, string value)
 			{
-				return "<tr id=\"" + System.Web.HttpUtility.HtmlEncode(name) + "\"><td>" + System.Web.HttpUtility.HtmlEncode(name) + "</td><td>" + System.Web.HttpUtility.HtmlEncode(value) + "</td></tr>\n";
+				return "<tr id=\"" + System.Web.HttpUtility.HtmlEncode(name) + "\"><td>" + System.Web.HttpUtility.HtmlEncode(name) 
+					+ "</td><td>" + System.Web.HttpUtility.HtmlEncode(value) + "</td></tr>\n";
 			}
 		}
 

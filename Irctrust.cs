@@ -1,4 +1,4 @@
-﻿//This program is free software: you can redistribute it and/or modify
+//This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
 //the Free Software Foundation, either version 3 of the License, or
 //(at your option) any later version.
@@ -25,11 +25,11 @@ namespace wmib
         /// Filesystem
         /// </summary>
         private static readonly System.IO.FileSystemWatcher fs = new System.IO.FileSystemWatcher();
-        private static readonly List<core.SystemUser> GlobalUsers = new List<core.SystemUser>();
+        private static readonly List<SystemUser> GlobalUsers = new List<SystemUser>();
         /// <summary>
         /// List of all users in a channel
         /// </summary>
-        private readonly List<core.SystemUser> Users = new List<core.SystemUser>();
+        private readonly List<SystemUser> Users = new List<SystemUser>();
         /// <summary>
         /// Channel this class belong to
         /// </summary>
@@ -47,7 +47,7 @@ namespace wmib
         {
             // Load
             File = variables.config + System.IO.Path.DirectorySeparatorChar + channel + "_user";
-            core.recoverFile(File);
+            Core.recoverFile(File);
             if (!System.IO.File.Exists(File))
             {
                 // Create db
@@ -58,12 +58,12 @@ namespace wmib
             ChannelName = channel;
             foreach (string x in db)
             {
-                if (x.Contains(config.Separator))
+                if (x.Contains(Configuration.System.Separator))
                 {
-                    string[] info = x.Split(Char.Parse(config.Separator));
+                    string[] info = x.Split(Char.Parse(Configuration.System.Separator));
                     string level = info[1];
-                    string name = core.decode2(info[0]);
-                    Users.Add(new core.SystemUser(level, name));
+                    string name = Core.decode2(info[0]);
+                    Users.Add(new SystemUser(level, name));
                 }
             }
         }
@@ -78,7 +78,7 @@ namespace wmib
         {
             lock (GlobalUsers)
             {
-                foreach (core.SystemUser user in GlobalUsers)
+                foreach (SystemUser user in GlobalUsers)
                 {
                     if (user.Password == Password && user.UserName == User)
                     {
@@ -108,12 +108,12 @@ namespace wmib
                 GlobalUsers.Clear();
                 foreach (string x in dba)
                 {
-                    if (x.Contains(config.Separator))
+                    if (x.Contains(Configuration.System.Separator))
                     {
-                        string[] info = x.Split(Char.Parse(config.Separator));
+                        string[] info = x.Split(Char.Parse(Configuration.System.Separator));
                         string level = info[1];
-                        string name = core.decode2(info[0]);
-                        core.SystemUser user = new core.SystemUser(level, name);
+                        string name = Core.decode2(info[0]);
+                        SystemUser user = new SystemUser(level, name);
                         if (info.Length > 3)
                         {
                             user.UserName = info[3];
@@ -164,24 +164,24 @@ namespace wmib
         public bool Save()
         {
             Syslog.DebugLog("Saving user file of " + ChannelName);
-            core.backupData(File);
+            Core.backupData(File);
             try
             {
                 StringBuilder data = new StringBuilder("");
                 lock (Users)
                 {
-                    foreach (core.SystemUser u in Users)
+                    foreach (Core.SystemUser u in Users)
                     {
-                        data.Append(core.encode2(u.name) + config.Separator + u.level + "\n");
+                        data.Append(Core.encode2(u.name) + Configuration.System.Separator + u.level + "\n");
                     }
                 }
                 System.IO.File.WriteAllText(File, data.ToString());
-                System.IO.File.Delete(config.tempName(File));
+                System.IO.File.Delete(Configuration.TempName(File));
             }
             catch (Exception b)
             {
-                core.recoverFile(File, ChannelName);
-                core.handleException(b);
+                Core.recoverFile(File, ChannelName);
+                Core.HandleException(b);
             }
             return true;
         }
@@ -204,23 +204,23 @@ namespace wmib
         /// <param name="level">Level</param>
         /// <param name="user">Regex</param>
         /// <returns></returns>
-        public bool addUser(string level, string user)
+        public bool AddUser(string level, string user)
         {
             if (!misc.IsValidRegex(user))
             {
                 Syslog.Log("Unable to create user " + user + " because the regex is invalid", true);
-                core.irc._SlowQueue.DeliverMessage("Unable to add user because this regex is a piece of shit", ChannelName);
+                Core.irc._SlowQueue.DeliverMessage("Unable to add user because this regex is a piece of shit", ChannelName);
                 return false;
             }
-            foreach (core.SystemUser u in Users)
+            foreach (SystemUser u in Users)
             {
                 if (u.name == user)
                 {
-                    core.irc._SlowQueue.DeliverMessage("Unable to add user because this user is already in a list", ChannelName);
+                    Core.irc._SlowQueue.DeliverMessage("Unable to add user because this user is already in a list", ChannelName);
                     return false;
                 }
             }
-            Users.Add(new core.SystemUser(level, user));
+            Users.Add(new SystemUser(level, user));
             Save();
             return true;
         }
@@ -231,35 +231,35 @@ namespace wmib
         /// <param name="origin"></param>
         /// <param name="user">Regex</param>
         /// <returns></returns>
-        public bool delUser(core.SystemUser origin, string user)
+        public bool delUser(SystemUser origin, string user)
         {
-            config.channel channel = core.getChannel(ChannelName);
+            Channel channel = Core.GetChannel(ChannelName);
             if (channel == null)
             {
-                core.irc._SlowQueue.DeliverMessage("Error: unable to get pointer of current channel", ChannelName);
+                Core.irc._SlowQueue.DeliverMessage("Error: unable to get pointer of current channel", ChannelName);
                 return false;
             }
-            foreach (core.SystemUser u in Users)
+            foreach (SystemUser u in Users)
             {
                 if (u.name == user)
                 {
                     if (getLevel(u.level) > getLevel(origin.level))
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("Trust1", channel.Language), ChannelName);
+                        Core.irc._SlowQueue.DeliverMessage(messages.get("Trust1", channel.Language), ChannelName);
                         return true;
                     }
                     if (u.name == origin.name)
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("Trust2", channel.Language), ChannelName);
+                        Core.irc._SlowQueue.DeliverMessage(messages.get("Trust2", channel.Language), ChannelName);
                         return true;
                     }
                     Users.Remove(u);
                     Save();
-                    core.irc._SlowQueue.DeliverMessage(messages.get("Trust3", channel.Language), ChannelName);
+                    Core.irc._SlowQueue.DeliverMessage(messages.get("Trust3", channel.Language), ChannelName);
                     return true;
                 }
             }
-            core.irc._SlowQueue.DeliverMessage(messages.get("Trust4", channel.Language), ChannelName);
+            Core.irc._SlowQueue.DeliverMessage(messages.get("Trust4", channel.Language), ChannelName);
             return true;
         }
 
@@ -288,15 +288,15 @@ namespace wmib
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public core.SystemUser getUser(string user)
+        public SystemUser getUser(string user)
         {
-            core.SystemUser lv = new core.SystemUser("null", "");
+            SystemUser lv = new SystemUser("null", "");
             int current = 0;
             lock (GlobalUsers)
             {
-                foreach (core.SystemUser b in GlobalUsers)
+                foreach (SystemUser b in GlobalUsers)
                 {
-                    core.RegexCheck id = new core.RegexCheck(b.name, user);
+                    Core.RegexCheck id = new Core.RegexCheck(b.name, user);
                     if (id.IsMatch() == 1)
                     {
                         if (getLevel(b.level) > current)
@@ -309,9 +309,9 @@ namespace wmib
             }
             lock (Users)
             {
-                foreach (core.SystemUser b in Users)
+                foreach (SystemUser b in Users)
                 {
-                    core.RegexCheck id = new core.RegexCheck(b.name, user);
+                    Core.RegexCheck id = new Core.RegexCheck(b.name, user);
                     if (id.IsMatch() == 1)
                     {
                         if (getLevel(b.level) > current)
@@ -330,21 +330,21 @@ namespace wmib
         /// </summary>
         public void listAll()
         {
-            config.channel Channel = core.getChannel(ChannelName);
+            Channel Channel = Core.GetChannel(ChannelName);
             if (Channel == null)
             {
-                core.irc._SlowQueue.DeliverMessage("Error: unable to get pointer of current channel", ChannelName);
+                Core.irc._SlowQueue.DeliverMessage("Error: unable to get pointer of current channel", ChannelName);
                 return;
             }
             string users_ok = "";
             lock (Users)
             {
-                foreach (core.SystemUser b in Users)
+                foreach (SystemUser b in Users)
                 {
                     users_ok += " " + b.name + " (2" + b.level + ")" + ",";
                 }
             }
-            core.irc._SlowQueue.DeliverMessage(messages.get("TrustedUserList", Channel.Language) + users_ok, ChannelName);
+            Core.irc._SlowQueue.DeliverMessage(messages.get("TrustedUserList", Channel.Language) + users_ok, ChannelName);
         }
 
         /// <summary>
@@ -378,7 +378,7 @@ namespace wmib
         /// <returns></returns>
         public bool IsApproved(string User, string Host, string command)
         {
-            core.SystemUser current = getUser(User + "!@" + Host);
+            SystemUser current = getUser(User + "!@" + Host);
             if (current.level == "null")
             {
                 return false;

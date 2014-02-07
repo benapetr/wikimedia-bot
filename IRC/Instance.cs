@@ -58,14 +58,14 @@ namespace wmib
         /// <summary>
         /// List of channels this instance is in
         /// </summary>
-        public List<config.channel> ChannelList
+        public List<Channel> ChannelList
         {
             get
             {
-                List<config.channel> list = new List<config.channel>();
-                lock (config.channels)
+                List<Channel> list = new List<Channel>();
+                lock (Configuration.Channels)
                 {
-                    foreach (config.channel ch in config.channels)
+                    foreach (Channel ch in Configuration.Channels)
                     {
                         if (ch.instance == this)
                         {
@@ -95,9 +95,9 @@ namespace wmib
             get
             {
                 int Channels = 0;
-                lock (config.channels)
+                lock (Configuration.Channels)
                 {
-                    foreach (config.channel channel in config.channels)
+                    foreach (Channel channel in Configuration.Channels)
                     {
                         if (channel.instance == this)
                         {
@@ -123,7 +123,7 @@ namespace wmib
         {
             Nick = name;
             Port = port;
-            irc = new IRC(config.NetworkHost, Nick, config.Username, config.Username, this);
+            irc = new IRC(Configuration.IRC.NetworkHost, Nick, Configuration.IRC.Username, Configuration.IRC.Username, this);
             irc.Bouncer = Hostname;
             irc.BouncerPort = Port;
         }
@@ -145,13 +145,13 @@ namespace wmib
         {
             if (irc.ChannelsJoined == false)
             {
-                if (config.DebugChan != null)
+                if (Configuration.System.DebugChan != null)
                 {
-                    irc.SendData("JOIN " + config.DebugChan);
+                    irc.SendData("JOIN " + Configuration.System.DebugChan);
                 }
-                foreach (config.channel channel in ChannelList)
+                foreach (Channel channel in ChannelList)
                 {
-                    if (channel.Name != "" && channel.Name != config.DebugChan)
+                    if (channel.Name != "" && channel.Name != Configuration.System.DebugChan)
                     {
                         Syslog.DebugLog("Joining " + channel.Name + " on " + Nick);
                         irc.Join(channel);

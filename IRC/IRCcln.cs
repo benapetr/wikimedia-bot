@@ -84,7 +84,7 @@ namespace wmib
                 // first of all we check if we are in correct instance
                 if (Channel.StartsWith("#"))
                 {
-                    config.channel ch = core.getChannel(Channel);
+                    Channel ch = Core.GetChannel(Channel);
                     if (ch == null)
                     {
                         Syslog.Log("Not sending message to unknown channel: " + Channel);
@@ -99,13 +99,13 @@ namespace wmib
                 }
                 else
                 {
-                    lock (core.TargetBuffer)
+                    lock (Core.TargetBuffer)
                     {
-                        if (core.TargetBuffer.ContainsKey(Channel))
+                        if (Core.TargetBuffer.ContainsKey(Channel))
                         {
-                            if (core.TargetBuffer[Channel] != Parent.ParentInstance)
+                            if (Core.TargetBuffer[Channel] != Parent.ParentInstance)
                             {
-                                core.TargetBuffer[Channel].irc._SlowQueue.DeliverMessage(Message, Channel, Pr);
+                                Core.TargetBuffer[Channel].irc._SlowQueue.DeliverMessage(Message, Channel, Pr);
                                 return;
                             }
                         }
@@ -129,7 +129,7 @@ namespace wmib
                 // first of all we check if we are in correct instance
                 if (Channel.StartsWith("#"))
                 {
-                    config.channel ch = core.getChannel(Channel);
+                    Channel ch = Core.GetChannel(Channel);
                     if (ch == null)
                     {
                         Syslog.Log("Not sending message to unknown channel: " + Channel);
@@ -184,7 +184,7 @@ namespace wmib
             /// <param name="Message">Text</param>
             /// <param name="Channel">Channel</param>
             /// <param name="Pr">Priority</param>
-            public void DeliverMessage(string Message, config.channel Channel, priority Pr = priority.normal)
+            public void DeliverMessage(string Message, Channel Channel, priority Pr = priority.normal)
             {
                 if (Channel == null)
                 {
@@ -289,7 +289,7 @@ namespace wmib
                                         {
                                             Processed.Add(message);
                                             Transfer(message);
-                                            System.Threading.Thread.Sleep(config.Interval);
+                                            System.Threading.Thread.Sleep(Configuration.IRC.Interval);
                                             if (highest != priority.high)
                                             {
                                                 break;
@@ -455,13 +455,13 @@ namespace wmib
         {
             try
             {
-                config.channel curr = core.getChannel(channel);
+                Channel curr = Core.GetChannel(channel);
                 if (curr == null && channel.StartsWith("#"))
                 {
                     Syslog.Log("Attempt to send a message to non existing channel: " + channel + " " + message, true);
                     return true;
                 }
-                if (curr != null && curr.suppress)
+                if (curr != null && curr.Suppress)
                 {
                     return true;
                 }
@@ -474,19 +474,19 @@ namespace wmib
                         {
                             if (module.working)
                             {
-                                module.Hook_OnSelf(curr, new User(config.NickName, "wikimedia/bot/wm-bot", "wmib"), message);
+                                module.Hook_OnSelf(curr, new User(Configuration.IRC.NickName, "wikimedia/bot/wm-bot", "wmib"), message);
                             }
                         }
                         catch (Exception fail)
                         {
-                            core.handleException(fail);
+                            Core.HandleException(fail);
                         }
                     }
                 }
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail);
             }
             return true;
         }
@@ -496,7 +496,7 @@ namespace wmib
         /// </summary>
         /// <param name="Channel">Channel</param>
         /// <returns></returns>
-        public bool Join(config.channel Channel)
+        public bool Join(Channel Channel)
         {
             if (Channel != null)
             {
@@ -535,7 +535,7 @@ namespace wmib
                 {
                     List<string> channels = new List<string>();
                     // check if there is some channel which needs an update of user list
-                    foreach (config.channel dd in ParentInstance.ChannelList)
+                    foreach (Channel dd in ParentInstance.ChannelList)
                     {
                         if (!dd.FreshList)
                         {
@@ -563,7 +563,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail);
             }
         }
 
@@ -577,9 +577,9 @@ namespace wmib
                 try
                 {
                     System.Threading.Thread.Sleep(20000);
-                    if (!config.UsingNetworkIOLayer)
+                    if (!Configuration.IRC.UsingBouncer)
                     {
-                        SendData("PING :" + config.NetworkHost);
+                        SendData("PING :" + Configuration.IRC.NetworkHost);
                     }
                 }
                 catch (ThreadAbortException)
@@ -588,7 +588,7 @@ namespace wmib
                 }
                 catch (Exception fail)
                 {
-                    core.handleException(fail);
+                    Core.HandleException(fail);
                 }
             }
         }
@@ -599,13 +599,14 @@ namespace wmib
         /// <returns></returns>
         public bool Reconnect()
         {
-            if (core._Status == core.Status.ShuttingDown)
+            if (Core._Status == Core.Status.ShuttingDown)
             {
                 Syslog.Log("Ignoring request to reconnect because bot is shutting down");
                 return false;
             }
             _Queue.Abort();
-            networkStream = config.UsingNetworkIOLayer ? new System.Net.Sockets.TcpClient(Bouncer, BouncerPort).GetStream() : new System.Net.Sockets.TcpClient(Server, 6667).GetStream();
+            networkStream = Configuration.IRC.UsingBouncer ? new System.Net.Sockets.TcpClient(Bouncer, BouncerPort).GetStream() : 
+				new System.Net.Sockets.TcpClient(Server, 6667).GetStream();
             connected = true;
             streamReader = new StreamReader(networkStream, System.Text.Encoding.UTF8);
             streamWriter = new StreamWriter(networkStream);
@@ -614,7 +615,7 @@ namespace wmib
             IsWorking = true;
             Authenticate();
             _Queue = new Thread(_SlowQueue.Run);
-            foreach (config.channel ch in ParentInstance.ChannelList)
+            foreach (Channel ch in ParentInstance.ChannelList)
             {
                 Thread.Sleep(2000);
                 this.Join(ch);
@@ -634,7 +635,7 @@ namespace wmib
         /// <param name="text"></param>
         public void SendData(string text)
         {
-            if (core._Status == core.Status.ShuttingDown)
+            if (Core._Status == Core.Status.ShuttingDown)
             {
                 return;
             }
@@ -644,7 +645,7 @@ namespace wmib
                 {
                     streamWriter.WriteLine(text);
                     streamWriter.Flush();
-                    core.TrafficLog(ParentInstance.Nick + ">>>>>>" + text);
+                    Core.TrafficLog(ParentInstance.Nick + ">>>>>>" + text);
                 }
             }
             else
@@ -659,9 +660,9 @@ namespace wmib
         /// <returns></returns>
         public bool Authenticate()
         {
-            if (config.LoginPw != "")
+            if (Configuration.IRC.LoginPw != "")
             {
-                SendData("PRIVMSG nickserv :identify " + config.LoginNick + " " + config.LoginPw);
+                SendData("PRIVMSG nickserv :identify " + Configuration.IRC.LoginNick + " " + Configuration.IRC.LoginPw);
                 System.Threading.Thread.Sleep(4000);
             }
             return true;
@@ -675,7 +676,7 @@ namespace wmib
         {
             try
             {
-                if (!config.UsingNetworkIOLayer)
+                if (!Configuration.IRC.UsingBouncer)
                 {
                     networkStream = new System.Net.Sockets.TcpClient(Server, 6667).GetStream();
                 }
@@ -693,7 +694,7 @@ namespace wmib
 
                 List<string> Backlog = new List<string>();
 
-                if (config.UsingNetworkIOLayer)
+                if (Configuration.IRC.UsingBouncer)
                 {
                     SendData("CONTROL: STATUS");
                     Syslog.Log("CACHE: Waiting for buffer (network bouncer) of instance " + this.ParentInstance.Nick);
@@ -751,7 +752,7 @@ namespace wmib
                 {
                     try
                     {
-                        while ((!streamReader.EndOfStream || Backlog.Count > 0) && core._Status == core.Status.OK)
+                        while ((!streamReader.EndOfStream || Backlog.Count > 0) && Core._Status == Core.Status.OK)
                         {
                             string text;
                             if (Backlog.Count == 0)
@@ -763,8 +764,8 @@ namespace wmib
                                 text = Backlog[0];
                                 Backlog.RemoveAt(0);
                             }
-                            core.TrafficLog(ParentInstance.Nick + "<<<<<<" + text);
-                            if (config.UsingNetworkIOLayer)
+                            Core.TrafficLog(ParentInstance.Nick + "<<<<<<" + text);
+                            if (Configuration.IRC.UsingBouncer)
                             {
                                 if (text.StartsWith("CONTROL: "))
                                 {
@@ -772,7 +773,8 @@ namespace wmib
                                     {
                                         SendData("CONTROL: CREATE");
                                         streamWriter.Flush();
-                                        Syslog.Log("CACHE: Lost connection to remote on " + this.ParentInstance.Nick + ", creating new session on remote");
+                                        Syslog.Log("CACHE: Lost connection to remote on " + this.ParentInstance.Nick + 
+										           ", creating new session on remote");
                                         bool Connected = false;
                                         while (!Connected)
                                         {
@@ -780,7 +782,7 @@ namespace wmib
                                             System.Threading.Thread.Sleep(800);
                                             SendData("CONTROL: STATUS");
                                             string response = streamReader.ReadLine();
-                                            core.TrafficLog(ParentInstance.Nick + "<<<<<<" + response);
+                                            Core.TrafficLog(ParentInstance.Nick + "<<<<<<" + response);
                                             if (response == "CONTROL: OK")
                                             {
                                                 Reconnect();
@@ -819,7 +821,7 @@ namespace wmib
                                         if (info_host.Contains("#"))
                                         {
                                             channel = info_host.Substring(info_host.IndexOf("#"));
-                                            if (channel == config.DebugChan && ParentInstance.Nick != core.irc.NickName)
+                                            if (channel == Configuration.System.DebugChan && ParentInstance.Nick != Core.irc.NickName)
                                             {
                                                 continue;
                                             }
@@ -827,10 +829,11 @@ namespace wmib
                                             message = message.Substring(message.IndexOf(" :") + 2);
                                             if (message.Contains(delimiter.ToString() + "ACTION"))
                                             {
-                                                core.getAction(message.Replace(delimiter.ToString() + "ACTION", ""), channel, host, nick);
+                                                Core.getAction(message.Replace(delimiter.ToString() + "ACTION", ""), 
+												               channel, host, nick);
                                                 continue;
                                             }
-                                            core.getMessage(channel, nick, host, message);
+                                            Core.getMessage(channel, nick, host, message);
                                             continue;
                                         }
                                         message = text.Substring(text.IndexOf("PRIVMSG"));
@@ -838,34 +841,38 @@ namespace wmib
                                         // private message
                                         if (message.StartsWith(" :" + delimiter.ToString() + "FINGER"))
                                         {
-                                            SendData("NOTICE " + nick + " :" + delimiter.ToString() + "FINGER" + " I am a bot don't finger me");
+                                            SendData("NOTICE " + nick + " :" + delimiter.ToString() + "FINGER" + 
+											         " I am a bot don't finger me");
                                             continue;
                                         }
                                         if (message.StartsWith(" :" + delimiter.ToString() + "TIME"))
                                         {
-                                            SendData("NOTICE " + nick + " :" + delimiter.ToString() + "TIME " + System.DateTime.Now.ToString());
+                                            SendData("NOTICE " + nick + " :" + delimiter.ToString() + "TIME " + 
+											         System.DateTime.Now.ToString());
                                             continue;
                                         }
                                         if (message.StartsWith(" :" + delimiter.ToString() + "PING"))
                                         {
-                                            SendData("NOTICE " + nick + " :" + delimiter.ToString() + "PING" + message.Substring(message.IndexOf(delimiter.ToString() + "PING") + 5));
+                                            SendData("NOTICE " + nick + " :" + delimiter.ToString() + "PING" + message.Substring(
+												message.IndexOf(delimiter.ToString() + "PING") + 5));
                                             continue;
                                         }
                                         if (message.StartsWith(" :" + delimiter.ToString() + "VERSION"))
                                         {
-                                            SendData("NOTICE " + nick + " :" + delimiter.ToString() + "VERSION " + config.Version);
+                                            SendData("NOTICE " + nick + " :" + delimiter.ToString() + "VERSION " 
+											         + Configuration.Version);
                                             continue;
                                         }
                                         // store which instance this message was from so that we can send it using same instance
-                                        lock (core.TargetBuffer)
+                                        lock (Core.TargetBuffer)
                                         {
-                                            if (!core.TargetBuffer.ContainsKey(nick))
+                                            if (!Core.TargetBuffer.ContainsKey(nick))
                                             {
-                                                core.TargetBuffer.Add(nick, ParentInstance);
+                                                Core.TargetBuffer.Add(nick, ParentInstance);
                                             }
                                             else
                                             {
-                                                core.TargetBuffer[nick] = ParentInstance;
+                                                Core.TargetBuffer[nick] = ParentInstance;
                                             }
                                         }
                                         bool respond = true;
@@ -879,7 +886,8 @@ namespace wmib
                                                     try
                                                     {
 
-                                                        if (module.Hook_OnPrivateFromUser(message.Substring(2), new User(nick, host, Ident)))
+                                                        if (module.Hook_OnPrivateFromUser(message.Substring(2), 
+														                        new User(nick, host, Ident)))
                                                         {
                                                             respond = false;
                                                             modules += module.Name + " ";
@@ -887,19 +895,25 @@ namespace wmib
                                                     }
                                                     catch (Exception fail)
                                                     {
-                                                        core.handleException(fail);
+                                                        Core.HandleException(fail);
                                                     }
                                                 }
                                             }
                                         }
                                         if (respond)
                                         {
-                                            _SlowQueue.DeliverMessage("Hi, I am robot, this command was not understood. Please bear in mind that every message you send to me will be logged for debuging purposes. See documentation at http://meta.wikimedia.org/wiki/WM-Bot for explanation of commands", nick, priority.low);
+                                            _SlowQueue.DeliverMessage("Hi, I am robot, this command was not understood." +
+											                          " Please bear in mind that every message you send" +
+											                          " to me will be logged for debuging purposes. See" +
+											                          " documentation at http://meta.wikimedia.org/wiki" +
+											                          "/WM-Bot for explanation of commands", nick,
+											                          priority.low);
                                             Syslog.Log("Ignoring private message: (" + nick + ") " + message.Substring(2), false);
                                         }
                                         else
                                         {
-                                            Syslog.Log("Private message: (handled by " + modules + " from " + nick + ") " + message.Substring(2), false);
+                                            Syslog.Log("Private message: (handled by " + modules + " from " + nick + ") " + 
+											           message.Substring(2), false);
                                         }
                                         continue;
                                     }
@@ -915,21 +929,21 @@ namespace wmib
                                         if (parts.Length > 1)
                                         {
                                             string _channel = parts[1];
-                                            if (_channel == config.DebugChan && ParentInstance.Nick != core.irc.NickName)
+                                            if (_channel == Configuration.System.DebugChan && ParentInstance.Nick != Core.irc.NickName)
                                             {
                                                 continue;
                                             }
                                             string user = parts[2];
                                             if (user == NickName)
                                             {
-                                                config.channel chan = core.getChannel(_channel);
+                                                Channel chan = Core.GetChannel(_channel);
                                                 if (chan != null)
                                                 {
-                                                    if (config.channels.Contains(chan))
+                                                    if (Configuration.Channels.Contains(chan))
                                                     {
-                                                        config.channels.Remove(chan);
+                                                        Configuration.Channels.Remove(chan);
                                                         Syslog.Log("I was kicked from " + parts[1]);
-                                                        config.Save();
+                                                        Configuration.Save();
                                                     }
                                                 }
                                             }
@@ -953,7 +967,7 @@ namespace wmib
                     }
                     catch (Exception xx)
                     {
-                        core.handleException(xx, channel);
+                        Core.HandleException(xx, channel);
                         Syslog.Log("IRC: Connection error!! Terminating instance " + ParentInstance.Nick);
                         IsWorking = false;
                         connected = false;
@@ -963,7 +977,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail);
                 Syslog.Log("IRC: Connection error!! Terminating instance " + ParentInstance.Nick);
                 IsWorking = false;
                 connected = false;
@@ -1005,7 +1019,7 @@ namespace wmib
                 }
                 catch (Exception fail)
                 {
-                    core.handleException(fail);
+                    Core.HandleException(fail);
                 }
             }
             return 0;

@@ -73,7 +73,7 @@ namespace wmib
         /// <param name="verbosity"></param>
         public static void DebugLog(string Message, int Verbosity = 1)
         {
-            if (config.SelectedVerbosity >= Verbosity)
+            if (Configuration.System.SelectedVerbosity >= Verbosity)
             {
                 Syslog.Log("DEBUG <" + Verbosity.ToString() + ">: " + Message);
             }
@@ -86,7 +86,7 @@ namespace wmib
         /// <param name="verbosity"></param>
         public static void DebugWrite(string Message, int Verbosity = 1)
         {
-            if (config.SelectedVerbosity >= Verbosity)
+            if (Configuration.System.SelectedVerbosity >= Verbosity)
             {
                 Syslog.WriteNow("DEBUG <" + Verbosity.ToString() + ">: " + Message);
             }
@@ -158,13 +158,13 @@ namespace wmib
         /// <param name="Warning"></param>
         public static void Display(DateTime time, string Message, bool Warning)
         {
-            if (config.Colors)
+            if (Configuration.System.Colors)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
             }
             if (Warning)
             {
-                if (config.Colors)
+                if (Configuration.System.Colors)
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
                 }
@@ -174,12 +174,12 @@ namespace wmib
             {
                 Console.Write("LOG ");
             }
-            if (config.Colors)
+            if (Configuration.System.Colors)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
             }
             Console.Write("[{0}]", time.ToString());
-            if (config.Colors)
+            if (Configuration.System.Colors)
             {
                 Console.ResetColor();
             }

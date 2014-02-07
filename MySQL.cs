@@ -1,4 +1,4 @@
-﻿//This program is free software: you can redistribute it and/or modify
+//This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
 //the Free Software Foundation, either version 3 of the License, or
 //(at your option) any later version.
@@ -154,11 +154,11 @@ namespace wmib
                 }
                 try
                 {
-                    Connection = new MySql.Data.MySqlClient.MySqlConnection("Server=" + config.MysqlHost + ";" +
-                                                                              "Database=" + config.Mysqldb + ";" +
-                                                                              "User ID=" + config.MysqlUser + ";" +
-                                                                              "Password=" + config.MysqlPw + ";" +
-                                                                              "port=" + config.MysqlPort + ";" +
+                    Connection = new MySql.Data.MySqlClient.MySqlConnection("Server=" + Configuration.MySQL.MysqlHost + ";" +
+                                                                              "Database=" + Configuration.MySQL.Mysqldb + ";" +
+                                                                              "User ID=" + Configuration.MySQL.MysqlUser + ";" +
+                                                                              "Password=" + Configuration.MySQL.MysqlPw + ";" +
+                                                                              "port=" + Configuration.MySQL.MysqlPort + ";" +
                                                                               "Pooling=false");
                     Connection.Open();
                     connected = true;

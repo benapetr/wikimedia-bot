@@ -91,12 +91,12 @@ namespace wmib
             Syslog.WriteNow("Shutting down");
             try
             {
-                core.Kill();
+                Core.Kill();
             }
             catch (Exception)
             {
-                core.irc.Disconnect();
-                core._Status = core.Status.ShuttingDown;
+                Core.irc.Disconnect();
+                Core._Status = Core.Status.ShuttingDown;
             }
             Syslog.WriteNow("Terminated");
         }
@@ -113,12 +113,12 @@ namespace wmib
             {
                 if (item == "--nocolors")
                 {
-                    config.Colors = false;
+                    Configuration.System.Colors = false;
                     continue;
                 }
                 if (item == "--traffic" )
                 {
-                    config.Logging = true;
+                    Configuration.Network.Logging = true;
                 }
                 if (item == "-h" || item == "--help")
                 {
@@ -137,14 +137,14 @@ namespace wmib
                     {
                         if (x == 'v')
                         {
-                            config.SelectedVerbosity++;
+                            Configuration.System.SelectedVerbosity++;
                         }
                     }
                 }
             }
-            if (config.SelectedVerbosity >= 1)
+            if (Configuration.System.SelectedVerbosity >= 1)
             {
-                Syslog.DebugLog("System verbosity: " + config.SelectedVerbosity.ToString());
+                Syslog.DebugLog("System verbosity: " + Configuration.System.SelectedVerbosity.ToString());
             }
         }
 
@@ -158,35 +158,35 @@ namespace wmib
         {
             try
             {
-                config.UpTime = DateTime.Now;
+                Configuration.System.UpTime = DateTime.Now;
                 Thread logger = new Thread(Logging.Exec);
-                core.domain = AppDomain.CurrentDomain;
+                Core.domain = AppDomain.CurrentDomain;
                 ProcessVerbosity(args);
-                Syslog.WriteNow(config.Version);
+                Syslog.WriteNow(Configuration.Version);
                 Syslog.WriteNow("Loading...");
                 logger.Start();
                 Console.CancelKeyPress += myHandler;
                 messages.LoadLD();
-                if (config.Load() != 0)
+                if (Configuration.Load() != 0)
                 {
                     Syslog.WriteNow("Error while loading the config file, exiting", true);
                     Environment.Exit(-2);
                     return;
                 }
                 Terminal.Init();
-                core.Help.CreateHelp();
-                core.WriterThread = new System.Threading.Thread(StorageWriter.Core);
-                core.WriterThread.Start();
-                if (core.DatabaseServerIsAvailable)
+                Core.Help.CreateHelp();
+                Core.WriterThread = new System.Threading.Thread(StorageWriter.Exec);
+                Core.WriterThread.Start();
+                if (Core.DatabaseServerIsAvailable)
                 {
                     Syslog.Log("Initializing MySQL");
-                    core.DB = new WMIBMySQL();
+                    Core.DB = new WMIBMySQL();
                 }
                 Syslog.Log("Loading modules");
-                core.SearchMods();
+                Core.SearchMods();
                 IRCTrust.Global();
                 Syslog.Log("Connecting");
-                core.Connect();
+                Core.Connect();
             }
             catch (Exception fatal)
             {

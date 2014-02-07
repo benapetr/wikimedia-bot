@@ -156,13 +156,13 @@ namespace wmib
                     switch (_ModeType)
                     {
                         case ModeType.User:
-                            if (core.irc.CModes.Contains(_x))
+                            if (Core.irc.CModes.Contains(_x))
                             {
                                 continue;
                             }
                             break;
                         case ModeType.Channel:
-                            if (core.irc.CUModes.Contains(_x) || core.irc.PModes.Contains(_x))
+                            if (Core.irc.CUModes.Contains(_x) || Core.irc.PModes.Contains(_x))
                             {
                                 continue;
                             }

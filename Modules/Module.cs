@@ -90,12 +90,12 @@ namespace wmib
                     module.Remove(this);
                 }
             }
-            if (core.Domains.ContainsKey(this) && core.Domains[this] != ParentDomain)
+            if (Core.Domains.ContainsKey(this) && Core.Domains[this] != ParentDomain)
             {
-                lock (core.Domains)
+                lock (Core.Domains)
                 {
                     //AppDomain.Unload(core.Domains[this]);
-                    core.Domains.Remove(this);
+                    Core.Domains.Remove(this);
                 }
             }
             Syslog.Log("Module was unloaded: " + this.Name);
@@ -127,7 +127,7 @@ namespace wmib
             }
             catch (Exception f)
             {
-                core.handleException(f);
+                Core.HandleException(f);
             }
         }
 
@@ -137,7 +137,7 @@ namespace wmib
         /// </summary>
         /// <param name="html"></param>
         /// <param name="channel"></param>
-        public virtual void Hook_AfterChannelWeb(ref string html, config.channel channel)
+        public virtual void Hook_AfterChannelWeb(ref string html, Channel channel)
         {
             return;
         }
@@ -148,7 +148,7 @@ namespace wmib
         /// <param name="channel"></param>
         /// <param name="source"></param>
         /// <param name="user"></param>
-        public virtual void Hook_Kick(config.channel channel, User source, User user)
+        public virtual void Hook_Kick(Channel channel, User source, User user)
         {
             return;
         }
@@ -159,7 +159,7 @@ namespace wmib
         /// </summary>
         /// <param name="html"></param>
         /// <param name="channel"></param>
-        public virtual void Hook_ChannelWeb(ref string html, config.channel channel)
+        public virtual void Hook_ChannelWeb(ref string html, Channel channel)
         {
             return;
         }
@@ -169,7 +169,7 @@ namespace wmib
         /// </summary>
         /// <param name="channel"></param>
         /// <param name="user"></param>
-        public virtual void Hook_Join(config.channel channel, User user)
+        public virtual void Hook_Join(Channel channel, User user)
         {
             return;
         }
@@ -180,7 +180,7 @@ namespace wmib
         /// <param name="channel">channel</param>
         /// <param name="invoker">invoker</param>
         /// <param name="message">message</param>
-        public virtual void Hook_PRIV(config.channel channel, User invoker, string message)
+        public virtual void Hook_PRIV(Channel channel, User invoker, string message)
         {
             return;
         }
@@ -191,7 +191,7 @@ namespace wmib
         /// <param name="channel"></param>
         /// <param name="invoker"></param>
         /// <param name="message"></param>
-        public virtual void Hook_ACTN(config.channel channel, User invoker, string message)
+        public virtual void Hook_ACTN(Channel channel, User invoker, string message)
         {
             return;
         }
@@ -203,7 +203,7 @@ namespace wmib
         /// <param name="invoker"></param>
         /// <param name="config"></param>
         /// <returns></returns>
-        public virtual bool Hook_GetConfig(config.channel chan, User invoker, string config)
+        public virtual bool Hook_GetConfig(Channel chan, User invoker, string config)
         {
             return false;
         }
@@ -216,7 +216,7 @@ namespace wmib
         /// <param name="config"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public virtual bool Hook_SetConfig(config.channel chan, User invoker, string config, string value)
+        public virtual bool Hook_SetConfig(Channel chan, User invoker, string config, string value)
         {
             return false;
         }
@@ -225,7 +225,7 @@ namespace wmib
         /// When a config of channel is being reload
         /// </summary>
         /// <param name="chan"></param>
-        public virtual void Hook_ReloadConfig(config.channel chan)
+        public virtual void Hook_ReloadConfig(Channel chan)
         {
             return;
         }
@@ -234,7 +234,7 @@ namespace wmib
         /// When a channel is removed from operating memory
         /// </summary>
         /// <param name="chan"></param>
-        public virtual void Hook_ChannelDrop(config.channel chan)
+        public virtual void Hook_ChannelDrop(Channel chan)
         {
             return;
         }
@@ -245,7 +245,7 @@ namespace wmib
         /// <param name="channel"></param>
         /// <param name="user"></param>
         /// <param name="mesg"></param>
-        public virtual void Hook_ChannelQuit(config.channel channel, User user, string mesg)
+        public virtual void Hook_ChannelQuit(Channel channel, User user, string mesg)
         {
             return;
         }
@@ -255,7 +255,7 @@ namespace wmib
         /// </summary>
         /// <param name="channel"></param>
         /// <param name="user"></param>
-        public virtual void Hook_Part(config.channel channel, User user)
+        public virtual void Hook_Part(Channel channel, User user)
         {
             return;
         }
@@ -266,7 +266,7 @@ namespace wmib
         /// <param name="channel"></param>
         /// <param name="self"></param>
         /// <param name="message"></param>
-        public virtual void Hook_OnSelf(config.channel channel, User self, string message)
+        public virtual void Hook_OnSelf(Channel channel, User self, string message)
         {
             return;
         }
@@ -276,7 +276,7 @@ namespace wmib
         /// </summary>
         /// <param name="channel"></param>
         /// <returns></returns>
-        public virtual string Extension_DumpHtml(config.channel channel)
+        public virtual string Extension_DumpHtml(Channel channel)
         {
             return null;
         }
@@ -285,7 +285,7 @@ namespace wmib
         /// This hook is called when channel is constructed
         /// </summary>
         /// <param name="channel"></param>
-        public virtual void Hook_Channel(config.channel channel)
+        public virtual void Hook_Channel(Channel channel)
         {
             return;
         }
@@ -342,7 +342,7 @@ namespace wmib
         /// <param name="channel"></param>
         /// <param name="Target"></param>
         /// <param name="OldNick"></param>
-        public virtual void Hook_Nick(config.channel channel, User Target, string OldNick)
+        public virtual void Hook_Nick(Channel channel, User Target, string OldNick)
         { 
             
         }
@@ -354,7 +354,7 @@ namespace wmib
         /// <param name="name"></param>
         /// <param name="invalid"></param>
         /// <returns></returns>
-        public static int GetConfig(config.channel chan, string name, int invalid)
+        public static int GetConfig(Channel chan, string name, int invalid)
         {
             try
             {
@@ -370,7 +370,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail);
             }
             return invalid;
         }
@@ -402,7 +402,7 @@ namespace wmib
         /// <param name="name"></param>
         /// <param name="invalid"></param>
         /// <returns></returns>
-        public static string GetConfig(config.channel chan, string name, string invalid)
+        public static string GetConfig(Channel chan, string name, string invalid)
         {
             try
             {
@@ -418,7 +418,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail);
             }
             return invalid;
         }
@@ -429,7 +429,7 @@ namespace wmib
         /// <param name="chan"></param>
         /// <param name="name"></param>
         /// <param name="data"></param>
-        public static void SetConfig(config.channel chan, string name, bool data)
+        public static void SetConfig(Channel chan, string name, bool data)
         {
             try
             {
@@ -440,7 +440,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail);
             }
         }
 
@@ -453,9 +453,11 @@ namespace wmib
         {
             try
             {
-                if (!string.IsNullOrEmpty(config.DebugChan))
+                if (!string.IsNullOrEmpty(Configuration.System.DebugChan))
                 {
-                    core.irc._SlowQueue.DeliverMessage("DEBUG Exception in plugin " + Name + ": " + ex.Message + " last input was " + core.LastText, config.DebugChan);
+                    Core.irc._SlowQueue.DeliverMessage("DEBUG Exception in plugin " + Name + ": " + ex.Message +
+					                                   " last input was " + Core.LastText,
+					                                   Configuration.System.DebugChan);
                 }
                 Syslog.Log("DEBUG Exception in module " + Name + ": " + ex.Message + ex.Source + ex.StackTrace, true);
             }
@@ -469,7 +471,7 @@ namespace wmib
         /// <param name="chan"></param>
         /// <param name="name"></param>
         /// <param name="data"></param>
-        public static void SetConfig(config.channel chan, string name, string data)
+        public static void SetConfig(Channel chan, string name, string data)
         {
             try
             {
@@ -480,7 +482,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail);
             }
         }
 
@@ -491,7 +493,7 @@ namespace wmib
         /// <param name="name"></param>
         /// <param name="invalid"></param>
         /// <returns></returns>
-        public static bool GetConfig(config.channel chan, string name, bool invalid)
+        public static bool GetConfig(Channel chan, string name, bool invalid)
         {
             try
             {
@@ -508,7 +510,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail);
                 return invalid;
             }
         }
@@ -528,7 +530,7 @@ namespace wmib
             }
             catch (Exception f)
             {
-                core.handleException(f);
+                Core.HandleException(f);
                 working = false;
                 Syslog.Log("Module crashed: " + Name, true);
             }
@@ -550,7 +552,7 @@ namespace wmib
                 }
                 catch (Exception f)
                 {
-                    core.handleException(f);
+                    Core.HandleException(f);
                     working = false;
                     Syslog.Log("Module crashed: " + Name, true);
                 }
@@ -615,7 +617,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail);
             }
         }
 
@@ -641,7 +643,7 @@ namespace wmib
             }
             catch (Exception f)
             {
-                core.handleException(f);
+                Core.HandleException(f);
             }
             return false;
         }

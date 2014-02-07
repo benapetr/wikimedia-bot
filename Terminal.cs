@@ -1,4 +1,4 @@
-﻿//This program is free software: you can redistribute it and/or modify
+//This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
 //the Free Software Foundation, either version 3 of the License, or
 //(at your option) any later version.
@@ -152,11 +152,11 @@ namespace wmib
 							DecreaseConnections();
                             return;
                         case "info":
-                            string result = "Uptime: " + core.getUptime() + " Version: " + config.Version + Environment.NewLine + "Instances:" + Environment.NewLine;
+                            string result = "Uptime: " + Core.getUptime() + " Version: " + Configuration.Version + Environment.NewLine + "Instances:" + Environment.NewLine;
 							Syslog.DebugLog("Retrieving information for user " + username + " in system");
-                            lock (core.Instances)
+                            lock (Core.Instances)
                             {
-                                foreach (Instance instance in core.Instances.Values)
+                                foreach (Instance instance in Core.Instances.Values)
                                 {
 									Syslog.DebugLog("Retrieving information for user " + username + " of instance " +  instance.Nick, 2);
                                     result += instance.Nick + " channels: " + instance.ChannelCount.ToString() +
@@ -181,22 +181,22 @@ namespace wmib
                         case "halt":
                             Writer.WriteLine("Shutting down");
                             Writer.Flush();
-                            core.Kill();
+                            Core.Kill();
                             return;
                         case "traffic-on":
-                            config.Logging = true;
+                            Configuration.Network.Logging = true;
                             Writer.WriteLine("Dumping traffic into datafile");
                             Writer.Flush();
                             break;
                         case "traffic-off":
-                            config.Logging = false;
+                            Configuration.Network.Logging = false;
                             Writer.WriteLine("Disabled traffic");
                             Writer.Flush();
                             break;
                         case "kill":
-                            if (core.Instances.ContainsKey(parameters))
+                            if (Core.Instances.ContainsKey(parameters))
                             {
-                                core.Instances[parameters].irc.Disconnect();
+                                Core.Instances[parameters].irc.Disconnect();
                                 Writer.WriteLine("Offline: " + parameters);
                                 Writer.Flush();
                                 break;
@@ -205,24 +205,24 @@ namespace wmib
                             Writer.Flush();
                             break;
                         case "conn":
-                            if (core.Instances.ContainsKey(parameters))
+                            if (Core.Instances.ContainsKey(parameters))
                             {
-                                if (core.Instances[parameters].irc.IsConnected)
+                                if (Core.Instances[parameters].irc.IsConnected)
                                 {
                                     Writer.WriteLine("Refusing to connect instance which is already connected: " + parameters);
                                     Writer.Flush();
                                     break;
                                 }
-                                core.Instances[parameters].Init();
+                                Core.Instances[parameters].Init();
                                 Writer.WriteLine("Initializing: " + parameters);
                                 Writer.Flush();
                                 int curr = 0;
-                                while (curr < 10 && !core.Instances[parameters].IsWorking)
+                                while (curr < 10 && !Core.Instances[parameters].IsWorking)
                                 {
                                     curr++;
                                     Thread.Sleep(1000);
                                 }
-                                if (!core.Instances[parameters].IsWorking)
+                                if (!Core.Instances[parameters].IsWorking)
                                 {
                                     Writer.WriteLine("Failed to initialize instance");
                                     Writer.Flush();
@@ -230,15 +230,15 @@ namespace wmib
                                 }
                                 Writer.WriteLine("Joining channels");
                                 Writer.Flush();
-                                core.Instances[parameters].irc.ChannelsJoined = false;
-                                core.Instances[parameters].Join();
+                                Core.Instances[parameters].irc.ChannelsJoined = false;
+                                Core.Instances[parameters].Join();
                                 curr = 0;
-                                while (curr < core.Instances[parameters].ChannelCount && !core.Instances[parameters].irc.ChannelsJoined)
+                                while (curr < Core.Instances[parameters].ChannelCount && !Core.Instances[parameters].irc.ChannelsJoined)
                                 {
                                     curr++;
                                     Thread.Sleep(6000);
                                 }
-                                if (!core.Instances[parameters].irc.ChannelsJoined)
+                                if (!Core.Instances[parameters].irc.ChannelsJoined)
                                 {
                                     Writer.WriteLine("Failed to rejoin all channels in time");
                                     Writer.Flush();
@@ -259,15 +259,15 @@ namespace wmib
                                 break;
                             }
                             string to = parameters.Substring(0, parameters.IndexOf(" "));
-                            if (core.Instances.ContainsKey(to))
+                            if (Core.Instances.ContainsKey(to))
                             {
-                                if (!core.Instances[to].irc.IsConnected)
+                                if (!Core.Instances[to].irc.IsConnected)
                                 {
                                     Writer.WriteLine("Refusing to send data using instance which is not connected: " + to);
                                     Writer.Flush();
                                     break;
                                 }
-                                core.Instances[to].irc.SendData(parameters.Substring(parameters.IndexOf(" ") + 1));
+                                Core.Instances[to].irc.SendData(parameters.Substring(parameters.IndexOf(" ") + 1));
                                 break;
                             }
                             Writer.WriteLine("I have no such instance dude");
@@ -282,7 +282,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail);
             }
 			DecreaseConnections();
         }
@@ -291,10 +291,11 @@ namespace wmib
         {
             try
             {
-                System.Net.Sockets.TcpListener server = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Any, config.SystemPort);
+                System.Net.Sockets.TcpListener server = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Any,
+				                                                         Configuration.Network.SystemPort);
                 server.Start();
 				Online = true;
-                Syslog.WriteNow("Network console is online on port: " + config.SystemPort.ToString());
+                Syslog.WriteNow("Network console is online on port: " + Configuration.Network.SystemPort.ToString());
                 while (Running)
                 {
                     System.Net.Sockets.TcpClient connection = server.AcceptTcpClient();
@@ -307,7 +308,7 @@ namespace wmib
             {
 				Online = false;
 				Syslog.WriteNow("Network console is down", true);
-                core.handleException(fail);
+                Core.HandleException(fail);
             }
         }
     }

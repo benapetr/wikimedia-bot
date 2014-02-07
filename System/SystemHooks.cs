@@ -4,7 +4,7 @@ namespace wmib
 {
 	public class SystemHooks
 	{
-		public static void IrcReloadChannelConf(config.channel Channel)
+		public static void IrcReloadChannelConf(Channel Channel)
 		{
 			lock(Module.module)
 			{
@@ -19,13 +19,13 @@ namespace wmib
 					} catch (Exception fail)
 					{
 						Syslog.Log("Crash on Hook_Reload in " + xx.Name);
-						core.handleException(fail);
+						Core.HandleException(fail);
 					}
 				}
 			}
 		}
 
-		public static void IrcKick(config.channel Channel, User Source, User Target)
+		public static void IrcKick(Channel Channel, User Source, User Target)
 		{
 			lock(Module.module)
 			{
@@ -41,7 +41,7 @@ namespace wmib
 					} catch (Exception fail)
 					{
 						Syslog.Log("MODULE: exception at Hook_Kick in " + module.Name, true);
-						core.handleException(fail);
+						Core.HandleException(fail);
 					}
 				}
 			}

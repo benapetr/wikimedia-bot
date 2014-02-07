@@ -30,7 +30,7 @@ namespace wmib
         }
     }
 
-    public class RegularModule : Module
+    public class RequestsExtension : Module
     {
         public static List<RequestLabs> Shell = new List<RequestLabs>();
         public static List<RequestLabs> Tools = new List<RequestLabs>();
@@ -52,8 +52,6 @@ namespace wmib
             return null;
         }
 
-        
-
         public RequestLabs getUser(string user, List<RequestLabs> list)
         {
             foreach (RequestLabs r in list)
@@ -70,7 +68,7 @@ namespace wmib
         {
             Name = "Requests";
             start = true;
-            Version = "1.10.0";
+            Version = "1.10.2";
             return true;
         }
 
