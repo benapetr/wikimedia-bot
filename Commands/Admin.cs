@@ -34,12 +34,12 @@ namespace wmib
                 {
                     chan.LoadConfig();
 					SystemHooks.IrcReloadChannelConf(chan);
-                    Core.irc._SlowQueue.DeliverMessage(messages.get("Config", chan.Language), chan);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("Config", chan.Language), chan);
                     return;
                 }
                 if (!chan.SuppressWarnings)
                 {
-                    Core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan);
                 }
                 return;
             }
@@ -48,12 +48,12 @@ namespace wmib
                 if (chan.Users.IsApproved(invoker, "flushcache"))
                 {
                     Core.irc.RestartIRCMessageDelivery();
-                    chan.PrimaryInstance.irc.Message(messages.get("MessageQueueWasReloaded", chan.Language), chan.Name);
+                    chan.PrimaryInstance.irc.Message(messages.Localize("MessageQueueWasReloaded", chan.Language), chan.Name);
                     return;
                 }
                 if (!chan.SuppressWarnings)
                 {
-                    Core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan,
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan,
 					                              IRC.priority.low);
                 }
                 return;
@@ -61,7 +61,7 @@ namespace wmib
 
             if (message == Configuration.System.CommandPrefix + "info")
             {
-                Core.irc._SlowQueue.DeliverMessage(Configuration.WebPages.WebpageURL + Configuration.Paths.DumpDir
+                Core.irc.Queue.DeliverMessage(Configuration.WebPages.WebpageURL + Configuration.Paths.DumpDir
 				                              + "/" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm", chan);
                 return;
             }
@@ -74,7 +74,7 @@ namespace wmib
                     Channel _Channel = Core.GetChannel(channel);
                     if (_Channel == null)
                     {
-                        Core.irc._SlowQueue.DeliverMessage(messages.get("UnknownChan", chan.Language), chan,
+                        Core.irc.Queue.DeliverMessage(messages.Localize("UnknownChan", chan.Language), chan,
 						                              IRC.priority.low);
                         return;
                     }
@@ -82,7 +82,7 @@ namespace wmib
 					                 + "part", chan.Name);
                     return;
                 }
-                Core.irc._SlowQueue.DeliverMessage(messages.get("Responses-PartFail", chan.Language), chan,
+                Core.irc.Queue.DeliverMessage(messages.Localize("Responses-PartFail", chan.Language), chan,
 				                              IRC.priority.low);
                 return;
             }
@@ -95,7 +95,7 @@ namespace wmib
                     Channel _Channel = Core.GetChannel(channel);
                     if (_Channel == null)
                     {
-                        Core.irc._SlowQueue.DeliverMessage(messages.get("UnknownChan", chan.Language), chan,
+                        Core.irc.Queue.DeliverMessage(messages.Localize("UnknownChan", chan.Language), chan,
 						                              IRC.priority.low);
                         return;
                     }
@@ -103,7 +103,7 @@ namespace wmib
 					                 + "drop", chan.Name);
                     return;
                 }
-                Core.irc._SlowQueue.DeliverMessage(messages.get("Responses-PartFail", chan.Language), chan,
+                Core.irc.Queue.DeliverMessage(messages.Localize("Responses-PartFail", chan.Language), chan,
 				                              IRC.priority.low);
                 return;
             }
@@ -119,25 +119,25 @@ namespace wmib
                     }
                     if (parameter != "")
                     {
-                        if (messages.exist(parameter))
+                        if (messages.Exists(parameter))
                         {
                             chan.Language = parameter;
-                            Core.irc._SlowQueue.DeliverMessage(messages.get("Language", chan.Language), chan);
+                            Core.irc.Queue.DeliverMessage(messages.Localize("Language", chan.Language), chan);
                             chan.SaveConfig();
                             return;
                         }
                         if (!chan.SuppressWarnings)
                         {
-                            Core.irc._SlowQueue.DeliverMessage(messages.get("InvalidCode", chan.Language), chan);
+                            Core.irc.Queue.DeliverMessage(messages.Localize("InvalidCode", chan.Language), chan);
                         }
                         return;
                     }
-                    Core.irc._SlowQueue.DeliverMessage(messages.get("LanguageInfo", chan.Language), chan);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("LanguageInfo", chan.Language), chan);
                     return;
                 }
                 if (!chan.SuppressWarnings)
                 {
-                    Core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan,
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan,
 					                              IRC.priority.low);
                 }
                 return;
@@ -155,7 +155,7 @@ namespace wmib
                     Core.ShowHelp(parameter, chan);
                     return;
                 }
-                Core.irc._SlowQueue.DeliverMessage("I am running http://meta.wikimedia.org/wiki/WM-Bot version "
+                Core.irc.Queue.DeliverMessage("I am running http://meta.wikimedia.org/wiki/WM-Bot version "
 				                              + Configuration.Version + " my source code is licensed "
 				                              + "under GPL and located at https://github.com/benapetr/wikimedia-bot "
 				                              + "I will be very happy if you fix my bugs or implement new features",
@@ -169,18 +169,18 @@ namespace wmib
                 {
                     if (!chan.Suppress)
                     {
-                        Core.irc._SlowQueue.DeliverMessage(messages.get("Silence1", chan.Language), chan);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("Silence1", chan.Language), chan);
                         return;
                     }
                     chan.Suppress = false;
-                    Core.irc._SlowQueue.DeliverMessage(messages.get("Silence2", chan.Language), chan);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("Silence2", chan.Language), chan);
                     chan.SaveConfig();
                     Configuration.Save();
                     return;
                 }
                 if (!chan.SuppressWarnings)
                 {
-                    Core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, IRC.priority.low);
                 }
                 return;
             }
@@ -194,14 +194,14 @@ namespace wmib
                         //Message("Channel had already quiet mode disabled", chan.name);
                         return;
                     }
-                    chan.PrimaryInstance.irc.Message(messages.get("SilenceBegin", chan.Language), chan.Name);
+                    chan.PrimaryInstance.irc.Message(messages.Localize("SilenceBegin", chan.Language), chan.Name);
                     chan.Suppress = true;
                     chan.SaveConfig();
                     return;
                 }
                 if (!chan.SuppressWarnings)
                 {
-                    Core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, IRC.priority.low);
                 }
                 return;
             }
@@ -211,10 +211,10 @@ namespace wmib
                 SystemUser current = chan.Users.GetUser(user + "!@" + host);
                 if (current.Role == "null")
                 {
-                    Core.irc._SlowQueue.DeliverMessage(messages.get("Unknown", chan.Language), chan);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("Unknown", chan.Language), chan);
                     return;
                 }
-                Core.irc._SlowQueue.DeliverMessage(messages.get("usr1", chan.Language, new List<string> { current.Role, current.Name }), chan);
+                Core.irc.Queue.DeliverMessage(messages.Localize("usr1", chan.Language, new List<string> { current.Role, current.Name }), chan);
                 return;
             }
 
@@ -236,7 +236,7 @@ namespace wmib
                     message = message.Substring(".instance ".Length);
                     if (!message.Contains(" "))
                     {
-                        Core.irc._SlowQueue.DeliverMessage("This command need 2 parameters", chan);
+                        Core.irc.Queue.DeliverMessage("This command need 2 parameters", chan);
                         return;
                     }
                     channel = message.Substring(message.IndexOf(" ") + 1);
@@ -244,7 +244,7 @@ namespace wmib
                     Channel ch = Core.GetChannel(channel);
                     if (ch == null)
                     {
-                        Core.irc._SlowQueue.DeliverMessage("This channel I never heard of :'(", chan);
+                        Core.irc.Queue.DeliverMessage("This channel I never heard of :'(", chan);
                         return;
                     }
 
@@ -254,7 +254,7 @@ namespace wmib
                     {
                         if (!Core.Instances.ContainsKey(instance))
                         {
-                            Core.irc._SlowQueue.DeliverMessage("This instance I never heard of :'(", chan);
+                            Core.irc.Queue.DeliverMessage("This instance I never heard of :'(", chan);
                             return;
                         }
                         _instance = Core.Instances[instance];
@@ -262,7 +262,7 @@ namespace wmib
 
                     if (_instance == ch.PrimaryInstance)
                     {
-                        Core.irc._SlowQueue.DeliverMessage("This channel is already in this instance", chan);
+                        Core.irc.Queue.DeliverMessage("This channel is already in this instance", chan);
                         return;
                     }
 
@@ -272,12 +272,12 @@ namespace wmib
                     ch.DefaultInstance = ch.PrimaryInstance.Nick;
                     ch.SaveConfig();
 
-                    chan.PrimaryInstance.irc._SlowQueue.DeliverMessage("Changed default instance of " + channel + " to " + instance, chan);
+                    chan.PrimaryInstance.irc.Queue.DeliverMessage("Changed default instance of " + channel + " to " + instance, chan);
                     return;
                 }
                 if (!chan.SuppressWarnings)
                 {
-                    Core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, IRC.priority.low);
                 }
             }
 
@@ -286,12 +286,12 @@ namespace wmib
                 if (chan.Users.IsApproved(invoker, "root"))
                 {
                     Configuration.Network.Logging = false;
-                    Core.irc._SlowQueue.DeliverMessage("Logging stopped", chan);
+                    Core.irc.Queue.DeliverMessage("Logging stopped", chan);
                     return;
                 }
                 if (!chan.SuppressWarnings)
                 {
-                    Core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, IRC.priority.low);
                 }
             }
 
@@ -300,12 +300,12 @@ namespace wmib
                 if (chan.Users.IsApproved(invoker, "root"))
                 {
                     Configuration.Network.Logging = true;
-                    Core.irc._SlowQueue.DeliverMessage("Logging traf", chan.Name);
+                    Core.irc.Queue.DeliverMessage("Logging traf", chan.Name);
                     return;
                 }
                 if (!chan.SuppressWarnings)
                 {
-                    Core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, IRC.priority.low);
                 }
             }
 
@@ -320,13 +320,13 @@ namespace wmib
                 }
                 if (!chan.SuppressWarnings)
                 {
-                    Core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
                 }
             }
 
             if (message == Configuration.System.CommandPrefix + "channellist")
             {
-                Core.irc._SlowQueue.DeliverMessage(messages.get("Responses-List", chan.Language, new List<string>
+                Core.irc.Queue.DeliverMessage(messages.Localize("Responses-List", chan.Language, new List<string>
 				                                        { Configuration.Channels.Count.ToString() }), chan);
                 return;
             }
@@ -351,12 +351,12 @@ namespace wmib
                                 if (bool.TryParse(value, out _temp_a))
                                 {
                                     chan.IgnoreUnknown = _temp_a;
-                                    Core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language,
+                                    Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language,
 									                                           new List<string> { value, name }), chan);
                                     chan.SaveConfig();
                                     return;
                                 }
-                                Core.irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string>
+                                Core.irc.Queue.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string>
 							                                           { name, value }), chan);
                                 return;
                             case "respond-wait":
@@ -366,37 +366,37 @@ namespace wmib
                                     if (_temp_b > 1 && _temp_b < 364000)
                                     {
                                         chan.RespondWait = _temp_b;
-                                        Core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string>
+                                        Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string>
 										                                           { value, name }), chan);
                                         chan.SaveConfig();
                                         return;
                                     }
                                 }
-                                Core.irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string>
+                                Core.irc.Queue.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string>
 							                                           { name, value }), chan);
                                 return;
                             case "respond-message":
                                 if (bool.TryParse(value, out _temp_a))
                                 {
                                     chan.RespondMessage = _temp_a;
-                                    Core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string>
+                                    Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string>
 									                                           { value, name }), chan);
                                     chan.SaveConfig();
                                     return;
                                 }
-                                Core.irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string>
+                                Core.irc.Queue.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string>
 							                                           { name, value }), chan);
                                 return;
                             case "suppress-warnings":
                                 if (bool.TryParse(value, out _temp_a))
                                 {
                                     chan.SuppressWarnings = _temp_a;
-                                    Core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string>
+                                    Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string>
 									                                           { value, name }), chan);
                                     chan.SaveConfig();
                                     return;
                                 }
-                                Core.irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string>
+                                Core.irc.Queue.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string>
 							                                           { name, value }), chan);
                                 return;
                         }
@@ -424,7 +424,7 @@ namespace wmib
                         }
                         if (!chan.SuppressWarnings && !exist)
                         {
-                            Core.irc._SlowQueue.DeliverMessage(messages.get("configure-wrong", chan.Language), chan);
+                            Core.irc.Queue.DeliverMessage(messages.Localize("configure-wrong", chan.Language), chan);
                         }
                         return;
                     }
@@ -433,15 +433,15 @@ namespace wmib
                         switch (text)
                         {
                             case "ignore-unknown":
-                                Core.irc._SlowQueue.DeliverMessage(messages.get("Responses-Conf", chan.Language, new List<string>
+                                Core.irc.Queue.DeliverMessage(messages.Localize("Responses-Conf", chan.Language, new List<string>
 							                                           { text, chan.IgnoreUnknown.ToString() } ), chan);
                                 return;
                             case "respond-message":
-                                Core.irc._SlowQueue.DeliverMessage(messages.get("Responses-Conf", chan.Language, new List<string>
+                                Core.irc.Queue.DeliverMessage(messages.Localize("Responses-Conf", chan.Language, new List<string>
 							                                           { text, chan.RespondMessage.ToString() }), chan);
                                 return;
                             case "suppress-warnings":
-                                Core.irc._SlowQueue.DeliverMessage(messages.get("Responses-Conf", chan.Language, new List<string>
+                                Core.irc.Queue.DeliverMessage(messages.Localize("Responses-Conf", chan.Language, new List<string>
 							                                           { text, chan.SuppressWarnings.ToString() } ), chan);
                                 return;
                         }
@@ -474,13 +474,13 @@ namespace wmib
                     }
                     if (!chan.SuppressWarnings)
                     {
-                        Core.irc._SlowQueue.DeliverMessage(messages.get("configure-wrong", chan.Language), chan);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("configure-wrong", chan.Language), chan);
                     }
                     return;
                 }
                 if (!chan.SuppressWarnings)
                 {
-                    Core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, IRC.priority.low);
                 }
                 return;
             }
@@ -495,7 +495,7 @@ namespace wmib
                         Module _m = ExtensionHandler.RetrieveModule(module);
                         if (_m != null)
                         {
-                            Core.irc._SlowQueue.DeliverMessage("This module was already loaded and you can't load one module twice,"
+                            Core.irc.Queue.DeliverMessage("This module was already loaded and you can't load one module twice,"
 							                              +" module will be reloaded now", chan, IRC.priority.high);
                             _m.Exit();
                         }
@@ -506,20 +506,20 @@ namespace wmib
                             {
                                 if (ExtensionHandler.LoadMod(module))
                                 {
-                                    Core.irc._SlowQueue.DeliverMessage("Loaded module " + module, chan, IRC.priority.high);
+                                    Core.irc.Queue.DeliverMessage("Loaded module " + module, chan, IRC.priority.high);
                                     return;
                                 }
-                                Core.irc._SlowQueue.DeliverMessage("Unable to load module " + module, chan, IRC.priority.high);
+                                Core.irc.Queue.DeliverMessage("Unable to load module " + module, chan, IRC.priority.high);
                                 return;
                             }
-                            Core.irc._SlowQueue.DeliverMessage("File not found " + module, chan, IRC.priority.high);
+                            Core.irc.Queue.DeliverMessage("File not found " + module, chan, IRC.priority.high);
                             return;
                         }
 
-                        Core.irc._SlowQueue.DeliverMessage("Loaded module " + module, chan, IRC.priority.high);
+                        Core.irc.Queue.DeliverMessage("Loaded module " + module, chan, IRC.priority.high);
                         return;
                     }
-                    Core.irc._SlowQueue.DeliverMessage("This module is not currently loaded in core", chan, IRC.priority.high);
+                    Core.irc.Queue.DeliverMessage("This module is not currently loaded in core", chan, IRC.priority.high);
                     return;
 
                 }
@@ -533,7 +533,7 @@ namespace wmib
                     {
                         Configuration.System.SelectedVerbosity--;
                     }
-                    Core.irc._SlowQueue.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity.ToString(), 
+                    Core.irc.Queue.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity.ToString(), 
 					                              chan, IRC.priority.high);
                 }
             }
@@ -543,7 +543,7 @@ namespace wmib
                 if (chan.Users.IsApproved(invoker, "root"))
                 {
                     Configuration.System.SelectedVerbosity++;
-                    Core.irc._SlowQueue.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity.ToString(),
+                    Core.irc.Queue.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity.ToString(),
 					                              chan, IRC.priority.high);
                 }
             }
@@ -556,11 +556,11 @@ namespace wmib
                     Module _m = ExtensionHandler.RetrieveModule(module);
                     if (_m == null)
                     {
-                        Core.irc._SlowQueue.DeliverMessage("This module is not currently loaded in core", chan, IRC.priority.high);
+                        Core.irc.Queue.DeliverMessage("This module is not currently loaded in core", chan, IRC.priority.high);
                         return;
                     }
                     _m.Exit();
-                    Core.irc._SlowQueue.DeliverMessage("Unloaded module " + module, chan, IRC.priority.high);
+                    Core.irc.Queue.DeliverMessage("Unloaded module " + module, chan, IRC.priority.high);
                 }
             }
 
@@ -575,7 +575,7 @@ namespace wmib
 
             if (message == Configuration.System.CommandPrefix + "commands")
             {
-                Core.irc._SlowQueue.DeliverMessage("Commands: there is too many commands to display on one line,"
+                Core.irc.Queue.DeliverMessage("Commands: there is too many commands to display on one line,"
 				                              + " see http://meta.wikimedia.org/wiki/wm-bot for a list of"
 				                              + " commands and help", chan);
             }

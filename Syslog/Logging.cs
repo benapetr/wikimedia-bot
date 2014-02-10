@@ -1,4 +1,4 @@
-﻿//This program is free software: you can redistribute it and/or modify
+//This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
 //the Free Software Foundation, either version 3 of the License, or
 //(at your option) any later version.
@@ -262,6 +262,23 @@ namespace wmib
             Console.WriteLine(": " + Message);
         }
 
+		private static void Flush()
+		{
+			if (messages.Count > 0)
+            {
+				List<Message> priv = new List<Message>();
+				lock(messages)
+				{
+					priv.AddRange(messages);
+					messages.Clear();
+				}
+				foreach (Message message in priv)
+				{
+					Display(message.Time, message.Text, message._Type);
+				}
+			}
+		}
+
         /// <summary>
         /// Execute thread
         /// </summary>
@@ -269,28 +286,18 @@ namespace wmib
         {
             try
             {
-                while (true)
+                while (Core.IsRunning)
                 {
-                    if (messages.Count > 0)
-                    {
-                        List<Message> priv = new List<Message>();
-                        lock (messages)
-                        {
-                            priv.AddRange(messages);
-                            messages.Clear();
-                        }
-                        foreach (Message message in priv)
-                        {
-                            Display(message.Time, message.Text, message._Type);
-                        }
-                    }
+					Flush();
                     Thread.Sleep(100);
                 }
             }
             catch (ThreadAbortException)
             {
+				Flush();
                 return;
             }
+			Flush();
         }
     }
 }

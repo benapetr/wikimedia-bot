@@ -210,14 +210,14 @@ namespace wmib
             if (!misc.IsValidRegex(user))
             {
                 Syslog.Log("Unable to create user " + user + " because the regex is invalid", true);
-                Core.irc._SlowQueue.DeliverMessage("Unable to add user because this regex is not valid", ChannelName);
+                Core.irc.Queue.DeliverMessage("Unable to add user because this regex is not valid", ChannelName);
                 return false;
             }
             foreach (SystemUser u in Users)
             {
                 if (u.Name == user)
                 {
-                    Core.irc._SlowQueue.DeliverMessage("Unable to add user because this user is already in a list", ChannelName);
+                    Core.irc.Queue.DeliverMessage("Unable to add user because this user is already in a list", ChannelName);
                     return false;
                 }
             }
@@ -237,7 +237,7 @@ namespace wmib
             Channel channel = Core.GetChannel(ChannelName);
             if (channel == null)
             {
-                Core.irc._SlowQueue.DeliverMessage("Error: unable to get pointer of current channel", ChannelName);
+                Core.irc.Queue.DeliverMessage("Error: unable to get pointer of current channel", ChannelName);
                 return false;
             }
             foreach (SystemUser u in Users)
@@ -246,21 +246,21 @@ namespace wmib
                 {
                     if (GetLevel(u.Role) > GetLevel(origin.Role))
                     {
-                        Core.irc._SlowQueue.DeliverMessage(messages.get("Trust1", channel.Language), ChannelName);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("Trust1", channel.Language), ChannelName);
                         return true;
                     }
                     if (u.Name == origin.Name)
                     {
-                        Core.irc._SlowQueue.DeliverMessage(messages.get("Trust2", channel.Language), ChannelName);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("Trust2", channel.Language), ChannelName);
                         return true;
                     }
                     Users.Remove(u);
                     Save();
-                    Core.irc._SlowQueue.DeliverMessage(messages.get("Trust3", channel.Language), ChannelName);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("Trust3", channel.Language), ChannelName);
                     return true;
                 }
             }
-            Core.irc._SlowQueue.DeliverMessage(messages.get("Trust4", channel.Language), ChannelName);
+            Core.irc.Queue.DeliverMessage(messages.Localize("Trust4", channel.Language), ChannelName);
             return true;
         }
 
@@ -334,7 +334,7 @@ namespace wmib
             Channel Channel = Core.GetChannel(ChannelName);
             if (Channel == null)
             {
-                Core.irc._SlowQueue.DeliverMessage("Error: unable to get pointer of current channel", ChannelName);
+                Core.irc.Queue.DeliverMessage("Error: unable to get pointer of current channel", ChannelName);
                 return;
             }
             string users_ok = "";
@@ -345,7 +345,7 @@ namespace wmib
                     users_ok += " " + b.Name + " (2" + b.Role + ")" + ",";
                 }
             }
-            Core.irc._SlowQueue.DeliverMessage(messages.get("TrustedUserList", Channel.Language) + users_ok, ChannelName);
+            Core.irc.Queue.DeliverMessage(messages.Localize("TrustedUserList", Channel.Language) + users_ok, ChannelName);
         }
 
         /// <summary>

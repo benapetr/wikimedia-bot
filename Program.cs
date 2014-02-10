@@ -141,6 +141,7 @@ namespace wmib
                 Terminal.Init();
                 Core.Help.CreateHelp();
                 Core.WriterThread = new System.Threading.Thread(StorageWriter.Exec);
+				Core.WriterThread.Name = "Writer";
                 Core.WriterThread.Start();
                 if (Core.DatabaseServerIsAvailable)
                 {

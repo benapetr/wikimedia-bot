@@ -323,7 +323,7 @@ namespace wmib
 			Dictionary<string, string> Data = File2Dict();
 			if (Data.ContainsKey("username"))
 			{
-				Configuration.IRC.NickName = Data["username"];
+				Configuration.IRC.Username = Data["username"];
 			}
 			if (Data.ContainsKey("network"))
 			{
@@ -331,6 +331,7 @@ namespace wmib
 			}
 			if (Data.ContainsKey("nick"))
 			{
+				Configuration.IRC.NickName = Data["nick"];
 				Configuration.IRC.LoginNick = Data["nick"];
 			}
 			if (Data.ContainsKey("debug"))

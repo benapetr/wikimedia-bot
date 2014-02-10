@@ -67,6 +67,17 @@ namespace wmib
 		/// Target's of each instance
 		/// </summary>
 		public static Dictionary<string, Instance> TargetBuffer = new Dictionary<string, Instance>();
+		public static bool IsRunning
+		{
+			get
+			{
+				if (_Status == Status.ShuttingDown)
+				{
+					return false;
+				}
+				return true;
+			}
+		}
 
 		/// <summary>
 		/// Store a traffic log to a file
@@ -192,7 +203,7 @@ namespace wmib
 			{
 				if (!string.IsNullOrEmpty(Configuration.System.DebugChan))
 				{
-					irc._SlowQueue.DeliverMessage("DEBUG Exception in module " + module + ": " 
+					irc.Queue.DeliverMessage("DEBUG Exception in module " + module + ": " 
 					                              + ex.Message + " last input was "
 					                              + LastText,
 					                              Configuration.System.DebugChan);
@@ -215,7 +226,7 @@ namespace wmib
 			{
 				if (!string.IsNullOrEmpty(Configuration.System.DebugChan))
 				{
-					irc._SlowQueue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText,
+					irc.Queue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText,
 					                              Configuration.System.DebugChan);
 				}
 				Syslog.WriteNow("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace +
@@ -492,7 +503,7 @@ namespace wmib
 				}
 				_Status = Status.ShuttingDown;
 				irc.Disconnect();
-				irc._SlowQueue.Exit();
+				irc.Queue.Exit();
 				StorageWriter.IsRunning = false;
 				Thread modules = new Thread(Terminate) { Name = "KERNEL: Core helper shutdown thread" };
 				modules.Start();
@@ -592,7 +603,7 @@ namespace wmib
 						System.DateTime time = curr.TimeOfLastMsg;
 						if (System.DateTime.Now >= time.AddSeconds(curr.RespondWait))
 						{
-							irc._SlowQueue.DeliverMessage(messages.get("hi", curr.Language, new List<string> { nick }), curr.Name);
+							irc.Queue.DeliverMessage(messages.Localize("hi", curr.Language, new List<string> { nick }), curr.Name);
 							curr.TimeOfLastMsg = System.DateTime.Now;
 						}
 					}
@@ -732,7 +743,7 @@ namespace wmib
 
 		private static void showInfo(string name, string info, string channel)
 		{
-			irc._SlowQueue.DeliverMessage("Info for " + name + ": " + info, channel);
+			irc.Queue.DeliverMessage("Info for " + name + ": " + info, channel);
 		}
 
 		public static bool ShowHelp(string parameter, Channel channel)
@@ -747,14 +758,14 @@ namespace wmib
 				{
 					if (HelpData[parameter.ToLower()] == null)
 					{
-						showInfo(parameter, messages.get(parameter.ToLower(), channel.Language), channel.Name);
+						showInfo(parameter, messages.Localize(parameter.ToLower(), channel.Language), channel.Name);
 						return true;
 					}
 					showInfo(parameter, HelpData[parameter.ToLower()], channel.Name);
 					return true;
 				}
 			}
-			irc._SlowQueue.DeliverMessage("Unknown command type @commands for a list of all commands I know", channel.Name);
+			irc.Queue.DeliverMessage("Unknown command type @commands for a list of all commands I know", channel.Name);
 			return false;
 		}
 

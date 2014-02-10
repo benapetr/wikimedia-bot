@@ -64,7 +64,7 @@ namespace wmib
             data.Add("ko", new container("ko"));
         }
 
-        private static string parse(string text, string name)
+        private static string Parse(string text, string name)
         {
             if (text.Contains(name + "="))
             {
@@ -80,7 +80,7 @@ namespace wmib
         /// </summary>
         /// <param name="lang"></param>
         /// <returns></returns>
-        public static bool exist(string lang)
+        public static bool Exists(string lang)
         {
             if (!data.ContainsKey(lang))
             {
@@ -112,7 +112,7 @@ namespace wmib
         /// <param name="language">Language</param>
         /// <param name="va"></param>
         /// <returns></returns>
-        public static string get(string item, string language = null, List<string> va = null)
+        public static string Localize(string item, string language = null, List<string> va = null)
         {
             if (language == null)
             {
@@ -147,12 +147,12 @@ namespace wmib
                 default:
                     return "invalid language: " + language;
             }
-            string value = parse(text, item);
+            string value = Parse(text, item);
             if (string.IsNullOrEmpty(value))
             {
                 if (Language != language)
                 {
-                    return get(item, null, va);
+                    return Localize(item, null, va);
                 }
                 return "[" + item + "]";
             }

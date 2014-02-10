@@ -38,31 +38,31 @@ namespace wmib
                     {
                         if (rights_info.Length < 3)
                         {
-                            Core.irc._SlowQueue.DeliverMessage(messages.get("Trust1", channel.Language), channel);
+                            Core.irc.Queue.DeliverMessage(messages.Localize("Trust1", channel.Language), channel);
                             return 0;
                         }
                         if (!(rights_info[2] == "admin" || rights_info[2] == "trusted"))
                         {
-                            Core.irc._SlowQueue.DeliverMessage(messages.get("Unknown1", channel.Language), channel);
+                            Core.irc.Queue.DeliverMessage(messages.Localize("Unknown1", channel.Language), channel);
                             return 2;
                         }
                         if (rights_info[2] == "admin")
                         {
                             if (!channel.Users.IsApproved(user, host, "admin"))
                             {
-                                Core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel);
+                                Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
                                 return 2;
                             }
                         }
                         if (channel.Users.AddUser(rights_info[2], rights_info[1]))
                         {
-                            Core.irc._SlowQueue.DeliverMessage(messages.get("UserSc", channel.Language) + rights_info[1], channel);
+                            Core.irc.Queue.DeliverMessage(messages.Localize("UserSc", channel.Language) + rights_info[1], channel);
                             return 0;
                         }
                     }
                     else
                     {
-                        Core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", channel.Language), channel.Name);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("Authorization", channel.Language), channel.Name);
                         return 0;
                     }
                 }
@@ -81,10 +81,10 @@ namespace wmib
                             channel.Users.DeleteUser(channel.Users.GetUser(user + "!@" + host), rights_info[1]);
                             return 0;
                         }
-                        Core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", channel.Language), channel);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("Authorization", channel.Language), channel);
                         return 0;
                     }
-                    Core.irc._SlowQueue.DeliverMessage(messages.get("InvalidUser", channel.Language), channel);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("InvalidUser", channel.Language), channel);
                 }
             }
             catch (Exception b)

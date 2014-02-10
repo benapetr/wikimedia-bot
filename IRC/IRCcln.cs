@@ -24,303 +24,6 @@ namespace wmib
     public partial class IRC
     {
         /// <summary>
-        /// Queue of all messages that should be delivered to some network
-        /// </summary>
-        [Serializable()]
-        public class SlowQueue
-        {
-            /// <summary>
-            /// Message
-            /// </summary>
-            public class Message
-            {
-                /// <summary>
-                /// Priority
-                /// </summary>
-                public priority _Priority;
-                /// <summary>
-                /// Message itself
-                /// </summary>
-                public string message;
-                /// <summary>
-                /// Channel which the message should be delivered to
-                /// </summary>
-                public string channel;
-                /// <summary>
-                /// If this is true the message will be sent as raw command
-                /// </summary>
-                public bool command = false;
-            }
-
-            private bool running = true;
-            /// <summary>
-            /// List of messages in queue which needs to be processed
-            /// </summary>
-            public List<Message> messages = new List<Message>();
-            /// <summary>
-            /// List of new messages
-            /// </summary>
-            public List<Message> newmessages = new List<Message>();
-            [NonSerialized]
-            private IRC Parent;
-
-            /// <summary>
-            /// Creates new queue
-            /// </summary>
-            /// <param name="_parent">Parent object</param>
-            public SlowQueue(IRC _parent)
-            {
-                Parent = _parent;
-            }
-
-            /// <summary>
-            /// Deliver a message
-            /// </summary>
-            /// <param name="Message">Text</param>
-            /// <param name="Channel">Channel</param>
-            /// <param name="Pr">Priority</param>
-            public void DeliverMessage(string Message, string Channel, priority Pr = priority.normal)
-            {
-                // first of all we check if we are in correct instance
-                if (Channel.StartsWith("#"))
-                {
-                    Channel ch = Core.GetChannel(Channel);
-                    if (ch == null)
-                    {
-                        Syslog.Log("Not sending message to unknown channel: " + Channel);
-                        return;
-                    }
-                    // this is wrong instance so let's put this message to correct one
-                    if (ch.PrimaryInstance != Parent.ParentInstance)
-                    {
-                        ch.PrimaryInstance.irc._SlowQueue.DeliverMessage(Message, Channel, Pr);
-                        return;
-                    }
-                }
-                else
-                {
-                    lock (Core.TargetBuffer)
-                    {
-                        if (Core.TargetBuffer.ContainsKey(Channel))
-                        {
-                            if (Core.TargetBuffer[Channel] != Parent.ParentInstance)
-                            {
-                                Core.TargetBuffer[Channel].irc._SlowQueue.DeliverMessage(Message, Channel, Pr);
-                                return;
-                            }
-                        }
-                    }
-                }
-                Message text = new Message { _Priority = Pr, message = Message, channel = Channel };
-                lock (messages)
-                {
-                    messages.Add(text);
-                }
-            }
-
-            /// <summary>
-            /// Deliver me
-            /// </summary>
-            /// <param name="Message">Text</param>
-            /// <param name="Channel">Channel</param>
-            /// <param name="Pr">Priority</param>
-            public void DeliverAct(string Message, string Channel, priority Pr = priority.normal)
-            {
-                // first of all we check if we are in correct instance
-                if (Channel.StartsWith("#"))
-                {
-                    Channel ch = Core.GetChannel(Channel);
-                    if (ch == null)
-                    {
-                        Syslog.Log("Not sending message to unknown channel: " + Channel);
-                        return;
-                    }
-                    // this is wrong instance so let's put this message to correct one
-                    if (ch.PrimaryInstance != Parent.ParentInstance)
-                    {
-                        ch.PrimaryInstance.irc._SlowQueue.DeliverAct(Message, Channel, Pr);
-                        return;
-                    }
-                }
-                Message text = new Message { _Priority = Pr, message = Message, channel = Channel };
-                lock (messages)
-                {
-                    messages.Add(text);
-                }
-            }
-
-            /// <summary>
-            /// Send a command to server
-            /// </summary>
-            /// <param name="Data"></param>
-            /// <param name="Priority"></param>
-            public void Send(string Data, priority Priority = priority.high)
-            {
-                Message text = new Message { _Priority = Priority, channel = null, message = Data, command = true };
-                lock (messages)
-                {
-                    messages.Add(text);
-                }
-            }
-
-            /// <summary>
-            /// Deliver a message
-            /// </summary>
-            /// <param name="Message">Text</param>
-            /// <param name="User">User</param>
-            /// <param name="Pr">Priority</param>
-            public void DeliverMessage(string Message, User User, priority Pr = priority.low)
-            {
-                Message text = new Message { _Priority = Pr, message = Message, channel = User.Nick };
-                lock (messages)
-                {
-                    messages.Add(text);
-                }
-            }
-
-            /// <summary>
-            /// Deliver a message
-            /// </summary>
-            /// <param name="Message">Text</param>
-            /// <param name="Channel">Channel</param>
-            /// <param name="Pr">Priority</param>
-            public void DeliverMessage(string Message, Channel Channel, priority Pr = priority.normal)
-            {
-                if (Channel == null)
-                {
-                    Syslog.Log("Not sending message to unknown channel");
-                    return;
-                }
-                // this is wrong instance so let's put this message to correct one
-                if (Channel.PrimaryInstance != Parent.ParentInstance)
-                {
-                    Channel.PrimaryInstance.irc._SlowQueue.DeliverMessage(Message, Channel, Pr);
-                    return;
-                }
-                Message text = new Message { _Priority = Pr, message = Message, channel = Channel.Name };
-                lock (messages)
-                {
-                    messages.Add(text);
-                }
-            }
-
-            /// <summary>
-            /// Disable queue
-            /// </summary>
-            public void Exit()
-            {
-                running = false;
-                Syslog.Log("Turning off the message queue of instance " + Parent.ParentInstance.Nick + " with " + (newmessages.Count + messages.Count).ToString() + " untransfered data");
-                lock (messages)
-                {
-                    messages.Clear();
-                }
-                lock (newmessages)
-                {
-                    newmessages.Clear();
-                }
-            }
-
-            private void Transfer(Message text)
-            {
-                if (text.command)
-                {
-                    Parent.SendData(text.message);
-                    return;
-                }
-                Parent.Message(text.message, text.channel);
-            }
-
-            /// <summary>
-            /// Internal function
-            /// </summary>
-            public void Run()
-            {
-                while (true)
-                {
-                    try
-                    {
-                        if (!running)
-                        {
-                            return;
-                        }
-                        if (messages.Count > 0)
-                        {
-                            lock (messages)
-                            {
-                                newmessages.AddRange(messages);
-                                messages.Clear();
-                            }
-                        }
-                        if (newmessages.Count > 0)
-                        {
-                            List<Message> Processed = new List<Message>();
-                            priority highest = priority.low;
-                            lock (newmessages)
-                            {
-                                while (newmessages.Count > 0)
-                                {
-                                    // we need to get all messages that have been scheduled to be send
-                                    lock (messages)
-                                    {
-                                        if (messages.Count > 0)
-                                        {
-                                            newmessages.AddRange(messages);
-                                            messages.Clear();
-                                        }
-                                    }
-                                    highest = priority.low;
-                                    // we need to check the priority we need to handle first
-                                    foreach (Message message in newmessages)
-                                    {
-                                        if (message._Priority > highest)
-                                        {
-                                            highest = message._Priority;
-                                            if (message._Priority == priority.high)
-                                            {
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    // send highest priority first
-                                    foreach (Message message in newmessages)
-                                    {
-                                        if (message._Priority >= highest)
-                                        {
-                                            Processed.Add(message);
-                                            Transfer(message);
-                                            System.Threading.Thread.Sleep(Configuration.IRC.Interval);
-                                            if (highest != priority.high)
-                                            {
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    foreach (Message message in Processed)
-                                    {
-                                        if (newmessages.Contains(message))
-                                        {
-                                            newmessages.Remove(message);
-                                        }
-                                    }
-                                }
-                            }
-                            lock (newmessages)
-                            {
-                                newmessages.Clear();
-                            }
-                        }
-                    }
-                    catch (ThreadAbortException)
-                    {
-                        return;
-                    }
-                    System.Threading.Thread.Sleep(200);
-                }
-            }
-        }
-
-        /// <summary>
         /// Instance that owns this handler
         /// </summary>
         public Instance ParentInstance = null;
@@ -384,7 +87,7 @@ namespace wmib
         /// <summary>
         /// Queue of all messages that should be delivered to network
         /// </summary>
-        public SlowQueue _SlowQueue = null;
+        public MessageQueue Queue = null;
         private bool connected;
         /// <summary>
         /// If network is connected
@@ -438,7 +141,7 @@ namespace wmib
         {
             Server = _server;
             Password = "";
-            _SlowQueue = new SlowQueue(this);
+            Queue = new MessageQueue(this);
             UserName = _username;
             NickName = _nick;
             Ident = _ident;
@@ -458,7 +161,7 @@ namespace wmib
                 Channel curr = Core.GetChannel(channel);
                 if (curr == null && channel.StartsWith("#"))
                 {
-                    Syslog.Log("Attempt to send a message to non existing channel: " + channel + " " + message, true);
+                    Syslog.WarningLog("Attempt to send a message to non existing channel: " + channel + " " + message);
                     return true;
                 }
                 if (curr != null && curr.Suppress)
@@ -518,9 +221,9 @@ namespace wmib
         public void RestartIRCMessageDelivery()
         {
             this._Queue.Abort();
-            this._SlowQueue.newmessages.Clear();
-            this._Queue = new System.Threading.Thread(new System.Threading.ThreadStart(_SlowQueue.Run));
-            this._SlowQueue.messages.Clear();
+            this.Queue.newmessages.Clear();
+            this._Queue = new System.Threading.Thread(new System.Threading.ThreadStart(Queue.Run));
+            this.Queue.Messages.Clear();
             this._Queue.Start();
         }
 
@@ -531,7 +234,7 @@ namespace wmib
         {
             try
             {
-                while (IsConnected)
+                while (IsConnected && Core.IsRunning)
                 {
                     List<string> channels = new List<string>();
                     // check if there is some channel which needs an update of user list
@@ -549,7 +252,7 @@ namespace wmib
                         {
                             Syslog.Log("requesting user list on " + ParentInstance.Nick + " for channel: " + xx);
                             // Send the request with low priority
-                            _SlowQueue.Send("WHO " + xx, priority.low);
+                            Queue.Send("WHO " + xx, priority.low);
                         }
                         // we give 10 seconds for each channel to send us a list
                         Thread.Sleep(10000 * channels.Count);
@@ -572,7 +275,7 @@ namespace wmib
         /// </summary>
         public void Ping()
         {
-            while (IsConnected)
+            while (IsConnected && Core.IsRunning)
             {
                 try
                 {
@@ -614,14 +317,14 @@ namespace wmib
             SendData("NICK " + NickName);
             IsWorking = true;
             Authenticate();
-            _Queue = new Thread(_SlowQueue.Run);
+            _Queue = new Thread(Queue.Run);
             foreach (Channel ch in ParentInstance.ChannelList)
             {
                 Thread.Sleep(2000);
                 this.Join(ch);
             }
-            _SlowQueue.newmessages.Clear();
-            _SlowQueue.messages.Clear();
+            Queue.newmessages.Clear();
+            Queue.Messages.Clear();
             ChannelThread.Abort();
             ChannelThread = new Thread(ChannelList);
             ChannelThread.Start();
@@ -724,7 +427,7 @@ namespace wmib
                     }
                 }
 
-                _Queue = new System.Threading.Thread(_SlowQueue.Run);
+                _Queue = new System.Threading.Thread(Queue.Run);
 
 
                 check_thread = new System.Threading.Thread(Ping);
@@ -748,11 +451,11 @@ namespace wmib
                 string channel = "";
                 const char delimiter = (char)001;
 
-                while (IsConnected)
+                while (IsConnected && Core.IsRunning)
                 {
                     try
                     {
-                        while ((!streamReader.EndOfStream || Backlog.Count > 0) && Core._Status == Core.Status.OK)
+                        while ((!streamReader.EndOfStream || Backlog.Count > 0) && Core.IsRunning)
                         {
                             string text;
                             if (Backlog.Count == 0)
@@ -902,7 +605,7 @@ namespace wmib
                                         }
                                         if (respond)
                                         {
-                                            _SlowQueue.DeliverMessage("Hi, I am robot, this command was not understood." +
+                                            Queue.DeliverMessage("Hi, I am robot, this command was not understood." +
 											                          " Please bear in mind that every message you send" +
 											                          " to me will be logged for debuging purposes. See" +
 											                          " documentation at http://meta.wikimedia.org/wiki" +

@@ -127,7 +127,7 @@ namespace wmib
                 Writer.WriteLine("Successfuly logged in to wm-bot, I have " + Connections.ToString() + " users logged in");
                 Writer.Flush();
 
-                while (connection.Connected && !Reader.EndOfStream)
+                while (connection.Connected && !Reader.EndOfStream && Core.IsRunning)
                 {
                     text = Reader.ReadLine();
                     string command = text;
@@ -296,7 +296,7 @@ namespace wmib
                 server.Start();
 				Online = true;
                 Syslog.WriteNow("Network console is online on port: " + Configuration.Network.SystemPort.ToString());
-                while (Running)
+                while (Running && Core.IsRunning)
                 {
                     System.Net.Sockets.TcpClient connection = server.AcceptTcpClient();
                     Thread client = new Thread(HandleClient);
