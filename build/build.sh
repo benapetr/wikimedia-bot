@@ -33,6 +33,9 @@ if [ ! -d bin/Debug/configuration ];then
     cp -r configuration bin/Debug/configuration
 fi
 
+cp *.dll bin/Release
+cp *.dll bin/Debug
+
 echo "Everything was built, you can start bot by typing"
 echo "this is terminal:"
 echo cd bin/Debug

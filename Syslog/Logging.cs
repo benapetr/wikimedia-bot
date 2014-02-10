@@ -222,35 +222,39 @@ namespace wmib
         /// <param name="Message"></param>
         /// <param name="Warning"></param>
         public static void Display(DateTime time, string Message, Syslog.Type MessageType)
-        {
-            if (Configuration.System.Colors)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-            }
-            if (MessageType == Syslog.Type.Warning)
-            {
-                if (Configuration.System.Colors)
-                {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                }
-                Console.Write("LOG (WARNING)");
-            } else if (MessageType == Syslog.Type.Error)
+		{
+			if (Configuration.System.Colors)
+			{
+				Console.ForegroundColor = ConsoleColor.Blue;
+			}
+			Console.Write("LOG ");
+			if (Configuration.System.Colors)
+			{
+				Console.ForegroundColor = ConsoleColor.Green;
+			}
+			Console.Write("[{0}]", time.ToString());
+			if (MessageType == Syslog.Type.Warning)
 			{
 				if (Configuration.System.Colors)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                }
-                Console.Write("LOG (ERROR)");
+				{
+					Console.ForegroundColor = ConsoleColor.Yellow;
+				}
+				Console.Write(" [WARNING]");
+			} else if (MessageType == Syslog.Type.Error)
+			{
+				if (Configuration.System.Colors)
+				{
+					Console.ForegroundColor = ConsoleColor.Red;
+				}
+				Console.Write("   [ERROR]");
+			} else
+			{
+				if (Configuration.System.Colors)
+				{
+					Console.ForegroundColor = ConsoleColor.DarkCyan;
+				}
+				Console.Write("    [INFO]");
 			}
-            else
-            {
-                Console.Write("LOG ");
-            }
-            if (Configuration.System.Colors)
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-            }
-            Console.Write("[{0}]", time.ToString());
             if (Configuration.System.Colors)
             {
                 Console.ResetColor();
