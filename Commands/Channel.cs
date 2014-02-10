@@ -25,13 +25,13 @@ namespace wmib
         /// <param name="user">User</param>
         /// <param name="host">Host</param>
         /// <param name="message">Message</param>
-        public static void AddChannel(Channel chan, string user, string host, string message)
+        public static void AddChannel(Channel channel, string user, string host, string message)
         {
             try
             {
                 if (message.StartsWith(Configuration.System.CommandPrefix + "add"))
                 {
-                    if (chan.Users.IsApproved(user, host, "admin"))
+                    if (channel.Users.IsApproved(user, host, "admin"))
                     {
                         while (!Core.FinishedJoining)
                         {
@@ -40,43 +40,43 @@ namespace wmib
                         }
                         if (message.Contains(" "))
                         {
-                            string channel = message.Substring(message.IndexOf(" ") + 1);
-                            if (!Core.validFile(channel) || (channel.Contains("#") == false))
+                            string _channel = message.Substring(message.IndexOf(" ") + 1);
+                            if (!Core.ValidFile(_channel) || (_channel.Contains("#") == false))
                             {
-                                Core.irc._SlowQueue.DeliverMessage(messages.get("InvalidName", chan.Language), chan);
+                                Core.irc._SlowQueue.DeliverMessage(messages.get("InvalidName", channel.Language), channel);
                                 return;
                             }
                             lock (Configuration.Channels)
                             {
                                 foreach (Channel cu in Configuration.Channels)
                                 {
-                                    if (channel == cu.Name)
+                                    if (_channel == cu.Name)
                                     {
-                                        Core.irc._SlowQueue.DeliverMessage(messages.get("ChannelIn", chan.Language), chan);
+                                        Core.irc._SlowQueue.DeliverMessage(messages.get("ChannelIn", channel.Language), channel);
                                         return;
                                     }
                                 }
                             }
-                            bool existing = Channel.Exists(channel);
-                            Channel xx = new Channel(channel);
+                            bool existing = Channel.ConfigExists(_channel);
+                            Channel xx = new Channel(_channel);
                             lock (Configuration.Channels)
                             {
                                 Configuration.Channels.Add(xx);
                             }
                             Configuration.Save();
-                            xx.instance.irc.SendData("JOIN " + channel);
+                            xx.PrimaryInstance.irc.SendData("JOIN " + _channel);
                             Thread.Sleep(100);
-                            Channel Chan = Core.GetChannel(channel);
+                            Channel Chan = Core.GetChannel(_channel);
                             if (!existing)
                             {
-                                Chan.Users.AddUser("admin", IRCTrust.normalize(user) + "!.*@" + IRCTrust.normalize(host));
+                                Chan.Users.AddUser("admin", Security.EscapeUser(user) + "!.*@" + Security.EscapeUser(host));
                             }
                             return;
                         }
-                        chan.instance.irc.Message(messages.get("InvalidName", chan.Language), chan.Name);
+                        channel.PrimaryInstance.irc.Message(messages.get("InvalidName", channel.Language), channel.Name);
                         return;
                     }
-                    Core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan);
+                    Core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel);
                 }
             }
             catch (Exception b)
@@ -93,53 +93,53 @@ namespace wmib
         /// <param name="host">Host</param>
         /// <param name="message">Message</param>
         /// <param name="origin"></param>
-        public static void PartChannel(Channel chan, string user, string host, string message, string origin = "NULL")
+        public static void PartChannel(Channel channel, string user, string host, string message, string origin = "NULL")
         {
             try
             {
                 if (origin == "NULL")
                 {
-                    origin = chan.Name;
+                    origin = channel.Name;
                 }
-                if (chan.Name == Configuration.System.DebugChan && (message == Configuration.System.CommandPrefix + "part" 
+                if (channel.Name == Configuration.System.DebugChan && (message == Configuration.System.CommandPrefix + "part" 
 				                                          || message == Configuration.System.CommandPrefix + "drop"))
                 {
-                    chan.instance.irc._SlowQueue.DeliverMessage("Cowardly refusing to part this channel, because I love it :3", chan);
+                    channel.PrimaryInstance.irc._SlowQueue.DeliverMessage("Cowardly refusing to part this channel, because I love it :3", channel);
                     return;
                 }
                 if (message == Configuration.System.CommandPrefix + "drop")
                 {
-                    if (chan.Users.IsApproved(user, host, "admin"))
+                    if (channel.Users.IsApproved(user, host, "admin"))
                     {
                         while (!Core.FinishedJoining)
                         {
-                            Syslog.Log("Postponing request to part " + chan.Name + " because bot is still loading", true);
+                            Syslog.Log("Postponing request to part " + channel.Name + " because bot is still loading", true);
                             Thread.Sleep(2000);
                         }
-                        chan.instance.irc.SendData("PART " + chan.Name + " :" + "dropped by " + user + " from " + origin);
-                        Syslog.Log("Dropped " + chan.Name + " dropped by " + user + " from " + origin);
+                        channel.PrimaryInstance.irc.SendData("PART " + channel.Name + " :" + "dropped by " + user + " from " + origin);
+                        Syslog.Log("Dropped " + channel.Name + " dropped by " + user + " from " + origin);
                         Thread.Sleep(100);
                         try
                         {
-                            File.Delete(variables.config + Path.DirectorySeparatorChar + chan.Name + ".setting");
-                            File.Delete(chan.Users.File);
-                            if (File.Exists(variables.config + Path.DirectorySeparatorChar + chan.Name + ".list"))
+                            File.Delete(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + channel.Name + ".setting");
+                            File.Delete(channel.Users.UserFile);
+                            if (File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + channel.Name + ".list"))
                             {
-                                File.Delete(variables.config + Path.DirectorySeparatorChar + chan.Name + ".list");
+                                File.Delete(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + channel.Name + ".list");
                             }
-                            if (File.Exists(variables.config + Path.DirectorySeparatorChar + chan.Name + ".statistics"))
+                            if (File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + channel.Name + ".statistics"))
                             {
-                                File.Delete(variables.config + Path.DirectorySeparatorChar + chan.Name + ".statistics");
+                                File.Delete(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + channel.Name + ".statistics");
                             }
-                            lock (Module.module)
+                            lock (ExtensionHandler.Extensions)
                             {
-                                foreach (Module curr in Module.module)
+                                foreach (Module curr in ExtensionHandler.Extensions)
                                 {
                                     try
                                     {
-                                        if (curr.working)
+                                        if (curr.IsWorking)
                                         {
-                                            curr.Hook_ChannelDrop(chan);
+                                            curr.Hook_ChannelDrop(channel);
                                         }
                                     }
                                     catch (Exception fail)
@@ -156,38 +156,38 @@ namespace wmib
                         }
                         lock (Configuration.Channels)
                         {
-                            chan.Remove();
-                            Configuration.Channels.Remove(chan);
+                            channel.Remove();
+                            Configuration.Channels.Remove(channel);
                         }
                         Configuration.Save();
                         return;
                     }
-                    Core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), origin);
+                    Core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), origin);
                     return;
                 }
 
                 if (message == Configuration.System.CommandPrefix + "part")
                 {
-                    if (chan.Users.IsApproved(user, host, "admin"))
+                    if (channel.Users.IsApproved(user, host, "admin"))
                     {
                         while (!Core.FinishedJoining)
                         {
-                            Syslog.Log("Postponing request to part " + chan.Name + " because bot is still loading", true);
+                            Syslog.Log("Postponing request to part " + channel.Name + " because bot is still loading", true);
                             Thread.Sleep(2000);
                         }
-                        chan.instance.irc.SendData("PART " + chan.Name + " :" + "removed by " + user + " from " + origin);
-                        Syslog.Log("Removed " + chan.Name + " removed by " + user + " from " + origin);
+                        channel.PrimaryInstance.irc.SendData("PART " + channel.Name + " :" + "removed by " + user + " from " + origin);
+                        Syslog.Log("Removed " + channel.Name + " removed by " + user + " from " + origin);
                         Thread.Sleep(100);
-                        Configuration.Channels.Remove(chan);
+                        Configuration.Channels.Remove(channel);
                         Configuration.Save();
                         return;
                     }
-                    Core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), origin);
+                    Core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), origin);
                 }
             }
-            catch (Exception x)
+            catch (Exception fail)
             {
-                Core.HandleException(x);
+                Core.HandleException(fail);
             }
         }
     }

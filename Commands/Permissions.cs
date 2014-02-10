@@ -68,7 +68,7 @@ namespace wmib
                 }
                 if (message.StartsWith(Configuration.System.CommandPrefix + "trusted"))
                 {
-                    channel.Users.listAll();
+                    channel.Users.ListAll();
                     return 0;
                 }
                 if (message.StartsWith(Configuration.System.CommandPrefix + "trustdel"))
@@ -78,7 +78,7 @@ namespace wmib
                     {
                         if (channel.Users.IsApproved(user, host, "trustdel"))
                         {
-                            channel.Users.delUser(channel.Users.getUser(user + "!@" + host), rights_info[1]);
+                            channel.Users.DeleteUser(channel.Users.GetUser(user + "!@" + host), rights_info[1]);
                             return 0;
                         }
                         Core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", channel.Language), channel);

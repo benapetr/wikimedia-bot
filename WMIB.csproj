@@ -51,7 +51,6 @@
     <Compile Include="MySQL.cs" />
     <Compile Include="System\Core.cs" />
     <Compile Include="IRC\IRCcln.cs" />
-    <Compile Include="Irctrust.cs" />
     <Compile Include="l10n.cs" />
     <Compile Include="Modules\Module.cs" />
     <Compile Include="Program.cs" />
@@ -70,12 +69,13 @@
     <Compile Include="User.cs" />
     <Compile Include="IRC\Channel.cs" />
     <Compile Include="Configuration.cs" />
-    <Compile Include="System\Core5.cs" />
-    <Compile Include="System\Core6.cs" />
     <Compile Include="Commands\Admin.cs" />
     <Compile Include="Commands\Permissions.cs" />
-    <Compile Include="Modules\Core.cs" />
     <Compile Include="Commands\Channel.cs" />
+    <Compile Include="System\RegexCheck.cs" />
+    <Compile Include="System\User.cs" />
+    <Compile Include="Modules\Handler.cs" />
+    <Compile Include="Security.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">

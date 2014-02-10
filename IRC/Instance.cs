@@ -49,11 +49,11 @@ namespace wmib
             }
         }
 
-        public Thread JoinThread = null;
+        private Thread JoinThread = null;
         /// <summary>
         /// Each instance is running in its own thread, this is pointer to that thread
         /// </summary>
-        public Thread thread = null;
+        private Thread thread = null;
 
         /// <summary>
         /// List of channels this instance is in
@@ -67,7 +67,7 @@ namespace wmib
                 {
                     foreach (Channel ch in Configuration.Channels)
                     {
-                        if (ch.instance == this)
+                        if (ch.PrimaryInstance == this)
                         {
                             list.Add(ch);
                         }
@@ -99,7 +99,7 @@ namespace wmib
                 {
                     foreach (Channel channel in Configuration.Channels)
                     {
-                        if (channel.instance == this)
+                        if (channel.PrimaryInstance == this)
                         {
                             Channels++;
                         }

@@ -6,19 +6,19 @@ namespace wmib
 	{
 		public static void IrcReloadChannelConf(Channel Channel)
 		{
-			lock(Module.module)
+			lock(ExtensionHandler.Extensions)
 			{
-				foreach (Module xx in Module.module)
+				foreach (Module xx in ExtensionHandler.Extensions)
 				{
 					try
 					{
-						if (xx.working)
+						if (xx.IsWorking)
 						{
 							xx.Hook_ReloadConfig(Channel);
 						}
 					} catch (Exception fail)
 					{
-						Syslog.Log("Crash on Hook_Reload in " + xx.Name);
+						Syslog.Log("MODULE: exception at Hook_Reload in " + xx.Name);
 						Core.HandleException(fail);
 					}
 				}
@@ -27,11 +27,11 @@ namespace wmib
 
 		public static void IrcKick(Channel Channel, User Source, User Target)
 		{
-			lock(Module.module)
+			lock(ExtensionHandler.Extensions)
 			{
-				foreach (Module module in Module.module)
+				foreach (Module module in ExtensionHandler.Extensions)
 				{
-					if (!module.working)
+					if (!module.IsWorking)
 					{
 						continue;
 					}

@@ -29,7 +29,7 @@ namespace wmib
         /// <summary>
         /// Whether storage is running
         /// </summary>
-        public static bool isRunning = true;
+        public static bool IsRunning = true;
 
         private static bool Write(STI item)
         {
@@ -100,7 +100,7 @@ namespace wmib
             try
             {
                 Syslog.Log("KERNEL: loaded writer thread");
-                while (isRunning)
+                while (IsRunning)
                 {
                     try
                     {
@@ -112,7 +112,7 @@ namespace wmib
                     }
                     catch (ThreadAbortException)
                     {
-                        isRunning = false;
+                        IsRunning = false;
                         break;
                     }
                     catch (Exception fail)
@@ -124,12 +124,12 @@ namespace wmib
                 {
                     Syslog.Log("KERNEL: Writer thread was requested to stop, but there is still some data to write");
                     WriteData();
-                    Syslog.Log("No remaining data, stopping writer thread");
+                    Syslog.Log("KERNEL: No remaining data, stopping writer thread");
                     return;
                 }
                 else
                 {
-                    Syslog.Log("No remaining data, stopping writer thread");
+                    Syslog.Log("KERNEL: No remaining data, stopping writer thread");
                     return;
                 }
             }

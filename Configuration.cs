@@ -225,7 +225,7 @@ namespace wmib
                     text.Append(channel.Name + "\n");
                 }
             }
-            File.WriteAllText(variables.config + Path.DirectorySeparatorChar + Configuration.Paths.ChannelFile, 
+            File.WriteAllText(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + Configuration.Paths.ChannelFile, 
 			                  text.ToString());
         }
 
@@ -242,7 +242,7 @@ namespace wmib
         private static Dictionary<string, string> File2Dict()
         {
             Dictionary<string, string> Values = new Dictionary<string, string>();
-            string[] xx = File.ReadAllLines(variables.config + Path.DirectorySeparatorChar +
+            string[] xx = File.ReadAllLines(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar +
 			                                Configuration.Paths.ConfigFile);
             string LastName = null;
             foreach (string line in xx)
@@ -304,11 +304,11 @@ namespace wmib
         /// </summary>
         public static int Load()
         {
-            if (Directory.Exists(variables.config) == false)
+            if (Directory.Exists(Variables.ConfigurationDirectory) == false)
             {
-                Directory.CreateDirectory(variables.config);
+                Directory.CreateDirectory(Variables.ConfigurationDirectory);
             }
-            if (!File.Exists(variables.config + Path.DirectorySeparatorChar + Configuration.Paths.ConfigFile))
+            if (!File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + Configuration.Paths.ConfigFile))
             {
                 Console.WriteLine("Error: unable to find config file in configuration/" 
 				                    + Configuration.Paths.ConfigFile);
@@ -431,7 +431,7 @@ namespace wmib
             // Now when all chans are loaded let's link them together
             foreach (Channel channel in Channels)
             {
-                channel.Shares();
+                channel.SharesNo();
             }
 
             Syslog.WriteNow("Channel db's working");

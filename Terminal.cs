@@ -113,7 +113,7 @@ namespace wmib
 
                 string password = Reader.ReadLine();
 
-                int permissions = (IRCTrust.Auth(username, password));
+                int permissions = (Security.Auth(username, password));
 
                 if (permissions == 0)
                 {

@@ -74,7 +74,7 @@ namespace wmib
                         }
                         Syslog.DebugLog("Parsed: " + list, 8);
                     }
-                    channel.FreshList = true;
+                    channel.HasFreshUserList = true;
                 }
             }
             return false;
@@ -109,7 +109,7 @@ namespace wmib
                 }
                 if (channel != null)
                 {
-                    if (!channel.containsUser(nick))
+                    if (!channel.ContainsUser(nick))
                     {
                         User _user = null;
                         if (mode != '\0')
@@ -221,13 +221,13 @@ namespace wmib
                     {
                         if (curr.Nick == nick)
                         {
-                            lock (Module.module)
+                            lock (ExtensionHandler.Extensions)
                             {
-                                foreach (Module xx in Module.module)
+                                foreach (Module xx in ExtensionHandler.Extensions)
                                 {
                                     try
                                     {
-                                        if (xx.working)
+                                        if (xx.IsWorking)
                                         {
                                             xx.Hook_Nick(item, new User(_new, _host, _ident), nick);
                                         }
@@ -265,11 +265,11 @@ namespace wmib
             User us = new User(user, _host, _ident);
             if (channel != null)
             {
-                lock (Module.module)
+                lock (ExtensionHandler.Extensions)
                 {
-                    foreach (Module module in Module.module)
+                    foreach (Module module in ExtensionHandler.Extensions)
                     {
-                        if (!module.working)
+                        if (!module.IsWorking)
                         {
                             continue;
                         }
@@ -284,7 +284,7 @@ namespace wmib
                     }
                 }
                 User delete = null;
-                if (channel.containsUser(user))
+                if (channel.ContainsUser(user))
                 {
                     lock (channel.UserList)
                     {
@@ -325,11 +325,11 @@ namespace wmib
             _ident = _ident.Substring(0, _ident.IndexOf("@"));
             User _user = new User(user, _host, _ident);
             //string _new = value;
-            lock (Module.module)
+            lock (ExtensionHandler.Extensions)
             {
-                foreach (Module module in Module.module)
+                foreach (Module module in ExtensionHandler.Extensions)
                 {
-                    if (!module.working)
+                    if (!module.IsWorking)
                     {
                         continue;
                     }
@@ -360,11 +360,11 @@ namespace wmib
                 }
                 if (target != null)
                 {
-                    lock (Module.module)
+                    lock (ExtensionHandler.Extensions)
                     {
-                        foreach (Module module in Module.module)
+                        foreach (Module module in ExtensionHandler.Extensions)
                         {
-                            if (!module.working)
+                            if (!module.IsWorking)
                             {
                                 continue;
                             }
@@ -409,7 +409,7 @@ namespace wmib
             if (channel != null)
             {
 				SystemHooks.IrcKick(channel, Source, Target);
-                if (channel.containsUser(user))
+                if (channel.ContainsUser(user))
                 {
                     User delete = null;
                     lock (channel.UserList)
@@ -516,13 +516,13 @@ namespace wmib
             User _user = new User(user, _host, _ident);
             if (channel != null)
             {
-                lock (Module.module)
+                lock (ExtensionHandler.Extensions)
                 {
-                    foreach (Module module in Module.module)
+                    foreach (Module module in ExtensionHandler.Extensions)
                     {
                         try
                         {
-                            if (module.working)
+                            if (module.IsWorking)
                             {
                                 module.Hook_Join(channel, _user);
                             }
@@ -534,7 +534,7 @@ namespace wmib
                         }
                     }
                 }
-                if (!channel.containsUser(user))
+                if (!channel.ContainsUser(user))
                 {
                     lock (channel.UserList)
                     {

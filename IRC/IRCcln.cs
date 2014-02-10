@@ -91,9 +91,9 @@ namespace wmib
                         return;
                     }
                     // this is wrong instance so let's put this message to correct one
-                    if (ch.instance != Parent.ParentInstance)
+                    if (ch.PrimaryInstance != Parent.ParentInstance)
                     {
-                        ch.instance.irc._SlowQueue.DeliverMessage(Message, Channel, Pr);
+                        ch.PrimaryInstance.irc._SlowQueue.DeliverMessage(Message, Channel, Pr);
                         return;
                     }
                 }
@@ -136,9 +136,9 @@ namespace wmib
                         return;
                     }
                     // this is wrong instance so let's put this message to correct one
-                    if (ch.instance != Parent.ParentInstance)
+                    if (ch.PrimaryInstance != Parent.ParentInstance)
                     {
-                        ch.instance.irc._SlowQueue.DeliverAct(Message, Channel, Pr);
+                        ch.PrimaryInstance.irc._SlowQueue.DeliverAct(Message, Channel, Pr);
                         return;
                     }
                 }
@@ -192,9 +192,9 @@ namespace wmib
                     return;
                 }
                 // this is wrong instance so let's put this message to correct one
-                if (Channel.instance != Parent.ParentInstance)
+                if (Channel.PrimaryInstance != Parent.ParentInstance)
                 {
-                    Channel.instance.irc._SlowQueue.DeliverMessage(Message, Channel, Pr);
+                    Channel.PrimaryInstance.irc._SlowQueue.DeliverMessage(Message, Channel, Pr);
                     return;
                 }
                 Message text = new Message { _Priority = Pr, message = Message, channel = Channel.Name };
@@ -466,13 +466,13 @@ namespace wmib
                     return true;
                 }
                 SendData("PRIVMSG " + channel + " :" + message.Replace("\n", " "));
-                lock (Module.module)
+                lock (ExtensionHandler.Extensions)
                 {
-                    foreach (Module module in Module.module)
+                    foreach (Module module in ExtensionHandler.Extensions)
                     {
                         try
                         {
-                            if (module.working)
+                            if (module.IsWorking)
                             {
                                 module.Hook_OnSelf(curr, new User(Configuration.IRC.NickName, "wikimedia/bot/wm-bot", "wmib"), message);
                             }
@@ -500,10 +500,10 @@ namespace wmib
         {
             if (Channel != null)
             {
-                if (Channel.instance != ParentInstance)
+                if (Channel.PrimaryInstance != ParentInstance)
                 {
                     Syslog.DebugLog("Fixing instance for " + Channel.Name);
-                    Channel.instance.irc.Join(Channel);
+                    Channel.PrimaryInstance.irc.Join(Channel);
                     return false;
                 }
                 SendData("JOIN " + Channel.Name);
@@ -537,7 +537,7 @@ namespace wmib
                     // check if there is some channel which needs an update of user list
                     foreach (Channel dd in ParentInstance.ChannelList)
                     {
-                        if (!dd.FreshList)
+                        if (!dd.HasFreshUserList)
                         {
                             channels.Add(dd.Name);
                         }
@@ -829,11 +829,11 @@ namespace wmib
                                             message = message.Substring(message.IndexOf(" :") + 2);
                                             if (message.Contains(delimiter.ToString() + "ACTION"))
                                             {
-                                                Core.getAction(message.Replace(delimiter.ToString() + "ACTION", ""), 
+                                                Core.GetAction(message.Replace(delimiter.ToString() + "ACTION", ""), 
 												               channel, host, nick);
                                                 continue;
                                             }
-                                            Core.getMessage(channel, nick, host, message);
+                                            Core.GetMessage(channel, nick, host, message);
                                             continue;
                                         }
                                         message = text.Substring(text.IndexOf("PRIVMSG"));
@@ -877,11 +877,11 @@ namespace wmib
                                         }
                                         bool respond = true;
                                         string modules = "";
-                                        lock (Module.module)
+                                        lock (ExtensionHandler.Extensions)
                                         {
-                                            foreach (Module module in Module.module)
+                                            foreach (Module module in ExtensionHandler.Extensions)
                                             {
-                                                if (module.working)
+                                                if (module.IsWorking)
                                                 {
                                                     try
                                                     {

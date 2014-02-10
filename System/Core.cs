@@ -18,8 +18,8 @@ using System.IO;
 namespace wmib
 {
 	[Serializable]
-		public partial class Core : MarshalByRefObject
-	    {
+	public partial class Core : MarshalByRefObject
+    {
 		/// <summary>
 		/// Return true if database server is available
 		/// </summary>
@@ -38,10 +38,6 @@ namespace wmib
 		/// Database server
 		/// </summary>
 		public static Database DB = null;
-		/// <summary>
-		/// Domain in which the core is running
-		/// </summary>
-		public static AppDomain domain = null;
 		/// <summary>
 		/// Last line of text received on irc
 		/// </summary>
@@ -62,10 +58,6 @@ namespace wmib
 		/// Thread which is writing the system data to files
 		/// </summary>
 		public static Thread WriterThread = null;
-		/// <summary>
-		/// Domains available in core
-		/// </summary>
-		public static Dictionary<Module, AppDomain> Domains = new Dictionary<Module, AppDomain>();
 		private static readonly Dictionary<string, string> HelpData = new Dictionary<string, string>();
 		/// <summary>
 		/// List of instances
@@ -112,7 +104,7 @@ namespace wmib
 		/// Return instance with lowest number of channels
 		/// </summary>
 		/// <returns></returns>
-		public static Instance getInstance()
+		public static Instance GetInstance()
 		{
 			int lowest = 99999999;
 			Instance instance = null;
@@ -226,7 +218,8 @@ namespace wmib
 					irc._SlowQueue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText,
 					                              Configuration.System.DebugChan);
 				}
-				Syslog.WriteNow("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace, true);
+				Syslog.WriteNow("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace +
+				                "\n\nThread name: " + Thread.CurrentThread.Name, true);
 			} catch (Exception fail)
 			{
 				// exception happened while we tried to handle another one, ignore that (probably issue with logging)
@@ -262,16 +255,16 @@ namespace wmib
 		/// <param name="host">Host</param>
 		/// <param name="nick">Nick</param>
 		/// <returns></returns>
-		public static bool getAction(string message, string Channel, string host, string nick)
+		public static bool GetAction(string message, string Channel, string host, string nick)
 		{
 			Channel channel = GetChannel(Channel);
 			if (channel != null)
 			{
-				lock(Module.module)
+				lock(ExtensionHandler.Extensions)
 				{
-					foreach (Module curr in Module.module)
+					foreach (Module curr in ExtensionHandler.Extensions)
 					{
-						if (!curr.working)
+						if (!curr.IsWorking)
 						{
 							continue;
 						}
@@ -294,7 +287,7 @@ namespace wmib
 		/// </summary>
 		/// <param name="name">Name</param>
 		/// <returns></returns>
-		public static bool validFile(string name)
+		public static bool ValidFile(string name)
 		{
 			return !(name.Contains(" ") || name.Contains("?") || name.Contains("|") || name.Contains("/")
 				|| name.Contains("\\") || name.Contains(">") || name.Contains("<") || name.Contains("*"));
@@ -305,7 +298,7 @@ namespace wmib
 		/// </summary>
 		/// <param name="FileName">Name of file</param>
 		/// <returns></returns>
-		public static bool backupRecovery(string FileName)
+		public static bool BackupRecovery(string FileName)
 		{
 			if (File.Exists(Configuration.TempName(FileName)))
 			{
@@ -324,7 +317,7 @@ namespace wmib
 		/// <param name="ch"></param>
 		/// <returns></returns>
 		[Obsolete]
-		public static bool backupRecovery(string name, string ch = "unknown object")
+		public static bool BackupRecovery(string name, string ch = "unknown object")
 		{
 			if (File.Exists(Configuration.TempName(name)))
 			{
@@ -346,7 +339,7 @@ namespace wmib
 		/// </summary>
 		/// <param name="name"></param>
 		/// <returns></returns>
-		public static bool backupData(string name)
+		public static bool BackupData(string name)
 		{
 			try
 			{
@@ -356,7 +349,7 @@ namespace wmib
 				}
 				if (File.Exists(Configuration.TempName(name)))
 				{
-					backupRecovery(name);
+					BackupRecovery(name);
 				}
 				File.Copy(name, Configuration.TempName(name), true);
 			} catch (Exception b)
@@ -372,7 +365,7 @@ namespace wmib
 		/// <param name="name"></param>
 		/// <param name="ch"></param>
 		/// <returns></returns>
-		public static bool recoverFile(string name, string ch = "unknown object")
+		public static bool RecoverFile(string name, string ch = "unknown object")
 		{
 			try
 			{
@@ -465,9 +458,9 @@ namespace wmib
 			try
 			{
 				List<Module> list = new List<Module>();
-				lock(Module.module)
+				lock(ExtensionHandler.Extensions)
 				{
-					list.AddRange(Module.module);
+					list.AddRange(ExtensionHandler.Extensions);
 				}
 				foreach (Module d in list)
 				{
@@ -500,7 +493,7 @@ namespace wmib
 				_Status = Status.ShuttingDown;
 				irc.Disconnect();
 				irc._SlowQueue.Exit();
-				StorageWriter.isRunning = false;
+				StorageWriter.IsRunning = false;
 				Thread modules = new Thread(Terminate) { Name = "KERNEL: Core helper shutdown thread" };
 				modules.Start();
 				Syslog.WriteNow("Giving grace time for all modules to finish ok");
@@ -508,7 +501,7 @@ namespace wmib
 				while (kill < 20)
 				{
 					kill++;
-					if (Module.module.Count == 0)
+					if (ExtensionHandler.Extensions.Count == 0)
 					{
 						Syslog.WriteNow("KERNEL: Modules are all down");
 						if (WriterThread.ThreadState == ThreadState.Running || WriterThread.ThreadState == ThreadState.WaitSleepJoin)
@@ -538,7 +531,7 @@ namespace wmib
 				Core.HandleException(fail);
 
 			}
-			Syslog.WriteNow("There was problem shutting down " + Module.module.Count.ToString() + " modules, terminating process");
+			Syslog.WriteNow("There was problem shutting down " + ExtensionHandler.Extensions.Count.ToString() + " modules, terminating process");
 			Syslog.WriteNow("Terminated");
 			System.Diagnostics.Process.GetCurrentProcess().Kill();
 		}
@@ -551,7 +544,7 @@ namespace wmib
 		/// <param name="host">Host</param>
 		/// <param name="message">Message</param>
 		/// <returns></returns>
-		public static bool getMessage(string channel, string nick, string host, string message)
+		public static bool GetMessage(string channel, string nick, string host, string message)
 		{
 			LastText = nick + " chan: " + channel + " " + message;
 			Channel curr = GetChannel(channel);
@@ -569,19 +562,19 @@ namespace wmib
 				{
 					if (message.StartsWith(Configuration.System.CommandPrefix))
 					{
-						ModifyRights(message, curr, nick, host);
-						AddChannel(curr, nick, host, message);
-						PartChannel(curr, nick, host, message);
+						Commands.ModifyRights(message, curr, nick, host);
+						Commands.AddChannel(curr, nick, host, message);
+						Commands.PartChannel(curr, nick, host, message);
 					}
-					ParseAdmin(curr, nick, host, message);
+					Commands.ParseAdmin(curr, nick, host, message);
 				}
-				lock(Module.module)
+				lock(ExtensionHandler.Extensions)
 				{
-					foreach (Module _Module in Module.module)
+					foreach (Module _Module in ExtensionHandler.Extensions)
 					{
 						try
 						{
-							if (_Module.working)
+							if (_Module.IsWorking)
 							{
 								_Module.Hook_PRIV(curr, new User(nick, host, ""), message);
 							}
@@ -592,12 +585,12 @@ namespace wmib
 						}
 					}
 				}
-				if (curr.respond_message)
+				if (curr.RespondMessage)
 				{
 					if (message.StartsWith(Configuration.IRC.NickName + ":"))
 					{
 						System.DateTime time = curr.TimeOfLastMsg;
-						if (System.DateTime.Now >= time.AddSeconds(curr.respond_wait))
+						if (System.DateTime.Now >= time.AddSeconds(curr.RespondWait))
 						{
 							irc._SlowQueue.DeliverMessage(messages.get("hi", curr.Language, new List<string> { nick }), curr.Name);
 							curr.TimeOfLastMsg = System.DateTime.Now;

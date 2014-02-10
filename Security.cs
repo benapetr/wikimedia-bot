@@ -19,7 +19,7 @@ namespace wmib
     /// Permissions system
     /// </summary>
     [Serializable]
-    public class IRCTrust
+    public class Security
     {
         /// <summary>
         /// Filesystem
@@ -37,24 +37,24 @@ namespace wmib
         /// <summary>
         /// File where data are stored
         /// </summary>
-        public string File = null;
+        public string UserFile = null;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="channel"></param>
-        public IRCTrust(string channel)
+        public Security(string channel)
         {
             // Load
-            File = variables.config + System.IO.Path.DirectorySeparatorChar + channel + "_user";
-            Core.recoverFile(File);
-            if (!System.IO.File.Exists(File))
+            UserFile = Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + channel + "_user";
+            Core.RecoverFile(UserFile);
+            if (!System.IO.File.Exists(UserFile))
             {
                 // Create db
                 Syslog.Log("Creating user file for " + channel);
-                System.IO.File.WriteAllText(File, "");
+                System.IO.File.WriteAllText(UserFile, "");
             }
-            string[] db = System.IO.File.ReadAllLines(File);
+            string[] db = System.IO.File.ReadAllLines(UserFile);
             ChannelName = channel;
             foreach (string x in db)
             {
@@ -82,7 +82,7 @@ namespace wmib
                 {
                     if (user.Password == Password && user.UserName == User)
                     {
-                        switch (user.level)
+                        switch (user.Role)
                         {
                             case "trusted":
                                 return 1;
@@ -102,7 +102,8 @@ namespace wmib
         /// </summary>
         private static void GlobalLoad()
         {
-            string[] dba = System.IO.File.ReadAllLines(variables.config + System.IO.Path.DirectorySeparatorChar + "admins");
+            string[] dba = System.IO.File.ReadAllLines(Variables.ConfigurationDirectory + 
+			               System.IO.Path.DirectorySeparatorChar + "admins");
             lock (GlobalUsers)
             {
                 GlobalUsers.Clear();
@@ -142,15 +143,15 @@ namespace wmib
         /// </summary>
         public static void Global()
         {
-            if (!System.IO.File.Exists(variables.config + System.IO.Path.DirectorySeparatorChar + "admins"))
+            if (!System.IO.File.Exists(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "admins"))
             {
                 // Create db
                 Syslog.Log("Creating user file for admins");
-                System.IO.File.WriteAllText(variables.config + System.IO.Path.DirectorySeparatorChar + "admins", "");
+                System.IO.File.WriteAllText(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "admins", "");
             }
             GlobalLoad();
             Syslog.DebugLog("Registering fs watcher");
-            fs.Path = variables.config;
+            fs.Path = Variables.ConfigurationDirectory;
             fs.Changed += GlobalChanged;
             fs.Created += GlobalChanged;
             fs.Filter = "admins";
@@ -164,23 +165,23 @@ namespace wmib
         public bool Save()
         {
             Syslog.DebugLog("Saving user file of " + ChannelName);
-            Core.backupData(File);
+            Core.BackupData(UserFile);
             try
             {
                 StringBuilder data = new StringBuilder("");
                 lock (Users)
                 {
-                    foreach (Core.SystemUser u in Users)
+                    foreach (SystemUser u in Users)
                     {
-                        data.Append(Core.encode2(u.name) + Configuration.System.Separator + u.level + "\n");
+                        data.Append(Core.encode2(u.Name) + Configuration.System.Separator + u.Role + "\n");
                     }
                 }
-                System.IO.File.WriteAllText(File, data.ToString());
-                System.IO.File.Delete(Configuration.TempName(File));
+                System.IO.File.WriteAllText(UserFile, data.ToString());
+                System.IO.File.Delete(Configuration.TempName(UserFile));
             }
             catch (Exception b)
             {
-                Core.recoverFile(File, ChannelName);
+                Core.RecoverFile(UserFile, ChannelName);
                 Core.HandleException(b);
             }
             return true;
@@ -191,7 +192,7 @@ namespace wmib
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static string normalize(string name)
+        public static string EscapeUser(string name)
         {
             name = Regex.Escape(name);
             name = name.Replace("?", "\\?");
@@ -209,12 +210,12 @@ namespace wmib
             if (!misc.IsValidRegex(user))
             {
                 Syslog.Log("Unable to create user " + user + " because the regex is invalid", true);
-                Core.irc._SlowQueue.DeliverMessage("Unable to add user because this regex is a piece of shit", ChannelName);
+                Core.irc._SlowQueue.DeliverMessage("Unable to add user because this regex is not valid", ChannelName);
                 return false;
             }
             foreach (SystemUser u in Users)
             {
-                if (u.name == user)
+                if (u.Name == user)
                 {
                     Core.irc._SlowQueue.DeliverMessage("Unable to add user because this user is already in a list", ChannelName);
                     return false;
@@ -231,7 +232,7 @@ namespace wmib
         /// <param name="origin"></param>
         /// <param name="user">Regex</param>
         /// <returns></returns>
-        public bool delUser(SystemUser origin, string user)
+        public bool DeleteUser(SystemUser origin, string user)
         {
             Channel channel = Core.GetChannel(ChannelName);
             if (channel == null)
@@ -241,14 +242,14 @@ namespace wmib
             }
             foreach (SystemUser u in Users)
             {
-                if (u.name == user)
+                if (u.Name == user)
                 {
-                    if (getLevel(u.level) > getLevel(origin.level))
+                    if (GetLevel(u.Role) > GetLevel(origin.Role))
                     {
                         Core.irc._SlowQueue.DeliverMessage(messages.get("Trust1", channel.Language), ChannelName);
                         return true;
                     }
-                    if (u.name == origin.name)
+                    if (u.Name == origin.Name)
                     {
                         Core.irc._SlowQueue.DeliverMessage(messages.get("Trust2", channel.Language), ChannelName);
                         return true;
@@ -268,7 +269,7 @@ namespace wmib
         /// </summary>
         /// <param name="level">User level</param>
         /// <returns>0</returns>
-        private int getLevel(string level)
+        private int GetLevel(string level)
         {
             switch (level)
             {
@@ -288,7 +289,7 @@ namespace wmib
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public SystemUser getUser(string user)
+        public SystemUser GetUser(string user)
         {
             SystemUser lv = new SystemUser("null", "");
             int current = 0;
@@ -296,12 +297,12 @@ namespace wmib
             {
                 foreach (SystemUser b in GlobalUsers)
                 {
-                    Core.RegexCheck id = new Core.RegexCheck(b.name, user);
+                    Core.RegexCheck id = new Core.RegexCheck(b.Name, user);
                     if (id.IsMatch() == 1)
                     {
-                        if (getLevel(b.level) > current)
+                        if (GetLevel(b.Role) > current)
                         {
-                            current = getLevel(b.level);
+                            current = GetLevel(b.Role);
                             lv = b;
                         }
                     }
@@ -311,12 +312,12 @@ namespace wmib
             {
                 foreach (SystemUser b in Users)
                 {
-                    Core.RegexCheck id = new Core.RegexCheck(b.name, user);
+                    Core.RegexCheck id = new Core.RegexCheck(b.Name, user);
                     if (id.IsMatch() == 1)
                     {
-                        if (getLevel(b.level) > current)
+                        if (GetLevel(b.Role) > current)
                         {
-                            current = getLevel(b.level);
+                            current = GetLevel(b.Role);
                             lv = b;
                         }
                     }
@@ -328,7 +329,7 @@ namespace wmib
         /// <summary>
         /// List all users to a channel
         /// </summary>
-        public void listAll()
+        public void ListAll()
         {
             Channel Channel = Core.GetChannel(ChannelName);
             if (Channel == null)
@@ -341,7 +342,7 @@ namespace wmib
             {
                 foreach (SystemUser b in Users)
                 {
-                    users_ok += " " + b.name + " (2" + b.level + ")" + ",";
+                    users_ok += " " + b.Name + " (2" + b.Role + ")" + ",";
                 }
             }
             Core.irc._SlowQueue.DeliverMessage(messages.get("TrustedUserList", Channel.Language) + users_ok, ChannelName);
@@ -353,18 +354,18 @@ namespace wmib
         /// <param name="level">Permission level</param>
         /// <param name="rights">Userrights</param>
         /// <returns></returns>
-        public bool matchLevel(int level, string rights)
+        public bool MatchesRole(int level, string role)
         {
-            if (rights == "root")
+            if (role == "root")
             {
                 return true;
             }
             switch (level)
             {
                 case 2:
-                    return (rights == "admin");
+                    return (role == "admin");
                 case 1:
-                    return (rights == "trusted" || rights == "admin");
+                    return (role == "trusted" || role == "admin");
             }
             return false;
         }
@@ -378,8 +379,8 @@ namespace wmib
         /// <returns></returns>
         public bool IsApproved(string User, string Host, string command)
         {
-            SystemUser current = getUser(User + "!@" + Host);
-            if (current.level == "null")
+            SystemUser current = GetUser(User + "!@" + Host);
+            if (current.Role == "null")
             {
                 return false;
             }
@@ -392,18 +393,18 @@ namespace wmib
                 case "trustadd":
                 case "trustdel":
                 case "recentchanges":
-                    return matchLevel(1, current.level);
+                    return MatchesRole(1, current.Role);
                 case "admin":
                 case "infobot-manage":
                 case "recentchanges-manage":
                 case "shutdown":
-                    return matchLevel(2, current.level);
+                    return MatchesRole(2, current.Role);
                 case "flushcache":
-                    return matchLevel(200, current.level);
+                    return MatchesRole(200, current.Role);
                 case "reconnect":
-                    return matchLevel(800, current.level);
+                    return MatchesRole(800, current.Role);
                 case "root":
-                    return matchLevel(65535, current.level);
+                    return MatchesRole(65535, current.Role);
             }
             return false;
         }
@@ -417,19 +418,6 @@ namespace wmib
         public bool IsApproved(User user, string command)
         {
             return IsApproved(user.Nick, user.Host, command);
-        }
-
-        /// <summary>
-        /// Check if user is approved to do operation requested
-        /// </summary>
-        /// <param name="User">Username</param>
-        /// <param name="Host">Hostname</param>
-        /// <param name="command">Approved for specified object / request</param>
-        /// <returns></returns>
-        [Obsolete]
-        public bool isApproved(string User, string Host, string command)
-        {
-            return IsApproved(User, Host, command);
         }
     }
 }

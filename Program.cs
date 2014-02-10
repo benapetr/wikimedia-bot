@@ -160,7 +160,6 @@ namespace wmib
             {
                 Configuration.System.UpTime = DateTime.Now;
                 Thread logger = new Thread(Logging.Exec);
-                Core.domain = AppDomain.CurrentDomain;
                 ProcessVerbosity(args);
                 Syslog.WriteNow(Configuration.Version);
                 Syslog.WriteNow("Loading...");
@@ -183,8 +182,8 @@ namespace wmib
                     Core.DB = new WMIBMySQL();
                 }
                 Syslog.Log("Loading modules");
-                Core.SearchMods();
-                IRCTrust.Global();
+                ExtensionHandler.SearchMods();
+                Security.Global();
                 Syslog.Log("Connecting");
                 Core.Connect();
             }

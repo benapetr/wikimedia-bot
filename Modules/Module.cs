@@ -23,10 +23,6 @@ namespace wmib
     public abstract class Module
     {
         /// <summary>
-        /// List of all modules loaded in kernel
-        /// </summary>
-        public static List<Module> module = new List<Module>();
-        /// <summary>
         /// Name of module
         /// </summary>
         public string Name = "";
@@ -54,16 +50,7 @@ namespace wmib
         /// <summary>
         /// Whether it is working
         /// </summary>
-        public bool working = false;
-        /// <summary>
-        /// Parent domain of this module
-        /// </summary>
-        [NonSerialized]
-        public AppDomain ParentDomain = null;
-        /// <summary>
-        /// Whether it has started or not
-        /// </summary>
-        public bool start = false;
+        public bool IsWorking = false;
         /// <summary>
         /// If this module contains own thread
         /// </summary>
@@ -83,19 +70,11 @@ namespace wmib
         ~Module()
         {
             Exit();
-            lock (module)
+            lock (ExtensionHandler.Extensions)
             {
-                if (module.Contains(this))
+                if (ExtensionHandler.Extensions.Contains(this))
                 {
-                    module.Remove(this);
-                }
-            }
-            if (Core.Domains.ContainsKey(this) && Core.Domains[this] != ParentDomain)
-            {
-                lock (Core.Domains)
-                {
-                    //AppDomain.Unload(core.Domains[this]);
-                    Core.Domains.Remove(this);
+                    ExtensionHandler.Extensions.Remove(this);
                 }
             }
             Syslog.Log("Module was unloaded: " + this.Name);
@@ -117,7 +96,7 @@ namespace wmib
         {
             try
             {
-                working = true;
+                IsWorking = true;
                 Hook_OnRegister();
                 if (HasSeparateThreadInstance)
                 {
@@ -521,7 +500,7 @@ namespace wmib
             {
                 Load();
                 Syslog.Log("Module terminated: " + Name, true);
-                working = false;
+                IsWorking = false;
             }
             catch (ThreadAbortException)
             {
@@ -531,7 +510,7 @@ namespace wmib
             catch (Exception f)
             {
                 Core.HandleException(f);
-                working = false;
+                IsWorking = false;
                 Syslog.Log("Module crashed: " + Name, true);
             }
             while (Reload)
@@ -539,11 +518,11 @@ namespace wmib
                 try
                 {
                     Warning = true;
-                    working = true;
+                    IsWorking = true;
                     Syslog.Log("Restarting the module: " + Name, true);
                     Load();
                     Syslog.Log("Module terminated: " + Name, true);
-                    working = false;
+                    IsWorking = false;
                 }
                 catch (ThreadAbortException)
                 {
@@ -553,7 +532,7 @@ namespace wmib
                 catch (Exception f)
                 {
                     Core.HandleException(f);
-                    working = false;
+                    IsWorking = false;
                     Syslog.Log("Module crashed: " + Name, true);
                 }
             }
@@ -577,7 +556,7 @@ namespace wmib
         { 
             Syslog.Log("Module " + Name + " is missing core thread, terminated", true);
             Reload = false;
-            working = false;
+            IsWorking = false;
             return;
         }
 
@@ -593,7 +572,7 @@ namespace wmib
                 {
                     Syslog.Log("Unable to unload module, forcefully removed from memory: " + Name, true);
                 }
-                working = false;
+                IsWorking = false;
                 Reload = false;
                 if (thread != null)
                 {
@@ -607,11 +586,11 @@ namespace wmib
                         thread.Abort();
                     }
                 }
-                lock (module)
+                lock (ExtensionHandler.Extensions)
                 {
-                    if (module.Contains(this))
+                    if (ExtensionHandler.Extensions.Contains(this))
                     {
-                        module.Remove(this);
+                        ExtensionHandler.Extensions.Remove(this);
                     }
                 }
             }
@@ -630,9 +609,9 @@ namespace wmib
         {
             try
             {
-                lock (module)
+                lock (ExtensionHandler.Extensions)
                 {
-                    foreach (Module x in module)
+                    foreach (Module x in ExtensionHandler.Extensions)
                     {
                         if (x.Name == Name)
                         {
