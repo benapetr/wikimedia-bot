@@ -443,7 +443,7 @@ namespace wmib
 					Core.BackupData(Variables.ConfigurationDirectory + "/" + Name + ".setting");
 					if (!File.Exists(Configuration.TempName(Variables.ConfigurationDirectory + "/" + Name + ".setting")))
 					{
-						Syslog.Log("Unable to create backup file for " + Name);
+						Syslog.WarningLog("Unable to create backup file for " + Name);
 					}
 				}
 				data.AppendChild(xmlnode);

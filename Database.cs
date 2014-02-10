@@ -12,12 +12,14 @@ namespace wmib
         /// <summary>
         /// One row in a database
         /// </summary>
+		[Serializable]
         public class Row
         {
             /// <summary>
             /// One value in a row
             /// </summary>
-            public class Value
+            [Serializable]
+			public class Value
             {
                 /// <summary>
                 /// Type

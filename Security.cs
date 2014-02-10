@@ -150,7 +150,7 @@ namespace wmib
                 System.IO.File.WriteAllText(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "admins", "");
             }
             GlobalLoad();
-            Syslog.DebugLog("Registering fs watcher");
+            Syslog.DebugLog("Registering fs watcher for global user list");
             fs.Path = Variables.ConfigurationDirectory;
             fs.Changed += GlobalChanged;
             fs.Created += GlobalChanged;

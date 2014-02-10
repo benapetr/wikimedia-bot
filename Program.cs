@@ -160,6 +160,7 @@ namespace wmib
             {
                 Configuration.System.UpTime = DateTime.Now;
                 Thread logger = new Thread(Logging.Exec);
+				logger.Name = "Logger";
                 ProcessVerbosity(args);
                 Syslog.WriteNow(Configuration.Version);
                 Syslog.WriteNow("Loading...");
