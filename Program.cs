@@ -20,41 +20,6 @@ namespace wmib
     internal class Program
     {
 		/// <summary>
-		/// Log the specified message
-		/// </summary>
-		/// <param name='msg'>
-		/// Message that you want to log.
-		/// </param>
-		/// <param name='warn'>
-		/// If this is true the message will be classified as a warning.
-		/// </param>
-		[Obsolete]
-        public static bool Log(string msg, bool warn = false)
-        {
-            Logging.Write(msg, warn);
-            return true;
-        }
-
-		/// <summary>
-		/// Writes the message immediately to console with no thread sync
-		/// </summary>
-		/// <returns>
-		/// The now.
-		/// </returns>
-		/// <param name='msg'>
-		/// Message that you want to log.
-		/// </param>
-		/// <param name='warn'>
-		/// If this is true the message will be classified as a warning.
-		/// </param>
-        [Obsolete]
-		public static bool WriteNow(string msg, bool warn = false)
-        {
-            Logging.Display(DateTime.Now, msg, warn);
-            return true;
-        }
-
-		/// <summary>
 		/// Copy the selected file to a temporary file name
 		/// 
 		/// this function is used mostly for restore of corrupted data,
@@ -190,7 +155,7 @@ namespace wmib
             }
             catch (Exception fatal)
             {
-                Syslog.WriteNow("ERROR: bot crashed, bellow is debugging information");
+                Syslog.WriteNow("bot crashed, bellow is debugging information", Syslog.Type.Error);
                 Console.WriteLine("------------------------------------------------------------------------");
                 Console.WriteLine("Description: " + fatal.Message);
                 Console.WriteLine("Stack trace: " + fatal.StackTrace);

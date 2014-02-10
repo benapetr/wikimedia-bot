@@ -19,6 +19,30 @@ namespace wmib
 {
 	public class Syslog
 	{
+		public enum Type
+		{
+			Error,
+			Debug,
+			Warning,
+			Normal
+		}
+
+		/// <summary>
+		/// Log the specified message
+		/// </summary>
+		/// <param name='msg'>
+		/// Message that you want to log.
+		/// </param>
+		/// <param name='warn'>
+		/// If this is true the message will be classified as a warning.
+		/// </param>
+        public static bool Log(string Message, Type MessageType)
+        {
+            Logging.Write(Message, MessageType);
+			SystemHooks.SystemLog(Message, MessageType);
+            return true;
+        }
+
 		/// <summary>
 		/// Log the specified message
 		/// </summary>
@@ -29,9 +53,14 @@ namespace wmib
 		/// If this is true the message will be classified as a warning.
 		/// </param>
         public static bool Log(string Message, bool Warning = false)
-        {
-            Logging.Write(Message, Warning);
-			SystemHooks.SystemLog(Message, Warning);
+		{
+			Type MessageType = Type.Normal;
+			if (Warning)
+			{
+				MessageType = Type.Warning;
+			}
+            Logging.Write(Message, MessageType);
+			SystemHooks.SystemLog(Message, MessageType);
             return true;
         }
 
@@ -48,6 +77,18 @@ namespace wmib
         }
 
 		/// <summary>
+		/// Log the specified message
+		/// </summary>
+		/// <param name='msg'>
+		/// Message that you want to log.
+		/// </param>
+        public static bool ErrorLog(string Message)
+        {
+            Syslog.Log(Message, Type.Error);
+            return true;
+        }
+
+		/// <summary>
 		/// Writes the message immediately to console with no thread sync
 		/// </summary>
 		/// <returns>
@@ -60,9 +101,33 @@ namespace wmib
 		/// If this is true the message will be classified as a warning.
 		/// </param>
 		public static bool WriteNow(string Message, bool Warning = false)
-        {
-            Logging.Display(DateTime.Now, Message, Warning);
-			SystemHooks.SystemLog(Message, Warning);
+		{
+			Syslog.Type _Type = Type.Normal;
+			if (Warning)
+			{
+				_Type = Type.Warning;
+			}
+            Logging.Display(DateTime.Now, Message, _Type);
+			SystemHooks.SystemLog(Message, _Type);
+            return true;
+        }
+
+		/// <summary>
+		/// Writes the message immediately to console with no thread sync
+		/// </summary>
+		/// <returns>
+		/// The now.
+		/// </returns>
+		/// <param name='msg'>
+		/// Message that you want to log.
+		/// </param>
+		/// <param name='warn'>
+		/// If this is true the message will be classified as a warning.
+		/// </param>
+		public static bool WriteNow(string Message, Syslog.Type MessageType)
+		{
+            Logging.Display(DateTime.Now, Message, MessageType);
+			SystemHooks.SystemLog(Message, MessageType);
             return true;
         }
 
@@ -115,7 +180,7 @@ namespace wmib
             /// <summary>
             /// Is a warning
             /// </summary>
-            public bool Warning;
+            public Syslog.Type _Type;
 
             /// <summary>
             /// Creates a new instance of message
@@ -123,11 +188,11 @@ namespace wmib
             /// <param name="text"></param>
             /// <param name="time"></param>
             /// <param name="warning"></param>
-            public Message(string text, DateTime time, bool warning)
+            public Message(string text, DateTime time, Syslog.Type MT)
             {
-                Text = text;
-                Time = time;
-                Warning = warning;
+                this.Text = text;
+                this.Time = time;
+                this._Type = MT;
             }
         }
 
@@ -141,9 +206,9 @@ namespace wmib
         /// </summary>
         /// <param name="Message"></param>
         /// <param name="warning"></param>
-        public static void Write(string Message, bool warning)
+        public static void Write(string Message, Syslog.Type MessageType)
         {
-            Message message = new Message(Message, DateTime.Now, warning);
+            Message message = new Message(Message, DateTime.Now, MessageType);
             lock (messages)
             {
                 messages.Add(message);
@@ -156,20 +221,27 @@ namespace wmib
         /// <param name="time"></param>
         /// <param name="Message"></param>
         /// <param name="Warning"></param>
-        public static void Display(DateTime time, string Message, bool Warning)
+        public static void Display(DateTime time, string Message, Syslog.Type MessageType)
         {
             if (Configuration.System.Colors)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
             }
-            if (Warning)
+            if (MessageType == Syslog.Type.Warning)
             {
                 if (Configuration.System.Colors)
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
                 }
                 Console.Write("LOG (WARNING)");
-            }
+            } else if (MessageType == Syslog.Type.Error)
+			{
+				if (Configuration.System.Colors)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                }
+                Console.Write("LOG (ERROR)");
+			}
             else
             {
                 Console.Write("LOG ");
@@ -205,7 +277,7 @@ namespace wmib
                         }
                         foreach (Message message in priv)
                         {
-                            Display(message.Time, message.Text, message.Warning);
+                            Display(message.Time, message.Text, message._Type);
                         }
                     }
                     Thread.Sleep(100);

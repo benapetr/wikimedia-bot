@@ -47,7 +47,7 @@ namespace wmib
 			}
 		}
 
-		public static void SystemLog(string Message, bool Warning)
+		public static void SystemLog(string Message, Syslog.Type MessageType)
 		{
 			return;
 		}
