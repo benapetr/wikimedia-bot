@@ -37,7 +37,7 @@ namespace wmib
         /// <summary>
         /// Whether it should be reloaded on crash
         /// </summary>
-        public bool Reload = false;
+        public bool RestartOnModuleCrash = false;
         /// <summary>
         /// If the module is in warning mode
         /// </summary>
@@ -100,7 +100,7 @@ namespace wmib
                 Hook_OnRegister();
                 if (HasSeparateThreadInstance)
                 {
-                    thread = new Thread(Exec) { Name = "Module " + Name };
+                    thread = new Thread(Exec) { Name = "Module:" + Name };
                     thread.Start();
                 }
             }
@@ -323,7 +323,7 @@ namespace wmib
         /// <param name="OldNick"></param>
         public virtual void Hook_Nick(Channel channel, User Target, string OldNick)
         { 
-            
+			return;
         }
 
         /// <summary>
@@ -428,7 +428,7 @@ namespace wmib
         /// </summary>
         /// <param name="ex">Exception pointer</param>
         /// <param name="chan">Channel name</param>
-        public void handleException(Exception ex, string chan = "")
+        public void HandleException(Exception ex, string chan = "")
         {
             try
             {
@@ -513,7 +513,7 @@ namespace wmib
                 IsWorking = false;
                 Syslog.Log("Module crashed: " + Name, true);
             }
-            while (Reload)
+            while (Core.IsRunning && RestartOnModuleCrash)
             {
                 try
                 {
@@ -555,7 +555,7 @@ namespace wmib
         public virtual void Load()
         { 
             Syslog.Log("Module " + Name + " is missing core thread, terminated", true);
-            Reload = false;
+            RestartOnModuleCrash = false;
             IsWorking = false;
             return;
         }
@@ -573,15 +573,15 @@ namespace wmib
                     Syslog.Log("Unable to unload module, forcefully removed from memory: " + Name, true);
                 }
                 IsWorking = false;
-                Reload = false;
+                RestartOnModuleCrash = false;
                 if (thread != null)
                 {
                     if (thread.ThreadState == System.Threading.ThreadState.Running)
                     {
                         Syslog.Log("Terminating module: " + Name, true);
-                        if (Reload)
+                        if (RestartOnModuleCrash)
                         {
-                            Reload = false;
+                            RestartOnModuleCrash = false;
                         }
                         thread.Abort();
                     }

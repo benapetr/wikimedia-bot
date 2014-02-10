@@ -132,8 +132,8 @@ namespace wmib
         public class MySQL
         {
             /// <summary>
-        /// Mysql user
-        /// </summary>
+            /// Mysql user
+            /// </summary>
             public static string MysqlUser = null;
 
             /// <summary>

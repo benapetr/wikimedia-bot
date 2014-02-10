@@ -75,7 +75,7 @@ namespace wmib
         /// <summary>
         /// Pinger
         /// </summary>
-        public static Thread check_thread = null;
+        public static Thread PingerThread = null;
         /// <summary>
         /// Queue thread
         /// </summary>
@@ -302,7 +302,7 @@ namespace wmib
         /// <returns></returns>
         public bool Reconnect()
         {
-            if (Core._Status == Core.Status.ShuttingDown)
+            if (!Core.IsRunning)
             {
                 Syslog.Log("Ignoring request to reconnect because bot is shutting down");
                 return false;
@@ -338,7 +338,7 @@ namespace wmib
         /// <param name="text"></param>
         public void SendData(string text)
         {
-            if (Core._Status == Core.Status.ShuttingDown)
+            if (!Core.IsRunning)
             {
                 return;
             }
@@ -428,10 +428,11 @@ namespace wmib
                 }
 
                 _Queue = new System.Threading.Thread(Queue.Run);
+				_Queue.Name = "MessageQueue:" + NickName;
 
-
-                check_thread = new System.Threading.Thread(Ping);
-                check_thread.Start();
+                PingerThread = new System.Threading.Thread(Ping);
+				PingerThread.Name = "Ping:"+ NickName;
+                PingerThread.Start();
 
                 if (Auth)
                 {

@@ -45,7 +45,7 @@ namespace wmib
         /// <summary>
         /// Status
         /// </summary>
-        public static Status _Status = Status.OK;
+        private static Status _Status = Status.OK;
         /// <summary>
         /// irc
         /// </summary>
@@ -151,45 +151,6 @@ namespace wmib
         public static string decode2(string text)
         {
             return text.Replace("<separator>", "|");
-        }
-
-        /// <summary>
-        /// Write a system log
-        /// </summary>
-        /// <param name="text">Text of log</param>
-        /// <param name="error">Should be considered warning</param>
-        [Obsolete]
-        public static void Log(string text, bool error = false)
-        {
-            Syslog.Log(text, error);
-        }
-
-        /// <summary>
-        /// Debug log
-        /// </summary>
-        /// <param name="text"></param>
-        /// <param name="verbosity"></param>
-        [Obsolete]
-        public static void DebugLog(string text, int verbosity = 1)
-        {
-            if (Configuration.System.SelectedVerbosity >= verbosity)
-            {
-                Syslog.Log("DEBUG: " + text);
-            }
-        }
-
-        /// <summary>
-        /// Debug log
-        /// </summary>
-        /// <param name="text"></param>
-        /// <param name="verbosity"></param>
-        [Obsolete]
-        public static void DebugWrite(string text, int verbosity = 1)
-        {
-            if (Configuration.System.SelectedVerbosity >= verbosity)
-            {
-                Syslog.WriteNow("DEBUG: " + text);
-            }
         }
 
         /// <summary>
@@ -322,25 +283,6 @@ namespace wmib
         }
 
         /// <summary>
-        /// Recover a file that had a backup and remove it
-        /// </summary>
-        /// <param name="name">Name of file</param>
-        /// <param name="ch"></param>
-        /// <returns></returns>
-        [Obsolete]
-        public static bool BackupRecovery(string name, string ch = "unknown object")
-        {
-            if (File.Exists(Configuration.TempName(name)))
-            {
-                string temp = System.IO.Path.GetTempFileName();
-                File.Copy(Configuration.TempName(name), temp, true);
-                Syslog.Log("Unfinished transaction from " + name + "~ was stored as " + temp);
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>
         /// Create a backup file
         /// 
         /// This is very useful function in case you need to overwrite some file. In that case
@@ -455,10 +397,8 @@ namespace wmib
                 }
             }
             Syslog.Log("All instances joined their channels");
-
             Core.FinishedJoining = true;
-
-            while (_Status == Status.OK)
+            while (IsRunning)
             {
                 Thread.Sleep(200);
             }
@@ -496,7 +436,7 @@ namespace wmib
         {
             try
             {
-                if (_Status == Status.ShuttingDown)
+                if (!IsRunning)
                 {
                     Syslog.DebugLog("Attempt to kill bot while it's already being killed", 2);
                     return;

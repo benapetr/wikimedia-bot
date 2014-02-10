@@ -58,12 +58,13 @@ namespace wmib
             {
                 Core.Kill();
             }
-            catch (Exception)
+            catch (Exception fail)
             {
+				Core.HandleException(fail);
                 Core.irc.Disconnect();
-                Core._Status = Core.Status.ShuttingDown;
             }
-            Syslog.WriteNow("Terminated");
+            Syslog.WriteNow("Terminated (emergency)");
+			System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
 
         /// <summary>
