@@ -435,8 +435,8 @@ namespace wmib
                 if (!string.IsNullOrEmpty(Configuration.System.DebugChan))
                 {
                     Core.irc.Queue.DeliverMessage("DEBUG Exception in plugin " + Name + ": " + ex.Message +
-					                                   " last input was " + Core.LastText,
-					                                   Configuration.System.DebugChan);
+                                                       " last input was " + Core.LastText,
+                                                       Configuration.System.DebugChan);
                 }
                 Syslog.Log("DEBUG Exception in module " + Name + ": " + ex.Message + ex.Source + ex.StackTrace, true);
             }

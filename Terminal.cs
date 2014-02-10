@@ -28,23 +28,23 @@ namespace wmib
         /// Thread this console run in
         /// </summary>
         public static Thread thread;
-		/// <summary>
-		/// Gets a value indicating whether this instance is online.
-		/// </summary>
-		/// <value>
-		/// <c>true</c> if this instance is online; otherwise, <c>false</c>.
-		/// </value>
-		public static bool IsOnline
-		{
-			get
-			{
-				return Online;
-			}
-		}
-		/// <summary>
-		/// Whether the console is online or not
-		/// </summary>
-		private static bool Online = false;
+        /// <summary>
+        /// Gets a value indicating whether this instance is online.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is online; otherwise, <c>false</c>.
+        /// </value>
+        public static bool IsOnline
+        {
+            get
+            {
+                return Online;
+            }
+        }
+        /// <summary>
+        /// Whether the console is online or not
+        /// </summary>
+        private static bool Online = false;
         /// <summary>
         /// Whether the console is running or not
         /// </summary>
@@ -53,29 +53,29 @@ namespace wmib
         /// Number of current connections to this console
         /// </summary>
         public static int Connections = 0;
-		private static object lConnections = new object();
+        private static object lConnections = new object();
 
-		/// <summary>
-		/// Decreases the connections.
-		/// </summary>
-		private static void DecreaseConnections()
-		{
-			lock(lConnections)
-			{
-				Connections--;
-			}
-		}
+        /// <summary>
+        /// Decreases the connections.
+        /// </summary>
+        private static void DecreaseConnections()
+        {
+            lock(lConnections)
+            {
+                Connections--;
+            }
+        }
 
-		/// <summary>
-		/// Increases the connections.
-		/// </summary>
-		private static void IncreaseConnections()
-		{
-			lock(lConnections)
-			{
-				Connections++;
-			}
-		}
+        /// <summary>
+        /// Increases the connections.
+        /// </summary>
+        private static void IncreaseConnections()
+        {
+            lock(lConnections)
+            {
+                Connections++;
+            }
+        }
 
         /// <summary>
         /// This will start the console
@@ -92,7 +92,7 @@ namespace wmib
             {
                 System.Net.Sockets.TcpClient connection = (System.Net.Sockets.TcpClient)data;
                 Syslog.DebugLog("Incoming connection from: " + connection.Client.RemoteEndPoint.ToString());
-				IncreaseConnections();
+                IncreaseConnections();
                 connection.NoDelay = true;
                 System.Net.Sockets.NetworkStream ns = connection.GetStream();
                 System.IO.StreamReader Reader = new System.IO.StreamReader(ns);
@@ -120,7 +120,7 @@ namespace wmib
                     Writer.WriteLine("Invalid user or password, bye");
                     Writer.Flush();
                     connection.Close();
-					DecreaseConnections();
+                    DecreaseConnections();
                     return;
                 }
 
@@ -149,16 +149,16 @@ namespace wmib
                             Writer.WriteLine("Good bye");
                             Writer.Flush();
                             connection.Close();
-							DecreaseConnections();
+                            DecreaseConnections();
                             return;
                         case "info":
                             string result = "Uptime: " + Core.getUptime() + " Version: " + Configuration.Version + Environment.NewLine + "Instances:" + Environment.NewLine;
-							Syslog.DebugLog("Retrieving information for user " + username + " in system");
+                            Syslog.DebugLog("Retrieving information for user " + username + " in system");
                             lock (Core.Instances)
                             {
                                 foreach (Instance instance in Core.Instances.Values)
                                 {
-									Syslog.DebugLog("Retrieving information for user " + username + " of instance " +  instance.Nick, 2);
+                                    Syslog.DebugLog("Retrieving information for user " + username + " of instance " +  instance.Nick, 2);
                                     result += instance.Nick + " channels: " + instance.ChannelCount.ToString() +
                                         " connected: " + instance.IsConnected.ToString() + " working: " +
                                         instance.IsWorking.ToString() + "\n";
@@ -284,7 +284,7 @@ namespace wmib
             {
                 Core.HandleException(fail);
             }
-			DecreaseConnections();
+            DecreaseConnections();
         }
 
         private static void ExecuteThread()
@@ -292,9 +292,9 @@ namespace wmib
             try
             {
                 System.Net.Sockets.TcpListener server = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Any,
-				                                                         Configuration.Network.SystemPort);
+                                                                         Configuration.Network.SystemPort);
                 server.Start();
-				Online = true;
+                Online = true;
                 Syslog.WriteNow("Network console is online on port: " + Configuration.Network.SystemPort.ToString());
                 while (Running && Core.IsRunning)
                 {
@@ -306,8 +306,8 @@ namespace wmib
             }
             catch (Exception fail)
             {
-				Online = false;
-				Syslog.WriteNow("Network console is down", true);
+                Online = false;
+                Syslog.WriteNow("Network console is down", true);
                 Core.HandleException(fail);
             }
         }

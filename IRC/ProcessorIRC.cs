@@ -408,7 +408,7 @@ namespace wmib
             Channel channel = Core.GetChannel(chan);
             if (channel != null)
             {
-				SystemHooks.IrcKick(channel, Source, Target);
+                SystemHooks.IrcKick(channel, Source, Target);
                 if (channel.ContainsUser(user))
                 {
                     User delete = null;

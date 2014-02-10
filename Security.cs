@@ -103,7 +103,7 @@ namespace wmib
         private static void GlobalLoad()
         {
             string[] dba = System.IO.File.ReadAllLines(Variables.ConfigurationDirectory + 
-			               System.IO.Path.DirectorySeparatorChar + "admins");
+                           System.IO.Path.DirectorySeparatorChar + "admins");
             lock (GlobalUsers)
             {
                 GlobalUsers.Clear();

@@ -17,121 +17,121 @@ using System.Text;
 
 namespace wmib
 {
-	public class Syslog
-	{
-		public enum Type
-		{
-			Error,
-			Debug,
-			Warning,
-			Normal
-		}
+    public class Syslog
+    {
+        public enum Type
+        {
+            Error,
+            Debug,
+            Warning,
+            Normal
+        }
 
-		/// <summary>
-		/// Log the specified message
-		/// </summary>
-		/// <param name='msg'>
-		/// Message that you want to log.
-		/// </param>
-		/// <param name='warn'>
-		/// If this is true the message will be classified as a warning.
-		/// </param>
+        /// <summary>
+        /// Log the specified message
+        /// </summary>
+        /// <param name='msg'>
+        /// Message that you want to log.
+        /// </param>
+        /// <param name='warn'>
+        /// If this is true the message will be classified as a warning.
+        /// </param>
         public static bool Log(string Message, Type MessageType)
         {
             Logging.Write(Message, MessageType);
-			SystemHooks.SystemLog(Message, MessageType);
+            SystemHooks.SystemLog(Message, MessageType);
             return true;
         }
 
-		/// <summary>
-		/// Log the specified message
-		/// </summary>
-		/// <param name='msg'>
-		/// Message that you want to log.
-		/// </param>
-		/// <param name='warn'>
-		/// If this is true the message will be classified as a warning.
-		/// </param>
+        /// <summary>
+        /// Log the specified message
+        /// </summary>
+        /// <param name='msg'>
+        /// Message that you want to log.
+        /// </param>
+        /// <param name='warn'>
+        /// If this is true the message will be classified as a warning.
+        /// </param>
         public static bool Log(string Message, bool Warning = false)
-		{
-			Type MessageType = Type.Normal;
-			if (Warning)
-			{
-				MessageType = Type.Warning;
-			}
+        {
+            Type MessageType = Type.Normal;
+            if (Warning)
+            {
+                MessageType = Type.Warning;
+            }
             Logging.Write(Message, MessageType);
-			SystemHooks.SystemLog(Message, MessageType);
+            SystemHooks.SystemLog(Message, MessageType);
             return true;
         }
 
-		/// <summary>
-		/// Log the specified message
-		/// </summary>
-		/// <param name='msg'>
-		/// Message that you want to log.
-		/// </param>
+        /// <summary>
+        /// Log the specified message
+        /// </summary>
+        /// <param name='msg'>
+        /// Message that you want to log.
+        /// </param>
         public static bool WarningLog(string Message)
         {
             Syslog.Log(Message, true);
             return true;
         }
 
-		/// <summary>
-		/// Log the specified message
-		/// </summary>
-		/// <param name='msg'>
-		/// Message that you want to log.
-		/// </param>
+        /// <summary>
+        /// Log the specified message
+        /// </summary>
+        /// <param name='msg'>
+        /// Message that you want to log.
+        /// </param>
         public static bool ErrorLog(string Message)
         {
             Syslog.Log(Message, Type.Error);
             return true;
         }
 
-		/// <summary>
-		/// Writes the message immediately to console with no thread sync
-		/// </summary>
-		/// <returns>
-		/// The now.
-		/// </returns>
-		/// <param name='msg'>
-		/// Message that you want to log.
-		/// </param>
-		/// <param name='warn'>
-		/// If this is true the message will be classified as a warning.
-		/// </param>
-		public static bool WriteNow(string Message, bool Warning = false)
-		{
-			Syslog.Type _Type = Type.Normal;
-			if (Warning)
-			{
-				_Type = Type.Warning;
-			}
+        /// <summary>
+        /// Writes the message immediately to console with no thread sync
+        /// </summary>
+        /// <returns>
+        /// The now.
+        /// </returns>
+        /// <param name='msg'>
+        /// Message that you want to log.
+        /// </param>
+        /// <param name='warn'>
+        /// If this is true the message will be classified as a warning.
+        /// </param>
+        public static bool WriteNow(string Message, bool Warning = false)
+        {
+            Syslog.Type _Type = Type.Normal;
+            if (Warning)
+            {
+                _Type = Type.Warning;
+            }
             Logging.Display(DateTime.Now, Message, _Type);
-			SystemHooks.SystemLog(Message, _Type);
+            SystemHooks.SystemLog(Message, _Type);
             return true;
         }
 
-		/// <summary>
-		/// Writes the message immediately to console with no thread sync
-		/// </summary>
-		/// <returns>
-		/// The now.
-		/// </returns>
-		/// <param name='msg'>
-		/// Message that you want to log.
-		/// </param>
-		/// <param name='warn'>
-		/// If this is true the message will be classified as a warning.
-		/// </param>
-		public static bool WriteNow(string Message, Syslog.Type MessageType)
-		{
+        /// <summary>
+        /// Writes the message immediately to console with no thread sync
+        /// </summary>
+        /// <returns>
+        /// The now.
+        /// </returns>
+        /// <param name='msg'>
+        /// Message that you want to log.
+        /// </param>
+        /// <param name='warn'>
+        /// If this is true the message will be classified as a warning.
+        /// </param>
+        public static bool WriteNow(string Message, Syslog.Type MessageType)
+        {
             Logging.Display(DateTime.Now, Message, MessageType);
-			SystemHooks.SystemLog(Message, MessageType);
+            SystemHooks.SystemLog(Message, MessageType);
             return true;
         }
 
-		/// <summary>
+        /// <summary>
         /// Debug log
         /// </summary>
         /// <param name="text"></param>
@@ -156,7 +156,7 @@ namespace wmib
                 Syslog.WriteNow("DEBUG <" + Verbosity.ToString() + ">: " + Message);
             }
         }
-	}
+    }
 
     /// <summary>
     /// This class is handling the system terminal, it writes to it using a single thread so that
@@ -222,39 +222,39 @@ namespace wmib
         /// <param name="Message"></param>
         /// <param name="Warning"></param>
         public static void Display(DateTime time, string Message, Syslog.Type MessageType)
-		{
-			if (Configuration.System.Colors)
-			{
-				Console.ForegroundColor = ConsoleColor.Blue;
-			}
-			Console.Write("LOG ");
-			if (Configuration.System.Colors)
-			{
-				Console.ForegroundColor = ConsoleColor.Green;
-			}
-			Console.Write("[{0}]", time.ToString());
-			if (MessageType == Syslog.Type.Warning)
-			{
-				if (Configuration.System.Colors)
-				{
-					Console.ForegroundColor = ConsoleColor.Yellow;
-				}
-				Console.Write(" [WARNING]");
-			} else if (MessageType == Syslog.Type.Error)
-			{
-				if (Configuration.System.Colors)
-				{
-					Console.ForegroundColor = ConsoleColor.Red;
-				}
-				Console.Write("   [ERROR]");
-			} else
-			{
-				if (Configuration.System.Colors)
-				{
-					Console.ForegroundColor = ConsoleColor.DarkCyan;
-				}
-				Console.Write("    [INFO]");
-			}
+        {
+            if (Configuration.System.Colors)
+            {
+                Console.ForegroundColor = ConsoleColor.Blue;
+            }
+            Console.Write("LOG ");
+            if (Configuration.System.Colors)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+            }
+            Console.Write("[{0}]", time.ToString());
+            if (MessageType == Syslog.Type.Warning)
+            {
+                if (Configuration.System.Colors)
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                }
+                Console.Write(" [WARNING]");
+            } else if (MessageType == Syslog.Type.Error)
+            {
+                if (Configuration.System.Colors)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                }
+                Console.Write("   [ERROR]");
+            } else
+            {
+                if (Configuration.System.Colors)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkCyan;
+                }
+                Console.Write("    [INFO]");
+            }
             if (Configuration.System.Colors)
             {
                 Console.ResetColor();
@@ -262,22 +262,22 @@ namespace wmib
             Console.WriteLine(": " + Message);
         }
 
-		private static void Flush()
-		{
-			if (messages.Count > 0)
+        private static void Flush()
+        {
+            if (messages.Count > 0)
             {
-				List<Message> priv = new List<Message>();
-				lock(messages)
-				{
-					priv.AddRange(messages);
-					messages.Clear();
-				}
-				foreach (Message message in priv)
-				{
-					Display(message.Time, message.Text, message._Type);
-				}
-			}
-		}
+                List<Message> priv = new List<Message>();
+                lock(messages)
+                {
+                    priv.AddRange(messages);
+                    messages.Clear();
+                }
+                foreach (Message message in priv)
+                {
+                    Display(message.Time, message.Text, message._Type);
+                }
+            }
+        }
 
         /// <summary>
         /// Execute thread
@@ -288,16 +288,16 @@ namespace wmib
             {
                 while (Core.IsRunning)
                 {
-					Flush();
+                    Flush();
                     Thread.Sleep(100);
                 }
             }
             catch (ThreadAbortException)
             {
-				Flush();
+                Flush();
                 return;
             }
-			Flush();
+            Flush();
         }
     }
 }

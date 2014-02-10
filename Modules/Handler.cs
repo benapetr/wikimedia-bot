@@ -19,7 +19,7 @@ namespace wmib
 {
     public partial class ExtensionHandler
     {
-		/// <summary>
+        /// <summary>
         /// List of all modules loaded in kernel
         /// </summary>
         public static List<Module> Extensions = new List<Module>();
@@ -108,7 +108,7 @@ namespace wmib
 
                     Module _plugin = (Module)Activator.CreateInstance(pluginInfo);
 
-					if (!_plugin.Construct())
+                    if (!_plugin.Construct())
                     {
                         Syslog.Log("Invalid module", true);
                         _plugin.Exit();

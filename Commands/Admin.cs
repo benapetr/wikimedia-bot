@@ -33,7 +33,7 @@ namespace wmib
                 if (chan.Users.IsApproved(invoker, "admin"))
                 {
                     chan.LoadConfig();
-					SystemHooks.IrcReloadChannelConf(chan);
+                    SystemHooks.IrcReloadChannelConf(chan);
                     Core.irc.Queue.DeliverMessage(messages.Localize("Config", chan.Language), chan);
                     return;
                 }
@@ -54,7 +54,7 @@ namespace wmib
                 if (!chan.SuppressWarnings)
                 {
                     Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan,
-					                              IRC.priority.low);
+                                                  IRC.priority.low);
                 }
                 return;
             }
@@ -62,7 +62,7 @@ namespace wmib
             if (message == Configuration.System.CommandPrefix + "info")
             {
                 Core.irc.Queue.DeliverMessage(Configuration.WebPages.WebpageURL + Configuration.Paths.DumpDir
-				                              + "/" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm", chan);
+                                              + "/" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm", chan);
                 return;
             }
 
@@ -75,15 +75,15 @@ namespace wmib
                     if (_Channel == null)
                     {
                         Core.irc.Queue.DeliverMessage(messages.Localize("UnknownChan", chan.Language), chan,
-						                              IRC.priority.low);
+                                                      IRC.priority.low);
                         return;
                     }
                     Commands.PartChannel(_Channel, invoker.Nick, invoker.Host, Configuration.System.CommandPrefix
-					                 + "part", chan.Name);
+                                     + "part", chan.Name);
                     return;
                 }
                 Core.irc.Queue.DeliverMessage(messages.Localize("Responses-PartFail", chan.Language), chan,
-				                              IRC.priority.low);
+                                              IRC.priority.low);
                 return;
             }
 
@@ -96,15 +96,15 @@ namespace wmib
                     if (_Channel == null)
                     {
                         Core.irc.Queue.DeliverMessage(messages.Localize("UnknownChan", chan.Language), chan,
-						                              IRC.priority.low);
+                                                      IRC.priority.low);
                         return;
                     }
                     Commands.PartChannel(_Channel, invoker.Nick, invoker.Host, Configuration.System.CommandPrefix
-					                 + "drop", chan.Name);
+                                     + "drop", chan.Name);
                     return;
                 }
                 Core.irc.Queue.DeliverMessage(messages.Localize("Responses-PartFail", chan.Language), chan,
-				                              IRC.priority.low);
+                                              IRC.priority.low);
                 return;
             }
 
@@ -138,7 +138,7 @@ namespace wmib
                 if (!chan.SuppressWarnings)
                 {
                     Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan,
-					                              IRC.priority.low);
+                                                  IRC.priority.low);
                 }
                 return;
             }
@@ -156,10 +156,10 @@ namespace wmib
                     return;
                 }
                 Core.irc.Queue.DeliverMessage("I am running http://meta.wikimedia.org/wiki/WM-Bot version "
-				                              + Configuration.Version + " my source code is licensed "
-				                              + "under GPL and located at https://github.com/benapetr/wikimedia-bot "
-				                              + "I will be very happy if you fix my bugs or implement new features",
-				                              chan);
+                                              + Configuration.Version + " my source code is licensed "
+                                              + "under GPL and located at https://github.com/benapetr/wikimedia-bot "
+                                              + "I will be very happy if you fix my bugs or implement new features",
+                                              chan);
                 return;
             }
 
@@ -327,7 +327,7 @@ namespace wmib
             if (message == Configuration.System.CommandPrefix + "channellist")
             {
                 Core.irc.Queue.DeliverMessage(messages.Localize("Responses-List", chan.Language, new List<string>
-				                                        { Configuration.Channels.Count.ToString() }), chan);
+                                                        { Configuration.Channels.Count.ToString() }), chan);
                 return;
             }
 
@@ -352,12 +352,12 @@ namespace wmib
                                 {
                                     chan.IgnoreUnknown = _temp_a;
                                     Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language,
-									                                           new List<string> { value, name }), chan);
+                                                                               new List<string> { value, name }), chan);
                                     chan.SaveConfig();
                                     return;
                                 }
                                 Core.irc.Queue.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string>
-							                                           { name, value }), chan);
+                                                                       { name, value }), chan);
                                 return;
                             case "respond-wait":
                                 int _temp_b;
@@ -367,37 +367,37 @@ namespace wmib
                                     {
                                         chan.RespondWait = _temp_b;
                                         Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string>
-										                                           { value, name }), chan);
+                                                                                   { value, name }), chan);
                                         chan.SaveConfig();
                                         return;
                                     }
                                 }
                                 Core.irc.Queue.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string>
-							                                           { name, value }), chan);
+                                                                       { name, value }), chan);
                                 return;
                             case "respond-message":
                                 if (bool.TryParse(value, out _temp_a))
                                 {
                                     chan.RespondMessage = _temp_a;
                                     Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string>
-									                                           { value, name }), chan);
+                                                                               { value, name }), chan);
                                     chan.SaveConfig();
                                     return;
                                 }
                                 Core.irc.Queue.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string>
-							                                           { name, value }), chan);
+                                                                       { name, value }), chan);
                                 return;
                             case "suppress-warnings":
                                 if (bool.TryParse(value, out _temp_a))
                                 {
                                     chan.SuppressWarnings = _temp_a;
                                     Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string>
-									                                           { value, name }), chan);
+                                                                               { value, name }), chan);
                                     chan.SaveConfig();
                                     return;
                                 }
                                 Core.irc.Queue.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string>
-							                                           { name, value }), chan);
+                                                                       { name, value }), chan);
                                 return;
                         }
                         bool exist = false;
@@ -434,15 +434,15 @@ namespace wmib
                         {
                             case "ignore-unknown":
                                 Core.irc.Queue.DeliverMessage(messages.Localize("Responses-Conf", chan.Language, new List<string>
-							                                           { text, chan.IgnoreUnknown.ToString() } ), chan);
+                                                                       { text, chan.IgnoreUnknown.ToString() } ), chan);
                                 return;
                             case "respond-message":
                                 Core.irc.Queue.DeliverMessage(messages.Localize("Responses-Conf", chan.Language, new List<string>
-							                                           { text, chan.RespondMessage.ToString() }), chan);
+                                                                       { text, chan.RespondMessage.ToString() }), chan);
                                 return;
                             case "suppress-warnings":
                                 Core.irc.Queue.DeliverMessage(messages.Localize("Responses-Conf", chan.Language, new List<string>
-							                                           { text, chan.SuppressWarnings.ToString() } ), chan);
+                                                                       { text, chan.SuppressWarnings.ToString() } ), chan);
                                 return;
                         }
                         bool exist = false;
@@ -496,7 +496,7 @@ namespace wmib
                         if (_m != null)
                         {
                             Core.irc.Queue.DeliverMessage("This module was already loaded and you can't load one module twice,"
-							                              +" module will be reloaded now", chan, IRC.priority.high);
+                                                          +" module will be reloaded now", chan, IRC.priority.high);
                             _m.Exit();
                         }
                         if (module.EndsWith(".bin"))
@@ -534,7 +534,7 @@ namespace wmib
                         Configuration.System.SelectedVerbosity--;
                     }
                     Core.irc.Queue.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity.ToString(), 
-					                              chan, IRC.priority.high);
+                                                  chan, IRC.priority.high);
                 }
             }
 
@@ -544,7 +544,7 @@ namespace wmib
                 {
                     Configuration.System.SelectedVerbosity++;
                     Core.irc.Queue.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity.ToString(),
-					                              chan, IRC.priority.high);
+                                                  chan, IRC.priority.high);
                 }
             }
 
@@ -576,8 +576,8 @@ namespace wmib
             if (message == Configuration.System.CommandPrefix + "commands")
             {
                 Core.irc.Queue.DeliverMessage("Commands: there is too many commands to display on one line,"
-				                              + " see http://meta.wikimedia.org/wiki/wm-bot for a list of"
-				                              + " commands and help", chan);
+                                              + " see http://meta.wikimedia.org/wiki/wm-bot for a list of"
+                                              + " commands and help", chan);
             }
         }
     }

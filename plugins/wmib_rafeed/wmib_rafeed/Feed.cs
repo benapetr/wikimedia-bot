@@ -117,30 +117,30 @@ namespace wmib
                         foreach (System.Xml.XmlNode xx in data.ChildNodes[0].ChildNodes)
                         {
                             Item i = new Item();
-							try
-							{
-								foreach (System.Xml.XmlAttribute property in xx.Attributes)
-								{
-									switch (property.Name)
-									{
-									case "name":
-										i.name = property.Value;
-										break;
-									case "url":
-										i.URL = property.Value;
-										break;
-									case "disb":
-									case "disabled":
-										i.disabled = bool.Parse(property.Value);
-										break;
-									case "template":
-										i.template = property.Value;
-										break;
-									case "so":
-										i.ScannerOnly = bool.Parse(property.Value);
-										break;
-									}
-								}
+                            try
+                            {
+                                foreach (System.Xml.XmlAttribute property in xx.Attributes)
+                                {
+                                    switch (property.Name)
+                                    {
+                                    case "name":
+                                        i.name = property.Value;
+                                        break;
+                                    case "url":
+                                        i.URL = property.Value;
+                                        break;
+                                    case "disb":
+                                    case "disabled":
+                                        i.disabled = bool.Parse(property.Value);
+                                        break;
+                                    case "template":
+                                        i.template = property.Value;
+                                        break;
+                                    case "so":
+                                        i.ScannerOnly = bool.Parse(property.Value);
+                                        break;
+                                    }
+                                }
                             }
                             catch (Exception)
                             {
@@ -182,7 +182,7 @@ namespace wmib
                         XmlAttribute url = data.CreateAttribute("url");
                         url.Value = key.URL;
                         XmlAttribute disabled = data.CreateAttribute("disb");
-						disabled.Value = key.disabled.ToString();
+                        disabled.Value = key.disabled.ToString();
                         XmlAttribute template = data.CreateAttribute("template");
                         template.Value = key.template;
                         XmlAttribute scan = data.CreateAttribute("so");
@@ -190,7 +190,7 @@ namespace wmib
                         System.Xml.XmlNode db = data.CreateElement("data");
                         db.Attributes.Append(name);
                         db.Attributes.Append(url);
-						db.Attributes.Append(disabled);
+                        db.Attributes.Append(disabled);
                         db.Attributes.Append(template);
                         db.Attributes.Append(scan);
                         xmlnode.AppendChild(db);
@@ -401,7 +401,7 @@ namespace wmib
                 Item.name = name;
                 Item.ScannerOnly = scan;
                 Item.URL = url;
-				Item.template = "";
+                Item.template = "";
                 lock (Content)
                 {
                     Content.Add(Item);

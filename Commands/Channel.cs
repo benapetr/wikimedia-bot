@@ -102,7 +102,7 @@ namespace wmib
                     origin = channel.Name;
                 }
                 if (channel.Name == Configuration.System.DebugChan && (message == Configuration.System.CommandPrefix + "part" 
-				                                          || message == Configuration.System.CommandPrefix + "drop"))
+                                                          || message == Configuration.System.CommandPrefix + "drop"))
                 {
                     channel.PrimaryInstance.irc.Queue.DeliverMessage("Cowardly refusing to part this channel, because I love it :3", channel);
                     return;

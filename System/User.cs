@@ -17,50 +17,50 @@ using System.IO;
 
 namespace wmib
 {
-	/// <summary>
-	/// System user
-	/// </summary>
-	[Serializable]
-	public class SystemUser
-	{
-		/// <summary>
-		/// Regex
-		/// </summary>
-		public string Name = null;
-		/// <summary>
-		/// Level
-		/// </summary>
-		public string Role = null;
-		/// <summary>
-		/// Username of user, this is used for interactive logins
-		/// </summary>
-		public string UserName = null;
-		/// <summary>
-		/// Password of user
-		/// </summary>
-		public string Password = null;
-		/// <summary>
-		/// If user is global or not
-		/// </summary>
-		public bool IsGlobal;
+    /// <summary>
+    /// System user
+    /// </summary>
+    [Serializable]
+    public class SystemUser
+    {
+        /// <summary>
+        /// Regex
+        /// </summary>
+        public string Name = null;
+        /// <summary>
+        /// Level
+        /// </summary>
+        public string Role = null;
+        /// <summary>
+        /// Username of user, this is used for interactive logins
+        /// </summary>
+        public string UserName = null;
+        /// <summary>
+        /// Password of user
+        /// </summary>
+        public string Password = null;
+        /// <summary>
+        /// If user is global or not
+        /// </summary>
+        public bool IsGlobal;
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="wmib.SystemUser"/> class.
-		/// </summary>
-		/// <param name='role'>
-		/// Role.
-		/// </param>
-		/// <param name='name'>
-		/// Name.
-		/// </param>
-		/// <param name='isglobal'>
-		/// Isglobal.
-		/// </param>
-		public SystemUser(string role, string name, bool isglobal = false)
-		{
-			this.IsGlobal = isglobal;
-			this.Role = role;
-			this.Name = name;
-		}
-	}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="wmib.SystemUser"/> class.
+        /// </summary>
+        /// <param name='role'>
+        /// Role.
+        /// </param>
+        /// <param name='name'>
+        /// Name.
+        /// </param>
+        /// <param name='isglobal'>
+        /// Isglobal.
+        /// </param>
+        public SystemUser(string role, string name, bool isglobal = false)
+        {
+            this.IsGlobal = isglobal;
+            this.Role = role;
+            this.Name = name;
+        }
+    }
 }

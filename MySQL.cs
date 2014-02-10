@@ -25,20 +25,20 @@ namespace wmib
     /// </summary>
     public class WMIBMySQL : Database
     {
-		[Serializable]
-		public class SerializedRow
-		{
-			public Row row;
-			public string table;
+        [Serializable]
+        public class SerializedRow
+        {
+            public Row row;
+            public string table;
 
-			public SerializedRow(string name, Row _row)
-			{
-				row = _row;
-				table = name;
-			}
-		}
+            public SerializedRow(string name, Row _row)
+            {
+                row = _row;
+                table = name;
+            }
+        }
 
-		public List<SerializedRow> PendingRows = new List<SerializedRow>();
+        public List<SerializedRow> PendingRows = new List<SerializedRow>();
         private MySql.Data.MySqlClient.MySqlConnection Connection = null;
         /// <summary>
         /// Return true if mysql is connected to server
@@ -53,27 +53,27 @@ namespace wmib
 
         private bool connected = false;
 
-		public WMIBMySQL()
-		{
-			string file = Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "unwrittensql.xml";
-			Core.RecoverFile(file);
-			if (File.Exists(file))
-			{
-				Syslog.WarningLog("There is a mysql dump file from previous run containing mysql rows that were never successfuly inserted, trying to recover them");
-				XmlDocument document = new XmlDocument();
-	            TextReader sr = new StreamReader(file);
-	            document.Load(sr);
-	            XmlNodeReader reader = new XmlNodeReader(document.DocumentElement);
-	            XmlSerializer xs = new XmlSerializer(typeof(SerializedRow));
-	            List<SerializedRow> list = (List<SerializedRow>)xs.Deserialize(reader);
-	            reader.Close();
-	            sr.Close();
-				lock (PendingRows)
-				{
-					PendingRows.AddRange(list);
-				}
-			}
-		}
+        public WMIBMySQL()
+        {
+            string file = Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "unwrittensql.xml";
+            Core.RecoverFile(file);
+            if (File.Exists(file))
+            {
+                Syslog.WarningLog("There is a mysql dump file from previous run containing mysql rows that were never successfuly inserted, trying to recover them");
+                XmlDocument document = new XmlDocument();
+                TextReader sr = new StreamReader(file);
+                document.Load(sr);
+                XmlNodeReader reader = new XmlNodeReader(document.DocumentElement);
+                XmlSerializer xs = new XmlSerializer(typeof(SerializedRow));
+                List<SerializedRow> list = (List<SerializedRow>)xs.Deserialize(reader);
+                reader.Close();
+                sr.Close();
+                lock (PendingRows)
+                {
+                    PendingRows.AddRange(list);
+                }
+            }
+        }
 
         public override string Select(string table, string rows, string query, int columns, char separator = '|')
         {
@@ -117,92 +117,92 @@ namespace wmib
         /// <param name="row"></param>
         /// <returns></returns>
         public override bool InsertRow(string table, Row row)
-		{
-			string sql = "";
-			lock(DatabaseLock)
-			{
-				try
-				{
-					if (!IsConnected)
-					{
-						Syslog.DebugLog("Postponing request to insert a row into database which is not connected");
-						lock(PendingRows)
-						{
-							PendingRows.Add(new SerializedRow(table, row));
-						}
-						FlushRows();
-						return false;
-					}
+        {
+            string sql = "";
+            lock(DatabaseLock)
+            {
+                try
+                {
+                    if (!IsConnected)
+                    {
+                        Syslog.DebugLog("Postponing request to insert a row into database which is not connected");
+                        lock(PendingRows)
+                        {
+                            PendingRows.Add(new SerializedRow(table, row));
+                        }
+                        FlushRows();
+                        return false;
+                    }
 
-					MySqlCommand xx = Connection.CreateCommand();
-					sql = "INSERT INTO " + table + " VALUES (";
-					foreach (Database.Row.Value value in row.Values)
-					{
-						switch (value.Type)
-						{
-							case DataType.Boolean:
-							case DataType.Integer:
-								sql += value.Data + ", ";
-								break;
-							case DataType.Varchar:
-							case DataType.Text:
-							case DataType.Date:
-								sql += "'" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(value.Data) + "', ";
-								break;
-						}
-					}
-					if (sql.EndsWith(", "))
-					{
-						sql = sql.Substring(0, sql.Length - 2);
-					}
-					sql += ");";
-					xx.CommandText = sql;
-					xx.ExecuteNonQuery();
-					return true;
-				} catch (MySqlException me)
-				{
-					ErrorBuffer = me.Message;
-					Syslog.Log("Error while storing a row to DB " + me.ToString(), true);
-					Syslog.DebugLog("SQL: " + sql);
-					lock(PendingRows)
-					{
-						PendingRows.Add(new SerializedRow(table, row));
-					}
-					FlushRows();
-					return false;
-				}
-			}
-		}
+                    MySqlCommand xx = Connection.CreateCommand();
+                    sql = "INSERT INTO " + table + " VALUES (";
+                    foreach (Database.Row.Value value in row.Values)
+                    {
+                        switch (value.Type)
+                        {
+                            case DataType.Boolean:
+                            case DataType.Integer:
+                                sql += value.Data + ", ";
+                                break;
+                            case DataType.Varchar:
+                            case DataType.Text:
+                            case DataType.Date:
+                                sql += "'" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(value.Data) + "', ";
+                                break;
+                        }
+                    }
+                    if (sql.EndsWith(", "))
+                    {
+                        sql = sql.Substring(0, sql.Length - 2);
+                    }
+                    sql += ");";
+                    xx.CommandText = sql;
+                    xx.ExecuteNonQuery();
+                    return true;
+                } catch (MySqlException me)
+                {
+                    ErrorBuffer = me.Message;
+                    Syslog.Log("Error while storing a row to DB " + me.ToString(), true);
+                    Syslog.DebugLog("SQL: " + sql);
+                    lock(PendingRows)
+                    {
+                        PendingRows.Add(new SerializedRow(table, row));
+                    }
+                    FlushRows();
+                    return false;
+                }
+            }
+        }
 
-		private void FlushRows()
-		{
-			string file = Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "unwrittensql.xml";
-			if (File.Exists(file))
-			{
-				Core.BackupData(file);
-				if (!File.Exists(Configuration.TempName(file)))
-				{
-					Syslog.WarningLog("Unable to create backup file for " + file);
-					return;
-				}
-			}
-			try
-			{
-				File.Delete(file);
-				XmlSerializer xs = new XmlSerializer(typeof(SerializedRow));
-				StreamWriter writer = File.AppendText(file);
-				lock (PendingRows)
-				{
-	            	xs.Serialize(writer, PendingRows);
-				}
-	            writer.Close();
-			} catch (Exception fail)
-			{
-				Core.HandleException(fail);
-				Syslog.WarningLog("Recovering the mysql unwritten dump because of exception to: " + file);
-				Core.RecoverFile(file);
-			}
-		}
+        private void FlushRows()
+        {
+            string file = Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "unwrittensql.xml";
+            if (File.Exists(file))
+            {
+                Core.BackupData(file);
+                if (!File.Exists(Configuration.TempName(file)))
+                {
+                    Syslog.WarningLog("Unable to create backup file for " + file);
+                    return;
+                }
+            }
+            try
+            {
+                File.Delete(file);
+                XmlSerializer xs = new XmlSerializer(typeof(SerializedRow));
+                StreamWriter writer = File.AppendText(file);
+                lock (PendingRows)
+                {
+                    xs.Serialize(writer, PendingRows);
+                }
+                writer.Close();
+            } catch (Exception fail)
+            {
+                Core.HandleException(fail);
+                Syslog.WarningLog("Recovering the mysql unwritten dump because of exception to: " + file);
+                Core.RecoverFile(file);
+            }
+        }
 
         /// <summary>
         /// Disconnect mysql

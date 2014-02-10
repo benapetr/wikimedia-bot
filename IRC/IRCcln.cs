@@ -309,7 +309,7 @@ namespace wmib
             }
             _Queue.Abort();
             networkStream = Configuration.IRC.UsingBouncer ? new System.Net.Sockets.TcpClient(Bouncer, BouncerPort).GetStream() : 
-				new System.Net.Sockets.TcpClient(Server, 6667).GetStream();
+                new System.Net.Sockets.TcpClient(Server, 6667).GetStream();
             connected = true;
             streamReader = new StreamReader(networkStream, System.Text.Encoding.UTF8);
             streamWriter = new StreamWriter(networkStream);
@@ -407,7 +407,7 @@ namespace wmib
                         string response = streamReader.ReadLine();
                         if (response == "CONTROL: TRUE")
                         {
-							Syslog.DebugLog("Resumming previous session on " + this.ParentInstance.Nick);
+                            Syslog.DebugLog("Resumming previous session on " + this.ParentInstance.Nick);
                             done = false;
                             Auth = false;
                             ChannelsJoined = true;
@@ -419,7 +419,7 @@ namespace wmib
                         }
                         else if (response == "CONTROL: FALSE")
                         {
-							Syslog.DebugLog("Bouncer is not connected, starting new session on " + this.ParentInstance.Nick);
+                            Syslog.DebugLog("Bouncer is not connected, starting new session on " + this.ParentInstance.Nick);
                             done = false;
                             SendData("CONTROL: CREATE");
                             streamWriter.Flush();
@@ -477,7 +477,7 @@ namespace wmib
                                         SendData("CONTROL: CREATE");
                                         streamWriter.Flush();
                                         Syslog.Log("CACHE: Lost connection to remote on " + this.ParentInstance.Nick + 
-										           ", creating new session on remote");
+                                                   ", creating new session on remote");
                                         bool Connected = false;
                                         while (!Connected)
                                         {
@@ -533,7 +533,7 @@ namespace wmib
                                             if (message.Contains(delimiter.ToString() + "ACTION"))
                                             {
                                                 Core.GetAction(message.Replace(delimiter.ToString() + "ACTION", ""), 
-												               channel, host, nick);
+                                                               channel, host, nick);
                                                 continue;
                                             }
                                             Core.GetMessage(channel, nick, host, message);
@@ -545,25 +545,25 @@ namespace wmib
                                         if (message.StartsWith(" :" + delimiter.ToString() + "FINGER"))
                                         {
                                             SendData("NOTICE " + nick + " :" + delimiter.ToString() + "FINGER" + 
-											         " I am a bot don't finger me");
+                                                     " I am a bot don't finger me");
                                             continue;
                                         }
                                         if (message.StartsWith(" :" + delimiter.ToString() + "TIME"))
                                         {
                                             SendData("NOTICE " + nick + " :" + delimiter.ToString() + "TIME " + 
-											         System.DateTime.Now.ToString());
+                                                     System.DateTime.Now.ToString());
                                             continue;
                                         }
                                         if (message.StartsWith(" :" + delimiter.ToString() + "PING"))
                                         {
                                             SendData("NOTICE " + nick + " :" + delimiter.ToString() + "PING" + message.Substring(
-												message.IndexOf(delimiter.ToString() + "PING") + 5));
+                                                message.IndexOf(delimiter.ToString() + "PING") + 5));
                                             continue;
                                         }
                                         if (message.StartsWith(" :" + delimiter.ToString() + "VERSION"))
                                         {
                                             SendData("NOTICE " + nick + " :" + delimiter.ToString() + "VERSION " 
-											         + Configuration.Version);
+                                                     + Configuration.Version);
                                             continue;
                                         }
                                         // store which instance this message was from so that we can send it using same instance
@@ -590,7 +590,7 @@ namespace wmib
                                                     {
 
                                                         if (module.Hook_OnPrivateFromUser(message.Substring(2), 
-														                        new User(nick, host, Ident)))
+                                                                                new User(nick, host, Ident)))
                                                         {
                                                             respond = false;
                                                             modules += module.Name + " ";
@@ -606,17 +606,17 @@ namespace wmib
                                         if (respond)
                                         {
                                             Queue.DeliverMessage("Hi, I am robot, this command was not understood." +
-											                          " Please bear in mind that every message you send" +
-											                          " to me will be logged for debuging purposes. See" +
-											                          " documentation at http://meta.wikimedia.org/wiki" +
-											                          "/WM-Bot for explanation of commands", nick,
-											                          priority.low);
+                                                                      " Please bear in mind that every message you send" +
+                                                                      " to me will be logged for debuging purposes. See" +
+                                                                      " documentation at http://meta.wikimedia.org/wiki" +
+                                                                      "/WM-Bot for explanation of commands", nick,
+                                                                      priority.low);
                                             Syslog.Log("Ignoring private message: (" + nick + ") " + message.Substring(2), false);
                                         }
                                         else
                                         {
                                             Syslog.Log("Private message: (handled by " + modules + " from " + nick + ") " + 
-											           message.Substring(2), false);
+                                                       message.Substring(2), false);
                                         }
                                         continue;
                                     }

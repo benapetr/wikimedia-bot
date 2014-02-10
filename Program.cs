@@ -19,16 +19,16 @@ namespace wmib
 {
     internal class Program
     {
-		/// <summary>
-		/// Copy the selected file to a temporary file name
-		/// 
-		/// this function is used mostly for restore of corrupted data,
-		/// so that the corrupted version of file can be stored in /tmp
-		/// for debugging
-		/// </summary>
-		/// <param name='file'>
-		/// File
-		/// </param>
+        /// <summary>
+        /// Copy the selected file to a temporary file name
+        /// 
+        /// this function is used mostly for restore of corrupted data,
+        /// so that the corrupted version of file can be stored in /tmp
+        /// for debugging
+        /// </summary>
+        /// <param name='file'>
+        /// File
+        /// </param>
         public static bool Temp(string file)
         {
             string path = System.IO.Path.GetTempFileName();
@@ -41,15 +41,15 @@ namespace wmib
             return false;
         }
 
-		/// <summary>
-		/// This is used to handle UNIX signals
-		/// </summary>
-		/// <param name='sender'>
-		/// Sender.
-		/// </param>
-		/// <param name='args'>
-		/// Arguments.
-		/// </param>
+        /// <summary>
+        /// This is used to handle UNIX signals
+        /// </summary>
+        /// <param name='sender'>
+        /// Sender.
+        /// </param>
+        /// <param name='args'>
+        /// Arguments.
+        /// </param>
         protected static void myHandler(object sender, ConsoleCancelEventArgs args)
         {
             Syslog.WriteNow("SIGINT");
@@ -66,12 +66,12 @@ namespace wmib
             Syslog.WriteNow("Terminated");
         }
 
-		/// <summary>
-		/// Processes the terminal parameters
-		/// </summary>
-		/// <param name='gs'>
-		/// Gs.
-		/// </param>
+        /// <summary>
+        /// Processes the terminal parameters
+        /// </summary>
+        /// <param name='gs'>
+        /// Gs.
+        /// </param>
         private static void ProcessVerbosity(string[] gs)
         {
             foreach (string item in gs)
@@ -113,19 +113,19 @@ namespace wmib
             }
         }
 
-		/// <summary>
-		/// The entry point of the program, where the program control starts and ends.
-		/// </summary>
-		/// <param name='args'>
-		/// The command-line arguments.
-		/// </param>
+        /// <summary>
+        /// The entry point of the program, where the program control starts and ends.
+        /// </summary>
+        /// <param name='args'>
+        /// The command-line arguments.
+        /// </param>
         private static void Main(string[] args)
         {
             try
             {
                 Configuration.System.UpTime = DateTime.Now;
                 Thread logger = new Thread(Logging.Exec);
-				logger.Name = "Logger";
+                logger.Name = "Logger";
                 ProcessVerbosity(args);
                 Syslog.WriteNow(Configuration.Version);
                 Syslog.WriteNow("Loading...");
@@ -141,7 +141,7 @@ namespace wmib
                 Terminal.Init();
                 Core.Help.CreateHelp();
                 Core.WriterThread = new System.Threading.Thread(StorageWriter.Exec);
-				Core.WriterThread.Name = "Writer";
+                Core.WriterThread.Name = "Writer";
                 Core.WriterThread.Start();
                 if (Core.DatabaseServerIsAvailable)
                 {
