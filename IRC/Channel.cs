@@ -30,7 +30,7 @@ namespace wmib
         /// <summary>
         /// Language used in this channel
         /// </summary>
-        public string Language = null;
+        public string Language = "en";
 
         /// <summary>
         /// List of users
@@ -91,12 +91,12 @@ namespace wmib
         /// <summary>
         /// Target db of shared infobot
         /// </summary>
-        public string SharedDB = null;
+        public string SharedDB = "";
 
         /// <summary>
         /// List of channels we share db with
         /// </summary>
-        public List<Channel> SharedLinkedChan = null;
+        public List<Channel> SharedLinkedChan = new List<Channel>();
 
         /// <summary>
         /// Default instance this channel belongs to
@@ -112,7 +112,7 @@ namespace wmib
         /// <summary>
         /// Users
         /// </summary>
-        public Security Users = null;
+        public Security SystemUsers = null;
         private bool IsRemoved = false;
 
         /// <summary>
@@ -124,10 +124,8 @@ namespace wmib
         public Channel(string name)
         {
             Name = name;
-            Language = "en";
-            SharedLinkedChan = new List<Channel>();
-            SharedDB = "";
             Suppress = false;
+			SystemUsers = new Security(this);
             LoadConfig();
             if (DefaultInstance == "any")
             {
@@ -159,7 +157,6 @@ namespace wmib
             {
                 Directory.CreateDirectory(Configuration.WebPages.HtmlPath + Path.DirectorySeparatorChar + Name);
             }
-            Users = new Security(Name);
             lock(ExtensionHandler.Extensions)
             {
                 foreach (Module module in ExtensionHandler.Extensions)
@@ -187,9 +184,18 @@ namespace wmib
         /// <returns></returns>
         public static bool ConfigExists(string _Channel)
         {
-            string conf_file = Variables.ConfigurationDirectory + "/" + _Channel + ".setting";
-            return File.Exists(conf_file);
+            return File.Exists(GetConfigFilePath(_Channel));
         }
+
+		public static string GetConfigFilePath(string _Channel)
+		{
+			return Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + _Channel + ".xml";
+		}
+
+		public string GetConfigFilePath()
+		{
+			return Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + this.Name + ".xml";
+		}
 
         /// <summary>
         /// Change the config
@@ -321,7 +327,7 @@ namespace wmib
         /// </summary>
         public void LoadConfig()
         {
-            string conf_file = Variables.ConfigurationDirectory + "/" + Name + ".setting";
+            string conf_file = GetConfigFilePath();
             Core.RecoverFile(conf_file, Name);
             try
             {
@@ -336,6 +342,9 @@ namespace wmib
                 {
                     switch (xx.Name)
                     {
+						case "user":
+							this.SystemUsers.InsertUser(xx);
+							continue;
                         case "extension":
                             if (ExtensionData.ContainsKey(xx.Attributes[0].Value))
                             {
@@ -405,6 +414,7 @@ namespace wmib
         /// </summary>
         public void SaveConfig()
         {
+			string fn = GetConfigFilePath();
             try
             {
                 XmlDocument data = new XmlDocument();
@@ -438,23 +448,37 @@ namespace wmib
                         InsertData(item.Key, item.Value, ref data, ref xmlnode, "extension");
                     }
                 }
-                if (File.Exists(Variables.ConfigurationDirectory + "/" + Name + ".setting"))
+				lock (this.SystemUsers.Users)
+				{
+					foreach (SystemUser user in this.SystemUsers.Users)
+					{
+						XmlAttribute name = data.CreateAttribute("regex");
+			            name.Value = user.Name;
+			            XmlAttribute kk = data.CreateAttribute("role");
+			            kk.Value = user.Role;
+			            XmlNode db = data.CreateElement(Name);
+			            db.Attributes.Append(name);
+			            db.Attributes.Append(kk);
+			            xmlnode.AppendChild(db);
+					}
+				}
+                if (File.Exists(fn))
                 {
-                    Core.BackupData(Variables.ConfigurationDirectory + "/" + Name + ".setting");
-                    if (!File.Exists(Configuration.TempName(Variables.ConfigurationDirectory + "/" + Name + ".setting")))
+                    Core.BackupData(fn);
+                    if (!File.Exists(Configuration.TempName(fn)))
                     {
                         Syslog.WarningLog("Unable to create backup file for " + Name);
                     }
                 }
                 data.AppendChild(xmlnode);
-                data.Save(Variables.ConfigurationDirectory + "/" + Name + ".setting");
-                if (File.Exists(Configuration.TempName(Variables.ConfigurationDirectory + "/" + Name + ".setting")))
+                data.Save(fn);
+                if (File.Exists(Configuration.TempName(fn)))
                 {
-                    File.Delete(Configuration.TempName(Variables.ConfigurationDirectory + "/" + Name + ".setting"));
+                    File.Delete(Configuration.TempName(fn));
                 }
             } catch (Exception)
             {
-                Core.RecoverFile(Variables.ConfigurationDirectory + "/" + Name + ".setting", Name);
+                Core.RecoverFile(fn, Name);
             }
         }
 
@@ -468,7 +492,7 @@ namespace wmib
                 Syslog.DebugLog("Channel is already removed");
                 return;
             }
-            Users = null;
+            SystemUsers = null;
             lock(ExtensionData)
             {
                 ExtensionData.Clear();

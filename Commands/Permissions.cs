@@ -34,7 +34,7 @@ namespace wmib
                 if (message.StartsWith(Configuration.System.CommandPrefix + "trustadd"))
                 {
                     string[] rights_info = message.Split(' ');
-                    if (channel.Users.IsApproved(user, host, "trustadd"))
+                    if (channel.SystemUsers.IsApproved(user, host, "trustadd"))
                     {
                         if (rights_info.Length < 3)
                         {
@@ -48,13 +48,13 @@ namespace wmib
                         }
                         if (rights_info[2] == "admin")
                         {
-                            if (!channel.Users.IsApproved(user, host, "admin"))
+                            if (!channel.SystemUsers.IsApproved(user, host, "admin"))
                             {
                                 Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
                                 return 2;
                             }
                         }
-                        if (channel.Users.AddUser(rights_info[2], rights_info[1]))
+                        if (channel.SystemUsers.AddUser(rights_info[2], rights_info[1]))
                         {
                             Core.irc.Queue.DeliverMessage(messages.Localize("UserSc", channel.Language) + rights_info[1], channel);
                             return 0;
@@ -68,7 +68,7 @@ namespace wmib
                 }
                 if (message.StartsWith(Configuration.System.CommandPrefix + "trusted"))
                 {
-                    channel.Users.ListAll();
+                    channel.SystemUsers.ListAll();
                     return 0;
                 }
                 if (message.StartsWith(Configuration.System.CommandPrefix + "trustdel"))
@@ -76,9 +76,9 @@ namespace wmib
                     string[] rights_info = message.Split(' ');
                     if (rights_info.Length > 1)
                     {
-                        if (channel.Users.IsApproved(user, host, "trustdel"))
+                        if (channel.SystemUsers.IsApproved(user, host, "trustdel"))
                         {
-                            channel.Users.DeleteUser(channel.Users.GetUser(user + "!@" + host), rights_info[1]);
+                            channel.SystemUsers.DeleteUser(channel.SystemUsers.GetUser(user + "!@" + host), rights_info[1]);
                             return 0;
                         }
                         Core.irc.Queue.DeliverMessage(messages.Localize("Authorization", channel.Language), channel);

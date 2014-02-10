@@ -31,7 +31,7 @@ namespace wmib
             {
                 if (message.StartsWith(Configuration.System.CommandPrefix + "add"))
                 {
-                    if (channel.Users.IsApproved(user, host, "admin"))
+                    if (channel.SystemUsers.IsApproved(user, host, "admin"))
                     {
                         while (!Core.FinishedJoining)
                         {
@@ -69,7 +69,7 @@ namespace wmib
                             Channel Chan = Core.GetChannel(_channel);
                             if (!existing)
                             {
-                                Chan.Users.AddUser("admin", Security.EscapeUser(user) + "!.*@" + Security.EscapeUser(host));
+                                Chan.SystemUsers.AddUser("admin", Security.EscapeUser(user) + "!.*@" + Security.EscapeUser(host));
                             }
                             return;
                         }
@@ -109,7 +109,7 @@ namespace wmib
                 }
                 if (message == Configuration.System.CommandPrefix + "drop")
                 {
-                    if (channel.Users.IsApproved(user, host, "admin"))
+                    if (channel.SystemUsers.IsApproved(user, host, "admin"))
                     {
                         while (!Core.FinishedJoining)
                         {
@@ -121,16 +121,7 @@ namespace wmib
                         Thread.Sleep(100);
                         try
                         {
-                            File.Delete(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + channel.Name + ".setting");
-                            File.Delete(channel.Users.UserFile);
-                            if (File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + channel.Name + ".list"))
-                            {
-                                File.Delete(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + channel.Name + ".list");
-                            }
-                            if (File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + channel.Name + ".statistics"))
-                            {
-                                File.Delete(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + channel.Name + ".statistics");
-                            }
+                            File.Delete(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + channel.Name + ".xml");
                             lock (ExtensionHandler.Extensions)
                             {
                                 foreach (Module curr in ExtensionHandler.Extensions)
@@ -168,7 +159,7 @@ namespace wmib
 
                 if (message == Configuration.System.CommandPrefix + "part")
                 {
-                    if (channel.Users.IsApproved(user, host, "admin"))
+                    if (channel.SystemUsers.IsApproved(user, host, "admin"))
                     {
                         while (!Core.FinishedJoining)
                         {

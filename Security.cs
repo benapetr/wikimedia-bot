@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Xml;
 using System.Text.RegularExpressions;
 using System.Text;
 
@@ -29,43 +30,22 @@ namespace wmib
         /// <summary>
         /// List of all users in a channel
         /// </summary>
-        private readonly List<SystemUser> Users = new List<SystemUser>();
+        public readonly List<SystemUser> Users = new List<SystemUser>();
         /// <summary>
         /// Channel this class belong to
         /// </summary>
-        private readonly string ChannelName;
+		private Channel Channel;
         /// <summary>
         /// File where data are stored
         /// </summary>
-        public string UserFile = null;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="channel"></param>
-        public Security(string channel)
+        public Security(Channel channel)
         {
-            // Load
-            UserFile = Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + channel + "_user";
-            Core.RecoverFile(UserFile);
-            if (!System.IO.File.Exists(UserFile))
-            {
-                // Create db
-                Syslog.Log("Creating user file for " + channel);
-                System.IO.File.WriteAllText(UserFile, "");
-            }
-            string[] db = System.IO.File.ReadAllLines(UserFile);
-            ChannelName = channel;
-            foreach (string x in db)
-            {
-                if (x.Contains(Configuration.System.Separator))
-                {
-                    string[] info = x.Split(Char.Parse(Configuration.System.Separator));
-                    string level = info[1];
-                    string name = Core.decode2(info[0]);
-                    Users.Add(new SystemUser(level, name));
-                }
-            }
+			this.Channel = channel;
         }
 
         /// <summary>
@@ -96,6 +76,28 @@ namespace wmib
             }
             return 0;
         }
+
+		public void InsertUser(XmlNode node)
+		{
+			string regex = null;
+			string role = null;
+			foreach (XmlAttribute info in node.Attributes)
+			{
+				switch (info.Name)
+				{
+					case "regex":
+						regex = info.Value;
+						break;
+					case "role":
+						role = info.Value;
+						break;
+				}
+			}
+			if (regex == null || role == null)
+			{
+				Syslog.WarningLog("Skipping invalid user record for " + this.Channel.Name);
+			}
+		}
 
         /// <summary>
         /// Load all global users of bot
@@ -164,26 +166,7 @@ namespace wmib
         /// <returns></returns>
         public bool Save()
         {
-            Syslog.DebugLog("Saving user file of " + ChannelName);
-            Core.BackupData(UserFile);
-            try
-            {
-                StringBuilder data = new StringBuilder("");
-                lock (Users)
-                {
-                    foreach (SystemUser u in Users)
-                    {
-                        data.Append(Core.encode2(u.Name) + Configuration.System.Separator + u.Role + "\n");
-                    }
-                }
-                System.IO.File.WriteAllText(UserFile, data.ToString());
-                System.IO.File.Delete(Configuration.TempName(UserFile));
-            }
-            catch (Exception b)
-            {
-                Core.RecoverFile(UserFile, ChannelName);
-                Core.HandleException(b);
-            }
+			this.Channel.SaveConfig();
             return true;
         }
 
@@ -210,14 +193,14 @@ namespace wmib
             if (!misc.IsValidRegex(user))
             {
                 Syslog.Log("Unable to create user " + user + " because the regex is invalid", true);
-                Core.irc.Queue.DeliverMessage("Unable to add user because this regex is not valid", ChannelName);
+                Core.irc.Queue.DeliverMessage("Unable to add user because this regex is not valid", this.Channel);
                 return false;
             }
             foreach (SystemUser u in Users)
             {
                 if (u.Name == user)
                 {
-                    Core.irc.Queue.DeliverMessage("Unable to add user because this user is already in a list", ChannelName);
+                    Core.irc.Queue.DeliverMessage("Unable to add user because this user is already in a list", this.Channel);
                     return false;
                 }
             }
@@ -234,33 +217,27 @@ namespace wmib
         /// <returns></returns>
         public bool DeleteUser(SystemUser origin, string user)
         {
-            Channel channel = Core.GetChannel(ChannelName);
-            if (channel == null)
-            {
-                Core.irc.Queue.DeliverMessage("Error: unable to get pointer of current channel", ChannelName);
-                return false;
-            }
             foreach (SystemUser u in Users)
             {
                 if (u.Name == user)
                 {
                     if (GetLevel(u.Role) > GetLevel(origin.Role))
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Trust1", channel.Language), ChannelName);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("Trust1", this.Channel.Language), this.Channel);
                         return true;
                     }
                     if (u.Name == origin.Name)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Trust2", channel.Language), ChannelName);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("Trust2", this.Channel.Language), this.Channel);
                         return true;
                     }
                     Users.Remove(u);
                     Save();
-                    Core.irc.Queue.DeliverMessage(messages.Localize("Trust3", channel.Language), ChannelName);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("Trust3", this.Channel.Language), this.Channel);
                     return true;
                 }
             }
-            Core.irc.Queue.DeliverMessage(messages.Localize("Trust4", channel.Language), ChannelName);
+            Core.irc.Queue.DeliverMessage(messages.Localize("Trust4", this.Channel.Language), this.Channel);
             return true;
         }
 
@@ -331,12 +308,6 @@ namespace wmib
         /// </summary>
         public void ListAll()
         {
-            Channel Channel = Core.GetChannel(ChannelName);
-            if (Channel == null)
-            {
-                Core.irc.Queue.DeliverMessage("Error: unable to get pointer of current channel", ChannelName);
-                return;
-            }
             string users_ok = "";
             lock (Users)
             {
@@ -345,7 +316,7 @@ namespace wmib
                     users_ok += " " + b.Name + " (2" + b.Role + ")" + ",";
                 }
             }
-            Core.irc.Queue.DeliverMessage(messages.Localize("TrustedUserList", Channel.Language) + users_ok, ChannelName);
+            Core.irc.Queue.DeliverMessage(messages.Localize("TrustedUserList", Channel.Language) + users_ok, this.Channel);
         }
 
         /// <summary>

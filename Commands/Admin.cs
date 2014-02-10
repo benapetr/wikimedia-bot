@@ -30,7 +30,7 @@ namespace wmib
             User invoker = new User(user, host, "");
             if (message == Configuration.System.CommandPrefix + "reload")
             {
-                if (chan.Users.IsApproved(invoker, "admin"))
+                if (chan.SystemUsers.IsApproved(invoker, "admin"))
                 {
                     chan.LoadConfig();
                     SystemHooks.IrcReloadChannelConf(chan);
@@ -45,7 +45,7 @@ namespace wmib
             }
             if (message == Configuration.System.CommandPrefix + "refresh")
             {
-                if (chan.Users.IsApproved(invoker, "flushcache"))
+                if (chan.SystemUsers.IsApproved(invoker, "flushcache"))
                 {
                     Core.irc.RestartIRCMessageDelivery();
                     chan.PrimaryInstance.irc.Message(messages.Localize("MessageQueueWasReloaded", chan.Language), chan.Name);
@@ -110,7 +110,7 @@ namespace wmib
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "language"))
             {
-                if (chan.Users.IsApproved(invoker, "admin"))
+                if (chan.SystemUsers.IsApproved(invoker, "admin"))
                 {
                     string parameter = "";
                     if (message.Contains(" "))
@@ -165,7 +165,7 @@ namespace wmib
 
             if (message == Configuration.System.CommandPrefix + "suppress-off")
             {
-                if (chan.Users.IsApproved(invoker, "admin"))
+                if (chan.SystemUsers.IsApproved(invoker, "admin"))
                 {
                     if (!chan.Suppress)
                     {
@@ -187,7 +187,7 @@ namespace wmib
 
             if (message == Configuration.System.CommandPrefix + "suppress-on")
             {
-                if (chan.Users.IsApproved(invoker, "admin"))
+                if (chan.SystemUsers.IsApproved(invoker, "admin"))
                 {
                     if (chan.Suppress)
                     {
@@ -208,7 +208,7 @@ namespace wmib
 
             if (message == Configuration.System.CommandPrefix + "whoami")
             {
-                SystemUser current = chan.Users.GetUser(user + "!@" + host);
+                SystemUser current = chan.SystemUsers.GetUser(user + "!@" + host);
                 if (current.Role == "null")
                 {
                     Core.irc.Queue.DeliverMessage(messages.Localize("Unknown", chan.Language), chan);
@@ -220,7 +220,7 @@ namespace wmib
 
             if (message == Configuration.System.CommandPrefix + "system-relog")
             {
-                if (chan.Users.IsApproved(invoker, "root"))
+                if (chan.SystemUsers.IsApproved(invoker, "root"))
                 {
                     Core.irc.Authenticate();
                     return;
@@ -229,7 +229,7 @@ namespace wmib
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "instance "))
             {
-                if (chan.Users.IsApproved(invoker, "root"))
+                if (chan.SystemUsers.IsApproved(invoker, "root"))
                 {
                     string channel;
                     string instance;
@@ -283,7 +283,7 @@ namespace wmib
 
             if (message == Configuration.System.CommandPrefix + "traffic-off")
             {
-                if (chan.Users.IsApproved(invoker, "root"))
+                if (chan.SystemUsers.IsApproved(invoker, "root"))
                 {
                     Configuration.Network.Logging = false;
                     Core.irc.Queue.DeliverMessage("Logging stopped", chan);
@@ -297,7 +297,7 @@ namespace wmib
 
             if (message == Configuration.System.CommandPrefix + "traffic-on")
             {
-                if (chan.Users.IsApproved(invoker, "root"))
+                if (chan.SystemUsers.IsApproved(invoker, "root"))
                 {
                     Configuration.Network.Logging = true;
                     Core.irc.Queue.DeliverMessage("Logging traf", chan.Name);
@@ -311,7 +311,7 @@ namespace wmib
 
             if (message == Configuration.System.CommandPrefix + "restart")
             {
-                if (chan.Users.IsApproved(invoker, "root"))
+                if (chan.SystemUsers.IsApproved(invoker, "root"))
                 {
                     Core.irc.Message("System is shutting down, requested by " + invoker.Nick + " from " + chan.Name, Configuration.System.DebugChan);
                     Syslog.Log("System is shutting down, requested by " + invoker.Nick + " from " + chan.Name);
@@ -333,7 +333,7 @@ namespace wmib
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "configure "))
             {
-                if (chan.Users.IsApproved(invoker, "admin"))
+                if (chan.SystemUsers.IsApproved(invoker, "admin"))
                 {
                     string text = message.Substring("@configure ".Length);
                     if (string.IsNullOrEmpty(text))
@@ -487,7 +487,7 @@ namespace wmib
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "system-lm "))
             {
-                if (chan.Users.IsApproved(invoker, "root"))
+                if (chan.SystemUsers.IsApproved(invoker, "root"))
                 {
                     string module = message.Substring("@system-lm ".Length);
                     if (module.EndsWith(".bin"))
@@ -527,7 +527,7 @@ namespace wmib
 
             if (message == Configuration.System.CommandPrefix + "verbosity--")
             {
-                if (chan.Users.IsApproved(invoker, "root"))
+                if (chan.SystemUsers.IsApproved(invoker, "root"))
                 {
                     if (Configuration.System.SelectedVerbosity > 0)
                     {
@@ -540,7 +540,7 @@ namespace wmib
 
             if (message == Configuration.System.CommandPrefix + "verbosity++")
             {
-                if (chan.Users.IsApproved(invoker, "root"))
+                if (chan.SystemUsers.IsApproved(invoker, "root"))
                 {
                     Configuration.System.SelectedVerbosity++;
                     Core.irc.Queue.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity.ToString(),
@@ -550,7 +550,7 @@ namespace wmib
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "system-rm "))
             {
-                if (chan.Users.IsApproved(invoker, "root"))
+                if (chan.SystemUsers.IsApproved(invoker, "root"))
                 {
                     string module = message.Substring("@system-lm ".Length);
                     Module _m = ExtensionHandler.RetrieveModule(module);
@@ -566,7 +566,7 @@ namespace wmib
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "join "))
             {
-                if (chan.Users.IsApproved(invoker, "reconnect"))
+                if (chan.SystemUsers.IsApproved(invoker, "reconnect"))
                 {
                     Channel channel = Core.GetChannel(message.Substring("@join ".Length));
                     Core.irc.Join(channel);

@@ -504,7 +504,7 @@ namespace wmib
                 bool ignore = false;
                 if (curr.IgnoreUnknown)
                 {
-                    if (!curr.Users.IsApproved(nick, host, "trust"))
+                    if (!curr.SystemUsers.IsApproved(nick, host, "trust"))
                     {
                         ignore = true;
                     }

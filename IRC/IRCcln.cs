@@ -657,6 +657,10 @@ namespace wmib
                             }
                             System.Threading.Thread.Sleep(50);
                         }
+						if (!Core.IsRunning)
+						{
+							return;
+						}
                         Syslog.Log("Reconnecting, end of data stream");
                         IsWorking = false;
                         connected = false;
@@ -664,6 +668,10 @@ namespace wmib
                     }
                     catch (System.IO.IOException xx)
                     {
+						if (!Core.IsRunning)
+						{
+							return;
+						}
                         Syslog.Log("Reconnecting, connection failed " + xx.Message + xx.StackTrace);
                         IsWorking = false;
                         connected = false;

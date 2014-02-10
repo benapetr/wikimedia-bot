@@ -437,7 +437,7 @@ namespace wmib
                     }
                 }
             }
-            Syslog.WriteNow("Channels were all loaded");
+            Syslog.Log("Channels were all loaded");
 
             // Now when all chans are loaded let's link them together
             foreach (Channel channel in Channels)
@@ -445,7 +445,7 @@ namespace wmib
                 channel.SharesNo();
             }
 
-            Syslog.WriteNow("Channel db's working");
+            Syslog.Log("Channel db's working");
             if (!Directory.Exists(Configuration.Paths.DumpDir))
             {
                 Directory.CreateDirectory(Configuration.Paths.DumpDir);
