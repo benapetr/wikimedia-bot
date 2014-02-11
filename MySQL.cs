@@ -92,7 +92,7 @@ namespace wmib
                     {
                         if (!Connection.Ping())
                         {
-							connected = false;
+                            connected = false;
                             Syslog.WarningLog("Mysql connection is dead, trying to fix");
                             Connect();
                         }
