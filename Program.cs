@@ -138,8 +138,11 @@ namespace wmib
             try
             {
                 Configuration.System.UpTime = DateTime.Now;
+				Core.KernelThread = Thread.CurrentThread;
+				Core.KernelThread.Name = "Kernel";
                 Thread logger = new Thread(Logging.Exec);
                 logger.Name = "Logger";
+				Core.ThreadManager.RegisterThread(logger);
                 ProcessVerbosity(args);
                 Syslog.WriteNow(Configuration.System.Version);
                 Syslog.WriteNow("Loading...");
@@ -155,6 +158,7 @@ namespace wmib
                 Terminal.Init();
                 Core.Help.CreateHelp();
                 Core.WriterThread = new System.Threading.Thread(StorageWriter.Exec);
+				Core.ThreadManager.RegisterThread(Core.WriterThread);
                 Core.WriterThread.Name = "Writer";
                 Core.WriterThread.Start();
                 if (Core.DatabaseServerIsAvailable)

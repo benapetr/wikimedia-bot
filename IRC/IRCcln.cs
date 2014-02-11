@@ -39,7 +39,7 @@ namespace wmib
         /// <summary>
         /// Server addr
         /// </summary>
-        public string Server;
+        private string Server;
         /// <summary>
         /// Port to bouncer
         /// </summary>
@@ -51,15 +51,11 @@ namespace wmib
         /// <summary>
         /// ID
         /// </summary>
-        public string Ident;
+        private string Ident;
         /// <summary>
         /// User
         /// </summary>
-        public string UserName;
-        /// <summary>
-        /// Pw
-        /// </summary>
-        public string Password;
+        private string UserName;
         /// <summary>
         /// Socket
         /// </summary>
@@ -140,7 +136,6 @@ namespace wmib
         public IRC(string _server, string _nick, string _ident, string _username, Instance _instance)
         {
             Server = _server;
-            Password = "";
             Queue = new MessageQueue(this);
             UserName = _username;
             NickName = _nick;
@@ -262,12 +257,14 @@ namespace wmib
             }
             catch (ThreadAbortException)
             {
+				Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
                 return;
             }
             catch (Exception fail)
             {
                 Core.HandleException(fail);
             }
+			Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
         }
 
         /// <summary>
@@ -287,6 +284,7 @@ namespace wmib
                 }
                 catch (ThreadAbortException)
                 {
+					Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
                     return;
                 }
                 catch (Exception fail)
@@ -294,6 +292,7 @@ namespace wmib
                     Core.HandleException(fail);
                 }
             }
+			Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
         }
 
         /// <summary>
@@ -307,7 +306,7 @@ namespace wmib
                 Syslog.Log("Ignoring request to reconnect because bot is shutting down");
                 return false;
             }
-            _Queue.Abort();
+            Core.ThreadManager.KillThread(_Queue);
             networkStream = Configuration.IRC.UsingBouncer ? new System.Net.Sockets.TcpClient(Bouncer, BouncerPort).GetStream() : 
                 new System.Net.Sockets.TcpClient(Server, 6667).GetStream();
             connected = true;
@@ -318,6 +317,8 @@ namespace wmib
             IsWorking = true;
             Authenticate();
             _Queue = new Thread(Queue.Run);
+			_Queue.Name = "MessageQueue:" + NickName;
+			Core.ThreadManager.RegisterThread(_Queue);
             foreach (Channel ch in ParentInstance.ChannelList)
             {
                 Thread.Sleep(2000);
@@ -325,9 +326,16 @@ namespace wmib
             }
             Queue.newmessages.Clear();
             Queue.Messages.Clear();
-            ChannelThread.Abort();
+            Core.ThreadManager.KillThread(ChannelThread);
             ChannelThread = new Thread(ChannelList);
+			Core.ThreadManager.RegisterThread(ChannelThread);
+			ChannelThread.Name = "ChannelListParserThread";
             ChannelThread.Start();
+			Core.ThreadManager.KillThread(PingerThread);
+			PingerThread = new System.Threading.Thread(Ping);
+			Core.ThreadManager.RegisterThread(PingerThread);
+            PingerThread.Name = "Ping:"+ NickName;
+            PingerThread.Start();
             _Queue.Start();
             return false;
         }
@@ -429,8 +437,9 @@ namespace wmib
 
                 _Queue = new System.Threading.Thread(Queue.Run);
                 _Queue.Name = "MessageQueue:" + NickName;
-
+				Core.ThreadManager.RegisterThread(_Queue);
                 PingerThread = new System.Threading.Thread(Ping);
+				Core.ThreadManager.RegisterThread(PingerThread);
                 PingerThread.Name = "Ping:"+ NickName;
                 PingerThread.Start();
 
@@ -711,7 +720,7 @@ namespace wmib
             {
                 try
                 {
-                    Syslog.DebugLog("Closing");
+                    Syslog.DebugLog("Closing connection for " + NickName);
                     if (streamWriter != null)
                     {
                         streamWriter.Close();

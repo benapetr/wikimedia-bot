@@ -78,6 +78,7 @@
     <Compile Include="Modules\Handler.cs" />
     <Compile Include="Security.cs" />
     <Compile Include="IRC\MessageQueue.cs" />
+    <Compile Include="System\ThreadManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">

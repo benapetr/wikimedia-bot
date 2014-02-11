@@ -116,7 +116,15 @@ namespace wmib
             /// <summary>
             /// This is a string which commands are prefixed with
             /// </summary>
-            public const string CommandPrefix = "@";
+            public static string CommandPrefix
+			{
+				get
+				{
+					return prefix;
+				}
+			}
+
+			public static string prefix = "@";
 
             /// <summary>
             /// If colors are in terminal
@@ -389,6 +397,10 @@ namespace wmib
                 Console.WriteLine("Error there is no username for bot");
                 return 6;
             }
+			if (Data.ContainsKey("system_prefix"))
+			{
+				Configuration.System.prefix = Data["system_prefix"];
+			}
             if (Data.ContainsKey("serverIO"))
             {
                 Configuration.IRC.UsingBouncer = bool.Parse(Data["serverIO"]);

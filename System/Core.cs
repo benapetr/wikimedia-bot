@@ -17,7 +17,6 @@ using System.IO;
 
 namespace wmib
 {
-    [Serializable]
     public partial class Core : MarshalByRefObject
     {
         /// <summary>
@@ -58,6 +57,7 @@ namespace wmib
         /// Thread which is writing the system data to files
         /// </summary>
         public static Thread WriterThread = null;
+		public static Thread KernelThread = null;
         private static readonly Dictionary<string, string> HelpData = new Dictionary<string, string>();
         /// <summary>
         /// List of instances

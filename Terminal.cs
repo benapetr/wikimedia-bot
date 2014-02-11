@@ -83,7 +83,9 @@ namespace wmib
         public static void Init()
         {
             thread = new System.Threading.Thread(ExecuteThread);
-            thread.Start();
+			thread.Name = "Telnet";
+			Core.ThreadManager.RegisterThread(thread);
+			thread.Start();
         }
 
         private static void HandleClient(object data)
@@ -158,6 +160,13 @@ namespace wmib
                             {
                                 result += "Unwritten rows (MySQL): " + Core.DB.CacheSize().ToString() + "\n";
                             }
+							result += "\nThreads:\n";
+							foreach (Thread thread in Core.ThreadManager.ThreadList)
+							{
+								result += "Thread: " + FormatToSpecSize(thread.Name, 20) + " status: " + 
+										  FormatToSpecSize(thread.ThreadState.ToString(), 20) +
+										  " id: " + FormatToSpecSize(thread.ManagedThreadId.ToString(), 8) + "\n";
+							}
                             result += "\nInstances:";
                             Writer.WriteLine(result);
                             Writer.Flush();
@@ -296,6 +305,22 @@ namespace wmib
             DecreaseConnections();
         }
 
+		public static string FormatToSpecSize(string st, int size)
+        {
+            if (st.Length > size)
+            {
+                st = st.Substring(0, st.Length - ((st.Length - size) + 3));
+                st += "...";
+            } else
+            {
+                while (st.Length < size)
+                {
+                    st += " ";
+                }
+            }
+            return st;
+        }
+
         private static void ExecuteThread()
         {
             try
@@ -319,6 +344,7 @@ namespace wmib
                 Syslog.WriteNow("Network console is down", true);
                 Core.HandleException(fail);
             }
+			Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
         }
     }
 }
