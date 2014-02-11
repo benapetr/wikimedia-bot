@@ -474,7 +474,6 @@ namespace wmib
         public override bool Construct()
         {
             Name = "Labs";
-            start = true;
             Version = "1.2.8.0";
             return true;
         }
@@ -707,7 +706,7 @@ namespace wmib
         {
             if (message.StartsWith("@labs-off"))
             {
-                if (channel.Users.IsApproved(invoker, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker, "admin"))
                 {
                     if (!GetConfig(channel, "LABS.Enabled", false))
                     {
@@ -721,9 +720,9 @@ namespace wmib
                 }
                 else
                 {
-                    if (!channel.suppress_warnings)
+                    if (!channel.SuppressWarnings)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                     }
                 }
                 return;
@@ -732,7 +731,7 @@ namespace wmib
 
             if (message.StartsWith("@labs-on"))
             {
-                if (channel.Users.IsApproved(invoker, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker, "admin"))
                 {
                     if (GetConfig(channel, "LABS.Enabled", false))
                     {
@@ -746,9 +745,9 @@ namespace wmib
                 }
                 else
                 {
-                    if (!channel.suppress_warnings)
+                    if (!channel.SuppressWarnings)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                     }
                 }
                 return;
@@ -1018,7 +1017,7 @@ namespace wmib
                 Core.Help.Register("labs-project-instances", "List all instances in a project");
                 Core.Help.Register("labs-project-users", "Display all users in a project");
 
-                while (working)
+                while (IsWorking)
                 {
                     JSON();
                     System.Threading.Thread.Sleep(200000);

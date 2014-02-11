@@ -153,10 +153,6 @@ namespace wmib
             {
                 Directory.CreateDirectory(Configuration.WebPages.HtmlPath);
             }
-            if (!Directory.Exists(Configuration.WebPages.HtmlPath + Path.DirectorySeparatorChar + Name))
-            {
-                Directory.CreateDirectory(Configuration.WebPages.HtmlPath + Path.DirectorySeparatorChar + Name);
-            }
             lock(ExtensionHandler.Extensions)
             {
                 foreach (Module module in ExtensionHandler.Extensions)

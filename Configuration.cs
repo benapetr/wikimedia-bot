@@ -55,7 +55,7 @@ namespace wmib
             /// The webpages url
             /// </summary>
             public static string WebpageURL = "";
-
+			public static string Css = "";
         }
 
         public class IRC
@@ -381,6 +381,10 @@ namespace wmib
             if (Data.ContainsKey("mysql_host"))
             {
                 Configuration.MySQL.MysqlHost = Data["mysql_host"];
+            }
+			if (Data.ContainsKey("style_html_file"))
+            {
+                Configuration.WebPages.Css = Data["style_html_file"];
             }
             if (Data.ContainsKey("system_port"))
             {

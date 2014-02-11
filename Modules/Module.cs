@@ -101,6 +101,7 @@ namespace wmib
                 if (HasSeparateThreadInstance)
                 {
                     thread = new Thread(Exec) { Name = "Module:" + Name };
+					Core.ThreadManager.RegisterThread(thread);
                     thread.Start();
                 }
             }
@@ -501,10 +502,12 @@ namespace wmib
                 Load();
                 Syslog.Log("Module terminated: " + Name, true);
                 IsWorking = false;
+				Core.ThreadManager.UnregisterThread(thread);
             }
             catch (ThreadAbortException)
             {
                 Syslog.Log("Module terminated: " + Name, true);
+				Core.ThreadManager.UnregisterThread(thread);
                 return;
             }
             catch (Exception f)
@@ -527,6 +530,7 @@ namespace wmib
                 catch (ThreadAbortException)
                 {
                     Syslog.Log("Module terminated: " + Name, true);
+					Core.ThreadManager.UnregisterThread(thread);
                     return;
                 }
                 catch (Exception f)
@@ -576,15 +580,12 @@ namespace wmib
                 RestartOnModuleCrash = false;
                 if (thread != null)
                 {
-                    if (thread.ThreadState == System.Threading.ThreadState.Running)
-                    {
-                        Syslog.Log("Terminating module: " + Name, true);
-                        if (RestartOnModuleCrash)
-                        {
-                            RestartOnModuleCrash = false;
-                        }
-                        thread.Abort();
-                    }
+                    Syslog.Log("Terminating module: " + Name, true);
+					if (RestartOnModuleCrash)
+					{
+						RestartOnModuleCrash = false;
+					}
+					Core.ThreadManager.KillThread(thread);
                 }
                 lock (ExtensionHandler.Extensions)
                 {
