@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 RED=$(tput setaf 1)
 WARN=$(tput setaf 3)
@@ -37,8 +37,10 @@ make || exit 1
 text "Stopping the bot"
 
 touch "$target/restart.lock" || exit 1
-kill `cat "$target/wmib.pid"` || exit 1
-sleep 2
+if [ -f "$target/wmib.pid" ];then
+  kill `cat "$target/wmib.pid"` || exit 1
+  sleep 2
+fi
 if [ -f "$target/wmib.pid" ];then
   fail
   exit 1
