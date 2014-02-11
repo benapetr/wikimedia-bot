@@ -456,7 +456,7 @@ namespace wmib
                         name.Value = user.Name;
                         XmlAttribute kk = data.CreateAttribute("role");
                         kk.Value = user.Role;
-                        XmlNode db = data.CreateElement(Name);
+                        XmlNode db = data.CreateElement("user");
                         db.Attributes.Append(name);
                         db.Attributes.Append(kk);
                         xmlnode.AppendChild(db);
