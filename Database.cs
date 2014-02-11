@@ -108,6 +108,11 @@ namespace wmib
 
         public virtual void Rollback() { }
 
+		public virtual int CacheSize()
+		{
+			return 0;
+		}
+
         public virtual bool InsertRow(string table, Row row)
         {
             return false;

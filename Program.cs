@@ -13,6 +13,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Mono.Unix.Native;
+using Mono.Unix;
 using System.Threading;
 
 namespace wmib
@@ -50,10 +52,9 @@ namespace wmib
         /// <param name='args'>
         /// Arguments.
         /// </param>
-        protected static void myHandler(object sender, ConsoleCancelEventArgs args)
+        protected static void SigInt(object sender, ConsoleCancelEventArgs args)
         {
-            Syslog.WriteNow("SIGINT");
-            Syslog.WriteNow("Shutting down");
+            Syslog.WriteNow("SIGINT - Shutting down", true);
             try
             {
                 Core.Kill();
@@ -61,7 +62,6 @@ namespace wmib
             catch (Exception fail)
             {
 				Core.HandleException(fail);
-                Core.irc.Disconnect();
             }
             Syslog.WriteNow("Terminated (emergency)");
 			System.Diagnostics.Process.GetCurrentProcess().Kill();
@@ -75,8 +75,11 @@ namespace wmib
         /// </param>
         private static void ProcessVerbosity(string[] gs)
         {
-            foreach (string item in gs)
+			int i = 0;
+			List<string> parameters = new List<string>(gs);
+            foreach (string item in parameters)
             {
+				i++;
                 if (item == "--nocolors")
                 {
                     Configuration.System.Colors = false;
@@ -92,11 +95,21 @@ namespace wmib
                         "Parameters:\n" +
                         "    --nocolors: Disable colors in system logs\n" +
                         "    -h [--help]: Display help\n" +
+					    "    --pid file: Write a pid to a file\n" +
                         "    --traffic: Enable traffic logs\n" +
                         "    -v: Increases verbosity\n\n" +
                         "This software is open source, licensed under GPLv3");
                     Environment.Exit(0);
                 }
+				if (item == "--pid")
+				{
+					if (parameters.Count <= i)
+					{
+						Console.WriteLine("You didn't provide a name for pid file");
+						Environment.Exit(0);
+					}
+					System.IO.File.WriteAllText(parameters[i], System.Diagnostics.Process.GetCurrentProcess().Id.ToString());
+				}
                 if (item.StartsWith("-v"))
                 {
                     foreach (char x in item)
@@ -128,10 +141,10 @@ namespace wmib
                 Thread logger = new Thread(Logging.Exec);
                 logger.Name = "Logger";
                 ProcessVerbosity(args);
-                Syslog.WriteNow(Configuration.Version);
+                Syslog.WriteNow(Configuration.System.Version);
                 Syslog.WriteNow("Loading...");
                 logger.Start();
-                Console.CancelKeyPress += myHandler;
+                Console.CancelKeyPress += SigInt;
                 messages.LoadLD();
                 if (Configuration.Load() != 0)
                 {
@@ -154,6 +167,29 @@ namespace wmib
                 Security.Global();
                 Syslog.Log("Connecting");
                 Core.Connect();
+				UnixSignal[] signals = new UnixSignal []
+				{
+	                new UnixSignal (Signum.SIGINT),
+	                new UnixSignal (Signum.SIGTERM),
+	                new UnixSignal (Signum.SIGQUIT),
+	                new UnixSignal (Signum.SIGHUP),
+            	};
+				while(Core.IsRunning)
+				{
+					int index = UnixSignal.WaitAny (signals,-1);
+                	Signum signal = signals [index].Signum;
+					switch (signal)
+					{
+						case Signum.SIGINT:
+							SigInt(null, null);
+							return;
+						case Signum.SIGTERM:
+							Syslog.WriteNow("SIGTERM - Shutting down", true);
+							Core.Kill();
+							return;
+					}
+					Thread.Sleep(200);
+				}
             }
             catch (Exception fatal)
             {

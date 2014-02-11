@@ -564,7 +564,7 @@ namespace wmib
                                         if (message.StartsWith(" :" + delimiter.ToString() + "VERSION"))
                                         {
                                             SendData("NOTICE " + nick + " :" + delimiter.ToString() + "VERSION " 
-                                                     + Configuration.Version);
+                                                     + Configuration.System.Version);
                                             continue;
                                         }
                                         // store which instance this message was from so that we can send it using same instance
@@ -643,12 +643,15 @@ namespace wmib
                                                 Channel chan = Core.GetChannel(_channel);
                                                 if (chan != null)
                                                 {
-                                                    if (Configuration.Channels.Contains(chan))
-                                                    {
-                                                        Configuration.Channels.Remove(chan);
-                                                        Syslog.Log("I was kicked from " + parts[1]);
-                                                        Configuration.Save();
-                                                    }
+													lock (Configuration.Channels)
+													{
+	                                                    if (Configuration.Channels.Contains(chan))
+	                                                    {
+	                                                        Configuration.Channels.Remove(chan);
+	                                                        Syslog.Log("I was kicked from " + parts[1]);
+	                                                        Configuration.Save();
+	                                                    }
+													}
                                                 }
                                             }
                                         }

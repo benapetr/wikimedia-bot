@@ -63,16 +63,13 @@ namespace wmib
             get
             {
                 List<Channel> list = new List<Channel>();
-                lock (Configuration.Channels)
-                {
-                    foreach (Channel ch in Configuration.Channels)
-                    {
-                        if (ch.PrimaryInstance == this)
-                        {
-                            list.Add(ch);
-                        }
-                    }
-                }
+                foreach (Channel ch in Configuration.ChannelList)
+				{
+					if (ch.PrimaryInstance == this)
+					{
+						list.Add(ch);
+					}
+				}
                 return list;
             }
         }
@@ -95,16 +92,13 @@ namespace wmib
             get
             {
                 int Channels = 0;
-                lock (Configuration.Channels)
-                {
-                    foreach (Channel channel in Configuration.Channels)
-                    {
-                        if (channel.PrimaryInstance == this)
-                        {
-                            Channels++;
-                        }
-                    }
-                }
+                foreach (Channel channel in Configuration.ChannelList)
+				{
+					if (channel.PrimaryInstance == this)
+					{
+						Channels++;
+					}
+				}
                 return Channels;
             }
         }

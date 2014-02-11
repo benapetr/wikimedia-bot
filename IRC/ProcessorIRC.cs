@@ -209,7 +209,7 @@ namespace wmib
             _ident = source.Substring(source.IndexOf("!") + 1);
             _ident = _ident.Substring(0, _ident.IndexOf("@"));
             string _new = value;
-            foreach (Channel item in Configuration.Channels)
+            foreach (Channel item in Configuration.ChannelList)
             {
                 if (item.Name == Configuration.System.DebugChan && instance.Nick != Core.irc.NickName)
                 {
@@ -344,7 +344,7 @@ namespace wmib
                     }
                 }
             }
-            foreach (Channel item in Configuration.Channels)
+            foreach (Channel item in Configuration.ChannelList)
             {
                 User target = null;
                 lock (item.UserList)

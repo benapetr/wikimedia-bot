@@ -398,10 +398,6 @@ namespace wmib
             }
             Syslog.Log("All instances joined their channels");
             Core.FinishedJoining = true;
-            while (IsRunning)
-            {
-                Thread.Sleep(200);
-            }
         }
 
         private static void Terminate()
@@ -471,20 +467,22 @@ namespace wmib
                         {
                             Syslog.WriteNow("KERNEL: Writer thread is down ok");
                         }
-                        Syslog.WriteNow("KERNEL: Terminated");
-                        System.Diagnostics.Process.GetCurrentProcess().Kill();
                         break;
                     }
                     Thread.Sleep(1000);
                 }
+				Syslog.WriteNow("KERNEL: Giving a grace time to other threads to finish");
+				Thread.Sleep(200);
+				Syslog.WriteNow("KERNEL: Terminated (ok)");
+				Environment.Exit(0);
             } catch (Exception fail)
             {
                 Core.HandleException(fail);
 
             }
             Syslog.WriteNow("There was problem shutting down " + ExtensionHandler.Extensions.Count.ToString() + " modules, terminating process");
-            Syslog.WriteNow("Terminated");
-            System.Diagnostics.Process.GetCurrentProcess().Kill();
+			Syslog.WriteNow("KERNEL: Terminated (error)");
+			System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
 
         /// <summary>

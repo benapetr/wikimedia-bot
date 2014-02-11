@@ -156,7 +156,7 @@ namespace wmib
                     return;
                 }
                 Core.irc.Queue.DeliverMessage("I am running http://meta.wikimedia.org/wiki/WM-Bot version "
-                                              + Configuration.Version + " my source code is licensed "
+                                              + Configuration.System.Version + " my source code is licensed "
                                               + "under GPL and located at https://github.com/benapetr/wikimedia-bot "
                                               + "I will be very happy if you fix my bugs or implement new features",
                                               chan);
