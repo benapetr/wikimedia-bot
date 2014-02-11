@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C# Express 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Linkie", "Linkie\Linkie.csproj", "{85031952-D76C-4637-B5FD-8714105AA588}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Linkie", "Linkie.csproj", "{85031952-D76C-4637-B5FD-8714105AA588}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

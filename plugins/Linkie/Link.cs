@@ -13,7 +13,6 @@ namespace wmib
         {
             Version = "1.0.0.1";
             Name = "Linkie-Bottie";
-            start = true;
             return true;
         }
 
@@ -171,81 +170,81 @@ namespace wmib
             return false;
         }
 
-        public override void Hook_PRIV(config.channel channel, User invoker, string message)
+        public override void Hook_PRIV(Channel channel, User invoker, string message)
         {
-            if (message == config.CommandPrefix + "linkie-off")
+            if (message == Configuration.System.CommandPrefix + "linkie-off")
             {
-                if (channel.Users.IsApproved(invoker, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker, "admin"))
                 {
                     if (GetConfig(channel, "Link.Enable", false))
                     {
                         SetConfig(channel, "Link.Enable", false);
                         channel.SaveConfig();
-                        channel.instance.irc._SlowQueue.DeliverMessage(messages.get("Linkie-Off", channel.Language), channel);
+                        channel.PrimaryInstance.irc.Queue.DeliverMessage(messages.Localize("Linkie-Off", channel.Language), channel);
                     }
                     else
                     {
-                        channel.instance.irc._SlowQueue.DeliverMessage(messages.get("Linkie-Off2", channel.Language), channel);
+                        channel.PrimaryInstance.irc.Queue.DeliverMessage(messages.Localize("Linkie-Off2", channel.Language), channel);
                     }
                     return;
                 }
-                if (!channel.suppress_warnings)
+                if (!channel.SuppressWarnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
                 return;
             }
 
-            if (message == config.CommandPrefix + "linkie-on")
+            if (message == Configuration.System.CommandPrefix + "linkie-on")
             {
-                if (channel.Users.IsApproved(invoker, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker, "admin"))
                 {
                     if (!GetConfig(channel, "Link.Enable", false))
                     {
                         SetConfig(channel, "Link.Enable", true);
                         channel.SaveConfig();
-                        channel.instance.irc._SlowQueue.DeliverMessage(messages.get("Linkie-On", channel.Language), channel);
+                        channel.PrimaryInstance.irc.Queue.DeliverMessage(messages.Localize("Linkie-On", channel.Language), channel);
                     }
                     else
                     {
-                        channel.instance.irc._SlowQueue.DeliverMessage(messages.get("Linkie-On2", channel.Language), channel);
+                        channel.PrimaryInstance.irc.Queue.DeliverMessage(messages.Localize("Linkie-On2", channel.Language), channel);
                     }
                     return;
                 }
-                if (!channel.suppress_warnings)
+                if (!channel.SuppressWarnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
                 return;
             }
 
-            if (message == config.CommandPrefix + "link")
+            if (message == Configuration.System.CommandPrefix + "link")
             {
                 if (GetConfig(channel, "Link.Last", "") == "")
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("Linkie-E1", channel.Language), channel);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("Linkie-E1", channel.Language), channel);
                     return;
                 }
                 string xx = MakeTemplate(GetConfig(channel, "Link.Last", ""), GetConfig(channel, "Link.Default", "en"), false) + MakeLink(GetConfig(channel, "Link.Last", ""), GetConfig(channel, "Link.Default", "en"), true);
                 if (xx != "")
                 {
-                    core.irc._SlowQueue.DeliverMessage(xx, channel);
+                    Core.irc.Queue.DeliverMessage(xx, channel);
                     return;
                 }
-                core.irc._SlowQueue.DeliverMessage(messages.get("Linkie-E2", channel.Language), channel);
+                Core.irc.Queue.DeliverMessage(messages.Localize("Linkie-E2", channel.Language), channel);
                 return;
             }
 
-            if (message.StartsWith(config.CommandPrefix + "link "))
+            if (message.StartsWith(Configuration.System.CommandPrefix + "link "))
             {
                 string link = message.Substring(6);
                 string xx = MakeTemplate(link, GetConfig(channel, "Link.Default", "en"), false) + MakeLink(link, GetConfig(channel, "Link.Default", "en"), true);
                 if (xx != "")
                 {
-                    core.irc._SlowQueue.DeliverMessage(xx, channel);
+                    Core.irc.Queue.DeliverMessage(xx, channel);
                     return;
                 }
-                core.irc._SlowQueue.DeliverMessage(messages.get("Linkie-E3", channel.Language), channel);
+                Core.irc.Queue.DeliverMessage(messages.Localize("Linkie-E3", channel.Language), channel);
                 return;
             }
 
@@ -254,7 +253,7 @@ namespace wmib
                 string result = MakeTemplate(message, GetConfig(channel, "Link.Default", "en"), false) + MakeLink(message, GetConfig(channel, "Link.Default", "en"), true);
                 if (result != "")
                 {
-                    core.irc._SlowQueue.DeliverMessage(result, channel);
+                    Core.irc.Queue.DeliverMessage(result, channel);
                     return;
                 }
             }
@@ -265,7 +264,7 @@ namespace wmib
             }
         }
 
-        public override bool Hook_SetConfig(config.channel chan, User invoker, string config, string value)
+        public override bool Hook_SetConfig(Channel chan, User invoker, string config, string value)
         {
             if (config == "default-link-wiki")
             {
@@ -273,10 +272,10 @@ namespace wmib
                 {
                     SetConfig(chan, "Link.Default", value);
                     chan.SaveConfig();
-                    core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
                     return true;
                 }
-                core.irc._SlowQueue.DeliverMessage(messages.get("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
+                Core.irc.Queue.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
                 return true;
             }
             return false;
@@ -285,15 +284,15 @@ namespace wmib
         public override void Load()
         {
             Log("Loading db of links");
-            if (!System.IO.File.Exists(variables.config + "/linkie"))
+            if (!System.IO.File.Exists(Variables.ConfigurationDirectory + "/linkie"))
             {
-                Log("Unable to load " + variables.config + "/linkie aborting module", true);
+                Log("Unable to load " + Variables.ConfigurationDirectory + "/linkie aborting module", true);
                 Exit();
                 return;
             }
             lock (Wiki)
             {
-                foreach (string line in System.IO.File.ReadAllLines(variables.config + "/linkie"))
+                foreach (string line in System.IO.File.ReadAllLines(Variables.ConfigurationDirectory + "/linkie"))
                 {
                     if (line.Contains("|"))
                     {
@@ -308,7 +307,7 @@ namespace wmib
             }
             try
             {
-                while (working)
+                while (IsWorking)
                 {
                     Thread.Sleep(20000);
                 }
