@@ -46,11 +46,10 @@ if [ -f "$target/wmib.pid" ];then
   exit 1
 fi
 
+ok
+
 text "Updating the binary file"
-if [ ! cp "$source/bin/Debug/wmib.exe"  "$target/wmib.exe" ];then
-  fail
-  exit 1
-fi
+cp "$source/bin/Debug/wmib.exe" "$target/wmib.exe" || exit 1
 ok
 text "Restarting the bot"
 rm "$target/restart.lock" || exit 1
