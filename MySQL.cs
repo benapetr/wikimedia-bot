@@ -39,8 +39,8 @@ namespace wmib
             }
         }
 
-		private Thread reco = null;
-		private bool Recovering = false;
+        private Thread reco = null;
+        private bool Recovering = false;
 
         public List<SerializedRow> PendingRows = new List<SerializedRow>();
         private MySql.Data.MySqlClient.MySqlConnection Connection = null;
@@ -77,62 +77,62 @@ namespace wmib
                     PendingRows.AddRange(list);
                 }
             }
-			reco = new Thread(Exec);
-			reco.Name = "Recovery";
-			reco.Start();
+            reco = new Thread(Exec);
+            reco.Name = "Recovery";
+            reco.Start();
         }
 
-		private void Exec()
-		{
-			try
-			{
-				while (Core.IsRunning)
-				{
-					try
-					{
-						if (!Connection.Ping())
-						{
-							Syslog.WarningLog("Mysql connection is dead, trying to fix");
-							Connect();
-						}
-					} catch (Exception fail)
-					{
-						Core.HandleException(fail);
-						Thread.Sleep(200000);
-						continue;
-					}
-					if (PendingRows.Count > 0)
-					{
-						int count = 0;
-						Syslog.WarningLog("Performing recovery of " + PendingRows.Count.ToString() + " MySQL rows");
-						Recovering = true;
-						List<SerializedRow> rows = new List<SerializedRow>();
-						lock (PendingRows)
-						{
-							count = PendingRows.Count;
-							PendingRows.AddRange(rows);
-							PendingRows.Clear();
-						}
-						int recovered = 0;
-						foreach (SerializedRow row in rows)
-						{
-							if (InsertRow(row.table, row.row))
-							{
-								recovered++;
-							}
-						}
-						Syslog.WarningLog("Recovery finished, recovered " + recovered.ToString() + " of total " + count.ToString());
-						Recovering = false;
-						Thread.Sleep(200000);
-					}
-					Thread.Sleep(200);
-				}
-			} catch (Exception fail)
-			{
-				Core.HandleException(fail);
-				Syslog.ErrorLog("Recovery thread for Mysql is down");
-			}
-		}
+        private void Exec()
+        {
+            try
+            {
+                while (Core.IsRunning)
+                {
+                    try
+                    {
+                        if (!Connection.Ping())
+                        {
+                            Syslog.WarningLog("Mysql connection is dead, trying to fix");
+                            Connect();
+                        }
+                    } catch (Exception fail)
+                    {
+                        Core.HandleException(fail);
+                        Thread.Sleep(200000);
+                        continue;
+                    }
+                    if (PendingRows.Count > 0)
+                    {
+                        int count = 0;
+                        Syslog.WarningLog("Performing recovery of " + PendingRows.Count.ToString() + " MySQL rows");
+                        Recovering = true;
+                        List<SerializedRow> rows = new List<SerializedRow>();
+                        lock (PendingRows)
+                        {
+                            count = PendingRows.Count;
+                            PendingRows.AddRange(rows);
+                            PendingRows.Clear();
+                        }
+                        int recovered = 0;
+                        foreach (SerializedRow row in rows)
+                        {
+                            if (InsertRow(row.table, row.row))
+                            {
+                                recovered++;
+                            }
+                        }
+                        Syslog.WarningLog("Recovery finished, recovered " + recovered.ToString() + " of total " + count.ToString());
+                        Recovering = false;
+                        Thread.Sleep(200000);
+                    }
+                    Thread.Sleep(200);
+                }
+            } catch (Exception fail)
+            {
+                Core.HandleException(fail);
+                Syslog.ErrorLog("Recovery thread for Mysql is down");
+            }
+        }
 
         public override string Select(string table, string rows, string query, int columns, char separator = '|')
         {
@@ -233,43 +233,43 @@ namespace wmib
             }
         }
 
-		public override int CacheSize()
-		{
-			return PendingRows.Count;
-		}
+        public override int CacheSize()
+        {
+            return PendingRows.Count;
+        }
 
         private void FlushRows()
-		{
-			if (Recovering)
-			{
-				return;
-			}
-		    string file = Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "unwrittensql.xml";
-			if (File.Exists(file))
-			{
-				Core.BackupData(file);
-				if (!File.Exists(Configuration.TempName(file)))
-				{
-					Syslog.WarningLog("Unable to create backup file for " + file);
-					return;
-				}
-			}
-			try
-			{
-				File.Delete(file);
-				XmlSerializer xs = new XmlSerializer(typeof(SerializedRow));
-				StreamWriter writer = File.AppendText(file);
-				lock(PendingRows)
-				{
-					xs.Serialize(writer, PendingRows);
-				}
-				writer.Close();
-			} catch (Exception fail)
-			{
-				Core.HandleException(fail);
-				Syslog.WarningLog("Recovering the mysql unwritten dump because of exception to: " + file);
-				Core.RecoverFile(file);
-			}
+        {
+            if (Recovering)
+            {
+                return;
+            }
+            string file = Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "unwrittensql.xml";
+            if (File.Exists(file))
+            {
+                Core.BackupData(file);
+                if (!File.Exists(Configuration.TempName(file)))
+                {
+                    Syslog.WarningLog("Unable to create backup file for " + file);
+                    return;
+                }
+            }
+            try
+            {
+                File.Delete(file);
+                XmlSerializer xs = new XmlSerializer(typeof(SerializedRow));
+                StreamWriter writer = File.AppendText(file);
+                lock(PendingRows)
+                {
+                    xs.Serialize(writer, PendingRows);
+                }
+                writer.Close();
+            } catch (Exception fail)
+            {
+                Core.HandleException(fail);
+                Syslog.WarningLog("Recovering the mysql unwritten dump because of exception to: " + file);
+                Core.RecoverFile(file);
+            }
         }
 
         /// <summary>

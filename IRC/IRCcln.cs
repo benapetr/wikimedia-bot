@@ -428,10 +428,10 @@ namespace wmib
                 }
 
                 _Queue = new System.Threading.Thread(Queue.Run);
-				_Queue.Name = "MessageQueue:" + NickName;
+                _Queue.Name = "MessageQueue:" + NickName;
 
                 PingerThread = new System.Threading.Thread(Ping);
-				PingerThread.Name = "Ping:"+ NickName;
+                PingerThread.Name = "Ping:"+ NickName;
                 PingerThread.Start();
 
                 if (Auth)
@@ -643,15 +643,15 @@ namespace wmib
                                                 Channel chan = Core.GetChannel(_channel);
                                                 if (chan != null)
                                                 {
-													lock (Configuration.Channels)
-													{
-	                                                    if (Configuration.Channels.Contains(chan))
-	                                                    {
-	                                                        Configuration.Channels.Remove(chan);
-	                                                        Syslog.Log("I was kicked from " + parts[1]);
-	                                                        Configuration.Save();
-	                                                    }
-													}
+                                                    lock (Configuration.Channels)
+                                                    {
+                                                        if (Configuration.Channels.Contains(chan))
+                                                        {
+                                                            Configuration.Channels.Remove(chan);
+                                                            Syslog.Log("I was kicked from " + parts[1]);
+                                                            Configuration.Save();
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
@@ -660,10 +660,10 @@ namespace wmib
                             }
                             System.Threading.Thread.Sleep(50);
                         }
-						if (!Core.IsRunning)
-						{
-							return;
-						}
+                        if (!Core.IsRunning)
+                        {
+                            return;
+                        }
                         Syslog.Log("Reconnecting, end of data stream");
                         IsWorking = false;
                         connected = false;
@@ -671,10 +671,10 @@ namespace wmib
                     }
                     catch (System.IO.IOException xx)
                     {
-						if (!Core.IsRunning)
-						{
-							return;
-						}
+                        if (!Core.IsRunning)
+                        {
+                            return;
+                        }
                         Syslog.Log("Reconnecting, connection failed " + xx.Message + xx.StackTrace);
                         IsWorking = false;
                         connected = false;

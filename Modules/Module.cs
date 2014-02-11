@@ -323,7 +323,7 @@ namespace wmib
         /// <param name="OldNick"></param>
         public virtual void Hook_Nick(Channel channel, User Target, string OldNick)
         { 
-			return;
+            return;
         }
 
         /// <summary>

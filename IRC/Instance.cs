@@ -64,12 +64,12 @@ namespace wmib
             {
                 List<Channel> list = new List<Channel>();
                 foreach (Channel ch in Configuration.ChannelList)
-				{
-					if (ch.PrimaryInstance == this)
-					{
-						list.Add(ch);
-					}
-				}
+                {
+                    if (ch.PrimaryInstance == this)
+                    {
+                        list.Add(ch);
+                    }
+                }
                 return list;
             }
         }
@@ -93,12 +93,12 @@ namespace wmib
             {
                 int Channels = 0;
                 foreach (Channel channel in Configuration.ChannelList)
-				{
-					if (channel.PrimaryInstance == this)
-					{
-						Channels++;
-					}
-				}
+                {
+                    if (channel.PrimaryInstance == this)
+                    {
+                        Channels++;
+                    }
+                }
                 return Channels;
             }
         }

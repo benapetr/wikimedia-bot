@@ -153,15 +153,15 @@ namespace wmib
                             return;
                         case "info":
                             string result = "Uptime: " + Core.getUptime() + " Version: " + Configuration.System.Version 
-								+ "\n\nBuffer information:\nUnwritten lines (file storage): " + StorageWriter.Count.ToString() + "\n";
-							if (Core.DB != null)
-							{
-						 		result += "Unwritten rows (MySQL): " + Core.DB.CacheSize().ToString() + "\n";
-							}
-							result += "\nInstances:";
-							Writer.WriteLine(result);
+                                + "\n\nBuffer information:\nUnwritten lines (file storage): " + StorageWriter.Count.ToString() + "\n";
+                            if (Core.DB != null)
+                            {
+                                result += "Unwritten rows (MySQL): " + Core.DB.CacheSize().ToString() + "\n";
+                            }
+                            result += "\nInstances:";
+                            Writer.WriteLine(result);
                             Writer.Flush();
-							result = "";
+                            result = "";
                             Syslog.DebugLog("Retrieving information for user " + username + " in system");
                             lock (Core.Instances)
                             {

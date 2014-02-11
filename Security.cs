@@ -34,7 +34,7 @@ namespace wmib
         /// <summary>
         /// Channel this class belong to
         /// </summary>
-		private Channel Channel;
+        private Channel Channel;
         /// <summary>
         /// File where data are stored
         /// </summary>
@@ -45,7 +45,7 @@ namespace wmib
         /// <param name="channel"></param>
         public Security(Channel channel)
         {
-			this.Channel = channel;
+            this.Channel = channel;
         }
 
         /// <summary>
@@ -77,27 +77,27 @@ namespace wmib
             return 0;
         }
 
-		public void InsertUser(XmlNode node)
-		{
-			string regex = null;
-			string role = null;
-			foreach (XmlAttribute info in node.Attributes)
-			{
-				switch (info.Name)
-				{
-					case "regex":
-						regex = info.Value;
-						break;
-					case "role":
-						role = info.Value;
-						break;
-				}
-			}
-			if (regex == null || role == null)
-			{
-				Syslog.WarningLog("Skipping invalid user record for " + this.Channel.Name);
-			}
-		}
+        public void InsertUser(XmlNode node)
+        {
+            string regex = null;
+            string role = null;
+            foreach (XmlAttribute info in node.Attributes)
+            {
+                switch (info.Name)
+                {
+                    case "regex":
+                        regex = info.Value;
+                        break;
+                    case "role":
+                        role = info.Value;
+                        break;
+                }
+            }
+            if (regex == null || role == null)
+            {
+                Syslog.WarningLog("Skipping invalid user record for " + this.Channel.Name);
+            }
+        }
 
         /// <summary>
         /// Load all global users of bot
@@ -166,7 +166,7 @@ namespace wmib
         /// <returns></returns>
         public bool Save()
         {
-			this.Channel.SaveConfig();
+            this.Channel.SaveConfig();
             return true;
         }
 

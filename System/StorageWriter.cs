@@ -25,13 +25,13 @@ namespace wmib
         /// List of all data to write
         /// </summary>
         private static readonly List<STI> Data = new List<STI>();
-		public static int Count
-		{
-			get
-			{
-				return Data.Count;
-			}
-		}
+        public static int Count
+        {
+            get
+            {
+                return Data.Count;
+            }
+        }
 
         /// <summary>
         /// Whether storage is running

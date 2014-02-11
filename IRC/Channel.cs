@@ -125,7 +125,7 @@ namespace wmib
         {
             Name = name;
             Suppress = false;
-			SystemUsers = new Security(this);
+            SystemUsers = new Security(this);
             LoadConfig();
             if (DefaultInstance == "any")
             {
@@ -187,15 +187,15 @@ namespace wmib
             return File.Exists(GetConfigFilePath(_Channel));
         }
 
-		public static string GetConfigFilePath(string _Channel)
-		{
-			return Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + _Channel + ".xml";
-		}
+        public static string GetConfigFilePath(string _Channel)
+        {
+            return Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + _Channel + ".xml";
+        }
 
-		public string GetConfigFilePath()
-		{
-			return Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + this.Name + ".xml";
-		}
+        public string GetConfigFilePath()
+        {
+            return Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + this.Name + ".xml";
+        }
 
         /// <summary>
         /// Change the config
@@ -342,9 +342,9 @@ namespace wmib
                 {
                     switch (xx.Name)
                     {
-						case "user":
-							this.SystemUsers.InsertUser(xx);
-							continue;
+                        case "user":
+                            this.SystemUsers.InsertUser(xx);
+                            continue;
                         case "extension":
                             if (ExtensionData.ContainsKey(xx.Attributes[0].Value))
                             {
@@ -414,7 +414,7 @@ namespace wmib
         /// </summary>
         public void SaveConfig()
         {
-			string fn = GetConfigFilePath();
+            string fn = GetConfigFilePath();
             try
             {
                 XmlDocument data = new XmlDocument();
@@ -448,20 +448,20 @@ namespace wmib
                         InsertData(item.Key, item.Value, ref data, ref xmlnode, "extension");
                     }
                 }
-				lock (this.SystemUsers.Users)
-				{
-					foreach (SystemUser user in this.SystemUsers.Users)
-					{
-						XmlAttribute name = data.CreateAttribute("regex");
-			            name.Value = user.Name;
-			            XmlAttribute kk = data.CreateAttribute("role");
-			            kk.Value = user.Role;
-			            XmlNode db = data.CreateElement(Name);
-			            db.Attributes.Append(name);
-			            db.Attributes.Append(kk);
-			            xmlnode.AppendChild(db);
-					}
-				}
+                lock (this.SystemUsers.Users)
+                {
+                    foreach (SystemUser user in this.SystemUsers.Users)
+                    {
+                        XmlAttribute name = data.CreateAttribute("regex");
+                        name.Value = user.Name;
+                        XmlAttribute kk = data.CreateAttribute("role");
+                        kk.Value = user.Role;
+                        XmlNode db = data.CreateElement(Name);
+                        db.Attributes.Append(name);
+                        db.Attributes.Append(kk);
+                        xmlnode.AppendChild(db);
+                    }
+                }
                 if (File.Exists(fn))
                 {
                     Core.BackupData(fn);

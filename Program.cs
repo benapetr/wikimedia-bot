@@ -61,10 +61,10 @@ namespace wmib
             }
             catch (Exception fail)
             {
-				Core.HandleException(fail);
+                Core.HandleException(fail);
             }
             Syslog.WriteNow("Terminated (emergency)");
-			System.Diagnostics.Process.GetCurrentProcess().Kill();
+            System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
 
         /// <summary>
@@ -75,11 +75,11 @@ namespace wmib
         /// </param>
         private static void ProcessVerbosity(string[] gs)
         {
-			int i = 0;
-			List<string> parameters = new List<string>(gs);
+            int i = 0;
+            List<string> parameters = new List<string>(gs);
             foreach (string item in parameters)
             {
-				i++;
+                i++;
                 if (item == "--nocolors")
                 {
                     Configuration.System.Colors = false;
@@ -95,21 +95,21 @@ namespace wmib
                         "Parameters:\n" +
                         "    --nocolors: Disable colors in system logs\n" +
                         "    -h [--help]: Display help\n" +
-					    "    --pid file: Write a pid to a file\n" +
+                        "    --pid file: Write a pid to a file\n" +
                         "    --traffic: Enable traffic logs\n" +
                         "    -v: Increases verbosity\n\n" +
                         "This software is open source, licensed under GPLv3");
                     Environment.Exit(0);
                 }
-				if (item == "--pid")
-				{
-					if (parameters.Count <= i)
-					{
-						Console.WriteLine("You didn't provide a name for pid file");
-						Environment.Exit(0);
-					}
-					System.IO.File.WriteAllText(parameters[i], System.Diagnostics.Process.GetCurrentProcess().Id.ToString());
-				}
+                if (item == "--pid")
+                {
+                    if (parameters.Count <= i)
+                    {
+                        Console.WriteLine("You didn't provide a name for pid file");
+                        Environment.Exit(0);
+                    }
+                    System.IO.File.WriteAllText(parameters[i], System.Diagnostics.Process.GetCurrentProcess().Id.ToString());
+                }
                 if (item.StartsWith("-v"))
                 {
                     foreach (char x in item)
@@ -167,29 +167,29 @@ namespace wmib
                 Security.Global();
                 Syslog.Log("Connecting");
                 Core.Connect();
-				UnixSignal[] signals = new UnixSignal []
-				{
-	                new UnixSignal (Signum.SIGINT),
-	                new UnixSignal (Signum.SIGTERM),
-	                new UnixSignal (Signum.SIGQUIT),
-	                new UnixSignal (Signum.SIGHUP),
-            	};
-				while(Core.IsRunning)
-				{
-					int index = UnixSignal.WaitAny (signals,-1);
-                	Signum signal = signals [index].Signum;
-					switch (signal)
-					{
-						case Signum.SIGINT:
-							SigInt(null, null);
-							return;
-						case Signum.SIGTERM:
-							Syslog.WriteNow("SIGTERM - Shutting down", true);
-							Core.Kill();
-							return;
-					}
-					Thread.Sleep(200);
-				}
+                UnixSignal[] signals = new UnixSignal []
+                {
+                    new UnixSignal (Signum.SIGINT),
+                    new UnixSignal (Signum.SIGTERM),
+                    new UnixSignal (Signum.SIGQUIT),
+                    new UnixSignal (Signum.SIGHUP),
+                };
+                while(Core.IsRunning)
+                {
+                    int index = UnixSignal.WaitAny (signals,-1);
+                    Signum signal = signals [index].Signum;
+                    switch (signal)
+                    {
+                        case Signum.SIGINT:
+                            SigInt(null, null);
+                            return;
+                        case Signum.SIGTERM:
+                            Syslog.WriteNow("SIGTERM - Shutting down", true);
+                            Core.Kill();
+                            return;
+                    }
+                    Thread.Sleep(200);
+                }
             }
             catch (Exception fatal)
             {

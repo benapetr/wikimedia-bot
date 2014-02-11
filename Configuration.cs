@@ -128,10 +128,10 @@ namespace wmib
             /// </summary>
             public static int SelectedVerbosity = 0;
 
-			/// <summary>
-	        /// Version
-	        /// </summary>
-	        public static string Version = "wikimedia bot v. 2.0.0.0";
+            /// <summary>
+            /// Version
+            /// </summary>
+            public static string Version = "wikimedia bot v. 2.0.0.0";
         }
 
         public class MySQL
@@ -308,145 +308,145 @@ namespace wmib
         /// Load config of bot
         /// </summary>
         public static int Load()
-		{
-			if (Directory.Exists(Variables.ConfigurationDirectory) == false)
-			{
-				Directory.CreateDirectory(Variables.ConfigurationDirectory);
-			}
-			if (!File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + Configuration.Paths.ConfigFile))
-			{
-				Console.WriteLine("Error: unable to find config file in configuration/" 
-					+ Configuration.Paths.ConfigFile
-				);
-				return 2;
-			}
-			Dictionary<string, string> Data = File2Dict();
-			if (Data.ContainsKey("username"))
-			{
-				Configuration.IRC.Username = Data["username"];
-			}
-			if (Data.ContainsKey("network"))
-			{
-				Configuration.IRC.NetworkHost = Data["network"];
-			}
-			if (Data.ContainsKey("nick"))
-			{
-				Configuration.IRC.NickName = Data["nick"];
-				Configuration.IRC.LoginNick = Data["nick"];
-			}
-			if (Data.ContainsKey("debug"))
-			{
-				Configuration.System.DebugChan = Data["debug"];
-			}
-			if (Data.ContainsKey("bouncerp"))
-			{
-				Configuration.Network.BouncerPort = int.Parse(Data["bouncerp"]);
-			}
-			if (Data.ContainsKey("web"))
-			{
-				Configuration.WebPages.WebpageURL = Data["web"];
-			}
-			if (Data.ContainsKey("password"))
-			{
-				Configuration.IRC.LoginPw = Data["password"];
-			}
-			if (Data.ContainsKey("mysql_pw"))
-			{
-				Configuration.MySQL.MysqlPw = Data["mysql_pw"];
-			}
-			if (Data.ContainsKey("mysql_db"))
-			{
-				Configuration.MySQL.Mysqldb = Data["mysql_db"];
-			}
-			if (Data.ContainsKey("mysql_user"))
-			{
-				Configuration.MySQL.MysqlUser = Data["mysql_user"];
-			}
-			if (Data.ContainsKey("interval"))
-			{
-				Configuration.IRC.Interval = int.Parse(Data["interval"]);
-			}
-			if (Data.ContainsKey("mysql_port"))
-			{
-				Configuration.MySQL.MysqlPort = int.Parse(Data["mysql_port"]);
-			}
-			if (Data.ContainsKey("mysql_host"))
-			{
-				Configuration.MySQL.MysqlHost = Data["mysql_host"];
-			}
-			if (string.IsNullOrEmpty(Configuration.IRC.LoginNick))
-			{
-				Console.WriteLine("Error there is no login for bot");
-				return 1;
-			}
-			if (string.IsNullOrEmpty(Configuration.IRC.NetworkHost))
-			{
-				Console.WriteLine("Error irc server is wrong");
-				return 4;
-			}
-			if (string.IsNullOrEmpty(Configuration.IRC.NickName))
-			{
-				Console.WriteLine("Error there is no username for bot");
-				return 6;
-			}
-			if (Data.ContainsKey("serverIO"))
-			{
-				Configuration.IRC.UsingBouncer = bool.Parse(Data["serverIO"]);
-			}
-			Syslog.Log("Loading instances");
-			Core.CreateInstance(Configuration.IRC.NickName, Configuration.Network.BouncerPort); // primary instance
-			int CurrentInstance = 0;
-			while (CurrentInstance < 20)
-			{
-				if (!Data.ContainsKey("instancename" + CurrentInstance.ToString()))
-				{
-					break;
-				}
-				string InstanceName = Data["instancename" + CurrentInstance.ToString()];
-				Syslog.DebugLog("Instance found: " + InstanceName);
-				if (Configuration.IRC.UsingBouncer)
-				{
-					Syslog.DebugLog("Using bouncer, looking for instance port");
-					if (!Data.ContainsKey("instanceport" + CurrentInstance.ToString()))
-					{
-						Syslog.WriteNow("Instance " + InstanceName + " has invalid port, not using", true);
-						continue;
-					}
-					string InstancePort = Data["instanceport" + CurrentInstance.ToString()];
-					int port = int.Parse(InstancePort);
-					Core.CreateInstance(InstanceName, port);
-				} else
-				{
-					Core.CreateInstance(InstanceName);
-				}
-				CurrentInstance++;
-			}
-			if (!File.Exists(Configuration.Paths.GetChannelFile()))
-			{
-				Console.WriteLine("Error there is no channel file (" + Configuration.Paths.GetChannelFile() + ") to load channels from");
-				return 20;
-			}
-			foreach (string x in File.ReadAllLines(Configuration.Paths.GetChannelFile()))
-			{
-				string name = x.Replace(" ", "");
-				if (name != "")
-				{
-					lock(Channels)
-					{
-						Channels.Add(new Channel(name));
-					}
-				}
-			}
-			Syslog.Log("Channels were all loaded");
+        {
+            if (Directory.Exists(Variables.ConfigurationDirectory) == false)
+            {
+                Directory.CreateDirectory(Variables.ConfigurationDirectory);
+            }
+            if (!File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + Configuration.Paths.ConfigFile))
+            {
+                Console.WriteLine("Error: unable to find config file in configuration/" 
+                    + Configuration.Paths.ConfigFile
+                );
+                return 2;
+            }
+            Dictionary<string, string> Data = File2Dict();
+            if (Data.ContainsKey("username"))
+            {
+                Configuration.IRC.Username = Data["username"];
+            }
+            if (Data.ContainsKey("network"))
+            {
+                Configuration.IRC.NetworkHost = Data["network"];
+            }
+            if (Data.ContainsKey("nick"))
+            {
+                Configuration.IRC.NickName = Data["nick"];
+                Configuration.IRC.LoginNick = Data["nick"];
+            }
+            if (Data.ContainsKey("debug"))
+            {
+                Configuration.System.DebugChan = Data["debug"];
+            }
+            if (Data.ContainsKey("bouncerp"))
+            {
+                Configuration.Network.BouncerPort = int.Parse(Data["bouncerp"]);
+            }
+            if (Data.ContainsKey("web"))
+            {
+                Configuration.WebPages.WebpageURL = Data["web"];
+            }
+            if (Data.ContainsKey("password"))
+            {
+                Configuration.IRC.LoginPw = Data["password"];
+            }
+            if (Data.ContainsKey("mysql_pw"))
+            {
+                Configuration.MySQL.MysqlPw = Data["mysql_pw"];
+            }
+            if (Data.ContainsKey("mysql_db"))
+            {
+                Configuration.MySQL.Mysqldb = Data["mysql_db"];
+            }
+            if (Data.ContainsKey("mysql_user"))
+            {
+                Configuration.MySQL.MysqlUser = Data["mysql_user"];
+            }
+            if (Data.ContainsKey("interval"))
+            {
+                Configuration.IRC.Interval = int.Parse(Data["interval"]);
+            }
+            if (Data.ContainsKey("mysql_port"))
+            {
+                Configuration.MySQL.MysqlPort = int.Parse(Data["mysql_port"]);
+            }
+            if (Data.ContainsKey("mysql_host"))
+            {
+                Configuration.MySQL.MysqlHost = Data["mysql_host"];
+            }
+            if (string.IsNullOrEmpty(Configuration.IRC.LoginNick))
+            {
+                Console.WriteLine("Error there is no login for bot");
+                return 1;
+            }
+            if (string.IsNullOrEmpty(Configuration.IRC.NetworkHost))
+            {
+                Console.WriteLine("Error irc server is wrong");
+                return 4;
+            }
+            if (string.IsNullOrEmpty(Configuration.IRC.NickName))
+            {
+                Console.WriteLine("Error there is no username for bot");
+                return 6;
+            }
+            if (Data.ContainsKey("serverIO"))
+            {
+                Configuration.IRC.UsingBouncer = bool.Parse(Data["serverIO"]);
+            }
+            Syslog.Log("Loading instances");
+            Core.CreateInstance(Configuration.IRC.NickName, Configuration.Network.BouncerPort); // primary instance
+            int CurrentInstance = 0;
+            while (CurrentInstance < 20)
+            {
+                if (!Data.ContainsKey("instancename" + CurrentInstance.ToString()))
+                {
+                    break;
+                }
+                string InstanceName = Data["instancename" + CurrentInstance.ToString()];
+                Syslog.DebugLog("Instance found: " + InstanceName);
+                if (Configuration.IRC.UsingBouncer)
+                {
+                    Syslog.DebugLog("Using bouncer, looking for instance port");
+                    if (!Data.ContainsKey("instanceport" + CurrentInstance.ToString()))
+                    {
+                        Syslog.WriteNow("Instance " + InstanceName + " has invalid port, not using", true);
+                        continue;
+                    }
+                    string InstancePort = Data["instanceport" + CurrentInstance.ToString()];
+                    int port = int.Parse(InstancePort);
+                    Core.CreateInstance(InstanceName, port);
+                } else
+                {
+                    Core.CreateInstance(InstanceName);
+                }
+                CurrentInstance++;
+            }
+            if (!File.Exists(Configuration.Paths.GetChannelFile()))
+            {
+                Console.WriteLine("Error there is no channel file (" + Configuration.Paths.GetChannelFile() + ") to load channels from");
+                return 20;
+            }
+            foreach (string x in File.ReadAllLines(Configuration.Paths.GetChannelFile()))
+            {
+                string name = x.Replace(" ", "");
+                if (name != "")
+                {
+                    lock(Channels)
+                    {
+                        Channels.Add(new Channel(name));
+                    }
+                }
+            }
+            Syslog.Log("Channels were all loaded");
 
-			// Now when all chans are loaded let's link them together
-			lock(Channels)
-			{
-				foreach (Channel channel in Channels)
-				{
-					channel.SharesNo();
-				}
-			}
+            // Now when all chans are loaded let's link them together
+            lock(Channels)
+            {
+                foreach (Channel channel in Channels)
+                {
+                    channel.SharesNo();
+                }
+            }
 
             Syslog.Log("Channel db's working");
             if (!Directory.Exists(Configuration.Paths.DumpDir))
