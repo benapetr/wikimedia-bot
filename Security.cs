@@ -323,7 +323,7 @@ namespace wmib
         /// Check if user match the necessary level
         /// </summary>
         /// <param name="level">Permission level</param>
-        /// <param name="rights">Userrights</param>
+        /// <param name="role">Userrights</param>
         /// <returns></returns>
         public bool MatchesRole(int level, string role)
         {

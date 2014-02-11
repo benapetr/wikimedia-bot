@@ -21,7 +21,7 @@ namespace wmib
         /// <summary>
         /// Join channel
         /// </summary>
-        /// <param name="chan">Channel</param>
+        /// <param name="channel">Channel</param>
         /// <param name="user">User</param>
         /// <param name="host">Host</param>
         /// <param name="message">Message</param>
@@ -88,7 +88,7 @@ namespace wmib
         /// <summary>
         /// Part a channel
         /// </summary>
-        /// <param name="chan">Channel object</param>
+        /// <param name="channel">Channel object</param>
         /// <param name="user">User</param>
         /// <param name="host">Host</param>
         /// <param name="message">Message</param>

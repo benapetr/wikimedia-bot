@@ -28,13 +28,13 @@ namespace wmib
         }
 
         /// <summary>
-        /// Log the specified message
+        /// Log the specified Message and MessageType.
         /// </summary>
-        /// <param name='msg'>
-        /// Message that you want to log.
+        /// <param name='Message'>
+        /// If set to <c>true</c> message.
         /// </param>
-        /// <param name='warn'>
-        /// If this is true the message will be classified as a warning.
+        /// <param name='MessageType'>
+        /// If set to <c>true</c> message type.
         /// </param>
         public static bool Log(string Message, Type MessageType)
         {
@@ -46,10 +46,10 @@ namespace wmib
         /// <summary>
         /// Log the specified message
         /// </summary>
-        /// <param name='msg'>
+        /// <param name='Message'>
         /// Message that you want to log.
         /// </param>
-        /// <param name='warn'>
+        /// <param name='Warning'>
         /// If this is true the message will be classified as a warning.
         /// </param>
         public static bool Log(string Message, bool Warning = false)
@@ -67,7 +67,7 @@ namespace wmib
         /// <summary>
         /// Log the specified message
         /// </summary>
-        /// <param name='msg'>
+        /// <param name='Message'>
         /// Message that you want to log.
         /// </param>
         public static bool WarningLog(string Message)
@@ -79,7 +79,7 @@ namespace wmib
         /// <summary>
         /// Log the specified message
         /// </summary>
-        /// <param name='msg'>
+        /// <param name='Message'>
         /// Message that you want to log.
         /// </param>
         public static bool ErrorLog(string Message)
@@ -94,10 +94,10 @@ namespace wmib
         /// <returns>
         /// The now.
         /// </returns>
-        /// <param name='msg'>
+        /// <param name='Message'>
         /// Message that you want to log.
         /// </param>
-        /// <param name='warn'>
+        /// <param name='Warning'>
         /// If this is true the message will be classified as a warning.
         /// </param>
         public static bool WriteNow(string Message, bool Warning = false)
@@ -118,11 +118,11 @@ namespace wmib
         /// <returns>
         /// The now.
         /// </returns>
-        /// <param name='msg'>
-        /// Message that you want to log.
+        /// <param name='Message'>
+        /// If set to <c>true</c> message.
         /// </param>
-        /// <param name='warn'>
-        /// If this is true the message will be classified as a warning.
+        /// <param name='MessageType'>
+        /// If set to <c>true</c> message type.
         /// </param>
         public static bool WriteNow(string Message, Syslog.Type MessageType)
         {
@@ -134,8 +134,8 @@ namespace wmib
         /// <summary>
         /// Debug log
         /// </summary>
-        /// <param name="text"></param>
-        /// <param name="verbosity"></param>
+        /// <param name="Message"></param>
+        /// <param name="Verbosity"></param>
         public static void DebugLog(string Message, int Verbosity = 1)
         {
             if (Configuration.System.SelectedVerbosity >= Verbosity)
@@ -147,8 +147,8 @@ namespace wmib
         /// <summary>
         /// Debug log
         /// </summary>
-        /// <param name="text"></param>
-        /// <param name="verbosity"></param>
+        /// <param name="Message"></param>
+        /// <param name="Verbosity"></param>
         public static void DebugWrite(string Message, int Verbosity = 1)
         {
             if (Configuration.System.SelectedVerbosity >= Verbosity)
@@ -183,11 +183,17 @@ namespace wmib
             public Syslog.Type _Type;
 
             /// <summary>
-            /// Creates a new instance of message
+            /// Initializes a new instance of the class.
             /// </summary>
-            /// <param name="text"></param>
-            /// <param name="time"></param>
-            /// <param name="warning"></param>
+            /// <param name='text'>
+            /// Text.
+            /// </param>
+            /// <param name='time'>
+            /// Time.
+            /// </param>
+            /// <param name='MT'>
+            /// M.
+            /// </param>
             public Message(string text, DateTime time, Syslog.Type MT)
             {
                 this.Text = text;
@@ -205,7 +211,7 @@ namespace wmib
         /// Write a message to terminal
         /// </summary>
         /// <param name="Message"></param>
-        /// <param name="warning"></param>
+        /// <param name="MessageType"></param>
         public static void Write(string Message, Syslog.Type MessageType)
         {
             Message message = new Message(Message, DateTime.Now, MessageType);
@@ -220,7 +226,7 @@ namespace wmib
         /// </summary>
         /// <param name="time"></param>
         /// <param name="Message"></param>
-        /// <param name="Warning"></param>
+        /// <param name="MessageType"></param>
         public static void Display(DateTime time, string Message, Syslog.Type MessageType)
         {
             if (Configuration.System.Colors)
