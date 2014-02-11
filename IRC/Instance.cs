@@ -129,7 +129,7 @@ namespace wmib
         {
             JoinThread = new Thread(JoinAll);
             JoinThread.Name = "Jointhread:" + Nick;
-			Core.ThreadManager.RegisterThread(JoinThread);
+            Core.ThreadManager.RegisterThread(JoinThread);
             JoinThread.Start();
         }
 
@@ -157,10 +157,10 @@ namespace wmib
             }
 
             irc.ChannelThread = new Thread(irc.ChannelList);
-			irc.ChannelThread.Name = "ChannelList:" + Nick;
-			Core.ThreadManager.RegisterThread(irc.ChannelThread);
+            irc.ChannelThread.Name = "ChannelList:" + Nick;
+            Core.ThreadManager.RegisterThread(irc.ChannelThread);
             irc.ChannelThread.Start();
-			Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
+            Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
         }
 
         /// <summary>
@@ -170,7 +170,7 @@ namespace wmib
         {
             thread = new Thread(Connect);
             thread.Name = "Instance:" + Nick;
-			Core.ThreadManager.RegisterThread(thread);
+            Core.ThreadManager.RegisterThread(thread);
             thread.Start();
         }
 
@@ -195,7 +195,7 @@ namespace wmib
         private void Connect()
         {
             irc.Connect();
-			Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
+            Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
         }
     }
 }

@@ -117,14 +117,14 @@ namespace wmib
             /// This is a string which commands are prefixed with
             /// </summary>
             public static string CommandPrefix
-			{
-				get
-				{
-					return prefix;
-				}
-			}
+            {
+                get
+                {
+                    return prefix;
+                }
+            }
 
-			public static string prefix = "@";
+            public static string prefix = "@";
 
             /// <summary>
             /// If colors are in terminal
@@ -382,6 +382,10 @@ namespace wmib
             {
                 Configuration.MySQL.MysqlHost = Data["mysql_host"];
             }
+            if (Data.ContainsKey("system_port"))
+            {
+                Configuration.Network.SystemPort = int.Parse(Data["system_port"]);
+            }
             if (string.IsNullOrEmpty(Configuration.IRC.LoginNick))
             {
                 Console.WriteLine("Error there is no login for bot");
@@ -397,10 +401,10 @@ namespace wmib
                 Console.WriteLine("Error there is no username for bot");
                 return 6;
             }
-			if (Data.ContainsKey("system_prefix"))
-			{
-				Configuration.System.prefix = Data["system_prefix"];
-			}
+            if (Data.ContainsKey("system_prefix"))
+            {
+                Configuration.System.prefix = Data["system_prefix"];
+            }
             if (Data.ContainsKey("serverIO"))
             {
                 Configuration.IRC.UsingBouncer = bool.Parse(Data["serverIO"]);

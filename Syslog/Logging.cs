@@ -292,7 +292,7 @@ namespace wmib
         {
             try
             {
-				Core.ThreadManager.Logger = true;
+                Core.ThreadManager.Logger = true;
                 while (Core.IsRunning)
                 {
                     Flush();
@@ -302,11 +302,11 @@ namespace wmib
             catch (ThreadAbortException)
             {
                 Flush();
-				Core.ThreadManager.Logger = false;
+                Core.ThreadManager.Logger = false;
                 return;
             }
             Flush();
-			Core.ThreadManager.Logger = false;
+            Core.ThreadManager.Logger = false;
         }
     }
 }

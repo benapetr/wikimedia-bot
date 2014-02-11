@@ -257,14 +257,14 @@ namespace wmib
             }
             catch (ThreadAbortException)
             {
-				Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
+                Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
                 return;
             }
             catch (Exception fail)
             {
                 Core.HandleException(fail);
             }
-			Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
+            Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
         }
 
         /// <summary>
@@ -284,7 +284,7 @@ namespace wmib
                 }
                 catch (ThreadAbortException)
                 {
-					Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
+                    Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
                     return;
                 }
                 catch (Exception fail)
@@ -292,7 +292,7 @@ namespace wmib
                     Core.HandleException(fail);
                 }
             }
-			Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
+            Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
         }
 
         /// <summary>
@@ -317,8 +317,8 @@ namespace wmib
             IsWorking = true;
             Authenticate();
             _Queue = new Thread(Queue.Run);
-			_Queue.Name = "MessageQueue:" + NickName;
-			Core.ThreadManager.RegisterThread(_Queue);
+            _Queue.Name = "MessageQueue:" + NickName;
+            Core.ThreadManager.RegisterThread(_Queue);
             foreach (Channel ch in ParentInstance.ChannelList)
             {
                 Thread.Sleep(2000);
@@ -328,12 +328,12 @@ namespace wmib
             Queue.Messages.Clear();
             Core.ThreadManager.KillThread(ChannelThread);
             ChannelThread = new Thread(ChannelList);
-			Core.ThreadManager.RegisterThread(ChannelThread);
-			ChannelThread.Name = "ChannelListParserThread";
+            Core.ThreadManager.RegisterThread(ChannelThread);
+            ChannelThread.Name = "ChannelListParserThread";
             ChannelThread.Start();
-			Core.ThreadManager.KillThread(PingerThread);
-			PingerThread = new System.Threading.Thread(Ping);
-			Core.ThreadManager.RegisterThread(PingerThread);
+            Core.ThreadManager.KillThread(PingerThread);
+            PingerThread = new System.Threading.Thread(Ping);
+            Core.ThreadManager.RegisterThread(PingerThread);
             PingerThread.Name = "Ping:"+ NickName;
             PingerThread.Start();
             _Queue.Start();
@@ -437,9 +437,9 @@ namespace wmib
 
                 _Queue = new System.Threading.Thread(Queue.Run);
                 _Queue.Name = "MessageQueue:" + NickName;
-				Core.ThreadManager.RegisterThread(_Queue);
+                Core.ThreadManager.RegisterThread(_Queue);
                 PingerThread = new System.Threading.Thread(Ping);
-				Core.ThreadManager.RegisterThread(PingerThread);
+                Core.ThreadManager.RegisterThread(PingerThread);
                 PingerThread.Name = "Ping:"+ NickName;
                 PingerThread.Start();
 
