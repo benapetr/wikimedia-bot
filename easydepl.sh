@@ -41,10 +41,17 @@ if [ -f "$target/wmib.pid" ];then
   kill `cat "$target/wmib.pid"` || exit 1
   sleep 2
 fi
-if [ -f "$target/wmib.pid" ];then
-  fail
-  exit 1
-fi
+x=0
+while [ -f "$target/wmib.pid" ]
+do
+        x=`expr $x + 1`
+        if [ "$x" -gt 10 ];then
+                fail
+                exit 1
+        fi
+        sleep 2
+done
+
 
 ok
 
