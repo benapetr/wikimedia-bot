@@ -392,7 +392,7 @@ namespace wmib
         {
             try
             {
-                string path = GetConfig(channel, "Logs.Path", channel.Name);
+                string path = GetConfig(channel, "Logs.Path", channel.Name + Path.DirectorySeparatorChar);
                 System.IO.File.AppendAllText(TextPath + path + _datetime.Year + TDToString(_datetime.Month) + TDToString(_datetime.Day) + ".txt", message);
                 return true;
             }

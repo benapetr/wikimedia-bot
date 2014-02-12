@@ -490,7 +490,7 @@ namespace wmib
                     }
                     RecentChanges.Connect();
                     Log("Loaded feed", false);
-                    while (true)
+                    while (Core.IsRunning)
                     {
                         try
                         {
