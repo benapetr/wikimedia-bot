@@ -130,7 +130,7 @@ namespace wmib
                         lock (unwritten.PendingRows)
                         {
                             count = unwritten.PendingRows.Count;
-                            unwritten.PendingRows.AddRange(rows);
+                            rows.AddRange(unwritten.PendingRows);
                             unwritten.PendingRows.Clear();
                         }
                         int recovered = 0;
