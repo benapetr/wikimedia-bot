@@ -190,8 +190,8 @@ namespace wmib
                     irc.Queue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText,
                                                   Configuration.System.DebugChan);
                 }
-                Syslog.WriteNow("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace +
-                                "\n\nThread name: " + Thread.CurrentThread.Name, true);
+                Syslog.ErrorLog("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace +
+                                "\n\nThread name: " + Thread.CurrentThread.Name);
             } catch (Exception fail)
             {
                 // exception happened while we tried to handle another one, ignore that (probably issue with logging)
