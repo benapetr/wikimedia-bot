@@ -198,7 +198,7 @@ namespace wmib
 				} else
 				{
 					Syslog.ErrorLog("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace +
-                                "\n\nThread name: " + Thread.CurrentThread.
+					                "\n\nThread name: " + Thread.CurrentThread.Name);
 				}
             } catch (Exception fail)
             {
