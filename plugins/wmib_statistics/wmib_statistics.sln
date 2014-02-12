@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C# Express 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wmib_statistics", "wmib_statistics\wmib_statistics.csproj", "{FEE95225-382D-421C-B096-F0AAC87E9F2A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wmib_statistics", "wmib_statistics.csproj", "{FEE95225-382D-421C-B096-F0AAC87E9F2A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
