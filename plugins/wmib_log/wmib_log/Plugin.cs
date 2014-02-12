@@ -13,6 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.IO;
 using System.Text;
 
 namespace wmib
@@ -44,7 +45,7 @@ namespace wmib
             public Channel channel;
         }
 
-        public string TextPath = "logs";
+		public string TextPath = "logs" + Path.DirectorySeparatorChar;
         //private List<char> Separator = new List<char> { ' ', ',', (char)3, '(', ')', '{', '}', (char)2, '<', '>' };
         private bool Unloading = false;
         private List<Job> jobs = new List<Job>();
@@ -323,14 +324,21 @@ namespace wmib
             catch (Exception fail)
             {
                 HandleException(fail);
+				Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
                 Log("SQL Writer is down!!", true);
             }
         }
 
         public override void Load()
-        {
+		{
+			if (!Directory.Exists(TextPath))
+			{
+				Log("Creating a directory for text logs");
+				Directory.CreateDirectory(TextPath);
+			}
             Thread sql = new Thread(Writer);
-            sql.Name = "sql writer";
+            sql.Name = "Module:Logs/SqlWriter";
+			Core.ThreadManager.RegisterThread(sql);
             sql.Start();
             Log("Writer thread started");
             int timer = 0;
@@ -353,6 +361,7 @@ namespace wmib
                 catch (ThreadAbortException)
                 {
                     Finish();
+					Log("Writer thread stopped");
                     return;
                 }
                 catch (Exception fail)
