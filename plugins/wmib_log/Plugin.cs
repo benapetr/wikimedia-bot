@@ -393,10 +393,10 @@ namespace wmib
             try
             {
                 string path = GetConfig(channel, "Logs.Path", channel.Name + Path.DirectorySeparatorChar);
-				if (!Directory.Exists(path))
+				if (!Directory.Exists(TextPath + path))
 				{
 					Log("Creating a folder for channel " + channel.Name);
-					Directory.CreateDirectory(path);
+					Directory.CreateDirectory(TextPath + path);
 				}
                 System.IO.File.AppendAllText(TextPath + path + _datetime.Year + TDToString(_datetime.Month) + TDToString(_datetime.Day) + ".txt", message);
                 return true;
