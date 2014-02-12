@@ -99,6 +99,7 @@ namespace wmib
         {
             try
             {
+				Thread.Sleep(8000);
                 while (Core.IsRunning)
                 {
                     try
@@ -258,37 +259,45 @@ namespace wmib
         }
 
         private void FlushRows()
-        {
-            if (Recovering)
-            {
-                return;
-            }
-            string file = Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "unwrittensql.xml";
-            if (File.Exists(file))
-            {
-                Core.BackupData(file);
-                if (!File.Exists(Configuration.TempName(file)))
-                {
-                    Syslog.WarningLog("Unable to create backup file for " + file);
-                    return;
-                }
-            }
-            try
-            {
-                File.Delete(file);
-                XmlSerializer xs = new XmlSerializer(typeof(Unwritten));
-                StreamWriter writer = File.AppendText(file);
-                lock(unwritten)
-                {
-                    xs.Serialize(writer, unwritten);
-                }
-                writer.Close();
-            } catch (Exception fail)
-            {
-                Core.HandleException(fail);
-                Syslog.WarningLog("Recovering the mysql unwritten dump because of exception to: " + file);
-                Core.RecoverFile(file);
-            }
+		{
+			if (Recovering)
+			{
+				return;
+			}
+			// prevent multiple threads calling this function at same time
+			lock(this)
+			{
+				string file = Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "unwrittensql.xml";
+				if (File.Exists(file))
+				{
+					Core.BackupData(file);
+					if (!File.Exists(Configuration.TempName(file)))
+					{
+						Syslog.WarningLog("Unable to create backup file for " + file);
+						return;
+					}
+				}
+				try
+				{
+					File.Delete(file);
+					XmlSerializer xs = new XmlSerializer(typeof(Unwritten));
+					StreamWriter writer = File.AppendText(file);
+					lock(unwritten)
+					{
+						xs.Serialize(writer, unwritten);
+					}
+					writer.Close();
+					if (File.Exists(Configuration.TempName(file)))
+	                {
+	                    File.Delete(Configuration.TempName(file));
+	                }
+				} catch (Exception fail)
+				{
+					Core.HandleException(fail);
+					Syslog.WarningLog("Recovering the mysql unwritten dump because of exception to: " + file);
+					Core.RecoverFile(file);
+				}
+			}
         }
 
         /// <summary>
