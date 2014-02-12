@@ -102,25 +102,6 @@ namespace wmib
 				Thread.Sleep(8000);
                 while (Core.IsRunning)
                 {
-                    try
-                    {
-						if (Connection == null)
-						{
-							Thread.Sleep(200);
-                        	continue;
-						}
-                        if (!Connection.Ping())
-                        {
-                            connected = false;
-                            Syslog.WarningLog("Mysql connection is dead, trying to fix");
-                            Connect();
-                        }
-                    } catch (Exception fail)
-                    {
-                        Core.HandleException(fail);
-                        Thread.Sleep(200000);
-                        continue;
-                    }
                     if (unwritten.PendingRows.Count > 0)
                     {
                         int count = 0;

@@ -52,7 +52,8 @@ namespace wmib
                 /// <param name="date"></param>
                 public Value(DateTime date)
                 {
-                    Data = date.Year.ToString() + "-" + date.Month.ToString().PadLeft(2, '0') + "-" + date.Day.ToString().PadLeft(2, '0') + " " + date.Hour.ToString().PadLeft(2, '0') + ":" 
+                    Data = date.Year.ToString() + "-" + date.Month.ToString().PadLeft(2, '0') + "-" 
+						+ date.Day.ToString().PadLeft(2, '0') + " " + date.Hour.ToString().PadLeft(2, '0') + ":" 
                         + date.Minute.ToString().PadLeft(2, '0') + ":" + date.Second.ToString().PadLeft(2, '0');
                     Type = DataType.Date;
                 }
