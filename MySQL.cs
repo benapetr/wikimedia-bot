@@ -38,6 +38,12 @@ namespace wmib
             public Row row;
             public string table;
 
+			public SerializedRow()
+			{
+				row = null;
+				table = null;
+			}
+
             public SerializedRow(string name, Row _row)
             {
                 row = _row;
@@ -97,6 +103,11 @@ namespace wmib
                 {
                     try
                     {
+						if (Connection == null)
+						{
+							Thread.Sleep(200);
+                        	continue;
+						}
                         if (!Connection.Ping())
                         {
                             connected = false;
