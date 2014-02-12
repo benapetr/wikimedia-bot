@@ -22,23 +22,22 @@ namespace wmib
         public override bool Construct()
         {
             Name = "Notifications";
-            start = true;
             Version = "1.0.12.0";
             return true;
         }
 
         public override bool Hook_OnUnload()
         {
-            core.Help.Unregister("notify");
+            Core.Help.Unregister("notify");
             return true;
         }
 
-        public override void Hook_Join(config.channel channel, User user)
+        public override void Hook_Join(Channel channel, User user)
         {
             Notification result = Notification.RetrieveTarget(user.Nick);
             while (result != null)
             {
-                core.irc._SlowQueue.DeliverMessage(result.Source_Name + "! " + user.Nick + " just joined " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name, IRC.priority.low);
+                Core.irc.Queue.DeliverMessage(result.Source_Name + "! " + user.Nick + " just joined " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name, IRC.priority.low);
                 lock (Notification.NotificationList)
                 {
                     Notification.NotificationList.Remove(result);
@@ -47,12 +46,12 @@ namespace wmib
             }
         }
 
-        public override void Hook_Nick(config.channel channel, User Target, string OldNick)
+        public override void Hook_Nick(Channel channel, User Target, string OldNick)
         {
             Notification result = Notification.RetrieveTarget(Target.Nick);
             while (result != null)
             {
-                core.irc._SlowQueue.DeliverMessage(result.Source_Name + "! " + OldNick + " just changed nicknames to " + Target.Nick + " which you wanted to talk with, in " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name, IRC.priority.low);
+                Core.irc.Queue.DeliverMessage(result.Source_Name + "! " + OldNick + " just changed nicknames to " + Target.Nick + " which you wanted to talk with, in " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name, IRC.priority.low);
                 lock (Notification.NotificationList)
                 {
                     Notification.NotificationList.Remove(result);
@@ -62,7 +61,7 @@ namespace wmib
             result = Notification.RetrieveTarget(OldNick);
             while (result != null)
             {
-                core.irc._SlowQueue.DeliverMessage(result.Source_Name + "! " + OldNick + " just changed a nickname to " + Target.Nick + " which you wanted to talk with, in " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name, IRC.priority.low);
+                Core.irc.Queue.DeliverMessage(result.Source_Name + "! " + OldNick + " just changed a nickname to " + Target.Nick + " which you wanted to talk with, in " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name, IRC.priority.low);
                 lock (Notification.NotificationList)
                 {
                     Notification.NotificationList.Remove(result);
@@ -80,12 +79,12 @@ namespace wmib
             }
         }
 
-        public override void Hook_Kick(config.channel channel, User source, User user)
+        public override void Hook_Kick(Channel channel, User source, User user)
         {
             Notification result = Notification.RetrieveTarget(user.Nick);
             while (result != null)
             {
-                core.irc._SlowQueue.DeliverMessage(result.Source_Name + "! " + user.Nick + " just got kicked from " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name, IRC.priority.low);
+                Core.irc.Queue.DeliverMessage(result.Source_Name + "! " + user.Nick + " just got kicked from " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name, IRC.priority.low);
                 lock (Notification.NotificationList)
                 {
                     Notification.NotificationList.Remove(result);
@@ -94,12 +93,12 @@ namespace wmib
             }
         }
 
-        public override void Hook_PRIV(config.channel channel, User invoker, string message)
+        public override void Hook_PRIV(Channel channel, User invoker, string message)
         {
             Notification result = Notification.RetrieveTarget(invoker.Nick);
             while (result != null)
             {
-                core.irc._SlowQueue.DeliverMessage(result.Source_Name + "! " + invoker.Nick + " just said something in " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name, IRC.priority.low);
+                Core.irc.Queue.DeliverMessage(result.Source_Name + "! " + invoker.Nick + " just said something in " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name, IRC.priority.low);
                 lock (Notification.NotificationList)
                 {
                     Notification.NotificationList.Remove(result);
@@ -115,34 +114,31 @@ namespace wmib
                 {
                     if (!isValid(parameter))
                     {
-                        core.irc._SlowQueue.DeliverMessage("I doubt that anyone could have such a nick '" + parameter + "'", channel, IRC.priority.low);
+                        Core.irc.Queue.DeliverMessage("I doubt that anyone could have such a nick '" + parameter + "'", channel, IRC.priority.low);
                         return;
                     }
                     if (Notification.Contains(parameter, invoker.Nick))
                     {
-                        core.irc._SlowQueue.DeliverMessage("You've already asked me to watch this user", channel, IRC.priority.low);
+                        Core.irc.Queue.DeliverMessage("You've already asked me to watch this user", channel, IRC.priority.low);
                         return;
                     }
-                    lock (config.channels)
+                    foreach (Channel item in Configuration.ChannelList)
                     {
-                        foreach (config.channel item in config.channels)
+                        if (item.ContainsUser(parameter))
                         {
-                            if (item.containsUser(parameter))
+                            Core.irc.Queue.DeliverMessage("This user is now online in " + item.Name + ". I'll let you know when they show some activity (talk, etc.)", channel, IRC.priority.low);
+                            lock(Notification.NotificationList)
                             {
-                                core.irc._SlowQueue.DeliverMessage("This user is now online in " + item.Name + ". I'll let you know when they show some activity (talk, etc.)", channel, IRC.priority.low);
-                                lock (Notification.NotificationList)
-                                {
-                                    Notification.NotificationList.Add(new Notification(parameter, invoker.Nick, invoker.Host));
-                                }
-                                return;
+                                Notification.NotificationList.Add(new Notification(parameter, invoker.Nick, invoker.Host));
                             }
+                            return;
                         }
                     }
                     lock (Notification.NotificationList)
                     {
                         Notification.NotificationList.Add(new Notification(parameter, invoker.Nick, invoker.Host));
                     }
-                    core.irc._SlowQueue.DeliverMessage("I'll let you know when I see " + parameter + " around here", channel, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage("I'll let you know when I see " + parameter + " around here", channel, IRC.priority.low);
                     return;
                 }
             }
@@ -169,7 +165,7 @@ namespace wmib
             Notification result = Notification.RetrieveTarget(user.Nick);
             while (result != null)
             {
-                core.irc._SlowQueue.DeliverMessage(result.Source_Name + "! " + user.Nick + " just sent me a private message. This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name, IRC.priority.low);
+                Core.irc.Queue.DeliverMessage(result.Source_Name + "! " + user.Nick + " just sent me a private message. This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name, IRC.priority.low);
                 lock (Notification.NotificationList)
                 {
                     Notification.NotificationList.Remove(result);
@@ -185,34 +181,31 @@ namespace wmib
                 {
                     if (!isValid(parameter))
                     {
-                        core.irc._SlowQueue.DeliverMessage("I doubt that anyone could have such a nick '" + parameter + "'", user.Nick, IRC.priority.low);
+                        Core.irc.Queue.DeliverMessage("I doubt that anyone could have such a nick '" + parameter + "'", user.Nick, IRC.priority.low);
                         return true;
                     }
                     if (Notification.Contains(parameter, user.Nick))
                     {
-                        core.irc._SlowQueue.DeliverMessage("You've already asked me to watch this user", user.Nick, IRC.priority.low);
+                        Core.irc.Queue.DeliverMessage("You've already asked me to watch this user", user.Nick, IRC.priority.low);
                         return true;
                     }
-                    lock (config.channels)
+                    foreach (Channel item in Configuration.ChannelList)
                     {
-                        foreach (config.channel item in config.channels)
+                        if (item.ContainsUser(parameter))
                         {
-                            if (item.containsUser(parameter))
+                            Core.irc.Queue.DeliverMessage("This user is now online in " + item.Name + " so I'll let you know when they show some activity (talk, etc.)", user.Nick, IRC.priority.low);
+                            lock(Notification.NotificationList)
                             {
-                                core.irc._SlowQueue.DeliverMessage("This user is now online in " + item.Name + " so I'll let you know when they show some activity (talk, etc.)", user.Nick, IRC.priority.low);
-                                lock (Notification.NotificationList)
-                                {
-                                    Notification.NotificationList.Add(new Notification(parameter, user.Nick, user.Host));
-                                }
-                                return true;
+                                Notification.NotificationList.Add(new Notification(parameter, user.Nick, user.Host));
                             }
+                            return true;
                         }
                     }
                     lock (Notification.NotificationList)
                     {
                         Notification.NotificationList.Add(new Notification(parameter, user.Nick, user.Host));
                     }
-                    core.irc._SlowQueue.DeliverMessage("I'll let you know when I see " + parameter + " around here", user.Nick, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage("I'll let you know when I see " + parameter + " around here", user.Nick, IRC.priority.low);
                     return true;
                 }
             }
@@ -239,7 +232,7 @@ namespace wmib
 
         public override bool Hook_OnRegister()
         {
-            core.Help.Register("notify", "inform you when specified user become active or join some channel in private message");
+            Core.Help.Register("notify", "inform you when specified user become active or join some channel in private message");
             return true;
         }
 
@@ -259,7 +252,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                handleException(fail);
+                HandleException(fail);
             }
         }
     }

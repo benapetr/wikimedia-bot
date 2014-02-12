@@ -109,7 +109,7 @@ namespace wmib
         /// </summary>
         public static StreamReader RD;
 
-        public static string channeldata = variables.config + "/feed";
+        public static string channeldata = Variables.ConfigurationDirectory + "/feed";
         public static StreamWriter WD;
         public static System.Net.Sockets.NetworkStream stream;
 
@@ -117,7 +117,7 @@ namespace wmib
             new Regex(":rc-pmtpa!~rc-pmtpa@[^ ]* PRIVMSG #[^:]*:14\\[\\[07([^]*)14\\]\\]4 N?(M?)(B?)10 02.*di" +
                       "ff=([^&]*)&oldid=([^]*) 5\\* 03([^]*) 5\\* \\(?([^]*)?\\) 10([^]*)?");
 
-        public config.channel channel;
+        public Channel channel;
 
         ~RecentChanges()
         {
@@ -130,7 +130,7 @@ namespace wmib
             }
             catch (Exception er)
             {
-                core.handleException(er, "RC");
+                Core.HandleException(er, "RC");
             }
         }
 
@@ -153,7 +153,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail, "RC");
+                Core.HandleException(fail, "RC");
                 writable = true;
                 return "";
             }
@@ -162,11 +162,11 @@ namespace wmib
         public static bool Send(string _n)
         {
             WD.WriteLine(_n);
-            core.TrafficLog("RX >>>>>>" + _n);
+            Core.TrafficLog("RX >>>>>>" + _n);
             return true;
         }
 
-        public RecentChanges(config.channel _channel)
+        public RecentChanges(Channel _channel)
         {
             channel = _channel;
             changed = false;
@@ -183,14 +183,14 @@ namespace wmib
         /// <param name="target">Object to send output to</param>
         /// <param name="name">Name of wiki</param>
         /// <returns></returns>
-        public static bool InsertChannel(config.channel target, string name)
+        public static bool InsertChannel(Channel target, string name)
         {
             try
             {
                 wiki web = null;
                 if (Loaded == false)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed13", target.Language), target.Name);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed13", target.Language), target.Name);
                     return false;
                 }
 
@@ -205,12 +205,12 @@ namespace wmib
 
                 if (web == null)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed1", target.Language), target.Name);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed1", target.Language), target.Name);
                     return false;
                 }
                 if (channels.Contains(web.channel))
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed2", target.Language), target.Name);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed2", target.Language), target.Name);
                     return false;
                 }
                 channels.Add(web.channel);
@@ -224,7 +224,7 @@ namespace wmib
             }
             catch (Exception f)
             {
-                core.handleException(f, "RC");
+                Core.HandleException(f, "RC");
             }
             return true;
         }
@@ -235,12 +235,12 @@ namespace wmib
         /// <param name="target">Object to get output back to</param>
         /// <param name="WikiName">Name of site</param>
         /// <returns></returns>
-        public static bool DeleteChannel(config.channel target, string WikiName)
+        public static bool DeleteChannel(Channel target, string WikiName)
         {
             wiki W = null;
             if (Loaded == false)
             {
-                core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed13", target.Language), target.Name);
+                Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed13", target.Language), target.Name);
                 return false;
             }
             try
@@ -255,12 +255,12 @@ namespace wmib
                 }
                 if (W == null)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed1", target.Language), target.Name);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed1", target.Language), target.Name);
                     return false;
                 }
                 if (!channels.Contains(W.channel))
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed3", target.Language), target.Name);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed3", target.Language), target.Name);
                     return false;
                 }
                 channels.Remove(W.channel);
@@ -274,7 +274,7 @@ namespace wmib
             }
             catch (Exception f)
             {
-                core.handleException(f, "RC");
+                Core.HandleException(f, "RC");
             }
             return true;
         }
@@ -291,7 +291,7 @@ namespace wmib
                     Random rand = new Random();
                     int random_number = rand.Next(10000);
                     nick = "wm-bot" + System.DateTime.Now.ToString().Replace("/", "").Replace(":", "").Replace("\\", "").Replace(".", "").Replace(" ", "") + random_number.ToString();
-                    core.Log("Connecting to wikimedia recent changes feed as " + nick + ", hold on");
+                    Syslog.Log("Connecting to wikimedia recent changes feed as " + nick + ", hold on");
                     stream = new System.Net.Sockets.TcpClient("irc.wikimedia.org", 6667).GetStream();
                     WD = new StreamWriter(stream);
                     RD = new StreamReader(stream, System.Text.Encoding.UTF8);
@@ -306,12 +306,12 @@ namespace wmib
                         Send("JOIN " + b);
                         WD.Flush();
                     }
-                    core.Log("Connected to feed - OK");
+                    Syslog.Log("Connected to feed - OK");
                     Loaded = true;
                 }
                 catch (Exception fail)
                 {
-                    core.handleException(fail, "RC");
+                    Core.HandleException(fail, "RC");
                 }
             }
         }
@@ -334,7 +334,7 @@ namespace wmib
                     return curr;
                 }
             }
-            core.Log("There is no wiki " + Name + " known by me");
+            Syslog.Log("There is no wiki " + Name + " known by me");
             return null;
         }
 
@@ -343,9 +343,9 @@ namespace wmib
         /// </summary>
         public void Load()
         {
-            string name = variables.config + Path.DirectorySeparatorChar + channel.Name + ".list";
+            string name = Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + channel.Name + ".list";
             writable = false;
-            core.recoverFile(name, channel.Name);
+            Core.RecoverFile(name, channel.Name);
             if (File.Exists(name))
             {
                 string[] content = File.ReadAllLines(name);
@@ -370,11 +370,11 @@ namespace wmib
         /// </summary>
         public void Save()
         {
-            string dbn = variables.config + "/" + channel.Name + ".list";
+            string dbn = Variables.ConfigurationDirectory + "/" + channel.Name + ".list";
             try
             {
                 string content = "";
-                core.backupData(dbn);
+                Core.BackupData(dbn);
                 lock (pages)
                 {
                     foreach (IWatch values in pages)
@@ -384,13 +384,13 @@ namespace wmib
                     }
                 }
                 File.WriteAllText(dbn, content);
-                File.Delete(config.tempName(dbn));
+                File.Delete(Configuration.TempName(dbn));
             }
             catch (Exception er)
             {
-                core.Log("Error while saving to: " + channel.Name + ".list");
-                core.handleException(er, "RC");
-                core.recoverFile(dbn, channel.Name);
+                Syslog.Log("Error while saving to: " + channel.Name + ".list");
+                Core.HandleException(er, "RC");
+                Core.RecoverFile(dbn, channel.Name);
             }
         }
 
@@ -415,7 +415,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail, "RC");
+                Core.HandleException(fail, "RC");
             }
         }
 
@@ -449,18 +449,18 @@ namespace wmib
                         pages.Remove(currpage);
                         Module.SetConfig(channel, "HTML.Update", true);
                         Save();
-                        core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed4", channel.Language), channel.Name);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed4", channel.Language), channel.Name);
                         return true;
                     }
-                    core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed5", channel.Language), channel.Name);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed5", channel.Language), channel.Name);
                     return true;
                 }
-                core.irc._SlowQueue.DeliverMessage(
-                    messages.get("rcfeed6", channel.Language), channel.Name);
+                Core.irc.Queue.DeliverMessage(
+                    messages.Localize("rcfeed6", channel.Language), channel.Name);
                 return false;
             }
-            core.irc._SlowQueue.DeliverMessage(
-                messages.get("rcfeed7", channel.Language),
+            Core.irc.Queue.DeliverMessage(
+                messages.Localize("rcfeed7", channel.Language),
                 channel.Name);
             return false;
         }
@@ -478,11 +478,11 @@ namespace wmib
                         wikiinfo.Add(new wiki(values[0], values[1], values[2]));
                     }
                 }
-                core.Log("Loaded wiki " + content.Length.ToString());
+                Syslog.Log("Loaded wiki " + content.Length.ToString());
             }
             else
             {
-                core.Log("There is no sites file, skipping load", true);
+                Syslog.Log("There is no sites file, skipping load", true);
             }
             wikiinfo.Add(new wiki("#mediawiki.wikipedia", "https://www.mediawiki.org/w/index.php", "mediawiki"));
             wikiinfo.Add(new wiki("#test.wikipedia", "https://test.wikipedia.org/w/index.php", "test_wikipedia"));
@@ -513,13 +513,13 @@ namespace wmib
                     {
                         if (!Page.EndsWith("*") || Page.Replace("*", "") == "")
                         {
-                            core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed8", channel.Language), channel.Name);
+                            Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed8", channel.Language), channel.Name);
                             return true;
                         }
                     }
                     if (pages.Contains(currpage))
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed9", channel.Language),
+                        Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed9", channel.Language),
                                                      channel.Name);
                         return true;
                     }
@@ -527,15 +527,15 @@ namespace wmib
                     {
                         pages.Add(new IWatch(site, Page, site.channel));
                     }
-                    core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed10", channel.Language), channel.Name);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed10", channel.Language), channel.Name);
                     Module.SetConfig(channel, "HTML.Update", true);
                     Save();
                     return true;
                 }
-                core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed11", channel.Language), channel.Name);
+                Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed11", channel.Language), channel.Name);
                 return false;
             }
-            core.irc._SlowQueue.DeliverMessage(messages.get("rcfeed12", channel.Language), channel.Name);
+            Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed12", channel.Language), channel.Name);
             return false;
         }
     }

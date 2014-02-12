@@ -23,7 +23,7 @@ namespace wmib
         {
             public DateTime time;
             public string message;
-            public config.channel channel;
+            public Channel channel;
         }
 
         public class Item
@@ -41,69 +41,67 @@ namespace wmib
             // 6 nick change
             public int type;
             public string host;
-            public config.channel channel;
+            public Channel channel;
         }
 
-        private List<char> Separator = new List<char> { ' ', ',', (char)3, '(', ')', '{', '}', (char)2, '<', '>' };
-
+        public string TextPath = "logs";
+        //private List<char> Separator = new List<char> { ' ', ',', (char)3, '(', ')', '{', '}', (char)2, '<', '>' };
         private bool Unloading = false;
-
         private List<Job> jobs = new List<Job>();
-
         private List<Item> DJ = new List<Item>();
 
-        public override void Hook_ACTN(config.channel channel, User invoker, string message)
+        public override void Hook_ACTN(Channel channel, User invoker, string message)
         {
             ChanLog(message, channel, invoker.Nick, invoker.Host, false);
         }
 
-        public override void Hook_PRIV(config.channel channel, User invoker, string message)
+        public override void Hook_PRIV(Channel channel, User invoker, string message)
         {
             ChanLog(message, channel, invoker.Nick, invoker.Host);
-            if (message == config.CommandPrefix + "logon")
+            if (message == Configuration.System.CommandPrefix + "logon")
             {
-                if (channel.Users.IsApproved(invoker, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker, "admin"))
                 {
                     if (Module.GetConfig(channel, "Logging.Enabled", false))
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("ChannelLogged", channel.Language), channel.Name);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("ChannelLogged", channel.Language), channel.Name);
                         return;
                     }
                     else
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("LoggingOn", channel.Language), channel.Name);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("LoggingOn", channel.Language), channel.Name);
                         Module.SetConfig(channel, "Logging.Enabled", true);
                         channel.SaveConfig();
                         return;
                     }
                 }
-                if (!channel.suppress_warnings)
+                if (!channel.SuppressWarnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
                 return;
             }
 
-            if (message == config.CommandPrefix + "logoff")
+            if (message == Configuration.System.CommandPrefix + "logoff")
             {
-                if (channel.Users.IsApproved(invoker.Nick, invoker.Host, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (!Module.GetConfig(channel, "Logging.Enabled", false))
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("LogsE1", channel.Language), channel.Name);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("LogsE1", channel.Language), channel.Name);
                         return;
                     }
                     else
                     {
                         Module.SetConfig(channel, "Logging.Enabled", false);
                         channel.SaveConfig();
-                        core.irc._SlowQueue.DeliverMessage(messages.get("NotLogged", channel.Language), channel.Name);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("NotLogged", channel.Language), channel.Name);
                         return;
                     }
                 }
-                if (!channel.suppress_warnings)
+                if (!channel.SuppressWarnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
                 return;
             }
@@ -137,7 +135,7 @@ namespace wmib
             return 2;
         }
 
-        public override void Hook_Nick(config.channel channel, User Target, string OldNick)
+        public override void Hook_Nick(Channel channel, User Target, string OldNick)
         {
             if (Module.GetConfig(channel, "Logging.Enabled", false))
             {
@@ -156,7 +154,7 @@ namespace wmib
             }
         }
 
-        public override void Hook_Part(config.channel channel, User user)
+        public override void Hook_Part(Channel channel, User user)
         {
             if (Module.GetConfig(channel, "Logging.Enabled", false))
             {
@@ -175,7 +173,7 @@ namespace wmib
             }
         }
 
-        public override void Hook_ChannelQuit(config.channel channel, User user, string mesg)
+        public override void Hook_ChannelQuit(Channel channel, User user, string mesg)
         {
             if (Module.GetConfig(channel, "Logging.Enabled", false))
             {
@@ -194,7 +192,7 @@ namespace wmib
             }
         }
 
-        public override void Hook_Kick(config.channel channel, User source, User user)
+        public override void Hook_Kick(Channel channel, User source, User user)
         {
             if (Module.GetConfig(channel, "Logging.Enabled", false))
             {
@@ -213,7 +211,7 @@ namespace wmib
             }
         }
 
-        public override void Hook_Join(config.channel channel, User user)
+        public override void Hook_Join(Channel channel, User user)
         {
             if (Module.GetConfig(channel, "Logging.Enabled", false))
             {
@@ -236,10 +234,10 @@ namespace wmib
         {
             if (jobs.Count != 0)
             {
-                core.Log("Logging was requested to stop, but there is still " + jobs.Count.ToString() + " lines, writing now");
+                Syslog.Log("Logging was requested to stop, but there is still " + jobs.Count.ToString() + " lines, writing now");
             }
             WriteData();
-            core.Log("There are no unsaved data, we can disable this module now");
+            Syslog.Log("There are no unsaved data, we can disable this module now");
             Unloading = false;
         }
 
@@ -247,17 +245,17 @@ namespace wmib
         {
             try
             {
-                if (!core.DatabaseServerIsAvailable)
+                if (!Core.DatabaseServerIsAvailable)
                 {
                     Log("No sql server is available, closing DB log writer");
                     return;
                 }
-                if (core.DB == null)
+                if (Core.DB == null)
                 {
                     Log("core.DB is null", true);
                 }
                 DebugLog("The SQL writer started");
-                while (core._Status != core.Status.ShuttingDown)
+                while (Core.IsRunning)
                 {
                     string message = "";
                     try
@@ -271,17 +269,17 @@ namespace wmib
                                 db.AddRange(DJ);
                                 DJ.Clear();
                             }
-                            lock (core.DB.DatabaseLock)
+                            lock (Core.DB.DatabaseLock)
                             {
-                                core.DB.Connect();
-                                while (!core.DB.IsConnected)
+                                Core.DB.Connect();
+                                while (!Core.DB.IsConnected)
                                 {
-                                    if (core.DB.ErrorBuffer != null)
+                                    if (Core.DB.ErrorBuffer != null)
                                     {
-                                        Log("Unable to connect to SQL server: " + core.DB.ErrorBuffer + " retrying in 20 seconds");
+                                        Log("Unable to connect to SQL server: " + Core.DB.ErrorBuffer + " retrying in 20 seconds");
                                     }
                                     Thread.Sleep(20000);
-                                    core.DB.Connect();
+                                    Core.DB.Connect();
                                 }
                                 foreach (Item item in db)
                                 {
@@ -295,40 +293,36 @@ namespace wmib
                                     row.Values.Add(new Database.Row.Value(item.message, Database.DataType.Varchar));
                                     row.Values.Add(new Database.Row.Value(item.type));
                                     row.Values.Add(new Database.Row.Value(item.host, Database.DataType.Varchar));
-                                    if (!core.DB.InsertRow("logs", row))
+                                    if (!Core.DB.InsertRow("logs", row))
                                     {
-                                        Log("Failed to insert row, recycling: " + message);
-                                        lock (DJ)
-                                        {
-                                            DJ.Add(item);
-                                        }
+                                        Log("Failed to insert row: " + message);
                                     }
                                 }
-                                core.DB.Commit();
-                                core.DB.Disconnect();
+                                Core.DB.Commit();
+                                Core.DB.Disconnect();
                             }
                         }
                     }
                     catch (ThreadAbortException)
                     {
-                        if (core.DatabaseServerIsAvailable)
+                        if (Core.DatabaseServerIsAvailable)
                         {
-                            core.DB.Commit();
-                            core.DB.Disconnect();
+                            Core.DB.Commit();
+                            Core.DB.Disconnect();
                         }
                         Log("SQL Writer is shut down with " + DJ.Count.ToString() + " unfinished lines");
                         return;
                     }
                     catch (Exception fail)
                     {
-                        handleException(fail);
+                        HandleException(fail);
                         Log("SQL Writer error: " + message, true);
                     }
                 }
             }
             catch (Exception fail)
             {
-                handleException(fail);
+                HandleException(fail);
                 Log("SQL Writer is down!!", true);
             }
         }
@@ -363,7 +357,7 @@ namespace wmib
                 }
                 catch (Exception fail)
                 {
-                    handleException(fail);
+                    HandleException(fail);
                 }
             }
             if (Unloading)
@@ -380,24 +374,17 @@ namespace wmib
         public override bool Construct()
         {
             Name = "LOGS";
-            start = true;
-            Reload = true;
+            RestartOnModuleCrash = true;
             Version = "2.6.0";
             return true;
         }
 
-        private bool WriteLog(string message, config.channel channel, System.DateTime _datetime)
+        private bool WriteLog(string message, Channel channel, System.DateTime _datetime)
         {
             try
             {
-                string path = GetConfig(channel, "Logs.Path", "null");
-                if (path == "null")
-                {
-                    SetConfig(channel, "Logs.Path", channel.LogDir);
-                    path = channel.LogDir;
-                }
-
-                System.IO.File.AppendAllText(config.path_txt + path + _datetime.Year + TDToString(_datetime.Month) + TDToString(_datetime.Day) + ".txt", message);
+                string path = GetConfig(channel, "Logs.Path", channel.Name);
+                System.IO.File.AppendAllText(TextPath + path + _datetime.Year + TDToString(_datetime.Month) + TDToString(_datetime.Day) + ".txt", message);
                 return true;
             }
             catch (Exception er)
@@ -417,7 +404,7 @@ namespace wmib
         /// <param name="user">User</param>
         /// <param name="host">Host</param>
         /// <param name="noac">Action (if true it's logged as message, if false it's action)</param>
-        public void ChanLog(string message, config.channel channel, string user, string host, bool noac = true)
+        public void ChanLog(string message, Channel channel, string user, string host, bool noac = true)
         {
             try
             {
@@ -426,7 +413,7 @@ namespace wmib
                 {
 
                     string log;
-                    string URL = core.Host.Host2Name(host);
+                    //string URL = Core.Host.Host2Name(host);
                     //updateBold(ref messagehtml);
                     if (!noac)
                     {
@@ -450,7 +437,7 @@ namespace wmib
                     {
                         jobs.Add(line);
                     }
-                    if (core.DatabaseServerIsAvailable)
+                    if (Core.DatabaseServerIsAvailable)
                     {
                         Item item = new Item();
                         item.channel = channel;
@@ -470,7 +457,7 @@ namespace wmib
             catch (Exception er)
             {
                 // nothing
-                handleException(er);
+                HandleException(er);
             }
         }
 
@@ -480,7 +467,6 @@ namespace wmib
             {
                 int wait = 0;
                 Unloading = true;
-                Reload = false;
                 Log("Unloading log system, terminating the writer thread...");
                 if (this.thread.ThreadState == ThreadState.Running || this.thread.ThreadState == ThreadState.WaitSleepJoin)
                 {
@@ -502,14 +488,14 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                handleException(fail);
+                HandleException(fail);
                 return false;
             }
         }
 
-        public override void Hook_OnSelf(config.channel channel, User self, string message)
+        public override void Hook_OnSelf(Channel channel, User self, string message)
         {
-            ChanLog(message, channel, config.NickName, "");
+            ChanLog(message, channel, channel.PrimaryInstance.Nick, "");
         }
 
         /// <summary>

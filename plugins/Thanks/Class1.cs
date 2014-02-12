@@ -70,20 +70,19 @@ namespace wmib
         public override bool Construct()
         {
             Name = "Thanks";
-            start = true;
             Version = "1.0.0.0";
             return true;
         }
 
         public override void Load()
         {
-            while (working)
+            while (IsWorking)
             {
                 System.Threading.Thread.Sleep(100);
             }
         }
 
-        public override void Hook_PRIV(config.channel channel, User invoker, string message)
+        public override void Hook_PRIV(Channel channel, User invoker, string message)
         {
             if (message.StartsWith("!") && message.Contains("|"))
             {
@@ -104,7 +103,7 @@ namespace wmib
             else
             {
                 message = message.ToLower();
-                if (message.Contains(channel.instance.Nick) && !message.Contains("thanks to") && (message.Contains("thanks") || message.Contains("thank you")) && !message.Contains("no thank"))
+                if (message.Contains(channel.PrimaryInstance.Nick) && !message.Contains("thanks to") && (message.Contains("thanks") || message.Contains("thank you")) && !message.Contains("no thank"))
                 {
                     string response = "Hey " + invoker.Nick + ", you are welcome!";
                     Buffer.Item x = Ring.getUser(invoker.Nick);
@@ -114,7 +113,7 @@ namespace wmib
                         response = "Hey " + invoker.Nick + ", you are welcome, but keep in mind I am just a stupid bot, it was actually " + x.User + " who helped you :-)";
                         Ring.Delete(x);
                     }
-                    core.irc._SlowQueue.DeliverMessage(response, channel);
+                    Core.irc.Queue.DeliverMessage(response, channel);
                 }
             }
         }

@@ -97,10 +97,10 @@ namespace wmib
             {
                 Syslog.WarningLog("Skipping invalid user record for " + this.Channel.Name);
             }
-			lock (Users)
-			{
-				Users.Add(new SystemUser(role, regex));
-			}
+            lock (Users)
+            {
+                Users.Add(new SystemUser(role, regex));
+            }
         }
 
         /// <summary>

@@ -268,7 +268,7 @@ namespace wmib
                 if (item.retries < 1)
                 {
                     item.disabled = true;
-                    core.irc._SlowQueue.DeliverMessage("Unable to parse the feed from " + url + " this url is probably not a valid rss, the feed will be disabled, until you re-enable it by typing @rss+ " + item.name, channel);
+                    Core.irc.Queue.DeliverMessage("Unable to parse the feed from " + url + " this url is probably not a valid rss, the feed will be disabled, until you re-enable it by typing @rss+ " + item.name, channel);
                     return null;
                 }
                 item.retries--;
@@ -281,14 +281,14 @@ namespace wmib
             catch (Exception fail)
             {
                 RSS.m.Log("Unable to parse feed from " + url + " I will try to do that again " + item.retries.ToString() + " times", true);
-                RSS.m.handleException(fail, "Feed");
+                RSS.m.HandleException(fail, "Feed");
                 string dump = Path.GetTempFileName();
                 File.WriteAllText(dump, temp);
                 RSS.m.Log("Dumped the source to " + dump);
                 if (item.retries < 1)
                 {
                     item.disabled = true;
-                    core.irc._SlowQueue.DeliverMessage("Unable to parse the feed from " + url + " this url is probably not a valid rss, the feed will be disabled, until you re-enable it by typing @rss+ " + item.name, channel);
+                    Core.irc.Queue.DeliverMessage("Unable to parse the feed from " + url + " this url is probably not a valid rss, the feed will be disabled, until you re-enable it by typing @rss+ " + item.name, channel);
                     return null;
                 }
                 item.retries--;

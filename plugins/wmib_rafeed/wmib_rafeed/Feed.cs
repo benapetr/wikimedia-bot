@@ -89,7 +89,7 @@ namespace wmib
 
         public string DB = "";
 
-        private config.channel owner = null;
+        private Channel owner = null;
 
         public bool contains(string name)
         {
@@ -154,7 +154,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                RSS.m.handleException(fail, "Feed");
+                RSS.m.HandleException(fail, "Feed");
             }
         }
 
@@ -164,10 +164,10 @@ namespace wmib
             {
                 if (File.Exists(DB))
                 {
-                    core.backupData(DB);
-                    if (!File.Exists(config.tempName(DB)))
+                    Core.BackupData(DB);
+                    if (!File.Exists(Configuration.TempName(DB)))
                     {
-                        core.Log("Unable to create backup file for " + owner.Name);
+                        Syslog.Log("Unable to create backup file for " + owner.Name);
                     }
                 }
                 System.Xml.XmlDocument data = new System.Xml.XmlDocument();
@@ -198,14 +198,14 @@ namespace wmib
                 }
                 data.AppendChild(xmlnode);
                 data.Save(DB);
-                if (System.IO.File.Exists(config.tempName(DB)))
+                if (System.IO.File.Exists(Configuration.TempName(DB)))
                 {
-                    System.IO.File.Delete(config.tempName(DB));
+                    System.IO.File.Delete(Configuration.TempName(DB));
                 }
             }
             catch (Exception fail)
             {
-                RSS.m.handleException(fail);
+                RSS.m.HandleException(fail);
             }
         }
 
@@ -243,15 +243,15 @@ namespace wmib
                             List<RssFeedItem> feed = RssManager.ReadFeed(curr.URL, curr, owner.Name);
                             if (feed == null)
                             {
-                                core.DebugLog("NULL feed for " + curr.name, 6);
+                                Syslog.DebugLog("NULL feed for " + curr.name, 6);
                                 continue;
                             }
                             if (feed.Count == 0)
                             {
-                                core.DebugLog("0 items for " + curr.name, 6);
+                                Syslog.DebugLog("0 items for " + curr.name, 6);
                                 continue;
                             }
-                            core.DebugLog("there are " + feed.Count.ToString() + "feed:" + curr.name, 6);
+                            Syslog.DebugLog("there are " + feed.Count.ToString() + "feed:" + curr.name, 6);
                             if (!RssManager.CompareLists(curr.data, feed))
                             {
                                 List<RssFeedItem> diff = new List<RssFeedItem>();
@@ -303,7 +303,7 @@ namespace wmib
                                         .Replace("$bugzilla_severity", di.bugzilla_severity)
                                         .Replace("$bugzilla_status", di.bugzilla_status)
                                         .Replace("$bugzilla_target", di.bugzilla_target);
-                                    core.irc._SlowQueue.DeliverMessage(message, owner.Name, IRC.priority.low);
+                                    Core.irc.Queue.DeliverMessage(message, owner.Name, IRC.priority.low);
                                 }
                             }
                         }
@@ -313,7 +313,7 @@ namespace wmib
             catch (Exception fail)
             {
                 RSS.m.Log("Unable to handle rss in " + owner.Name, true);
-                RSS.m.handleException(fail, "Feed");
+                RSS.m.HandleException(fail, "Feed");
             }
             return true;
         }
@@ -322,7 +322,7 @@ namespace wmib
         {
             if (!contains(Name))
             {
-                core.irc._SlowQueue.DeliverMessage("I don't have this item in a db", owner.Name);
+                Core.irc.Queue.DeliverMessage("I don't have this item in a db", owner.Name);
                 return;
             }
             Item rm = null;
@@ -340,7 +340,7 @@ namespace wmib
                 {
                     rm.template = temp;
                     Save();
-                    core.irc._SlowQueue.DeliverMessage("Item now has a different style you can restore the default style by removing this value", owner.Name);
+                    Core.irc.Queue.DeliverMessage("Item now has a different style you can restore the default style by removing this value", owner.Name);
                     return;
                 }
             }
@@ -350,7 +350,7 @@ namespace wmib
         {
             if (!contains(Name))
             {
-                core.irc._SlowQueue.DeliverMessage("I don't have this item in a db", owner.Name);
+                Core.irc.Queue.DeliverMessage("I don't have this item in a db", owner.Name);
                 return;
             }
             Item rm = null;
@@ -368,11 +368,11 @@ namespace wmib
                 {
                     Content.Remove(rm);
                     Save();
-                    core.irc._SlowQueue.DeliverMessage("Item was removed from db", owner.Name);
+                    Core.irc.Queue.DeliverMessage("Item was removed from db", owner.Name);
                     return;
                 }
             }
-            core.irc._SlowQueue.DeliverMessage("Unable to remove this item from db", owner.Name);
+            Core.irc.Queue.DeliverMessage("Unable to remove this item from db", owner.Name);
         }
 
         public void InsertItem(string name, string url, bool scan = false)
@@ -385,14 +385,14 @@ namespace wmib
                     {
                         if (curr.name == name)
                         {
-                            core.irc._SlowQueue.DeliverMessage("This item was enabled now", owner.Name);
+                            Core.irc.Queue.DeliverMessage("This item was enabled now", owner.Name);
                             curr.reset();
                             curr.disabled = false;
                             return;
                         }
                     }
                 }
-                core.irc._SlowQueue.DeliverMessage("There is no such item, if you want to define new item, please use 2 parameters", owner.Name);
+                Core.irc.Queue.DeliverMessage("There is no such item, if you want to define new item, please use 2 parameters", owner.Name);
                 return;
             }
             if (!contains(name))
@@ -407,10 +407,10 @@ namespace wmib
                     Content.Add(Item);
                 }
                 Save();
-                core.irc._SlowQueue.DeliverMessage("Item was inserted to feed", owner.Name);
+                Core.irc.Queue.DeliverMessage("Item was inserted to feed", owner.Name);
                 return;
             }
-            core.irc._SlowQueue.DeliverMessage("This item already exist", owner.Name);
+            Core.irc.Queue.DeliverMessage("This item already exist", owner.Name);
         }
 
         public bool Delete()
@@ -423,9 +423,9 @@ namespace wmib
             return false;
         }
 
-        public Feed(config.channel _owner)
+        public Feed(Channel _owner)
         {
-            DB = variables.config + "/" + _owner.Name + "_feed.xml";
+            DB = Variables.ConfigurationDirectory + "/" + _owner.Name + "_feed.xml";
             owner = _owner;
             Load();
         }

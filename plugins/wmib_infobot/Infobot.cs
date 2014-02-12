@@ -27,7 +27,7 @@ namespace wmib
         // if we need to update dump
         public bool update = true;
 
-        public static config.channel ReplyChan = null;
+        public static Channel ReplyChan = null;
 
         public static DateTime NA = DateTime.MaxValue;
 
@@ -136,7 +136,7 @@ namespace wmib
             /// <summary>
             /// Channel
             /// </summary>
-            public config.channel Channel = null;
+            public Channel Channel = null;
             /// <summary>
             /// User
             /// </summary>
@@ -164,7 +164,7 @@ namespace wmib
         /// <summary>
         /// Channel name
         /// </summary>
-        public string Channel;
+        public string ChannelName;
 
         private string search_key;
 
@@ -177,7 +177,7 @@ namespace wmib
             {
                 Keys.Clear();
                 // Checking if db isn't broken
-                core.recoverFile(datafile_raw, Channel);
+                Core.RecoverFile(datafile_raw, ChannelName);
                 if (!File.Exists(datafile_raw))
                 {
                     return false;
@@ -186,9 +186,9 @@ namespace wmib
                 string[] db = File.ReadAllLines(datafile_raw);
                 foreach (string x in db)
                 {
-                    if (x.Contains(config.Separator))
+                    if (x.Contains(Configuration.System.Separator))
                     {
-                        string[] info = x.Split(Char.Parse(config.Separator));
+                        string[] info = x.Split(Char.Parse(Configuration.System.Separator));
                         string type = info[2];
                         string value = info[1];
                         string name = info[0];
@@ -317,10 +317,10 @@ namespace wmib
                 Keys.Clear();
             }
             // Checking if db isn't broken
-            core.recoverFile(datafile_xml, Channel);
+            Core.RecoverFile(datafile_xml, ChannelName);
             if (Load())
             {
-                core.Log("Obsolete database found for " + Channel + " converting to new format");
+                Syslog.Log("Obsolete database found for " + ChannelName + " converting to new format");
                 Save();
                 File.Delete(datafile_raw);
                 return true;
@@ -374,7 +374,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail, "infobot");
             }
             return true;
         }
@@ -384,12 +384,12 @@ namespace wmib
         /// </summary>
         /// <param name="key"></param>
         /// <param name="chan"></param>
-        public void Info(string key, config.channel chan)
+        public void Info(string key, Channel chan)
         {
             InfobotKey CV = GetKey(key, Sensitive);
             if (CV == null)
             {
-                core.irc._SlowQueue.DeliverMessage("There is no such a key", chan.Name, IRC.priority.low);
+                Core.irc.Queue.DeliverMessage("There is no such a key", chan.Name, IRC.priority.low);
                 return;
             }
             if (CV.Key == key)
@@ -415,7 +415,7 @@ namespace wmib
                 {
                     type = " this key is raw";
                 }
-                core.irc._SlowQueue.DeliverMessage(messages.get("infobot-data", chan.Language, new List<string> {key, name, created, CV.Displayed.ToString(),
+                Core.irc.Queue.DeliverMessage(messages.Localize("infobot-data", chan.Language, new List<string> {key, name, created, CV.Displayed.ToString(),
                         last + type }), chan.Name, IRC.priority.low);
                 return;
             }
@@ -456,7 +456,7 @@ namespace wmib
             }
             catch (Exception)
             {
-                core.Log("Exception while creating list for html");
+                Syslog.Log("Exception while creating list for html");
             }
             return Item;
         }
@@ -471,7 +471,7 @@ namespace wmib
             Sensitive = sensitive;
             datafile_xml = database + ".xml";
             datafile_raw = database;
-            Channel = channel;
+            ChannelName = channel;
             LoadData();
         }
 
@@ -517,7 +517,7 @@ namespace wmib
             return keyv;
         }
 
-        public static bool Linkable(config.channel host, config.channel guest)
+        public static bool Linkable(Channel host, Channel guest)
         {
             if (host == null)
             {
@@ -542,17 +542,17 @@ namespace wmib
             update = true;
             try
             {
-                core.DebugLog("Saving database of infobot", 2);
+                Syslog.DebugLog("Saving database of infobot", 2);
                 if (File.Exists(datafile_xml))
                 {
-                    core.backupData(datafile_xml);
-                    if (!File.Exists(config.tempName(datafile_xml)))
+                    Core.BackupData(datafile_xml);
+                    if (!File.Exists(Configuration.TempName(datafile_xml)))
                     {
-                        core.Log("Unable to create backup file for " + this.Channel);
+                        Syslog.Log("Unable to create backup file for " + this.ChannelName);
                     }
                 }
 
-                core.DebugLog("Generating xml document", 4);
+                Syslog.DebugLog("Generating xml document", 4);
 
                 System.Xml.XmlDocument data = new System.Xml.XmlDocument();
                 System.Xml.XmlNode xmlnode = data.CreateElement("database");
@@ -601,31 +601,31 @@ namespace wmib
                     }
                     data.AppendChild(xmlnode);
                 }
-                core.DebugLog("Writing xml document to a file");
+                Syslog.DebugLog("Writing xml document to a file");
                 data.Save(datafile_xml);
-                core.DebugLog("Checking the previous file", 6);
-                if (File.Exists(config.tempName(datafile_xml)))
+                Syslog.DebugLog("Checking the previous file", 6);
+                if (File.Exists(Configuration.TempName(datafile_xml)))
                 {
-                    core.DebugLog("Removing temp file", 6);
-                    File.Delete(config.tempName(datafile_xml));
+                    Syslog.DebugLog("Removing temp file", 6);
+                    File.Delete(Configuration.TempName(datafile_xml));
                 }
             }
             catch (Exception b)
             {
                 try
                 {
-                    if (core.recoverFile(datafile_xml, Channel))
+                    if (Core.RecoverFile(datafile_xml, ChannelName))
                     {
-                        core.Log("Recovered db for channel " + Channel);
+                        Syslog.Log("Recovered db for channel " + ChannelName);
                     }
                     else
                     {
-                        core.handleException(b, Channel);
+                        Core.HandleException(b, ChannelName);
                     }
                 }
                 catch (Exception bb)
                 {
-                    core.handleException(bb, Channel);
+                    Core.HandleException(bb, ChannelName);
                 }
             }
         }
@@ -676,7 +676,7 @@ namespace wmib
         /// <param name="chan">Channel</param>
         /// <param name="host">Host name</param>
         /// <returns></returns>
-        public bool print(string name, string user, config.channel chan, string host)
+        public bool print(string name, string user, Channel chan, string host)
         {
             try
             {
@@ -686,7 +686,7 @@ namespace wmib
                     return true;
                 }
                 // check if this channel is allowed to access the db
-                config.channel data = isAllowed(chan);
+                Channel data = isAllowed(chan);
                 bool Allowed = (data != null);
                 // handle prefix
                 name = name.Substring(1);
@@ -717,23 +717,23 @@ namespace wmib
                     if (parm[1] == "is")
                     {
                         // check if they are approved to do that
-                        if (chan.Users.IsApproved(user, host, "info"))
+                        if (chan.SystemUsers.IsApproved(user, host, "info"))
                         {
                             if (!Allowed)
                             {
                                 // check if we can deliver error message
-                                if (!chan.suppress_warnings)
+                                if (!chan.SuppressWarnings)
                                 {
-                                    core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), chan);
+                                    Core.irc.Queue.DeliverMessage(messages.Localize("db7", chan.Language), chan);
                                 }
                                 return true;
                             }
                             // they can but there is only 1 parameter and we need at least 2
                             if (parm.Length < 3)
                             {
-                                if (!chan.suppress_warnings)
+                                if (!chan.SuppressWarnings)
                                 {
-                                    core.irc._SlowQueue.DeliverMessage(messages.get("key", chan.Language), chan);
+                                    Core.irc.Queue.DeliverMessage(messages.Localize("key", chan.Language), chan);
                                 }
                                 return true;
                             }
@@ -742,9 +742,9 @@ namespace wmib
                             // check if there is pipe symbol in the key, which is not a valid symbol
                             if (parm[0].Contains("|"))
                             {
-                                if (!chan.suppress_warnings)
+                                if (!chan.SuppressWarnings)
                                 {
-                                    core.irc._SlowQueue.DeliverMessage("Invalid symbol in the key", chan);
+                                    Core.irc.Queue.DeliverMessage("Invalid symbol in the key", chan);
                                 }
                                 return true;
                             }
@@ -756,9 +756,9 @@ namespace wmib
                         }
                         else
                         {
-                            if (!chan.suppress_warnings)
+                            if (!chan.SuppressWarnings)
                             {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan);
+                                Core.irc.Queue.DeliverMessage(messages.Localize("Authorization", chan.Language), chan);
                             }
                         }
                         return false;
@@ -771,21 +771,21 @@ namespace wmib
                         {
                             force = true;
                         }
-                        if (chan.Users.IsApproved(user, host, "info"))
+                        if (chan.SystemUsers.IsApproved(user, host, "info"))
                         {
                             if (!Allowed)
                             {
-                                if (!chan.suppress_warnings)
+                                if (!chan.SuppressWarnings)
                                 {
-                                    core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), chan);
+                                    Core.irc.Queue.DeliverMessage(messages.Localize("db7", chan.Language), chan);
                                 }
                                 return true;
                             }
                             if (parm.Length < 3)
                             {
-                                if (!chan.suppress_warnings)
+                                if (!chan.SuppressWarnings)
                                 {
-                                    core.irc._SlowQueue.DeliverMessage(messages.get("InvalidAlias", chan.Language), chan);
+                                    Core.irc.Queue.DeliverMessage(messages.Localize("InvalidAlias", chan.Language), chan);
                                 }
                                 return true;
                             }
@@ -797,22 +797,22 @@ namespace wmib
                         }
                         else
                         {
-                            if (!chan.suppress_warnings)
+                            if (!chan.SuppressWarnings)
                             {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan);
+                                Core.irc.Queue.DeliverMessage(messages.Localize("Authorization", chan.Language), chan);
                             }
                         }
                         return false;
                     }
                     if (parm[1] == "unalias")
                     {
-                        if (chan.Users.IsApproved(user, host, "info"))
+                        if (chan.SystemUsers.IsApproved(user, host, "info"))
                         {
                             if (!Allowed)
                             {
-                                if (!chan.suppress_warnings)
+                                if (!chan.SuppressWarnings)
                                 {
-                                    core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), chan);
+                                    Core.irc.Queue.DeliverMessage(messages.Localize("db7", chan.Language), chan);
                                 }
                                 return true;
                             }
@@ -825,7 +825,7 @@ namespace wmib
                                         if (b.Name == parm[0])
                                         {
                                             infobot.Alias.Remove(b);
-                                            core.irc._SlowQueue.DeliverMessage(messages.get("AliasRemoved", chan.Language), chan);
+                                            Core.irc.Queue.DeliverMessage(messages.Localize("AliasRemoved", chan.Language), chan);
                                             infobot.stored = false;
                                             return false;
                                         }
@@ -834,20 +834,20 @@ namespace wmib
                             }
                             return false;
                         }
-                        if (!chan.suppress_warnings)
+                        if (!chan.SuppressWarnings)
                         {
-                            core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan);
+                            Core.irc.Queue.DeliverMessage(messages.Localize("Authorization", chan.Language), chan);
                         }
                         return false;
                     }
                     // remove key
                     if (parm[1] == "del")
                     {
-                        if (chan.Users.IsApproved(user, host, "info"))
+                        if (chan.SystemUsers.IsApproved(user, host, "info"))
                         {
                             if (!Allowed)
                             {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("db7", chan.Language), chan);
+                                Core.irc.Queue.DeliverMessage(messages.Localize("db7", chan.Language), chan);
                                 return true;
                             }
                             if (infobot != null)
@@ -857,9 +857,9 @@ namespace wmib
                         }
                         else
                         {
-                            if (!chan.suppress_warnings)
+                            if (!chan.SuppressWarnings)
                             {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("Authorization", chan.Language), chan);
+                                Core.irc.Queue.DeliverMessage(messages.Localize("Authorization", chan.Language), chan);
                             }
                         }
                         return false;
@@ -907,11 +907,11 @@ namespace wmib
                     keyv = parseInfo(keyv, p, original, _key);
                     if (User == "")
                     {
-                        core.irc._SlowQueue.DeliverMessage(keyv, chan);
+                        Core.irc.Queue.DeliverMessage(keyv, chan);
                     }
                     else
                     {
-                        core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan);
+                        Core.irc.Queue.DeliverMessage(User + ": " + keyv, chan);
                     }
                     return true;
                 }
@@ -931,11 +931,11 @@ namespace wmib
                                         keyv = parseInfo(keyv, p, original, _key);
                                         if (User == "")
                                         {
-                                            core.irc._SlowQueue.DeliverMessage(keyv, chan);
+                                            Core.irc.Queue.DeliverMessage(keyv, chan);
                                         }
                                         else
                                         {
-                                            core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan);
+                                            Core.irc.Queue.DeliverMessage(User + ": " + keyv, chan);
                                         }
                                         return true;
                                     }
@@ -951,11 +951,11 @@ namespace wmib
                                         keyv = parseInfo(keyv, p, original, _key);
                                         if (User == "")
                                         {
-                                            core.irc._SlowQueue.DeliverMessage(keyv, chan);
+                                            Core.irc.Queue.DeliverMessage(keyv, chan);
                                         }
                                         else
                                         {
-                                            core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan);
+                                            Core.irc.Queue.DeliverMessage(User + ": " + keyv, chan);
                                         }
                                         return true;
                                     }
@@ -995,11 +995,11 @@ namespace wmib
                                 keyv = parseInfo(keyv, p, original, _key);
                                 if (User == "")
                                 {
-                                    core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
+                                    Core.irc.Queue.DeliverMessage(keyv, chan.Name);
                                 }
                                 else
                                 {
-                                    core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
+                                    Core.irc.Queue.DeliverMessage(User + ": " + keyv, chan.Name);
                                 }
                                 return true;
                             }
@@ -1015,11 +1015,11 @@ namespace wmib
                                             keyv = parseInfo(keyv, p, original, _key);
                                             if (User == "")
                                             {
-                                                core.irc._SlowQueue.DeliverMessage(keyv, chan.Name);
+                                                Core.irc.Queue.DeliverMessage(keyv, chan.Name);
                                             }
                                             else
                                             {
-                                                core.irc._SlowQueue.DeliverMessage(User + ": " + keyv, chan.Name);
+                                                Core.irc.Queue.DeliverMessage(User + ": " + keyv, chan.Name);
                                             }
                                             return true;
                                         }
@@ -1039,7 +1039,7 @@ namespace wmib
                             {
                                 x += ix + ", ";
                             }
-                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot-c-e", chan.Language, new List<string>() { x }), chan.Name);
+                            Core.irc.Queue.DeliverMessage(messages.Localize("infobot-c-e", chan.Language, new List<string>() { x }), chan.Name);
                             return true;
                         }
                     }
@@ -1071,14 +1071,14 @@ namespace wmib
                         {
                             x += "!" + a + ", ";
                         }
-                        core.irc._SlowQueue.DeliverMessage(messages.get("infobot-help", chan.Language, new List<string>() { x }), chan.Name);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("infobot-help", chan.Language, new List<string>() { x }), chan.Name);
                         return true;
                     }
                 }
             }
             catch (Exception b)
             {
-                core.handleException(b);
+                Core.HandleException(b, "infobot");
             }
             return true;
         }
@@ -1086,7 +1086,7 @@ namespace wmib
         private void StartSearch()
         {
             Regex value = new Regex(search_key, RegexOptions.Compiled);
-            config.channel _channel = core.getChannel(Channel);
+            Channel _channel = Core.GetChannel(ChannelName);
             string results = "";
             int count = 0;
             lock (this)
@@ -1102,11 +1102,11 @@ namespace wmib
             }
             if (results == "")
             {
-                core.irc._SlowQueue.DeliverMessage(messages.get("ResultsWereNotFound", ReplyChan.Language), ReplyChan.Name);
+                Core.irc.Queue.DeliverMessage(messages.Localize("ResultsWereNotFound", ReplyChan.Language), ReplyChan.Name);
             }
             else
             {
-                core.irc._SlowQueue.DeliverMessage(messages.get("Results", _channel.Language, new List<string> { count.ToString() }) + results, ReplyChan.Name);
+                Core.irc.Queue.DeliverMessage(messages.Localize("Results", _channel.Language, new List<string> { count.ToString() }) + results, ReplyChan.Name);
             }
             RegularModule.running = false;
         }
@@ -1116,7 +1116,7 @@ namespace wmib
         /// </summary>
         /// <param name="key">Key</param>
         /// <param name="Chan"></param>
-        public void RSearch(string key, config.channel Chan)
+        public void RSearch(string key, Channel Chan)
         {
             if (!key.StartsWith("@regsearch"))
             {
@@ -1124,25 +1124,25 @@ namespace wmib
             }
             if (!misc.IsValidRegex(key))
             {
-                core.irc._SlowQueue.DeliverMessage(messages.get("Error1", Chan.Language), Chan.Name);
+                Core.irc.Queue.DeliverMessage(messages.Localize("Error1", Chan.Language), Chan.Name);
                 return;
             }
             if (key.Length < 11)
             {
-                core.irc._SlowQueue.DeliverMessage(messages.get("Search1", Chan.Language), Chan.Name);
+                Core.irc.Queue.DeliverMessage(messages.Localize("Search1", Chan.Language), Chan.Name);
                 return;
             }
-            config.channel data = isAllowed(Chan);
+            Channel data = isAllowed(Chan);
             bool Allowed = (data != null);
             if (!Allowed)
             {
-                core.irc._SlowQueue.DeliverMessage(messages.get("db7", Chan.Language), Chan.Name);
+                Core.irc.Queue.DeliverMessage(messages.Localize("db7", Chan.Language), Chan.Name);
                 return;
             }
             infobot_core infobot = (infobot_core)data.RetrieveObject("Infobot");
             if (infobot == null)
             {
-                core.Log("Unable to perform regsearch because the Infobot doesn't exist in " + Chan.Name, true);
+                Syslog.Log("Unable to perform regsearch because the Infobot doesn't exist in " + Chan.Name, true);
                 return;
             }
             infobot.search_key = key.Substring(11);
@@ -1158,14 +1158,14 @@ namespace wmib
                 if (check > 8)
                 {
                     Th.Abort();
-                    core.irc._SlowQueue.DeliverMessage(messages.get("Error2", Chan.Language), Chan.Name);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("Error2", Chan.Language), Chan.Name);
                     RegularModule.running = false;
                     return;
                 }
             }
         }
 
-        public void Find(string key, config.channel Chan)
+        public void Find(string key, Channel Chan)
         {
             if (Chan == null)
             {
@@ -1175,16 +1175,16 @@ namespace wmib
             {
                 return;
             }
-            config.channel data = isAllowed(Chan);
+            Channel data = isAllowed(Chan);
             bool Allowed = (data != null);
             if (!Allowed)
             {
-                core.irc._SlowQueue.DeliverMessage(messages.get("db7", Chan.Language), Chan.Name);
+                Core.irc.Queue.DeliverMessage(messages.Localize("db7", Chan.Language), Chan.Name);
                 return;
             }
             if (key.Length < 9)
             {
-                core.irc._SlowQueue.DeliverMessage(messages.get("Error1", Chan.Language), Chan.Name);
+                Core.irc.Queue.DeliverMessage(messages.Localize("Error1", Chan.Language), Chan.Name);
                 return;
             }
             key = key.Substring(8);
@@ -1192,7 +1192,7 @@ namespace wmib
             infobot_core infobot = (infobot_core)data.RetrieveObject("Infobot");
             if (infobot == null)
             {
-                core.Log("Unable to perform regsearch because the Infobot doesn't exist in " + Chan.Name, true);
+                Syslog.Log("Unable to perform regsearch because the Infobot doesn't exist in " + Chan.Name, true);
                 return;
             }
             string results = "";
@@ -1209,33 +1209,33 @@ namespace wmib
             }
             if (results == "")
             {
-                core.irc._SlowQueue.DeliverMessage(messages.get("ResultsWereNotFound", Chan.Language), Chan.Name);
+                Core.irc.Queue.DeliverMessage(messages.Localize("ResultsWereNotFound", Chan.Language), Chan.Name);
             }
             else
             {
-                core.irc._SlowQueue.DeliverMessage(messages.get("Results", Chan.Language, new List<string> { count.ToString() }) + results, Chan.Name);
+                Core.irc.Queue.DeliverMessage(messages.Localize("Results", Chan.Language, new List<string> { count.ToString() }) + results, Chan.Name);
             }
         }
 
-        private config.channel isAllowed(config.channel chan)
+        private Channel isAllowed(Channel chan)
         {
             bool Allowed;
-            config.channel data = null;
+            Channel data = null;
             if (chan == null)
             {
                 return chan;
             }
-            if (chan.shared == "local" || chan.shared == "")
+            if (chan.SharedDB == "local" || chan.SharedDB == "")
             {
                 data = chan;
                 Allowed = true;
             }
             else
             {
-                Allowed = Linkable(core.getChannel(chan.shared), chan);
+                Allowed = Linkable(Core.GetChannel(chan.SharedDB), chan);
                 if (Allowed != false)
                 {
-                    data = core.getChannel(chan.shared);
+                    data = Core.GetChannel(chan.SharedDB);
                 }
                 if (data == null)
                 {
@@ -1249,29 +1249,29 @@ namespace wmib
             return null;
         }
 
-        public void setRaw(string key, string user, config.channel chan)
+        public void setRaw(string key, string user, Channel chan)
         {
             InfobotKey Key = GetKey(key, Sensitive);
             if (Key == null)
             {
-                core.irc._SlowQueue.DeliverMessage("There is no such a key, " + user, chan.Name);
+                Core.irc.Queue.DeliverMessage("There is no such a key, " + user, chan.Name);
                 return;
             }
             Key.Raw = true;
-            core.irc._SlowQueue.DeliverMessage("This key will be displayed with no extra styling, variables and will ignore all symbols", chan.Name);
+            Core.irc.Queue.DeliverMessage("This key will be displayed with no extra styling, variables and will ignore all symbols", chan.Name);
             stored = false;
         }
 
-        public void unsetRaw(string key, string user, config.channel chan)
+        public void unsetRaw(string key, string user, Channel chan)
         {
             InfobotKey Key = GetKey(key, Sensitive);
             if (Key == null)
             {
-                core.irc._SlowQueue.DeliverMessage("There is no such a key, " + user, chan.Name);
+                Core.irc.Queue.DeliverMessage("There is no such a key, " + user, chan.Name);
                 return;
             }
             Key.Raw = false;
-            core.irc._SlowQueue.DeliverMessage("This key will be displayed normally", chan.Name);
+            Core.irc.Queue.DeliverMessage("This key will be displayed normally", chan.Name);
             stored = false;
         }
 
@@ -1281,34 +1281,34 @@ namespace wmib
         /// <param name="Text">Text</param>
         /// <param name="key">Key</param>
         /// <param name="user">User who created it</param>
-        public void setKey(string Text, string key, string user, config.channel chan)
+        public void setKey(string Text, string key, string user, Channel chan)
         {
             lock (this)
             {
-                config.channel ch = core.getChannel(Channel);
+                Channel ch = Core.GetChannel(ChannelName);
                 try
                 {
                     if (KeyExist(key, Sensitive))
                     {
-                        if (!chan.suppress_warnings)
+                        if (!chan.SuppressWarnings)
                         {
-                            core.irc._SlowQueue.DeliverMessage(messages.get("Error3", chan.Language), chan);
+                            Core.irc.Queue.DeliverMessage(messages.Localize("Error3", chan.Language), chan);
                         }
                         return;
                     }
                     Keys.Add(new InfobotKey(key, Text, user, "false"));
-                    core.irc._SlowQueue.DeliverMessage(messages.get("infobot6", chan.Language), chan.Name);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("infobot6", chan.Language), chan.Name);
                     infobot_core infobot = (infobot_core)ch.RetrieveObject("Infobot");
                     if (infobot == null)
                     {
-                        core.Log("Unable to save the key because the Infobot doesn't exist in " + ch.Name, true);
+                        Syslog.Log("Unable to save the key because the Infobot doesn't exist in " + ch.Name, true);
                         return;
                     }
                     infobot.stored = false;
                 }
                 catch (Exception b)
                 {
-                    core.handleException(b);
+                    Core.HandleException(b, "infobot");
                 }
             }
         }
@@ -1324,15 +1324,15 @@ namespace wmib
                 lock (this)
                 {
                     DateTime creationdate = DateTime.Now;
-                    core.Log("Creating snapshot " + temporary_data);
+                    Syslog.Log("Creating snapshot " + temporary_data);
                     File.Copy(datafile_xml, temporary_data);
-                    core.irc._SlowQueue.DeliverMessage("Snapshot " + temporary_data + " was created for current database as of " + creationdate.ToString(), Channel);
+                    Core.irc.Queue.DeliverMessage("Snapshot " + temporary_data + " was created for current database as of " + creationdate.ToString(), ChannelName);
                 }
             }
             catch (Exception fail)
             {
-                core.Log("Unable to create a snapshot for " + Channel, true);
-                core.handleException(fail);
+                Syslog.Log("Unable to create a snapshot for " + ChannelName, true);
+                Core.HandleException(fail, "infobot");
             }
         }
 
@@ -1346,19 +1346,19 @@ namespace wmib
                 }
                 lock (this)
                 {
-                    core.Log("Recovering snapshot " + temporary_data);
+                    Syslog.Log("Recovering snapshot " + temporary_data);
                     File.Copy(temporary_data, datafile_xml, true);
                     this.Keys.Clear();
                     this.Alias.Clear();
-                    core.Log("Loading snapshot of " + Channel);
+                    Syslog.Log("Loading snapshot of " + ChannelName);
                     LoadData();
-                    core.irc._SlowQueue.DeliverMessage("Snapshot " + temporary_data + " was loaded and previous database was permanently deleted", Channel);
+                    Core.irc.Queue.DeliverMessage("Snapshot " + temporary_data + " was loaded and previous database was permanently deleted", ChannelName);
                 }
             }
             catch (Exception fail)
             {
-                core.Log("Unable to recover a snapshot for " + Channel + " the db is likely broken now", true);
-                core.handleException(fail);
+                Syslog.Log("Unable to recover a snapshot for " + ChannelName + " the db is likely broken now", true);
+                Core.HandleException(fail, "infobot");
             }
         }
 
@@ -1400,7 +1400,7 @@ namespace wmib
             return true;
         }
 
-        public void RecoverSnapshot(config.channel chan, string name)
+        public void RecoverSnapshot(Channel chan, string name)
         {
             try
             {
@@ -1408,21 +1408,21 @@ namespace wmib
                 {
                     if (!isValid(name))
                     {
-                        core.irc._SlowQueue.DeliverMessage("This is not a valid name for tsnapsho, you can only use a-zA-Z and 0-9 chars", chan.Name);
+                        Core.irc.Queue.DeliverMessage("This is not a valid name for tsnapsho, you can only use a-zA-Z and 0-9 chars", chan.Name);
                         return;
                     }
                     if (SnapshotManager != null)
                     {
                         if (SnapshotManager.ThreadState == ThreadState.Running)
                         {
-                            core.irc._SlowQueue.DeliverMessage("There is already another snapshot operation running for this channel", chan.Name);
+                            Core.irc.Queue.DeliverMessage("There is already another snapshot operation running for this channel", chan.Name);
                             return;
                         }
                     }
-                    string datafile = RegularModule.SnapshotsDirectory + Path.DirectorySeparatorChar + Channel + Path.DirectorySeparatorChar + name;
+                    string datafile = RegularModule.SnapshotsDirectory + Path.DirectorySeparatorChar + ChannelName + Path.DirectorySeparatorChar + name;
                     if (!File.Exists(datafile))
                     {
-                        core.irc._SlowQueue.DeliverMessage("The requested datafile " + name + " was not found", chan.Name, IRC.priority.low);
+                        Core.irc.Queue.DeliverMessage("The requested datafile " + name + " was not found", chan.Name, IRC.priority.low);
                         return;
                     }
 
@@ -1435,31 +1435,31 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail, "infobot");
             }
         }
 
-        public void CreateSnapshot(config.channel chan, string name)
+        public void CreateSnapshot(Channel chan, string name)
         {
             try
             {
                 if (!isValid(name))
                 {
-                    core.irc._SlowQueue.DeliverMessage("This is not a valid name for snapshot, you can only use a-zA-Z and 0-9 chars", chan.Name);
+                    Core.irc.Queue.DeliverMessage("This is not a valid name for snapshot, you can only use a-zA-Z and 0-9 chars", chan.Name);
                     return;
                 }
                 if (SnapshotManager != null)
                 {
                     if (SnapshotManager.ThreadState == ThreadState.Running)
                     {
-                        core.irc._SlowQueue.DeliverMessage("There is already another snapshot operation running for this channel", chan.Name);
+                        Core.irc.Queue.DeliverMessage("There is already another snapshot operation running for this channel", chan.Name);
                         return;
                     }
                 }
-                string datafile = RegularModule.SnapshotsDirectory + Path.DirectorySeparatorChar + Channel + Path.DirectorySeparatorChar + name;
+                string datafile = RegularModule.SnapshotsDirectory + Path.DirectorySeparatorChar + ChannelName + Path.DirectorySeparatorChar + name;
                 if (File.Exists(datafile))
                 {
-                    core.irc._SlowQueue.DeliverMessage("The requested snapshot " + name + " already exist", chan.Name, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage("The requested snapshot " + name + " already exist", chan.Name, IRC.priority.low);
                     return;
                 }
                 SnapshotManager = new Thread(SnapshotStart);
@@ -1469,7 +1469,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail, "infobot");
             }
         }
 
@@ -1479,9 +1479,9 @@ namespace wmib
         /// <param name="key">Key</param>
         /// <param name="al">Alias</param>
         /// <param name="user">User</param>
-        public void aliasKey(string key, string al, string user, config.channel chan, bool enforced = false)
+        public void aliasKey(string key, string al, string user, Channel chan, bool enforced = false)
         {
-            config.channel ch = core.getChannel(Channel);
+            Channel ch = Core.GetChannel(ChannelName);
             if (ch == null)
             {
                 return;
@@ -1492,9 +1492,9 @@ namespace wmib
                 {
                     if (stakey.Name == al)
                     {
-                        if (!chan.suppress_warnings)
+                        if (!chan.SuppressWarnings)
                         {
-                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot7", chan.Language), chan.Name);
+                            Core.irc.Queue.DeliverMessage(messages.Localize("infobot7", chan.Language), chan.Name);
                         }
                         return;
                     }
@@ -1505,22 +1505,22 @@ namespace wmib
                     {
                         if (AliasExist(key))
                         {
-                            core.irc._SlowQueue.DeliverMessage("Unable to create alias for " + key + " because the target is alias, but not a key, if you really want to create this broken alias do !" + al + " force-alias " + key, chan.Name);
+                            Core.irc.Queue.DeliverMessage("Unable to create alias for " + key + " because the target is alias, but not a key, if you really want to create this broken alias do !" + al + " force-alias " + key, chan.Name);
                             return;
                         }
-                        core.irc._SlowQueue.DeliverMessage("Unable to create alias for " + key + " because there is no such key, if you really want to create this broken alias do !" + al + " force-alias " + key, chan.Name);
+                        Core.irc.Queue.DeliverMessage("Unable to create alias for " + key + " because there is no such key, if you really want to create this broken alias do !" + al + " force-alias " + key, chan.Name);
                         return;
                     }
                 }
                 Alias.Add(new InfobotAlias(al, key));
             }
-            core.irc._SlowQueue.DeliverMessage(messages.get("infobot8", chan.Language), chan.Name);
+            Core.irc.Queue.DeliverMessage(messages.Localize("infobot8", chan.Language), chan.Name);
             stored = false;
         }
 
-        public void rmKey(string key, string user, config.channel _ch)
+        public void rmKey(string key, string user, Channel _ch)
         {
-            config.channel ch = core.getChannel(Channel);
+            Channel ch = Core.GetChannel(ChannelName);
             lock (this)
             {
                 foreach (InfobotKey keys in Keys)
@@ -1530,7 +1530,7 @@ namespace wmib
                         if (keys.Key == key)
                         {
                             Keys.Remove(keys);
-                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot9", _ch.Language) + key, _ch.Name);
+                            Core.irc.Queue.DeliverMessage(messages.Localize("infobot9", _ch.Language) + key, _ch.Name);
                             stored = false;
                             return;
                         }
@@ -1540,14 +1540,14 @@ namespace wmib
                         if (keys.Key.ToLower() == key.ToLower())
                         {
                             Keys.Remove(keys);
-                            core.irc._SlowQueue.DeliverMessage(messages.get("infobot9", _ch.Language) + key, _ch.Name);
+                            Core.irc.Queue.DeliverMessage(messages.Localize("infobot9", _ch.Language) + key, _ch.Name);
                             stored = false;
                             return;
                         }
                     }
                 }
             }
-            core.irc._SlowQueue.DeliverMessage(messages.get("infobot10", _ch.Language), _ch.Name);
+            Core.irc.Queue.DeliverMessage(messages.Localize("infobot10", _ch.Language), _ch.Name);
         }
     }
 }

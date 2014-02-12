@@ -12,9 +12,9 @@ namespace wmib
         public override bool Hook_OnRegister()
         {
             bool success = true;
-            lock (config.channels)
+            lock (Configuration.Channels)
             {
-                foreach (config.channel xx in config.channels)
+                foreach (Channel xx in Configuration.Channels)
                 {
                     if (!xx.RegisterObject(new Statistics(xx), NAME))
                     {
@@ -28,12 +28,11 @@ namespace wmib
         public override bool Construct()
         {
             Name = NAME;
-            start = true;
             Version = "1.0.28";
             return true;
         }
 
-        public override string Extension_DumpHtml(config.channel channel)
+        public override string Extension_DumpHtml(Channel channel)
         {
             string HTML = "";
             if (Module.GetConfig(channel, "Statistics.Enabled", false))
@@ -87,7 +86,7 @@ namespace wmib
             return HTML;
         }
 
-        public override void Hook_Channel(config.channel channel)
+        public override void Hook_Channel(Channel channel)
         {
             if (channel.RetrieveObject("Statistics") == null)
             {
@@ -98,9 +97,9 @@ namespace wmib
         public override bool Hook_OnUnload()
         {
             bool success = true;
-            lock (config.channels)
+            lock (Configuration.Channels)
             {
-                foreach (config.channel xx in config.channels)
+                foreach (Channel xx in Configuration.Channels)
                 {
                     if (!xx.UnregisterObject(NAME))
                     {
@@ -113,13 +112,14 @@ namespace wmib
 
         public override void Load()
         {
-            while (true)
+            while (Core.IsRunning)
             {
+				Thread.Sleep(8000);
                 try
                 {
-                    lock (config.channels)
+                    lock (Configuration.Channels)
                     {
-                        foreach (config.channel chan in config.channels)
+                        foreach (Channel chan in Configuration.Channels)
                         {
                             Statistics st = (Statistics)chan.RetrieveObject(NAME);
                             if (st != null)
@@ -131,7 +131,6 @@ namespace wmib
                                 st.Stored = true;
                                 continue;
                             }
-                            Log("NULL pointer at statistics for " + chan.Name, true);
                         }
                     }
                     Thread.Sleep(8000);
@@ -142,12 +141,12 @@ namespace wmib
                 }
                 catch (Exception f)
                 {
-                    handleException(f);
+                    HandleException(f);
                 }
             }
         }
 
-        public override void Hook_PRIV(config.channel channel, User invoker, string message)
+        public override void Hook_PRIV(Channel channel, User invoker, string message)
         {
             if (Module.GetConfig(channel, "Statistics.Enabled", false))
             {
@@ -158,69 +157,69 @@ namespace wmib
                 }
             }
 
-            if (message == config.CommandPrefix + "statistics-off")
+            if (message == Configuration.System.CommandPrefix + "statistics-off")
             {
-                if (channel.Users.IsApproved(invoker, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker, "admin"))
                 {
                     if (!Module.GetConfig(channel, "Statistics.Enabled", false))
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("StatE2", channel.Language), channel);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("StatE2", channel.Language), channel);
                         return;
                     }
                     else
                     {
                         Module.SetConfig(channel, "Statistics.Enabled", false);
                         channel.SaveConfig();
-                        core.irc._SlowQueue.DeliverMessage(messages.get("Stat-off", channel.Language), channel);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("Stat-off", channel.Language), channel);
                         return;
                     }
                 }
-                if (!channel.suppress_warnings)
+                if (!channel.SuppressWarnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
                 }
                 return;
             }
 
-            if (message == config.CommandPrefix + "statistics-reset")
+            if (message == Configuration.System.CommandPrefix + "statistics-reset")
             {
-                if (channel.Users.IsApproved(invoker, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker, "admin"))
                 {
                     Statistics st = (Statistics)channel.RetrieveObject("Statistics");
                     if (st != null)
                     {
                         st.Delete();
                     }
-                    core.irc._SlowQueue.DeliverMessage(messages.get("Statdt", channel.Language), channel);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("Statdt", channel.Language), channel);
                     return;
                 }
-                if (!channel.suppress_warnings)
+                if (!channel.SuppressWarnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
                 }
                 return;
             }
 
-            if (message == config.CommandPrefix + "statistics-on")
+            if (message == Configuration.System.CommandPrefix + "statistics-on")
             {
-                if (channel.Users.IsApproved(invoker, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker, "admin"))
                 {
                     if (Module.GetConfig(channel, "Statistics.Enabled", false))
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("StatE1", channel.Language), channel);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("StatE1", channel.Language), channel);
                         return;
                     }
                     else
                     {
                         Module.SetConfig(channel, "Statistics.Enabled", true);
                         channel.SaveConfig();
-                        core.irc._SlowQueue.DeliverMessage(messages.get("Stat-on", channel.Language), channel);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("Stat-on", channel.Language), channel);
                         return;
                     }
                 }
-                if (!channel.suppress_warnings)
+                if (!channel.SuppressWarnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
                 return;
             }
@@ -229,7 +228,7 @@ namespace wmib
 
     public class Statistics
     {
-        public config.channel channel;
+        public Channel channel;
         public bool enabled = true;
         public bool changed = false;
         public bool Stored = false;
@@ -256,7 +255,7 @@ namespace wmib
 
         public List<list> data;
 
-        public Statistics(config.channel _channel)
+        public Statistics(Channel _channel)
         {
             data = new List<list>();
             channel = _channel;
@@ -289,7 +288,7 @@ namespace wmib
                         data.Add(user);
                     }
                 }
-                user.URL = core.Host.Host2Name(host);
+                user.URL = Core.Host.Host2Name(host);
                 user.messages++;
                 Module.SetConfig(channel, "HTML.Update", true);
                 changed = true;
@@ -332,14 +331,14 @@ namespace wmib
                 }
             }
             stat.AppendChild(xmlnode);
-            if (System.IO.File.Exists(variables.config + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics"))
+            if (System.IO.File.Exists(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics"))
             {
-                core.backupData(variables.config + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics");
+                Core.BackupData(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics");
             }
-            stat.Save(variables.config + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics");
-            if (System.IO.File.Exists(config.tempName(variables.config + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics")))
+            stat.Save(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics");
+            if (System.IO.File.Exists(Configuration.TempName(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics")))
             {
-                System.IO.File.Delete(config.tempName(variables.config + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics"));
+                System.IO.File.Delete(Configuration.TempName(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics"));
             }
             return false;
         }
@@ -348,14 +347,14 @@ namespace wmib
         {
             try
             {
-                core.recoverFile(variables.config + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics", channel.Name);
-                if (System.IO.File.Exists(variables.config + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics"))
+                Core.RecoverFile(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics", channel.Name);
+                if (System.IO.File.Exists(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics"))
                 {
                     lock (data)
                     {
                         data = new List<list>();
                         XmlDocument stat = new XmlDocument();
-                        stat.Load(variables.config + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics");
+                        stat.Load(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + channel.Name + ".statistics");
                         if (stat.ChildNodes[0].ChildNodes.Count > 0)
                         {
                             foreach (XmlNode curr in stat.ChildNodes[0].ChildNodes)
@@ -376,7 +375,7 @@ namespace wmib
             }
             catch (Exception f)
             {
-                core.handleException(f);
+                Core.HandleException(f, "statistics");
             }
             return false;
         }

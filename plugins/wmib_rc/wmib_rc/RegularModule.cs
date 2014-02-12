@@ -20,7 +20,7 @@ namespace wmib
 {
     public class ModuleRC : Module
     {
-        public override void Hook_Channel(config.channel channel)
+        public override void Hook_Channel(Channel channel)
         {
             if (channel.RetrieveObject("RC") == null)
             {
@@ -31,9 +31,9 @@ namespace wmib
         public override bool Hook_OnRegister()
         {
             RecentChanges.InsertSite();
-            lock (config.channels)
+            lock (Configuration.Channels)
             {
-                foreach (config.channel channel in config.channels)
+                foreach (Channel channel in Configuration.Channels)
                 {
                     channel.RegisterObject(new RecentChanges(channel), "RC");
                 }
@@ -41,7 +41,7 @@ namespace wmib
             return true;
         }
 
-        public override string Extension_DumpHtml(config.channel channel)
+        public override string Extension_DumpHtml(Channel channel)
         {
             string HTML = "";
 
@@ -56,21 +56,21 @@ namespace wmib
             return HTML;
         }
 
-        public override void Hook_ChannelDrop(config.channel chan)
+        public override void Hook_ChannelDrop(Channel chan)
         {
-            if (File.Exists(variables.config + Path.DirectorySeparatorChar + chan.Name + ".list"))
+            if (File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + chan.Name + ".list"))
             {
-                core.Log("RC: Removing db of " + chan.Name + " RC feed");
-                File.Delete(variables.config + Path.DirectorySeparatorChar + chan.Name + ".list");
+                Syslog.Log("RC: Removing db of " + chan.Name + " RC feed");
+                File.Delete(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + chan.Name + ".list");
             }
         }
 
         public override bool Hook_OnUnload()
         {
             bool ok = true;
-            lock (config.channels)
+            lock (Configuration.Channels)
             {
-                foreach (config.channel channel in config.channels)
+                foreach (Channel channel in Configuration.Channels)
                 {
                     if (!channel.UnregisterObject("RC"))
                     {
@@ -81,18 +81,18 @@ namespace wmib
             return ok;
         }
 
-        public override void Hook_PRIV(config.channel channel, User invoker, string message)
+        public override void Hook_PRIV(Channel channel, User invoker, string message)
         {
-            if (message.StartsWith(config.CommandPrefix + "RC-"))
+            if (message.StartsWith(Configuration.System.CommandPrefix + "RC-"))
             {
-                if (channel.Users.IsApproved(invoker, "trust"))
+                if (channel.SystemUsers.IsApproved(invoker, "trust"))
                 {
                     if (GetConfig(channel, "RC.Enabled", false))
                     {
                         string[] a = message.Split(' ');
                         if (a.Length < 3)
                         {
-                            core.irc._SlowQueue.DeliverMessage(messages.get("Feed8", channel.Language, new List<string> { invoker.Nick }), channel.Name);
+                            Core.irc.Queue.DeliverMessage(messages.Localize("Feed8", channel.Language, new List<string> { invoker.Nick }), channel.Name);
                             return;
                         }
                         string wiki = a[1];
@@ -106,61 +106,61 @@ namespace wmib
                     }
                     else
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("Feed3", channel.Language), channel.Name);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("Feed3", channel.Language), channel.Name);
                         return;
                     }
                 }
-                if (!channel.suppress_warnings)
+                if (!channel.SuppressWarnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
                 return;
             }
 
-            if (message.StartsWith(config.CommandPrefix + "recentchanges- "))
+            if (message.StartsWith(Configuration.System.CommandPrefix + "recentchanges- "))
             {
-                if (channel.Users.IsApproved(invoker, "root"))
+                if (channel.SystemUsers.IsApproved(invoker, "root"))
                 {
                     if (GetConfig(channel, "RC.Enabled", false))
                     {
                         if (!message.Contains(" "))
                         {
-                            if (!channel.suppress_warnings)
+                            if (!channel.SuppressWarnings)
                             {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("InvalidWiki", channel.Language), channel.Name);
+                                Core.irc.Queue.DeliverMessage(messages.Localize("InvalidWiki", channel.Language), channel.Name);
                             }
                             return;
                         }
                         string _channel = message.Substring(message.IndexOf(" ") + 1);
                         if (RecentChanges.DeleteChannel(channel, _channel))
                         {
-                            core.irc._SlowQueue.DeliverMessage(messages.get("Wiki-", channel.Language), channel.Name, IRC.priority.high);
+                            Core.irc.Queue.DeliverMessage(messages.Localize("Wiki-", channel.Language), channel.Name, IRC.priority.high);
                         }
                         return;
                     }
                     else
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("Feed3", channel.Language), channel.Name);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("Feed3", channel.Language), channel.Name);
                         return;
                     }
                 }
-                if (!channel.suppress_warnings)
+                if (!channel.SuppressWarnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
                 return;
             }
 
-            if (message.StartsWith(config.CommandPrefix + "RC+ "))
+            if (message.StartsWith(Configuration.System.CommandPrefix + "RC+ "))
             {
-                if (channel.Users.IsApproved(invoker, "trust"))
+                if (channel.SystemUsers.IsApproved(invoker, "trust"))
                 {
                     if (GetConfig(channel, "RC.Enabled", false))
                     {
                         string[] a = message.Split(' ');
                         if (a.Length < 3)
                         {
-                            core.irc._SlowQueue.DeliverMessage(messages.get("Feed4", channel.Language) + invoker.Nick + messages.get("Feed5", channel.Language), channel.Name);
+                            Core.irc.Queue.DeliverMessage(messages.Localize("Feed4", channel.Language) + invoker.Nick + messages.Localize("Feed5", channel.Language), channel.Name);
                             return;
                         }
                         string wiki = a[1];
@@ -174,96 +174,95 @@ namespace wmib
                     }
                     else
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("Feed3", channel.Language), channel.Name);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("Feed3", channel.Language), channel.Name);
                         return;
                     }
                 }
-                if (!channel.suppress_warnings)
+                if (!channel.SuppressWarnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
                 return;
             }
 
-            if (message == config.CommandPrefix + "recentchanges-off")
+            if (message == Configuration.System.CommandPrefix + "recentchanges-off")
             {
-                if (channel.Users.IsApproved(invoker, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker, "admin"))
                 {
                     if (!GetConfig(channel, "RC.Enabled", false))
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("Feed6", channel.Language), channel.Name);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("Feed6", channel.Language), channel.Name);
                         return;
                     }
                     else
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("Feed7", channel.Language), channel.Name);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("Feed7", channel.Language), channel.Name);
                         SetConfig(channel, "RC.Enabled", false);
                         channel.SaveConfig();
                         return;
                     }
                 }
-                if (!channel.suppress_warnings)
+                if (!channel.SuppressWarnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
                 return;
             }
 
-            if (message == config.CommandPrefix + "recentchanges-on")
+            if (message == Configuration.System.CommandPrefix + "recentchanges-on")
             {
-                if (channel.Users.IsApproved(invoker, "recentchanges-manage"))
+                if (channel.SystemUsers.IsApproved(invoker, "recentchanges-manage"))
                 {
                     if (GetConfig(channel, "RC.Enabled", false))
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("Feed1", channel.Language), channel.Name);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("Feed1", channel.Language), channel.Name);
                         return;
                     }
                     else
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("Feed2", channel.Language), channel.Name);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("Feed2", channel.Language), channel.Name);
                         SetConfig(channel, "RC.Enabled", true);
                         channel.SaveConfig();
-                        config.Save();
                         return;
                     }
                 }
-                if (!channel.suppress_warnings)
+                if (!channel.SuppressWarnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
                 return;
             }
 
-            if (message.StartsWith(config.CommandPrefix + "recentchanges+"))
+            if (message.StartsWith(Configuration.System.CommandPrefix + "recentchanges+"))
             {
-                if (channel.Users.IsApproved(invoker, "recentchanges-manage"))
+                if (channel.SystemUsers.IsApproved(invoker, "recentchanges-manage"))
                 {
                     if (GetConfig(channel, "RC.Enabled", false))
                     {
                         if (!message.Contains(" "))
                         {
-                            if (!channel.suppress_warnings)
+                            if (!channel.SuppressWarnings)
                             {
-                                core.irc._SlowQueue.DeliverMessage(messages.get("InvalidWiki", channel.Language), channel.Name);
+                                Core.irc.Queue.DeliverMessage(messages.Localize("InvalidWiki", channel.Language), channel.Name);
                             }
                             return;
                         }
                         string _channel = message.Substring(message.IndexOf(" ") + 1);
                         if (RecentChanges.InsertChannel(channel, _channel))
                         {
-                            core.irc._SlowQueue.DeliverMessage(messages.get("Wiki+", channel.Language), channel.Name);
+                            Core.irc.Queue.DeliverMessage(messages.Localize("Wiki+", channel.Language), channel.Name);
                         }
                         return;
                     }
                     else
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("Feed3", channel.Language), channel.Name);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("Feed3", channel.Language), channel.Name);
                         return;
                     }
                 }
-                if (!channel.suppress_warnings)
+                if (!channel.SuppressWarnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
                 return;
             }
@@ -272,12 +271,11 @@ namespace wmib
         public override bool Construct()
         {
             Name = "RC";
-            start = true;
             Version = "1.2.0.5";
             return true;
         }
 
-        public string Format(string name_url, string url, string page, string username, string link, string summary, config.channel chan, bool bot, bool New, bool minor)
+        public string Format(string name_url, string url, string page, string username, string link, string summary, Channel chan, bool bot, bool New, bool minor)
         {
 
 
@@ -285,9 +283,9 @@ namespace wmib
             {
                 if (!New)
                 {
-                    return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "modified", "" + username + "", url + "?diff=" + link, summary });
+                    return messages.Localize("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "modified", "" + username + "", url + "?diff=" + link, summary });
                 }
-                return messages.get("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", url + "?title=" + System.Web.HttpUtility.UrlEncode(page), summary });
+                return messages.Localize("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", url + "?title=" + System.Web.HttpUtility.UrlEncode(page), summary });
             }
 
             string action = "modified";
@@ -338,19 +336,19 @@ namespace wmib
         public static Change String2Change(string text)
         {
             // get a page
-            if (!text.Contains(variables.color + "14[["))
+            if (!text.Contains(Variables.ColorChar + "14[["))
             {
-                core.DebugLog("Parser error #1", 6);
+                Syslog.DebugLog("Parser error #1", 6);
                 return null;
             }
             Change change = new Change("", "", "");
 
-            if (text.Contains(variables.color + "4 "))
+            if (text.Contains(Variables.ColorChar + "4 "))
             {
-                string flags = text.Substring(text.IndexOf(variables.color + "4 ") + 3);
-                if (flags.Contains(variables.color))
+                string flags = text.Substring(text.IndexOf(Variables.ColorChar + "4 ") + 3);
+                if (flags.Contains(Variables.ColorChar))
                 {
-                    flags = flags.Substring(0, flags.IndexOf(variables.color));
+                    flags = flags.Substring(0, flags.IndexOf(Variables.ColorChar));
                 }
                 if (flags.Contains("N"))
                 {
@@ -367,17 +365,17 @@ namespace wmib
                 }
             }
             
-            change.Page = text.Substring(text.IndexOf(variables.color + "14[[") + 5);
+            change.Page = text.Substring(text.IndexOf(Variables.ColorChar + "14[[") + 5);
             change.Page = change.Page.Substring(3);
-            if (!change.Page.Contains(variables.color + "14]]"))
+            if (!change.Page.Contains(Variables.ColorChar + "14]]"))
             {
-                core.DebugLog("Parser error #2", 6);
+                Syslog.DebugLog("Parser error #2", 6);
                 return null;
             }
 
-            change.Page = change.Page.Substring(0, change.Page.IndexOf(variables.color + "14"));
+            change.Page = change.Page.Substring(0, change.Page.IndexOf(Variables.ColorChar + "14"));
 
-            text = text.Substring(text.IndexOf(variables.color + "14]]") + 5);
+            text = text.Substring(text.IndexOf(Variables.ColorChar + "14]]") + 5);
 
             if (text.Contains("?oldid="))
             {
@@ -385,7 +383,7 @@ namespace wmib
 
                 if (!change.oldid.Contains("&") && !change.oldid.Contains(" "))
                 {
-                    core.DebugLog("Parser error #4", 6);
+                    Syslog.DebugLog("Parser error #4", 6);
                     return null;
                 }
 
@@ -406,7 +404,7 @@ namespace wmib
 
                 if (!change.diff.Contains("&"))
                 {
-                    core.DebugLog("Parser error #4", 6);
+                    Syslog.DebugLog("Parser error #4", 6);
                     return null;
                 }
                 change.diff = change.diff.Substring(0, change.diff.IndexOf("&"));
@@ -415,29 +413,29 @@ namespace wmib
 
             text = text.Substring(text.IndexOf("?diff=") + 6);
 
-            if (!text.Contains(variables.color + "03"))
+            if (!text.Contains(Variables.ColorChar + "03"))
             {
-                core.DebugLog("Parser error #5", 6);
+                Syslog.DebugLog("Parser error #5", 6);
                 return null;
             }
 
-            change.User = text.Substring(text.IndexOf(variables.color + "03") + 3);
+            change.User = text.Substring(text.IndexOf(Variables.ColorChar + "03") + 3);
 
-            if (!change.User.Contains(variables.color + " " + variables.color + "5*"))
+            if (!change.User.Contains(Variables.ColorChar + " " + Variables.ColorChar + "5*"))
             {
-                core.DebugLog("Parser error #6", 6);
+                Syslog.DebugLog("Parser error #6", 6);
                 return null;
             }
 
-            change.User = change.User.Substring(0, change.User.IndexOf(variables.color + " " + variables.color + "5*"));
+            change.User = change.User.Substring(0, change.User.IndexOf(Variables.ColorChar + " " + Variables.ColorChar + "5*"));
 
-            if (!text.Contains(variables.color + "5"))
+            if (!text.Contains(Variables.ColorChar + "5"))
             {
-                core.DebugLog("Parser error #7", 6);
+                Syslog.DebugLog("Parser error #7", 6);
                 return null;
             }
 
-            text = text.Substring(text.IndexOf(variables.color + "5"));
+            text = text.Substring(text.IndexOf(Variables.ColorChar + "5"));
 
             if (text.Contains("("))
             {
@@ -445,21 +443,21 @@ namespace wmib
 
                 if (!change.Size.Contains(")"))
                 {
-                    core.DebugLog("Parser error #10", 6);
+                    Syslog.DebugLog("Parser error #10", 6);
                     return null;
                 }
 
                 change.Size = change.Size.Substring(0, change.Size.IndexOf(")"));
             }
 
-            if (!text.Contains(variables.color + "10"))
+            if (!text.Contains(Variables.ColorChar + "10"))
             {
-                core.DebugLog("Parser error #14", 6);
+                Syslog.DebugLog("Parser error #14", 6);
                 return null;
             }
 
-            change.Summary = text.Substring(text.IndexOf(variables.color + "10") + 3);
-            if (change.Summary.EndsWith(variables.color))
+            change.Summary = text.Substring(text.IndexOf(Variables.ColorChar + "10") + 3);
+            if (change.Summary.EndsWith(Variables.ColorChar))
             {
                 change.Summary = change.Summary.Substring(0, change.Summary.Length - 1);
             }
@@ -547,7 +545,7 @@ namespace wmib
                                                                     {
                                                                         DebugLog("NULL pointer on idata 1", 2);
                                                                     }
-                                                                    core.irc._SlowQueue.DeliverMessage(
+                                                                    Core.irc.Queue.DeliverMessage(
                                                                        Format(w.URL.name, w.URL.url, edit.Page, edit.User, edit.diff, edit.Summary, curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
                                                                 }
                                                                 else
@@ -559,7 +557,7 @@ namespace wmib
                                                                             {
                                                                                 DebugLog("NULL pointer on idata 2", 2);
                                                                             }
-                                                                            core.irc._SlowQueue.DeliverMessage(
+                                                                            Core.irc.Queue.DeliverMessage(
                                                                             Format(w.URL.name, w.URL.url, edit.Page, edit.User, edit.diff, edit.Summary, curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
                                                                         }
                                                                     }
@@ -589,8 +587,8 @@ namespace wmib
                         }
                         catch (Exception fail)
                         {
-                            core.LastText = message;
-                            handleException(fail);
+                            Core.LastText = message;
+                            HandleException(fail);
                         }
                     }
                 }
@@ -600,7 +598,7 @@ namespace wmib
                 }
                 catch (Exception fail)
                 {
-                    handleException(fail);
+                    HandleException(fail);
                     // abort
                 }
             }
@@ -610,22 +608,22 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                handleException(fail);
+                HandleException(fail);
             }
         }
 
-        public override bool Hook_GetConfig(config.channel chan, User invoker, string config)
+        public override bool Hook_GetConfig(Channel chan, User invoker, string config)
         {
             switch (config)
             {
                 case "recent-changes-template":
-                    core.irc._SlowQueue.DeliverMessage("Value of " + config + " is: " + GetConfig(chan, "RC.Template", "<default value>"), chan);
+                    Core.irc.Queue.DeliverMessage("Value of " + config + " is: " + GetConfig(chan, "RC.Template", "<default value>"), chan);
                     return true;
             }
             return false;
         }
 
-        public override bool Hook_SetConfig(config.channel chan, User invoker, string config, string value)
+        public override bool Hook_SetConfig(Channel chan, User invoker, string config, string value)
         {
             switch (config)
             {
@@ -633,14 +631,14 @@ namespace wmib
                     if (value != "null")
                     {
                         Module.SetConfig(chan, "RC.Template", value);
-                        core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { value, config }), chan);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan);
                         chan.SaveConfig();
                         return true;
                     }
                     else
                     {
                         Module.SetConfig(chan, "RC.Template", "");
-                        core.irc._SlowQueue.DeliverMessage(messages.get("configuresave", chan.Language, new List<string> { "null", config }), chan);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { "null", config }), chan);
                         chan.SaveConfig();
                         return true;
                     }

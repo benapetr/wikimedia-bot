@@ -16,7 +16,7 @@ namespace wmib
         {
             Name = "Ping";
             Version = "1.0";
-			HasSeparateThreadInstance = false;
+            HasSeparateThreadInstance = false;
             return true;
         }
 
