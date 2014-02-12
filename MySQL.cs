@@ -139,7 +139,10 @@ namespace wmib
                             if (InsertRow(row.table, row.row))
                             {
                                 recovered++;
-                            }
+                            } else
+							{
+								Syslog.DebugLog("Failed to recover 1 row", 2);
+							}
                         }
                         Syslog.WarningLog("Recovery finished, recovered " + recovered.ToString() + " of total " + count.ToString());
                         Recovering = false;
