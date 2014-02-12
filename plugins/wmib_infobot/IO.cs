@@ -42,7 +42,7 @@ namespace wmib
             {
                 foreach (Channel x in Configuration.Channels)
                 {
-                    infobot_core infobot = (infobot_core)x.RetrieveObject("Infobot");
+                    Infobot infobot = (Infobot)x.RetrieveObject("Infobot");
                     if (infobot != null)
                     {
                         if (infobot.stored == false)

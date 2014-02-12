@@ -20,10 +20,9 @@ using System.IO;
 
 namespace wmib
 {
-    [Serializable()]
     public class RegularModule : Module
     {
-        public List<infobot_core.InfoItem> jobs = new List<infobot_core.InfoItem>();
+        public List<Infobot.InfoItem> jobs = new List<Infobot.InfoItem>();
         public static bool running;
         public bool Unwritable;
         public bool Disabled;
@@ -103,7 +102,7 @@ namespace wmib
             {
                 // sensitivity
                 bool cs = Module.GetConfig(channel, "Infobot.Case", true);
-                channel.RegisterObject(new infobot_core(getDB(ref channel), channel.Name, cs), "Infobot");
+                channel.RegisterObject(new Infobot(getDB(ref channel), channel, this, cs), "Infobot");
             }
         }
 
@@ -133,7 +132,7 @@ namespace wmib
                 {
                     Channel curr = channel;
                     bool cs = Module.GetConfig(curr, "Infobot.Case", true);
-                    if (!channel.RegisterObject(new infobot_core(getDB(ref curr), channel.Name, cs), "Infobot"))
+                    if (!channel.RegisterObject(new Infobot(getDB(ref curr), channel, this, cs), "Infobot"))
                     {
                         success = false;
                     }
@@ -164,11 +163,11 @@ namespace wmib
         public override string Extension_DumpHtml(Channel channel)
         {
             string HTML = "";
-            infobot_core info = (infobot_core)channel.RetrieveObject("Infobot");
+            Infobot info = (Infobot)channel.RetrieveObject("Infobot");
             if (info != null)
             {
                 HTML += "\n<table border=1 class=\"infobot\" width=100%>\n<tr><th width=10%>Key</th><th>Value</th></tr>\n";
-                List<infobot_core.InfobotKey> list = new List<infobot_core.InfobotKey>();
+                List<Infobot.InfobotKey> list = new List<Infobot.InfobotKey>();
                 lock (info)
                 {
                     if (Module.GetConfig(channel, "Infobot.Sorted", false) != false)
@@ -182,7 +181,7 @@ namespace wmib
                 }
                 if (info.Keys.Count > 0)
                 {
-                    foreach (infobot_core.InfobotKey Key in list)
+                    foreach (Infobot.InfobotKey Key in list)
                     {
                         HTML += Core.HTML.AddKey(Key.Key, Key.Text);
                     }
@@ -191,7 +190,7 @@ namespace wmib
                 HTML += "<h4>Aliases</h4>\n<table class=\"infobot\" border=1 width=100%>\n";
                 lock (info)
                 {
-                    foreach (infobot_core.InfobotAlias data in info.Alias)
+                    foreach (Infobot.InfobotAlias data in info.Alias)
                     {
                         HTML += Core.HTML.AddLink(data.Name, data.Key);
                     }
@@ -211,8 +210,8 @@ namespace wmib
                     Thread.Sleep(10);
                 }
                 Unwritable = true;
-                infobot_core.InfoItem item = new infobot_core.InfoItem();
-                item.Channel = channel;
+                Infobot.InfoItem item = new Infobot.InfoItem();
+                item._Channel = channel;
                 item.Name = "!" + message.Substring(1); // Normalizing "!".
                 item.User = invoker.Nick;
                 item.Host = invoker.Host;
@@ -220,11 +219,11 @@ namespace wmib
                 Unwritable = false;
             }
 
-            infobot_core infobot = null;
+            Infobot infobot = null;
 
             if (message.StartsWith(Configuration.System.CommandPrefix))
             {
-                infobot = (infobot_core)channel.RetrieveObject("Infobot");
+                infobot = (Infobot)channel.RetrieveObject("Infobot");
                 if (infobot == null)
                 {
                     Syslog.Log("Object Infobot in " + channel.Name + " doesn't exist", true);
@@ -299,7 +298,7 @@ namespace wmib
                         }
                         if (infobot != null)
                         {
-                            infobot.setRaw(name, invoker.Nick, channel);
+                            infobot.SetRaw(name, invoker.Nick, channel);
                             return;
                         }
                     }
@@ -322,7 +321,7 @@ namespace wmib
                         }
                         if (infobot != null)
                         {
-                            infobot.unsetRaw(name, invoker.Nick, channel);
+                            infobot.UnsetRaw(name, invoker.Nick, channel);
                             return;
                         }
                     }
@@ -579,7 +578,7 @@ namespace wmib
                     {
                         if (infobot != null)
                         {
-                            infobot.Info(message.Substring(16), channel);
+                            infobot.InfobotDetail(message.Substring(16), channel);
                         }
                         return;
                     }
@@ -593,7 +592,7 @@ namespace wmib
                         }
                         if (infobot != null)
                         {
-                            infobot.Info(message.Substring(16), channel);
+                            infobot.InfobotDetail(message.Substring(16), channel);
                         }
                         return;
                     }
@@ -629,7 +628,7 @@ namespace wmib
                         Core.irc.Queue.DeliverMessage(messages.Localize("db8", channel.Language), channel);
                         return;
                     }
-                    if (!infobot_core.Linkable(db, channel))
+                    if (!Infobot.Linkable(db, channel))
                     {
                         Core.irc.Queue.DeliverMessage(messages.Localize("db9", channel.Language), channel);
                         return;
@@ -784,7 +783,7 @@ namespace wmib
                         Module.SetConfig(chan, "Infobot.Case", _temp_a);
                         Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
                         chan.SaveConfig();
-                        infobot_core infobot = (infobot_core)chan.RetrieveObject("Infobot");
+                        Infobot infobot = (Infobot)chan.RetrieveObject("Infobot");
                         if (infobot != null)
                         {
                             infobot.Sensitive = _temp_a;
@@ -809,7 +808,7 @@ namespace wmib
         {
             if (chan.ExtensionObjects.ContainsKey("Infobot"))
             {
-                chan.ExtensionObjects["Infobot"] = new infobot_core(getDB(ref chan), chan.Name);
+                chan.ExtensionObjects["Infobot"] = new Infobot(getDB(ref chan), chan, this);
             }
         }
 
@@ -827,16 +826,16 @@ namespace wmib
                     else if (jobs.Count > 0)
                     {
                         Unwritable = true;
-                        List<infobot_core.InfoItem> list = new List<infobot_core.InfoItem>();
+                        List<Infobot.InfoItem> list = new List<Infobot.InfoItem>();
                         list.AddRange(jobs);
                         jobs.Clear();
                         Unwritable = false;
-                        foreach (infobot_core.InfoItem item in list)
+                        foreach (Infobot.InfoItem item in list)
                         {
-                            infobot_core infobot = (infobot_core)item.Channel.RetrieveObject("Infobot");
+                            Infobot infobot = (Infobot)item._Channel.RetrieveObject("Infobot");
                             if (infobot != null)
                             {
-                                infobot.print(item.Name, item.User, item.Channel, item.Host);
+                                infobot.InfobotExec(item.Name, item.User, item._Channel, item.Host);
                             }
                         }
                     }
