@@ -479,10 +479,13 @@ namespace wmib
                     }
                     Thread.Sleep(1000);
                 }
-                Syslog.WriteNow("KERNEL: Giving a grace time to other threads to finish");
-                Thread.Sleep(200);
-                Syslog.WriteNow("KERNEL: Terminated (ok)");
-                Environment.Exit(0);
+				if (ExtensionHandler.Extensions.Count == 0)
+                {
+	                Syslog.WriteNow("KERNEL: Giving a grace time to other threads to finish");
+	                Thread.Sleep(200);
+	                Syslog.WriteNow("KERNEL: Terminated (ok)");
+	                Environment.Exit(0);
+				}
             } catch (Exception fail)
             {
                 Core.HandleException(fail);
