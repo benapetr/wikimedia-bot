@@ -146,6 +146,7 @@ namespace wmib
                         }
                         Syslog.WarningLog("Recovery finished, recovered " + recovered.ToString() + " of total " + count.ToString());
                         Recovering = false;
+						FlushRows();
                         Thread.Sleep(200000);
                     }
                     Thread.Sleep(200);
