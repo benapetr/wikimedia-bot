@@ -30,6 +30,12 @@ namespace wmib
                 /// </summary>
                 public string Data = null;
 
+				public Value()
+				{
+					Data = "false";
+					Type = DataType.Boolean;
+				}
+
                 /// <summary>
                 /// Creates a new value of type int
                 /// </summary>
