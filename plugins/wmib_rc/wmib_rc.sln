@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C# Express 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wmib_rc", "wmib_rc\wmib_rc.csproj", "{562870D0-73FE-4AB3-A286-C265679496FC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wmib_rc", "wmib_rc.csproj", "{562870D0-73FE-4AB3-A286-C265679496FC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
