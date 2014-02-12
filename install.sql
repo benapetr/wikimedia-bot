@@ -6,6 +6,7 @@ create table logs
   time datetime,
   act bool,
   contents text,
+  type int,
   host varchar(80),
   primary key (id)
 );
