@@ -162,7 +162,7 @@ namespace wmib
             /// <summary>
             /// Mysql db
             /// </summary>
-            public static string Mysqldb = null;
+            public static string Mysqldb = "production";
 
             /// <summary>
             /// Mysql port

@@ -162,7 +162,7 @@ namespace wmib
         {
             try
             {
-                if (!string.IsNullOrEmpty(Configuration.System.DebugChan))
+                if (!string.IsNullOrEmpty(Configuration.System.DebugChan) && irc != null && irc.Queue != null)
                 {
                     irc.Queue.DeliverMessage("DEBUG Exception in module " + module + ": " 
                                                   + ex.Message + " last input was "
@@ -173,6 +173,7 @@ namespace wmib
             } catch (Exception fail)
             {
                 // exception happened while we tried to handle another one, ignore that (probably issue with logging
+				Console.WriteLine(fail.ToString());
             }
         }
 
@@ -184,7 +185,7 @@ namespace wmib
         {
             try
             {
-                if (!string.IsNullOrEmpty(Configuration.System.DebugChan))
+                if (!string.IsNullOrEmpty(Configuration.System.DebugChan) && irc != null && irc.Queue != null)
                 {
                     irc.Queue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText,
                                                   Configuration.System.DebugChan);
@@ -194,6 +195,7 @@ namespace wmib
             } catch (Exception fail)
             {
                 // exception happened while we tried to handle another one, ignore that (probably issue with logging)
+                Console.WriteLine(fail.ToString());
             }
         }
 

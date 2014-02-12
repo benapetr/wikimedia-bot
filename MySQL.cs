@@ -26,6 +26,12 @@ namespace wmib
     /// </summary>
     public class WMIBMySQL : Database
     {
+		[Serializable]
+		public class Unwritten
+		{
+			public List<SerializedRow> PendingRows = new List<SerializedRow>();
+		}
+
         [Serializable]
         public class SerializedRow
         {
@@ -41,8 +47,8 @@ namespace wmib
 
         private Thread reco = null;
         private bool Recovering = false;
-
-        public List<SerializedRow> PendingRows = new List<SerializedRow>();
+		private Unwritten unwritten = new Unwritten();
+        
         private MySql.Data.MySqlClient.MySqlConnection Connection = null;
         /// <summary>
         /// Return true if mysql is connected to server
@@ -68,17 +74,18 @@ namespace wmib
                 TextReader sr = new StreamReader(file);
                 document.Load(sr);
                 XmlNodeReader reader = new XmlNodeReader(document.DocumentElement);
-                XmlSerializer xs = new XmlSerializer(typeof(SerializedRow));
-                List<SerializedRow> list = (List<SerializedRow>)xs.Deserialize(reader);
+                XmlSerializer xs = new XmlSerializer(typeof(Unwritten));
+                Unwritten un = (Unwritten)xs.Deserialize(reader);
                 reader.Close();
                 sr.Close();
-                lock (PendingRows)
+                lock (unwritten.PendingRows)
                 {
-                    PendingRows.AddRange(list);
+                    unwritten.PendingRows.AddRange(un.PendingRows);
                 }
             }
             reco = new Thread(Exec);
             reco.Name = "Recovery";
+			Core.ThreadManager.RegisterThread(reco);
             reco.Start();
         }
 
@@ -102,17 +109,17 @@ namespace wmib
                         Thread.Sleep(200000);
                         continue;
                     }
-                    if (PendingRows.Count > 0)
+                    if (unwritten.PendingRows.Count > 0)
                     {
                         int count = 0;
-                        Syslog.WarningLog("Performing recovery of " + PendingRows.Count.ToString() + " MySQL rows");
+                        Syslog.WarningLog("Performing recovery of " + unwritten.PendingRows.Count.ToString() + " MySQL rows");
                         Recovering = true;
                         List<SerializedRow> rows = new List<SerializedRow>();
-                        lock (PendingRows)
+                        lock (unwritten.PendingRows)
                         {
-                            count = PendingRows.Count;
-                            PendingRows.AddRange(rows);
-                            PendingRows.Clear();
+                            count = unwritten.PendingRows.Count;
+                            unwritten.PendingRows.AddRange(rows);
+                            unwritten.PendingRows.Clear();
                         }
                         int recovered = 0;
                         foreach (SerializedRow row in rows)
@@ -131,7 +138,7 @@ namespace wmib
             } catch (Exception fail)
             {
                 Core.HandleException(fail);
-                Syslog.ErrorLog("Recovery thread for Mysql is down");
+				Syslog.ErrorLog("Recovery thread for Mysql is down");
             }
         }
 
@@ -186,9 +193,9 @@ namespace wmib
                     if (!IsConnected)
                     {
                         Syslog.DebugLog("Postponing request to insert a row into database which is not connected");
-                        lock(PendingRows)
+                        lock(unwritten.PendingRows)
                         {
-                            PendingRows.Add(new SerializedRow(table, row));
+                            unwritten.PendingRows.Add(new SerializedRow(table, row));
                         }
                         FlushRows();
                         return false;
@@ -224,9 +231,9 @@ namespace wmib
                     ErrorBuffer = me.Message;
                     Syslog.Log("Error while storing a row to DB " + me.ToString(), true);
                     Syslog.DebugLog("SQL: " + sql);
-                    lock(PendingRows)
+                    lock(unwritten.PendingRows)
                     {
-                        PendingRows.Add(new SerializedRow(table, row));
+                        unwritten.PendingRows.Add(new SerializedRow(table, row));
                     }
                     FlushRows();
                     return false;
@@ -236,7 +243,7 @@ namespace wmib
 
         public override int CacheSize()
         {
-            return PendingRows.Count;
+            return unwritten.PendingRows.Count;
         }
 
         private void FlushRows()
@@ -258,11 +265,11 @@ namespace wmib
             try
             {
                 File.Delete(file);
-                XmlSerializer xs = new XmlSerializer(typeof(SerializedRow));
+                XmlSerializer xs = new XmlSerializer(typeof(Unwritten));
                 StreamWriter writer = File.AppendText(file);
-                lock(PendingRows)
+                lock(unwritten)
                 {
-                    xs.Serialize(writer, PendingRows);
+                    xs.Serialize(writer, unwritten);
                 }
                 writer.Close();
             } catch (Exception fail)
