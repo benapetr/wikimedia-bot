@@ -190,7 +190,7 @@ namespace wmib
                     irc.Queue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText,
                                                   Configuration.System.DebugChan);
                 }
-                Syslog.WriteNow("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace +
+                Syslog.ErrorLog("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace +
                                 "\n\nThread name: " + Thread.CurrentThread.Name, true);
             } catch (Exception fail)
             {
