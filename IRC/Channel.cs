@@ -525,7 +525,7 @@ namespace wmib
         /// Return number of channels that infobot share db with
         /// </summary>
         /// <returns></returns>
-        public int SharesNo()
+        public int InitializeShares()
         {
             foreach (string x in SharedChans)
             {

@@ -375,7 +375,6 @@ namespace wmib
                 case "shutdown":
                     return MatchesRole(2, current.Role);
                 case "flushcache":
-                    return MatchesRole(200, current.Role);
                 case "reconnect":
                     return MatchesRole(800, current.Role);
                 case "root":

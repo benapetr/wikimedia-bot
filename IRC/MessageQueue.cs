@@ -40,7 +40,8 @@ namespace wmib
                 /// <summary>
                 /// Channel which the message should be delivered to
                 /// </summary>
-                public string Channel;
+                public string Channel = null;
+				public Channel pChannel = null;
                 /// <summary>
                 /// If this is true the message will be sent as raw command
                 /// </summary>
@@ -183,7 +184,7 @@ namespace wmib
             {
                 if (Channel == null)
                 {
-                    Syslog.Log("Not sending message to unknown channel");
+                    Syslog.Log("Not sending message to null channel");
                     return;
                 }
                 // this is wrong instance so let's put this message to correct one
@@ -192,7 +193,7 @@ namespace wmib
                     Channel.PrimaryInstance.irc.Queue.DeliverMessage(Message, Channel, Pr);
                     return;
                 }
-                Message text = new Message { MessagePriority = Pr, Text = Message, Channel = Channel.Name };
+                Message text = new Message { MessagePriority = Pr, Text = Message, pChannel = Channel };
                 lock (Messages)
                 {
                     Messages.Add(text);
@@ -217,13 +218,20 @@ namespace wmib
             }
 
             private void Transfer(Message text)
-            {
-                if (text.Command)
-                {
-                    Parent.SendData(text.Text);
-                    return;
-                }
-                Parent.Message(text.Text, text.Channel);
+			{
+				if (text.Command)
+				{
+					Parent.SendData(text.Text);
+					return;
+				}
+				if (text.pChannel != null)
+				{
+					Parent.Message(text.Text, text.pChannel);
+				}
+				if (text.Channel != null)
+				{
+					Parent.Message(text.Text, text.Channel);
+				}
             }
 
             /// <summary>

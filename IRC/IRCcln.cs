@@ -145,6 +145,46 @@ namespace wmib
             ParentInstance = _instance;
         }
 
+		/// <summary>
+        /// Send a message to channel
+        /// </summary>
+        /// <param name="message">Message</param>
+        /// <param name="channel">Channel</param>
+        /// <returns></returns>
+        public bool Message(string message, Channel channel)
+        {
+            try
+            {
+                if (channel.Suppress)
+                {
+                    return true;
+                }
+                SendData("PRIVMSG " + channel.Name + " :" + message.Replace("\n", " "));
+                lock (ExtensionHandler.Extensions)
+                {
+                    foreach (Module module in ExtensionHandler.Extensions)
+                    {
+                        try
+                        {
+                            if (module.IsWorking)
+                            {
+                                module.Hook_OnSelf(channel, new User(Configuration.IRC.NickName, "wikimedia/bot/wm-bot", "wmib"), message);
+                            }
+                        }
+                        catch (Exception fail)
+                        {
+                            Core.HandleException(fail, module.Name);
+                        }
+                    }
+                }
+            }
+            catch (Exception fail)
+            {
+                Core.HandleException(fail);
+            }
+            return true;
+        }
+
         /// <summary>
         /// Send a message to channel
         /// </summary>
@@ -179,7 +219,7 @@ namespace wmib
                         }
                         catch (Exception fail)
                         {
-                            Core.HandleException(fail);
+                            Core.HandleException(fail, module.Name);
                         }
                     }
                 }
@@ -217,9 +257,10 @@ namespace wmib
         /// </summary>
         public void RestartIRCMessageDelivery()
         {
-            this._Queue.Abort();
+			Core.ThreadManager.KillThread(_Queue);
             this.Queue.newmessages.Clear();
             this._Queue = new System.Threading.Thread(new System.Threading.ThreadStart(Queue.Run));
+			Core.ThreadManager.RegisterThread(_Queue);
             this.Queue.Messages.Clear();
             this._Queue.Start();
         }

@@ -43,12 +43,12 @@ namespace wmib
                 }
                 return;
             }
-            if (message == Configuration.System.CommandPrefix + "refresh")
+            if (message == Configuration.System.CommandPrefix + "flushcaches")
             {
                 if (chan.SystemUsers.IsApproved(invoker, "flushcache"))
                 {
                     Core.irc.RestartIRCMessageDelivery();
-                    chan.PrimaryInstance.irc.Message(messages.Localize("MessageQueueWasReloaded", chan.Language), chan.Name);
+                    chan.PrimaryInstance.irc.Message(messages.Localize("MessageQueueWasReloaded", chan.Language), chan);
                     return;
                 }
                 if (!chan.SuppressWarnings)
@@ -194,7 +194,7 @@ namespace wmib
                         //Message("Channel had already quiet mode disabled", chan.name);
                         return;
                     }
-                    chan.PrimaryInstance.irc.Message(messages.Localize("SilenceBegin", chan.Language), chan.Name);
+                    chan.PrimaryInstance.irc.Message(messages.Localize("SilenceBegin", chan.Language), chan);
                     chan.Suppress = true;
                     chan.SaveConfig();
                     return;
@@ -418,7 +418,7 @@ namespace wmib
                                 catch (Exception fail)
                                 {
                                     Syslog.Log("Error on Hook_SetConfig module " + curr.Name);
-                                    Core.HandleException(fail);
+                                    Core.HandleException(fail, curr.Name);
                                 }
                             }
                         }

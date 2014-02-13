@@ -211,19 +211,7 @@ namespace wmib
             }
         }
 
-        /// <summary>
-        /// Add line to the config file
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="data"></param>
-        /// <param name="text"></param>
-        private static void AddConfig(string key, string data, StringBuilder text)
-        {
-            if (data != null)
-            {
-                text.Append(key + "=" + data + ";\n");
-            }
-        }
+		private static Dictionary<string, string> ConfigurationData = null;
 
         /// <summary>
         /// Save a wm-bot channel list
@@ -251,6 +239,15 @@ namespace wmib
         {
             return (file + "~");
         }
+
+		public static string RetrieveConfig(string key)
+		{
+			if (ConfigurationData.ContainsKey(key))
+			{
+				return ConfigurationData[key];
+			}
+			return null;
+		}
 
         private static Dictionary<string, string> File2Dict()
         {
@@ -328,67 +325,67 @@ namespace wmib
                 );
                 return 2;
             }
-            Dictionary<string, string> Data = File2Dict();
-            if (Data.ContainsKey("username"))
+            ConfigurationData = File2Dict();
+            if (ConfigurationData.ContainsKey("username"))
             {
-                Configuration.IRC.Username = Data["username"];
+                Configuration.IRC.Username = ConfigurationData["username"];
             }
-            if (Data.ContainsKey("network"))
+            if (ConfigurationData.ContainsKey("network"))
             {
-                Configuration.IRC.NetworkHost = Data["network"];
+                Configuration.IRC.NetworkHost = ConfigurationData["network"];
             }
-            if (Data.ContainsKey("nick"))
+            if (ConfigurationData.ContainsKey("nick"))
             {
-                Configuration.IRC.NickName = Data["nick"];
-                Configuration.IRC.LoginNick = Data["nick"];
+                Configuration.IRC.NickName = ConfigurationData["nick"];
+                Configuration.IRC.LoginNick = ConfigurationData["nick"];
             }
-            if (Data.ContainsKey("debug"))
+            if (ConfigurationData.ContainsKey("debug"))
             {
-                Configuration.System.DebugChan = Data["debug"];
+                Configuration.System.DebugChan = ConfigurationData["debug"];
             }
-            if (Data.ContainsKey("bouncerp"))
+            if (ConfigurationData.ContainsKey("bouncerp"))
             {
-                Configuration.Network.BouncerPort = int.Parse(Data["bouncerp"]);
+                Configuration.Network.BouncerPort = int.Parse(ConfigurationData["bouncerp"]);
             }
-            if (Data.ContainsKey("web"))
+            if (ConfigurationData.ContainsKey("web"))
             {
-                Configuration.WebPages.WebpageURL = Data["web"];
+                Configuration.WebPages.WebpageURL = ConfigurationData["web"];
             }
-            if (Data.ContainsKey("password"))
+            if (ConfigurationData.ContainsKey("password"))
             {
-                Configuration.IRC.LoginPw = Data["password"];
+                Configuration.IRC.LoginPw = ConfigurationData["password"];
             }
-            if (Data.ContainsKey("mysql_pw"))
+            if (ConfigurationData.ContainsKey("mysql_pw"))
             {
-                Configuration.MySQL.MysqlPw = Data["mysql_pw"];
+                Configuration.MySQL.MysqlPw = ConfigurationData["mysql_pw"];
             }
-            if (Data.ContainsKey("mysql_db"))
+            if (ConfigurationData.ContainsKey("mysql_db"))
             {
-                Configuration.MySQL.Mysqldb = Data["mysql_db"];
+                Configuration.MySQL.Mysqldb = ConfigurationData["mysql_db"];
             }
-            if (Data.ContainsKey("mysql_user"))
+            if (ConfigurationData.ContainsKey("mysql_user"))
             {
-                Configuration.MySQL.MysqlUser = Data["mysql_user"];
+                Configuration.MySQL.MysqlUser = ConfigurationData["mysql_user"];
             }
-            if (Data.ContainsKey("interval"))
+            if (ConfigurationData.ContainsKey("interval"))
             {
-                Configuration.IRC.Interval = int.Parse(Data["interval"]);
+                Configuration.IRC.Interval = int.Parse(ConfigurationData["interval"]);
             }
-            if (Data.ContainsKey("mysql_port"))
+            if (ConfigurationData.ContainsKey("mysql_port"))
             {
-                Configuration.MySQL.MysqlPort = int.Parse(Data["mysql_port"]);
+                Configuration.MySQL.MysqlPort = int.Parse(ConfigurationData["mysql_port"]);
             }
-            if (Data.ContainsKey("mysql_host"))
+            if (ConfigurationData.ContainsKey("mysql_host"))
             {
-                Configuration.MySQL.MysqlHost = Data["mysql_host"];
+                Configuration.MySQL.MysqlHost = ConfigurationData["mysql_host"];
             }
-            if (Data.ContainsKey("style_html_file"))
+            if (ConfigurationData.ContainsKey("style_html_file"))
             {
-                Configuration.WebPages.Css = Data["style_html_file"];
+                Configuration.WebPages.Css = ConfigurationData["style_html_file"];
             }
-            if (Data.ContainsKey("system_port"))
+            if (ConfigurationData.ContainsKey("system_port"))
             {
-                Configuration.Network.SystemPort = int.Parse(Data["system_port"]);
+                Configuration.Network.SystemPort = int.Parse(ConfigurationData["system_port"]);
             }
             if (string.IsNullOrEmpty(Configuration.IRC.LoginNick))
             {
@@ -405,34 +402,34 @@ namespace wmib
                 Console.WriteLine("Error there is no username for bot");
                 return 6;
             }
-            if (Data.ContainsKey("system_prefix"))
+            if (ConfigurationData.ContainsKey("system_prefix"))
             {
-                Configuration.System.prefix = Data["system_prefix"];
+                Configuration.System.prefix = ConfigurationData["system_prefix"];
             }
-            if (Data.ContainsKey("serverIO"))
+            if (ConfigurationData.ContainsKey("serverIO"))
             {
-                Configuration.IRC.UsingBouncer = bool.Parse(Data["serverIO"]);
+                Configuration.IRC.UsingBouncer = bool.Parse(ConfigurationData["serverIO"]);
             }
             Syslog.Log("Loading instances");
             Core.CreateInstance(Configuration.IRC.NickName, Configuration.Network.BouncerPort); // primary instance
             int CurrentInstance = 0;
             while (CurrentInstance < 20)
             {
-                if (!Data.ContainsKey("instancename" + CurrentInstance.ToString()))
+                if (!ConfigurationData.ContainsKey("instancename" + CurrentInstance.ToString()))
                 {
                     break;
                 }
-                string InstanceName = Data["instancename" + CurrentInstance.ToString()];
+                string InstanceName = ConfigurationData["instancename" + CurrentInstance.ToString()];
                 Syslog.DebugLog("Instance found: " + InstanceName);
                 if (Configuration.IRC.UsingBouncer)
                 {
                     Syslog.DebugLog("Using bouncer, looking for instance port");
-                    if (!Data.ContainsKey("instanceport" + CurrentInstance.ToString()))
+                    if (!ConfigurationData.ContainsKey("instanceport" + CurrentInstance.ToString()))
                     {
                         Syslog.WriteNow("Instance " + InstanceName + " has invalid port, not using", true);
                         continue;
                     }
-                    string InstancePort = Data["instanceport" + CurrentInstance.ToString()];
+                    string InstancePort = ConfigurationData["instanceport" + CurrentInstance.ToString()];
                     int port = int.Parse(InstancePort);
                     Core.CreateInstance(InstanceName, port);
                 } else
@@ -457,18 +454,19 @@ namespace wmib
                     }
                 }
             }
-            Syslog.Log("Channels were all loaded");
+            Syslog.Log("Channels were all loaded, linking databases");
 
             // Now when all chans are loaded let's link them together
             lock(Channels)
             {
                 foreach (Channel channel in Channels)
                 {
-                    channel.SharesNo();
+                    channel.InitializeShares();
                 }
             }
 
             Syslog.Log("Channel db's working");
+
             if (!Directory.Exists(Configuration.Paths.DumpDir))
             {
                 Directory.CreateDirectory(Configuration.Paths.DumpDir);

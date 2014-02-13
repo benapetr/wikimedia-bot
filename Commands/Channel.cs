@@ -73,7 +73,7 @@ namespace wmib
                             }
                             return;
                         }
-                        channel.PrimaryInstance.irc.Message(messages.Localize("InvalidName", channel.Language), channel.Name);
+                        channel.PrimaryInstance.irc.Message(messages.Localize("InvalidName", channel.Language), channel);
                         return;
                     }
                     Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
