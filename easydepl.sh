@@ -33,7 +33,7 @@ fi
 cd "$target" || exit 1
 
 if [ -f wmib.log ];then
-  if [ "`tail -80 wmib.log | grep -cE '\[ERROR\]|\[WARNING\]'`" -qt 0 ];then
+  if [ "`tail -80 wmib.log | grep -cE '\[ERROR\]|\[WARNING\]'`" -gt 0 ];then
     echo "Please check your log at wmib.log there are some errors:"
     tail -80 wmib.log | grep -E '\[ERROR\]|\[WARNING\]'
     exit 1
