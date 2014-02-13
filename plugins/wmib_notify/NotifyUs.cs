@@ -106,7 +106,7 @@ namespace wmib
                 result = Notification.RetrieveTarget(invoker.Nick);
             }
 
-            if (message.StartsWith("@notify "))
+            if (message.StartsWith(Configuration.System.CommandPrefix + "notify "))
             {
                 string parameter = "";
                 parameter = message.Substring(message.IndexOf(" ") + 1).Trim();
@@ -173,7 +173,7 @@ namespace wmib
                 result = Notification.RetrieveTarget(user.Nick);
             }
 
-            if (message.StartsWith("@notify "))
+            if (message.StartsWith(Configuration.System.CommandPrefix + "notify "))
             {
                 string parameter = "";
                 parameter = message.Substring(message.IndexOf(" ") + 1);
