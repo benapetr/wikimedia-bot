@@ -114,7 +114,7 @@ namespace wmib
         {
             while (Core.IsRunning)
             {
-				Thread.Sleep(8000);
+                Thread.Sleep(8000);
                 try
                 {
                     lock (Configuration.Channels)

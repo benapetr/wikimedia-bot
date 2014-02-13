@@ -35,6 +35,10 @@ namespace wmib
         /// </summary>
         public string Hostname = "127.0.0.1";
         /// <summary>
+        /// If you need to permanently disconnect this instance, change this to false
+        /// </summary>
+        public bool IsActive = true;
+        /// <summary>
         /// If this instance is connected
         /// </summary>
         public bool IsConnected
@@ -194,8 +198,28 @@ namespace wmib
         /// </summary>
         private void Connect()
         {
-            irc.Connect();
-            Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
+            while (this.IsActive && Core.IsRunning)
+            {
+                try
+                {
+                    // we first attempt to disconnect this instance, if this is first loop
+                    // it will just skip it
+                    irc.Disconnect();
+                    irc.Connect();
+                    irc.ParserExec();
+                    Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
+
+                } catch (ThreadAbortException)
+                {
+                    Syslog.DebugLog("Terminated primary thread for instance " + Nick);
+                    return;
+                } catch (Exception fail)
+                {
+                    Core.HandleException(fail);
+                    Syslog.ErrorLog("Failure of primary thread of instance " + Nick + " attempting to recover");
+                    Thread.Sleep(20000);
+                }
+            }
         }
     }
 }

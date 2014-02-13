@@ -10,7 +10,7 @@ namespace wmib
 {
     public partial class Infobot
     {
-		        /// <summary>
+                /// <summary>
         /// Save to a file
         /// </summary>
         public void Save()
@@ -143,7 +143,7 @@ namespace wmib
             return true;
         }
 
-		public bool LoadData()
+        public bool LoadData()
         {
             lock (this)
             {
@@ -211,6 +211,6 @@ namespace wmib
             }
             return true;
         }
-	}
+    }
 }
 

@@ -28,7 +28,8 @@ namespace wmib
         /// </summary>
         public Instance ParentInstance = null;
         /// <summary>
-        /// If false is returned it means this handler is defunct
+        /// If false is returned it means this handler is defunct - it may be connected, but it's still
+        /// logging in or server didn't finish loading up
         /// </summary>
         public bool IsWorking = false;
         public string Bouncer = "127.0.0.1";
@@ -71,7 +72,7 @@ namespace wmib
         /// <summary>
         /// Pinger
         /// </summary>
-        public static Thread PingerThread = null;
+        private static Thread PingerThread = null;
         /// <summary>
         /// Queue thread
         /// </summary>
@@ -84,7 +85,8 @@ namespace wmib
         /// Queue of all messages that should be delivered to network
         /// </summary>
         public MessageQueue Queue = null;
-        private bool connected;
+        private bool connected = false;
+        private List<string> Backlog = new List<string>();
         /// <summary>
         /// If network is connected
         /// </summary>
@@ -268,9 +270,9 @@ namespace wmib
         }
 
         /// <summary>
-        /// Ping
+        /// This is running in a separate thread
         /// </summary>
-        public void Ping()
+        private void Ping()
         {
             while (IsConnected && Core.IsRunning)
             {
@@ -295,6 +297,41 @@ namespace wmib
             Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
         }
 
+        public void Disconnect()
+        {
+            if (!IsConnected)
+            {
+                return;
+            }
+            Syslog.DebugLog("Closing connection for " + NickName);
+            connected = false;
+            if (_Queue != null)
+            {
+                Core.ThreadManager.KillThread(_Queue);
+            }
+            if (networkStream != null)
+            {
+                networkStream.Close();
+            }
+            if (streamReader != null)
+            {
+                streamReader.Close();
+            }
+            if (streamWriter != null)
+            {
+                streamWriter.Close();
+            }
+            IsWorking = false;
+            if (ChannelThread != null)
+            {
+                Core.ThreadManager.KillThread(ChannelThread);
+            }
+            if (PingerThread != null)
+            {
+                Core.ThreadManager.KillThread(PingerThread);
+            }
+        }
+
         /// <summary>
         /// Connection
         /// </summary>
@@ -306,38 +343,9 @@ namespace wmib
                 Syslog.Log("Ignoring request to reconnect because bot is shutting down");
                 return false;
             }
-            Core.ThreadManager.KillThread(_Queue);
-            networkStream = Configuration.IRC.UsingBouncer ? new System.Net.Sockets.TcpClient(Bouncer, BouncerPort).GetStream() : 
-                new System.Net.Sockets.TcpClient(Server, 6667).GetStream();
-            connected = true;
-            streamReader = new StreamReader(networkStream, System.Text.Encoding.UTF8);
-            streamWriter = new StreamWriter(networkStream);
-            SendData("USER " + UserName + " 8 * :" + Ident);
-            SendData("NICK " + NickName);
-            IsWorking = true;
-            Authenticate();
-            _Queue = new Thread(Queue.Run);
-            _Queue.Name = "MessageQueue:" + NickName;
-            Core.ThreadManager.RegisterThread(_Queue);
-            foreach (Channel ch in ParentInstance.ChannelList)
-            {
-                Thread.Sleep(2000);
-                this.Join(ch);
-            }
-            Queue.newmessages.Clear();
-            Queue.Messages.Clear();
-            Core.ThreadManager.KillThread(ChannelThread);
-            ChannelThread = new Thread(ChannelList);
-            Core.ThreadManager.RegisterThread(ChannelThread);
-            ChannelThread.Name = "ChannelListParserThread";
-            ChannelThread.Start();
-            Core.ThreadManager.KillThread(PingerThread);
-            PingerThread = new System.Threading.Thread(Ping);
-            Core.ThreadManager.RegisterThread(PingerThread);
-            PingerThread.Name = "Ping:"+ NickName;
-            PingerThread.Start();
-            _Queue.Start();
-            return false;
+            Disconnect();
+            Connect();
+            return true;
         }
 
         /// <summary>
@@ -380,373 +388,294 @@ namespace wmib
         }
 
         /// <summary>
-        /// Connection
+        /// Connect this instance
         /// </summary>
-        /// <returns></returns>
         public void Connect()
         {
-            try
+            Syslog.Log("Connecting instance " + NickName + " to irc server " + Server + "...");
+            if (!Configuration.IRC.UsingBouncer)
             {
-                if (!Configuration.IRC.UsingBouncer)
-                {
-                    networkStream = new System.Net.Sockets.TcpClient(Server, 6667).GetStream();
-                }
-                else
-                {
-                    Syslog.Log(ParentInstance.Nick + " is using personal bouncer port " + BouncerPort.ToString());
-                    networkStream = new System.Net.Sockets.TcpClient(Bouncer, BouncerPort).GetStream();
-                    Syslog.Log("System is using external bouncer");
-                }
-                connected = true;
-                streamReader = new System.IO.StreamReader(networkStream, System.Text.Encoding.UTF8);
-                streamWriter = new System.IO.StreamWriter(networkStream);
+                networkStream = new System.Net.Sockets.TcpClient(Server, 6667).GetStream();
+            } else
+            {
+                Syslog.Log(ParentInstance.Nick + " is using personal bouncer port " + BouncerPort.ToString());
+                networkStream = new System.Net.Sockets.TcpClient(Bouncer, BouncerPort).GetStream();
+            }
+            connected = true;
+            streamReader = new System.IO.StreamReader(networkStream, System.Text.Encoding.UTF8);
+            streamWriter = new System.IO.StreamWriter(networkStream);
 
-                bool Auth = true;
+            bool Auth = true;
 
-                List<string> Backlog = new List<string>();
-
-                if (Configuration.IRC.UsingBouncer)
+            if (Configuration.IRC.UsingBouncer)
+            {
+                SendData("CONTROL: STATUS");
+                Syslog.Log("CACHE: Waiting for buffer (network bouncer) of instance " + this.ParentInstance.Nick);
+                bool done = true;
+                while (done)
                 {
-                    SendData("CONTROL: STATUS");
-                    Syslog.Log("CACHE: Waiting for buffer (network bouncer) of instance " + this.ParentInstance.Nick);
-                    bool done = true;
-                    while (done)
+                    string response = streamReader.ReadLine();
+                    if (response == "CONTROL: TRUE")
                     {
-                        string response = streamReader.ReadLine();
-                        if (response == "CONTROL: TRUE")
-                        {
-                            Syslog.DebugLog("Resumming previous session on " + this.ParentInstance.Nick);
-                            done = false;
-                            Auth = false;
-                            ChannelsJoined = true;
-                            IsWorking = true;
-                        }
-                        else if (response.StartsWith(":"))
-                        {
-                            Backlog.Add(response);
-                        }
-                        else if (response == "CONTROL: FALSE")
-                        {
-                            Syslog.DebugLog("Bouncer is not connected, starting new session on " + this.ParentInstance.Nick);
-                            done = false;
-                            SendData("CONTROL: CREATE");
-                            streamWriter.Flush();
-                        }
-                    }
-                }
-
-                _Queue = new System.Threading.Thread(Queue.Run);
-                _Queue.Name = "MessageQueue:" + NickName;
-                Core.ThreadManager.RegisterThread(_Queue);
-                PingerThread = new System.Threading.Thread(Ping);
-                Core.ThreadManager.RegisterThread(PingerThread);
-                PingerThread.Name = "Ping:"+ NickName;
-                PingerThread.Start();
-
-                if (Auth)
-                {
-                    SendData("USER " + UserName + " 8 * :" + Ident);
-                    SendData("NICK " + ParentInstance.Nick);
-                }
-
-                _Queue.Start();
-
-                if (Auth)
-                {
-                    Authenticate();
-                }
-
-                string nick = "";
-                string host = "";
-                string channel = "";
-                const char delimiter = (char)001;
-
-                while (IsConnected && Core.IsRunning)
-                {
-                    try
+                        Syslog.DebugLog("Resumming previous session on " + this.ParentInstance.Nick);
+                        done = false;
+                        Auth = false;
+                        ChannelsJoined = true;
+                        IsWorking = true;
+                    } else if (response.StartsWith(":"))
                     {
-                        while ((!streamReader.EndOfStream || Backlog.Count > 0) && Core.IsRunning)
-                        {
-                            string text;
-                            if (Backlog.Count == 0)
-                            {
-                                text = streamReader.ReadLine();
-                            }
-                            else
-                            {
-                                text = Backlog[0];
-                                Backlog.RemoveAt(0);
-                            }
-                            Core.TrafficLog(ParentInstance.Nick + "<<<<<<" + text);
-                            if (Configuration.IRC.UsingBouncer)
-                            {
-                                if (text.StartsWith("CONTROL: "))
-                                {
-                                    if (text == "CONTROL: DC")
-                                    {
-                                        SendData("CONTROL: CREATE");
-                                        streamWriter.Flush();
-                                        Syslog.Log("CACHE: Lost connection to remote on " + this.ParentInstance.Nick + 
-                                                   ", creating new session on remote");
-                                        bool Connected = false;
-                                        while (!Connected)
-                                        {
-
-                                            System.Threading.Thread.Sleep(800);
-                                            SendData("CONTROL: STATUS");
-                                            string response = streamReader.ReadLine();
-                                            Core.TrafficLog(ParentInstance.Nick + "<<<<<<" + response);
-                                            if (response == "CONTROL: OK")
-                                            {
-                                                Reconnect();
-                                                Connected = true;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            if (text.StartsWith(":"))
-                            {
-                                ProcessorIRC processor = new ProcessorIRC(text);
-                                processor.instance = ParentInstance;
-                                processor.Result();
-                                string check = text.Substring(text.IndexOf(" "));
-                                if (!check.StartsWith(" 005"))
-                                {
-                                    string command = "";
-                                    if (text.Contains(" :"))
-                                    {
-                                        command = text.Substring(1);
-                                        command = command.Substring(0, command.IndexOf(" :"));
-                                    }
-                                    if (command.Contains("PRIVMSG"))
-                                    {
-                                        string info = text.Substring(1, text.IndexOf(" :", 1) - 1);
-                                        // we got a message here :)
-                                        if (text.Contains("!") && text.Contains("@"))
-                                        {
-                                            nick = info.Substring(0, info.IndexOf("!"));
-                                            host = info.Substring(info.IndexOf("@") + 1, info.IndexOf(" ", info.IndexOf("@")) - 1 - info.IndexOf("@"));
-                                        }
-                                        string info_host = info.Substring(info.IndexOf("PRIVMSG "));
-
-                                        string message;
-                                        if (info_host.Contains("#"))
-                                        {
-                                            channel = info_host.Substring(info_host.IndexOf("#"));
-                                            if (channel == Configuration.System.DebugChan && ParentInstance.Nick != Core.irc.NickName)
-                                            {
-                                                continue;
-                                            }
-                                            message = text.Replace(info, "");
-                                            message = message.Substring(message.IndexOf(" :") + 2);
-                                            if (message.Contains(delimiter.ToString() + "ACTION"))
-                                            {
-                                                Core.GetAction(message.Replace(delimiter.ToString() + "ACTION", ""), 
-                                                               channel, host, nick);
-                                                continue;
-                                            }
-                                            Core.GetMessage(channel, nick, host, message);
-                                            continue;
-                                        }
-                                        message = text.Substring(text.IndexOf("PRIVMSG"));
-                                        message = message.Substring(message.IndexOf(" :"));
-                                        // private message
-                                        if (message.StartsWith(" :" + delimiter.ToString() + "FINGER"))
-                                        {
-                                            SendData("NOTICE " + nick + " :" + delimiter.ToString() + "FINGER" + 
-                                                     " I am a bot don't finger me");
-                                            continue;
-                                        }
-                                        if (message.StartsWith(" :" + delimiter.ToString() + "TIME"))
-                                        {
-                                            SendData("NOTICE " + nick + " :" + delimiter.ToString() + "TIME " + 
-                                                     System.DateTime.Now.ToString());
-                                            continue;
-                                        }
-                                        if (message.StartsWith(" :" + delimiter.ToString() + "PING"))
-                                        {
-                                            SendData("NOTICE " + nick + " :" + delimiter.ToString() + "PING" + message.Substring(
-                                                message.IndexOf(delimiter.ToString() + "PING") + 5));
-                                            continue;
-                                        }
-                                        if (message.StartsWith(" :" + delimiter.ToString() + "VERSION"))
-                                        {
-                                            SendData("NOTICE " + nick + " :" + delimiter.ToString() + "VERSION " 
-                                                     + Configuration.System.Version);
-                                            continue;
-                                        }
-                                        // store which instance this message was from so that we can send it using same instance
-                                        lock (Core.TargetBuffer)
-                                        {
-                                            if (!Core.TargetBuffer.ContainsKey(nick))
-                                            {
-                                                Core.TargetBuffer.Add(nick, ParentInstance);
-                                            }
-                                            else
-                                            {
-                                                Core.TargetBuffer[nick] = ParentInstance;
-                                            }
-                                        }
-                                        bool respond = true;
-                                        string modules = "";
-                                        lock (ExtensionHandler.Extensions)
-                                        {
-                                            foreach (Module module in ExtensionHandler.Extensions)
-                                            {
-                                                if (module.IsWorking)
-                                                {
-                                                    try
-                                                    {
-
-                                                        if (module.Hook_OnPrivateFromUser(message.Substring(2), 
-                                                                                new User(nick, host, Ident)))
-                                                        {
-                                                            respond = false;
-                                                            modules += module.Name + " ";
-                                                        }
-                                                    }
-                                                    catch (Exception fail)
-                                                    {
-                                                        Core.HandleException(fail);
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        if (respond)
-                                        {
-                                            Queue.DeliverMessage("Hi, I am robot, this command was not understood." +
-                                                                      " Please bear in mind that every message you send" +
-                                                                      " to me will be logged for debuging purposes. See" +
-                                                                      " documentation at http://meta.wikimedia.org/wiki" +
-                                                                      "/WM-Bot for explanation of commands", nick,
-                                                                      priority.low);
-                                            Syslog.Log("Ignoring private message: (" + nick + ") " + message.Substring(2), false);
-                                        }
-                                        else
-                                        {
-                                            Syslog.Log("Private message: (handled by " + modules + " from " + nick + ") " + 
-                                                       message.Substring(2), false);
-                                        }
-                                        continue;
-                                    }
-                                    if (command.Contains("PING "))
-                                    {
-                                        SendData("PONG " + text.Substring(text.IndexOf("PING ") + 5));
-                                        Console.WriteLine(command);
-                                    }
-                                    if (command.Contains("KICK"))
-                                    {
-                                        string temp = command.Substring(command.IndexOf("KICK"));
-                                        string[] parts = temp.Split(' ');
-                                        if (parts.Length > 1)
-                                        {
-                                            string _channel = parts[1];
-                                            if (_channel == Configuration.System.DebugChan && ParentInstance.Nick != Core.irc.NickName)
-                                            {
-                                                continue;
-                                            }
-                                            string user = parts[2];
-                                            if (user == NickName)
-                                            {
-                                                Channel chan = Core.GetChannel(_channel);
-                                                if (chan != null)
-                                                {
-                                                    lock (Configuration.Channels)
-                                                    {
-                                                        if (Configuration.Channels.Contains(chan))
-                                                        {
-                                                            Configuration.Channels.Remove(chan);
-                                                            Syslog.Log("I was kicked from " + parts[1]);
-                                                            Configuration.Save();
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            System.Threading.Thread.Sleep(50);
-                        }
-                        if (!Core.IsRunning)
-                        {
-                            return;
-                        }
-                        Syslog.Log("Reconnecting, end of data stream");
-                        IsWorking = false;
-                        connected = false;
-                        Reconnect();
-                    }
-                    catch (System.IO.IOException xx)
+                        Backlog.Add(response);
+                    } else if (response == "CONTROL: FALSE")
                     {
-                        if (!Core.IsRunning)
-                        {
-                            return;
-                        }
-                        Syslog.Log("Reconnecting, connection failed " + xx.Message + xx.StackTrace);
-                        IsWorking = false;
-                        connected = false;
-                        Reconnect();
-                    }
-                    catch (Exception xx)
-                    {
-                        Core.HandleException(xx, channel);
-                        Syslog.Log("IRC: Connection error!! Terminating instance " + ParentInstance.Nick);
-                        IsWorking = false;
-                        connected = false;
-                        return;
+                        Syslog.DebugLog("Bouncer is not connected, starting new session on " + this.ParentInstance.Nick);
+                        done = false;
+                        SendData("CONTROL: CREATE");
+                        streamWriter.Flush();
                     }
                 }
             }
-            catch (Exception fail)
+
+            _Queue = new System.Threading.Thread(Queue.Run);
+            _Queue.Name = "MessageQueue:" + NickName;
+            Core.ThreadManager.RegisterThread(_Queue);
+            PingerThread = new System.Threading.Thread(Ping);
+            Core.ThreadManager.RegisterThread(PingerThread);
+            PingerThread.Name = "Ping:" + NickName;
+            PingerThread.Start();
+
+            if (Auth)
             {
-                Core.HandleException(fail);
-                Syslog.Log("IRC: Connection error!! Terminating instance " + ParentInstance.Nick);
-                IsWorking = false;
-                connected = false;
-                // there is no point for being up when connection is dead and can't be reconnected
-                return;
+                SendData("USER " + UserName + " 8 * :" + Ident);
+                SendData("NICK " + ParentInstance.Nick);
+            }
+
+            _Queue.Start();
+
+            if (Auth)
+            {
+                Authenticate();
             }
         }
 
         /// <summary>
-        /// Disconnect
+        /// Connection
         /// </summary>
         /// <returns></returns>
-        public int Disconnect()
+        public void ParserExec()
         {
-            if (IsConnected)
+            string nick = "";
+            string host = "";
+            string channel = "";
+            const char delimiter = (char)001;
+
+            while ((!streamReader.EndOfStream || Backlog.Count > 0) && Core.IsRunning)
             {
-                try
+                string text;
+                if (Backlog.Count == 0)
                 {
-                    Syslog.DebugLog("Closing connection for " + NickName);
-                    if (streamWriter != null)
-                    {
-                        streamWriter.Close();
-                        streamWriter.Dispose();
-                        streamWriter = null;
-                    }
-                    if (streamReader != null)
-                    {
-                        streamReader.Close();
-                        streamReader.Dispose();
-                        streamReader = null;
-                    }
-                    if (networkStream != null)
-                    {
-                        networkStream.Close();
-                        networkStream.Dispose();
-                        networkStream = null;
-                    }
-                    connected = false;
-                }
-                catch (Exception fail)
+                    text = streamReader.ReadLine();
+                } else
                 {
-                    Core.HandleException(fail);
+                    text = Backlog[0];
+                    Backlog.RemoveAt(0);
                 }
+                Core.TrafficLog(ParentInstance.Nick + "<<<<<<" + text);
+                if (Configuration.IRC.UsingBouncer)
+                {
+                    if (text.StartsWith("CONTROL: "))
+                    {
+                        if (text == "CONTROL: DC")
+                        {
+                            SendData("CONTROL: CREATE");
+                            streamWriter.Flush();
+                            Syslog.Log("CACHE: Lost connection to remote on " + this.ParentInstance.Nick + 
+                                ", creating new session on remote"
+                            );
+                            bool Connected = false;
+                            while (!Connected)
+                            {
+
+                                System.Threading.Thread.Sleep(800);
+                                SendData("CONTROL: STATUS");
+                                string response = streamReader.ReadLine();
+                                Core.TrafficLog(ParentInstance.Nick + "<<<<<<" + response);
+                                if (response == "CONTROL: OK")
+                                {
+                                    Reconnect();
+                                    Connected = true;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (text.StartsWith(":"))
+                {
+                    ProcessorIRC processor = new ProcessorIRC(text);
+                    processor.instance = ParentInstance;
+                    processor.Result();
+                    string check = text.Substring(text.IndexOf(" "));
+                    if (!check.StartsWith(" 005"))
+                    {
+                        string command = "";
+                        if (text.Contains(" :"))
+                        {
+                            command = text.Substring(1);
+                            command = command.Substring(0, command.IndexOf(" :"));
+                        }
+                        if (command.Contains("PRIVMSG"))
+                        {
+                            string info = text.Substring(1, text.IndexOf(" :", 1) - 1);
+                            // we got a message here :)
+                            if (text.Contains("!") && text.Contains("@"))
+                            {
+                                nick = info.Substring(0, info.IndexOf("!"));
+                                host = info.Substring(info.IndexOf("@") + 1, info.IndexOf(" ", info.IndexOf("@")) - 1 - info.IndexOf("@"));
+                            }
+                            string info_host = info.Substring(info.IndexOf("PRIVMSG "));
+
+                            string message;
+                            if (info_host.Contains("#"))
+                            {
+                                channel = info_host.Substring(info_host.IndexOf("#"));
+                                if (channel == Configuration.System.DebugChan && ParentInstance.Nick != Core.irc.NickName)
+                                {
+                                    continue;
+                                }
+                                message = text.Replace(info, "");
+                                message = message.Substring(message.IndexOf(" :") + 2);
+                                if (message.Contains(delimiter.ToString() + "ACTION"))
+                                {
+                                    Core.GetAction(message.Replace(delimiter.ToString() + "ACTION", ""), 
+                                                               channel, host, nick);
+                                    continue;
+                                }
+                                Core.GetMessage(channel, nick, host, message);
+                                continue;
+                            }
+                            message = text.Substring(text.IndexOf("PRIVMSG"));
+                            message = message.Substring(message.IndexOf(" :"));
+                            // private message
+                            if (message.StartsWith(" :" + delimiter.ToString() + "FINGER"))
+                            {
+                                SendData("NOTICE " + nick + " :" + delimiter.ToString() + "FINGER" + 
+                                    " I am a bot don't finger me"
+                                );
+                                continue;
+                            }
+                            if (message.StartsWith(" :" + delimiter.ToString() + "TIME"))
+                            {
+                                SendData("NOTICE " + nick + " :" + delimiter.ToString() + "TIME " + 
+                                    System.DateTime.Now.ToString()
+                                );
+                                continue;
+                            }
+                            if (message.StartsWith(" :" + delimiter.ToString() + "PING"))
+                            {
+                                SendData("NOTICE " + nick + " :" + delimiter.ToString() + "PING" + message.Substring(
+                                                message.IndexOf(delimiter.ToString() + "PING") + 5)
+                                );
+                                continue;
+                            }
+                            if (message.StartsWith(" :" + delimiter.ToString() + "VERSION"))
+                            {
+                                SendData("NOTICE " + nick + " :" + delimiter.ToString() + "VERSION " 
+                                    + Configuration.System.Version
+                                );
+                                continue;
+                            }
+                            // store which instance this message was from so that we can send it using same instance
+                            lock(Core.TargetBuffer)
+                            {
+                                if (!Core.TargetBuffer.ContainsKey(nick))
+                                {
+                                    Core.TargetBuffer.Add(nick, ParentInstance);
+                                } else
+                                {
+                                    Core.TargetBuffer[nick] = ParentInstance;
+                                }
+                            }
+                            bool respond = true;
+                            string modules = "";
+                            lock(ExtensionHandler.Extensions)
+                            {
+                                foreach (Module module in ExtensionHandler.Extensions)
+                                {
+                                    if (module.IsWorking)
+                                    {
+                                        try
+                                        {
+
+                                            if (module.Hook_OnPrivateFromUser(message.Substring(2), 
+                                                                                new User(nick, host, Ident)))
+                                            {
+                                                respond = false;
+                                                modules += module.Name + " ";
+                                            }
+                                        } catch (Exception fail)
+                                        {
+                                            Core.HandleException(fail);
+                                        }
+                                    }
+                                }
+                            }
+                            if (respond)
+                            {
+                                Queue.DeliverMessage("Hi, I am robot, this command was not understood." +
+                                    " Please bear in mind that every message you send" +
+                                    " to me will be logged for debuging purposes. See" +
+                                    " documentation at http://meta.wikimedia.org/wiki" +
+                                    "/WM-Bot for explanation of commands", nick,
+                                                                      priority.low);
+                                Syslog.Log("Ignoring private message: (" + nick + ") " + message.Substring(2), false);
+                            } else
+                            {
+                                Syslog.Log("Private message: (handled by " + modules + " from " + nick + ") " + 
+                                    message.Substring(2), false);
+                            }
+                            continue;
+                        }
+                        if (command.Contains("PING "))
+                        {
+                            SendData("PONG " + text.Substring(text.IndexOf("PING ") + 5));
+                            Console.WriteLine(command);
+                        }
+                        if (command.Contains("KICK"))
+                        {
+                            string temp = command.Substring(command.IndexOf("KICK"));
+                            string[] parts = temp.Split(' ');
+                            if (parts.Length > 1)
+                            {
+                                string _channel = parts[1];
+                                if (_channel == Configuration.System.DebugChan && ParentInstance.Nick != Core.irc.NickName)
+                                {
+                                    continue;
+                                }
+                                string user = parts[2];
+                                if (user == NickName)
+                                {
+                                    Channel chan = Core.GetChannel(_channel);
+                                    if (chan != null)
+                                    {
+                                        lock(Configuration.Channels)
+                                        {
+                                            if (Configuration.Channels.Contains(chan))
+                                            {
+                                                Configuration.Channels.Remove(chan);
+                                                Syslog.Log("I was kicked from " + parts[1]);
+                                                Configuration.Save();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                System.Threading.Thread.Sleep(50);
             }
-            return 0;
+            Syslog.Log("Lost connection to IRC on " + NickName);
+            Disconnect();
+            IsWorking = false;
         }
 
         /// <summary>

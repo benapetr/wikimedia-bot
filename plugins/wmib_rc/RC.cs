@@ -287,25 +287,25 @@ namespace wmib
             if (!terminated)
             {
                 Random rand = new Random(DateTime.Now.Millisecond);
-				int random_number = rand.Next(10000);
-				nick = "wm-bot" + System.DateTime.Now.ToString().Replace("/", "").Replace(":", "").Replace("\\", "").Replace(".", "").Replace(" ", "") + random_number.ToString();
-				Syslog.Log("Connecting to wikimedia recent changes feed as " + nick + ", hold on");
-				stream = new System.Net.Sockets.TcpClient("irc.wikimedia.org", 6667).GetStream();
-				WD = new StreamWriter(stream);
-				RD = new StreamReader(stream, System.Text.Encoding.UTF8);
-				Thread pinger = new Thread(Pong);
-				Send("USER " + "wm-bot" + " 8 * :" + "wm-bot");
-				Send("NICK " + nick);
-				WD.Flush();
-				pinger.Start();
-				foreach (string b in channels)
-				{
-					System.Threading.Thread.Sleep(800);
-					Send("JOIN " + b);
-					WD.Flush();
-				}
-				Syslog.Log("Connected to feed - OK");
-				Loaded = true;
+                int random_number = rand.Next(10000);
+                nick = "wm-bot" + System.DateTime.Now.ToString().Replace("/", "").Replace(":", "").Replace("\\", "").Replace(".", "").Replace(" ", "") + random_number.ToString();
+                Syslog.Log("Connecting to wikimedia recent changes feed as " + nick + ", hold on");
+                stream = new System.Net.Sockets.TcpClient("irc.wikimedia.org", 6667).GetStream();
+                WD = new StreamWriter(stream);
+                RD = new StreamReader(stream, System.Text.Encoding.UTF8);
+                Thread pinger = new Thread(Pong);
+                Send("USER " + "wm-bot" + " 8 * :" + "wm-bot");
+                Send("NICK " + nick);
+                WD.Flush();
+                pinger.Start();
+                foreach (string b in channels)
+                {
+                    System.Threading.Thread.Sleep(800);
+                    Send("JOIN " + b);
+                    WD.Flush();
+                }
+                Syslog.Log("Connected to feed - OK");
+                Loaded = true;
             }
         }
 

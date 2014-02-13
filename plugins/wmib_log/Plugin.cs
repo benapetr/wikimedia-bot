@@ -45,7 +45,7 @@ namespace wmib
             public Channel channel;
         }
 
-		public string TextPath = "logs" + Path.DirectorySeparatorChar;
+        public string TextPath = "logs" + Path.DirectorySeparatorChar;
         //private List<char> Separator = new List<char> { ' ', ',', (char)3, '(', ')', '{', '}', (char)2, '<', '>' };
         private bool Unloading = false;
         private List<Job> jobs = new List<Job>();
@@ -324,21 +324,21 @@ namespace wmib
             catch (Exception fail)
             {
                 HandleException(fail);
-				Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
+                Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
                 Log("SQL Writer is down!!", true);
             }
         }
 
         public override void Load()
-		{
-			if (!Directory.Exists(TextPath))
-			{
-				Log("Creating a directory for text logs");
-				Directory.CreateDirectory(TextPath);
-			}
+        {
+            if (!Directory.Exists(TextPath))
+            {
+                Log("Creating a directory for text logs");
+                Directory.CreateDirectory(TextPath);
+            }
             Thread sql = new Thread(Writer);
             sql.Name = "Module:Logs/SqlWriter";
-			Core.ThreadManager.RegisterThread(sql);
+            Core.ThreadManager.RegisterThread(sql);
             sql.Start();
             Log("Writer thread started");
             int timer = 0;
@@ -361,7 +361,7 @@ namespace wmib
                 catch (ThreadAbortException)
                 {
                     Finish();
-					Log("Writer thread stopped");
+                    Log("Writer thread stopped");
                     return;
                 }
                 catch (Exception fail)
@@ -393,11 +393,11 @@ namespace wmib
             try
             {
                 string path = GetConfig(channel, "Logs.Path", channel.Name + Path.DirectorySeparatorChar);
-				if (!Directory.Exists(TextPath + path))
-				{
-					Log("Creating a folder for channel " + channel.Name);
-					Directory.CreateDirectory(TextPath + path);
-				}
+                if (!Directory.Exists(TextPath + path))
+                {
+                    Log("Creating a folder for channel " + channel.Name);
+                    Directory.CreateDirectory(TextPath + path);
+                }
                 System.IO.File.AppendAllText(TextPath + path + _datetime.Year + TDToString(_datetime.Month) + TDToString(_datetime.Day) + ".txt", message);
                 return true;
             }

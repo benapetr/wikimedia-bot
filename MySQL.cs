@@ -26,11 +26,11 @@ namespace wmib
     /// </summary>
     public class WMIBMySQL : Database
     {
-		[Serializable]
-		public class Unwritten
-		{
-			public List<SerializedRow> PendingRows = new List<SerializedRow>();
-		}
+        [Serializable]
+        public class Unwritten
+        {
+            public List<SerializedRow> PendingRows = new List<SerializedRow>();
+        }
 
         [Serializable]
         public class SerializedRow
@@ -38,11 +38,11 @@ namespace wmib
             public Row row;
             public string table;
 
-			public SerializedRow()
-			{
-				row = null;
-				table = null;
-			}
+            public SerializedRow()
+            {
+                row = null;
+                table = null;
+            }
 
             public SerializedRow(string name, Row _row)
             {
@@ -53,7 +53,7 @@ namespace wmib
 
         private Thread reco = null;
         private bool Recovering = false;
-		private Unwritten unwritten = new Unwritten();
+        private Unwritten unwritten = new Unwritten();
         
         private MySql.Data.MySqlClient.MySqlConnection Connection = null;
         /// <summary>
@@ -91,7 +91,7 @@ namespace wmib
             }
             reco = new Thread(Exec);
             reco.Name = "Recovery";
-			Core.ThreadManager.RegisterThread(reco);
+            Core.ThreadManager.RegisterThread(reco);
             reco.Start();
         }
 
@@ -99,7 +99,7 @@ namespace wmib
         {
             try
             {
-				Thread.Sleep(8000);
+                Thread.Sleep(8000);
                 while (Core.IsRunning)
                 {
                     if (unwritten.PendingRows.Count > 0)
@@ -121,13 +121,13 @@ namespace wmib
                             {
                                 recovered++;
                             } else
-							{
-								Syslog.DebugLog("Failed to recover 1 row", 2);
-							}
+                            {
+                                Syslog.DebugLog("Failed to recover 1 row", 2);
+                            }
                         }
                         Syslog.WarningLog("Recovery finished, recovered " + recovered.ToString() + " of total " + count.ToString());
                         Recovering = false;
-						FlushRows();
+                        FlushRows();
                         Thread.Sleep(200000);
                     }
                     Thread.Sleep(200);
@@ -135,7 +135,7 @@ namespace wmib
             } catch (Exception fail)
             {
                 Core.HandleException(fail);
-				Syslog.ErrorLog("Recovery thread for Mysql is down");
+                Syslog.ErrorLog("Recovery thread for Mysql is down");
             }
         }
 
@@ -244,45 +244,45 @@ namespace wmib
         }
 
         private void FlushRows()
-		{
-			if (Recovering)
-			{
-				return;
-			}
-			// prevent multiple threads calling this function at same time
-			lock(this)
-			{
-				string file = Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "unwrittensql.xml";
-				if (File.Exists(file))
-				{
-					Core.BackupData(file);
-					if (!File.Exists(Configuration.TempName(file)))
-					{
-						Syslog.WarningLog("Unable to create backup file for " + file);
-						return;
-					}
-				}
-				try
-				{
-					File.Delete(file);
-					XmlSerializer xs = new XmlSerializer(typeof(Unwritten));
-					StreamWriter writer = File.AppendText(file);
-					lock(unwritten)
-					{
-						xs.Serialize(writer, unwritten);
-					}
-					writer.Close();
-					if (File.Exists(Configuration.TempName(file)))
-	                {
-	                    File.Delete(Configuration.TempName(file));
-	                }
-				} catch (Exception fail)
-				{
-					Core.HandleException(fail);
-					Syslog.WarningLog("Recovering the mysql unwritten dump because of exception to: " + file);
-					Core.RecoverFile(file);
-				}
-			}
+        {
+            if (Recovering)
+            {
+                return;
+            }
+            // prevent multiple threads calling this function at same time
+            lock(this)
+            {
+                string file = Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "unwrittensql.xml";
+                if (File.Exists(file))
+                {
+                    Core.BackupData(file);
+                    if (!File.Exists(Configuration.TempName(file)))
+                    {
+                        Syslog.WarningLog("Unable to create backup file for " + file);
+                        return;
+                    }
+                }
+                try
+                {
+                    File.Delete(file);
+                    XmlSerializer xs = new XmlSerializer(typeof(Unwritten));
+                    StreamWriter writer = File.AppendText(file);
+                    lock(unwritten)
+                    {
+                        xs.Serialize(writer, unwritten);
+                    }
+                    writer.Close();
+                    if (File.Exists(Configuration.TempName(file)))
+                    {
+                        File.Delete(Configuration.TempName(file));
+                    }
+                } catch (Exception fail)
+                {
+                    Core.HandleException(fail);
+                    Syslog.WarningLog("Recovering the mysql unwritten dump because of exception to: " + file);
+                    Core.RecoverFile(file);
+                }
+            }
         }
 
         /// <summary>

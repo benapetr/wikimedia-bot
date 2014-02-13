@@ -30,11 +30,11 @@ namespace wmib
                 /// </summary>
                 public string Data = null;
 
-				public Value()
-				{
-					Data = "false";
-					Type = DataType.Boolean;
-				}
+                public Value()
+                {
+                    Data = "false";
+                    Type = DataType.Boolean;
+                }
 
                 /// <summary>
                 /// Creates a new value of type int
@@ -53,7 +53,7 @@ namespace wmib
                 public Value(DateTime date)
                 {
                     Data = date.Year.ToString() + "-" + date.Month.ToString().PadLeft(2, '0') + "-" 
-						+ date.Day.ToString().PadLeft(2, '0') + " " + date.Hour.ToString().PadLeft(2, '0') + ":" 
+                        + date.Day.ToString().PadLeft(2, '0') + " " + date.Hour.ToString().PadLeft(2, '0') + ":" 
                         + date.Minute.ToString().PadLeft(2, '0') + ":" + date.Second.ToString().PadLeft(2, '0');
                     Type = DataType.Date;
                 }

@@ -10,7 +10,7 @@ namespace wmib
 {
     public partial class Infobot
     {
-		public class InfobotKey
+        public class InfobotKey
         {
             /// <summary>
             /// Text
@@ -129,6 +129,6 @@ namespace wmib
             /// </summary>
             public string Host = null;
         }
-	}
+    }
 }
 

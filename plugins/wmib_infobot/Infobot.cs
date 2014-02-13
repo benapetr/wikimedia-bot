@@ -18,12 +18,12 @@ namespace wmib
         public string temporary_data = "";
         public bool Sensitive = true;
         public bool stored = true;
-		public static string DefaultPrefix = "!";
+        public static string DefaultPrefix = "!";
         public string prefix = "!";
 
         private Thread tSearch = null;
         public Thread SnapshotManager = null;
-		private Module Parent;
+        private Module Parent;
 
         // if we need to update dump
         public bool update = true;
@@ -42,23 +42,23 @@ namespace wmib
         /// </summary>
         public List<InfobotAlias> Alias = new List<InfobotAlias>();
 
-		public Channel pChannel;
+        public Channel pChannel;
 
         private string search_key;
 
-		/// <summary>
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="database"></param>
         /// <param name="channel"></param>
-		public Infobot(string database, Channel channel, Module module, bool sensitive = true)
+        public Infobot(string database, Channel channel, Module module, bool sensitive = true)
         {
             Sensitive = sensitive;
             datafile_xml = database + ".xml";
             datafile_raw = database;
-			pChannel = channel;
-			Parent = module;
-			prefix = Module.GetConfig(pChannel, "Infobot.Prefix", DefaultPrefix);
+            pChannel = channel;
+            Parent = module;
+            prefix = Module.GetConfig(pChannel, "Infobot.Prefix", DefaultPrefix);
             LoadData();
         }
 
@@ -241,7 +241,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-				Parent.HandleException(fail);
+                Parent.HandleException(fail);
                 Parent.Log("Exception while creating list for html");
             }
             return Item;
@@ -344,24 +344,24 @@ namespace wmib
             return "";
         }
 
-		/// <summary>
-		/// Determines whether this key is ignored for channel
-		/// </summary>
-		/// <returns>
-		/// <c>true</c> if this instance is ignored the specified name; otherwise, <c>false</c>.
-		/// </returns>
-		/// <param name='name'>
-		/// If set to <c>true</c> name.
-		/// </param>
-		public bool IsIgnored(string name, Channel channel)
-		{
-			string ignore_test = name;
-			if (ignore_test.Contains(" "))
-			{
-				ignore_test = ignore_test.Substring(0, ignore_test.IndexOf(" "));
-			}
-			return (channel.Infobot_IgnoredNames.Contains(ignore_test));
-		}
+        /// <summary>
+        /// Determines whether this key is ignored for channel
+        /// </summary>
+        /// <returns>
+        /// <c>true</c> if this instance is ignored the specified name; otherwise, <c>false</c>.
+        /// </returns>
+        /// <param name='name'>
+        /// If set to <c>true</c> name.
+        /// </param>
+        public bool IsIgnored(string name, Channel channel)
+        {
+            string ignore_test = name;
+            if (ignore_test.Contains(" "))
+            {
+                ignore_test = ignore_test.Substring(0, ignore_test.IndexOf(" "));
+            }
+            return (channel.Infobot_IgnoredNames.Contains(ignore_test));
+        }
 
         /// <summary>
         /// Print a value to channel if found, this message doesn't need to be a valid command for it to work
@@ -394,12 +394,12 @@ namespace wmib
 
                 // check if key is ignored
                 if (IsIgnored(name, chan))
-				{
-					return true;
-				}
+                {
+                    return true;
+                }
 
-				// split by parameters so we can easily get the arguments user provided
-				List<string> Parameters = new List<string>(name.Split(' '));
+                // split by parameters so we can easily get the arguments user provided
+                List<string> Parameters = new List<string>(name.Split(' '));
 
                 // check if key has some parameters or command
                 if (Parameters.Count > 1)
@@ -908,15 +908,15 @@ namespace wmib
             }
         }
 
-		/// <summary>
-		/// Retrieves the master DB channel
-		/// </summary>
-		/// <returns>
-		/// The master DB channel.
-		/// </returns>
-		/// <param name='chan'>
-		/// Chan.
-		/// </param>
+        /// <summary>
+        /// Retrieves the master DB channel
+        /// </summary>
+        /// <returns>
+        /// The master DB channel.
+        /// </returns>
+        /// <param name='chan'>
+        /// Chan.
+        /// </param>
         private Channel RetrieveMasterDBChannel(Channel chan)
         {
             bool Allowed;
@@ -1128,7 +1128,7 @@ namespace wmib
                     SnapshotManager = new Thread(RecoverStart);
                     temporary_data = datafile;
                     SnapshotManager.Name = "Module:Infobot/Snapshot";
-					Core.ThreadManager.RegisterThread(SnapshotManager);
+                    Core.ThreadManager.RegisterThread(SnapshotManager);
                     SnapshotManager.Start();
                     RegularModule.SetConfig(chan, "HTML.Update", true);
                 }

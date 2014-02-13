@@ -173,7 +173,7 @@ namespace wmib
             } catch (Exception fail)
             {
                 // exception happened while we tried to handle another one, ignore that (probably issue with logging
-				Console.WriteLine(fail.ToString());
+                Console.WriteLine(fail.ToString());
             }
         }
 
@@ -190,16 +190,16 @@ namespace wmib
                     irc.Queue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText,
                                                   Configuration.System.DebugChan);
                 }
-				if (ex.InnerException != null)
-				{
-                	Syslog.ErrorLog("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace +
+                if (ex.InnerException != null)
+                {
+                    Syslog.ErrorLog("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace +
                                 "\n\nThread name: " + Thread.CurrentThread.Name + "\n\nInner: " +
-					                ex.InnerException.ToString());
-				} else
-				{
-					Syslog.ErrorLog("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace +
-					                "\n\nThread name: " + Thread.CurrentThread.Name);
-				}
+                                    ex.InnerException.ToString());
+                } else
+                {
+                    Syslog.ErrorLog("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace +
+                                    "\n\nThread name: " + Thread.CurrentThread.Name);
+                }
             } catch (Exception fail)
             {
                 // exception happened while we tried to handle another one, ignore that (probably issue with logging)
@@ -479,13 +479,13 @@ namespace wmib
                     }
                     Thread.Sleep(1000);
                 }
-				if (ExtensionHandler.Extensions.Count == 0)
+                if (ExtensionHandler.Extensions.Count == 0)
                 {
-	                Syslog.WriteNow("KERNEL: Giving a grace time to other threads to finish");
-	                Thread.Sleep(200);
-	                Syslog.WriteNow("KERNEL: Terminated (ok)");
-	                Environment.Exit(0);
-				}
+                    Syslog.WriteNow("KERNEL: Giving a grace time to other threads to finish");
+                    Thread.Sleep(200);
+                    Syslog.WriteNow("KERNEL: Terminated (ok)");
+                    Environment.Exit(0);
+                }
             } catch (Exception fail)
             {
                 Core.HandleException(fail);
