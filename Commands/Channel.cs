@@ -40,7 +40,7 @@ namespace wmib
                         }
                         if (message.Contains(" "))
                         {
-                            string _channel = message.Substring(message.IndexOf(" ") + 1);
+                            string _channel = message.Substring(message.IndexOf(" ") + 1).Trim();
                             if (!Core.ValidFile(_channel) || (_channel.Contains("#") == false))
                             {
                                 Core.irc.Queue.DeliverMessage(messages.Localize("InvalidName", channel.Language), channel);
@@ -136,14 +136,14 @@ namespace wmib
                                     catch (Exception fail)
                                     {
                                         Syslog.Log("MODULE: exception at Hook_ChannelDrop in " + curr.Name, true);
-                                        Core.HandleException(fail);
+                                        Core.HandleException(fail, curr.Name);
                                     }
                                 }
                             }
                         }
-                        catch (Exception error)
+                        catch (Exception fail)
                         {
-                            Syslog.Log(error.ToString(), true);
+                            Core.HandleException(fail);
                         }
                         lock (Configuration.Channels)
                         {
