@@ -54,15 +54,15 @@ namespace wmib
         {
             if (code.Length > 2)
             {
-                if (code[3] == config.DebugChan && instance.Nick != core.irc.NickName)
+                if (code[3] == Configuration.System.DebugChan && instance.Nick != Core.irc.NickName)
                 {
                     return true;
                 }
-                config.channel channel = core.getChannel(code[3]);
+                Channel channel = Core.GetChannel(code[3]);
                 if (channel != null)
                 {
                     Syslog.Log("Finished parsing for " + channel.Name + " parsed totaly: " + channel.UserList.Count.ToString());
-                    if (config.SelectedVerbosity > 8)
+                    if (Configuration.System.SelectedVerbosity > 8)
                     {
                         string list = "";
                         lock (channel.UserList)
@@ -74,7 +74,7 @@ namespace wmib
                         }
                         Syslog.DebugLog("Parsed: " + list, 8);
                     }
-                    channel.FreshList = true;
+                    channel.HasFreshUserList = true;
                 }
             }
             return false;
@@ -89,27 +89,27 @@ namespace wmib
         {
             if (code.Length > 8)
             {
-                if (code[3] == config.DebugChan && instance.Nick != core.irc.NickName)
+                if (code[3] == Configuration.System.DebugChan && instance.Nick != Core.irc.NickName)
                 {
                     return true;
                 }
-                config.channel channel = core.getChannel(code[3]);
+                Channel channel = Core.GetChannel(code[3]);
                 string ident = code[4];
                 string host = code[5];
                 string nick = code[7];
-                string server = code[6];
+                //string server = code[6];
                 char mode = '\0';
                 if (code[8].Length > 0)
                 {
                     mode = code[8][code[8].Length - 1];
-                    if (!core.irc.UChars.Contains(mode))
+                    if (!Core.irc.UChars.Contains(mode))
                     {
                         mode = '\0';
                     }
                 }
                 if (channel != null)
                 {
-                    if (!channel.containsUser(nick))
+                    if (!channel.ContainsUser(nick))
                     {
                         User _user = null;
                         if (mode != '\0')
@@ -148,11 +148,11 @@ namespace wmib
             if (code.Length > 3)
             {
                 string name = code[4];
-                if (name == config.DebugChan && instance.Nick != core.irc.NickName)
+                if (name == Configuration.System.DebugChan && instance.Nick != Core.irc.NickName)
                 {
                     return true;
                 }
-                config.channel channel = core.getChannel(name);
+                Channel channel = Core.GetChannel(name);
                 if (channel != null)
                 {
                     string[] _chan = data[2].Split(' ');
@@ -162,7 +162,7 @@ namespace wmib
                         char _UserMode = '\0';
                         if (_user.Length > 0)
                         {
-                            foreach (char mode in core.irc.UChars)
+                            foreach (char mode in Core.irc.UChars)
                             {
                                 if (_user[0] == mode)
                                 {
@@ -209,9 +209,9 @@ namespace wmib
             _ident = source.Substring(source.IndexOf("!") + 1);
             _ident = _ident.Substring(0, _ident.IndexOf("@"));
             string _new = value;
-            foreach (config.channel item in config.channels)
+            foreach (Channel item in Configuration.ChannelList)
             {
-                if (item.Name == config.DebugChan && instance.Nick != core.irc.NickName)
+                if (item.Name == Configuration.System.DebugChan && instance.Nick != Core.irc.NickName)
                 {
                     return true;
                 }
@@ -221,13 +221,13 @@ namespace wmib
                     {
                         if (curr.Nick == nick)
                         {
-                            lock (Module.module)
+                            lock (ExtensionHandler.Extensions)
                             {
-                                foreach (Module xx in Module.module)
+                                foreach (Module xx in ExtensionHandler.Extensions)
                                 {
                                     try
                                     {
-                                        if (xx.working)
+                                        if (xx.IsWorking)
                                         {
                                             xx.Hook_Nick(item, new User(_new, _host, _ident), nick);
                                         }
@@ -235,7 +235,7 @@ namespace wmib
                                     catch (Exception er)
                                     {
                                         Syslog.Log("Error on hook in " + xx.Name, true);
-                                        core.handleException(er);
+                                        Core.HandleException(er);
                                     }
                                 }
                             }
@@ -254,22 +254,22 @@ namespace wmib
             string user = source.Substring(0, source.IndexOf("!"));
             string _ident;
             string _host;
-            if (chan == config.DebugChan && instance.Nick != core.irc.NickName)
+            if (chan == Configuration.System.DebugChan && instance.Nick != Core.irc.NickName)
             {
                 return true;
             }
             _host = source.Substring(source.IndexOf("@") + 1);
             _ident = source.Substring(source.IndexOf("!") + 1);
             _ident = _ident.Substring(0, _ident.IndexOf("@"));
-            config.channel channel = core.getChannel(chan);
+            Channel channel = Core.GetChannel(chan);
             User us = new User(user, _host, _ident);
             if (channel != null)
             {
-                lock (Module.module)
+                lock (ExtensionHandler.Extensions)
                 {
-                    foreach (Module module in Module.module)
+                    foreach (Module module in ExtensionHandler.Extensions)
                     {
-                        if (!module.working)
+                        if (!module.IsWorking)
                         {
                             continue;
                         }
@@ -279,12 +279,12 @@ namespace wmib
                         }
                         catch (Exception fail)
                         {
-                            core.handleException(fail);
+                            Core.HandleException(fail);
                         }
                     }
                 }
                 User delete = null;
-                if (channel.containsUser(user))
+                if (channel.ContainsUser(user))
                 {
                     lock (channel.UserList)
                     {
@@ -308,7 +308,7 @@ namespace wmib
         private bool Topic(string source, string parameters, string value)
         {
             string chan = parameters;
-            if (chan == config.DebugChan && instance.Nick != core.irc.NickName)
+            if (chan == Configuration.System.DebugChan && instance.Nick != Core.irc.NickName)
             {
                 return false;
             }
@@ -325,11 +325,11 @@ namespace wmib
             _ident = _ident.Substring(0, _ident.IndexOf("@"));
             User _user = new User(user, _host, _ident);
             //string _new = value;
-            lock (Module.module)
+            lock (ExtensionHandler.Extensions)
             {
-                foreach (Module module in Module.module)
+                foreach (Module module in ExtensionHandler.Extensions)
                 {
-                    if (!module.working)
+                    if (!module.IsWorking)
                     {
                         continue;
                     }
@@ -340,11 +340,11 @@ namespace wmib
                     catch (Exception fail)
                     {
                         Syslog.Log("MODULE: exception at Hook_Quit in " + module.Name, true);
-                        core.handleException(fail);
+                        Core.HandleException(fail);
                     }
                 }
             }
-            foreach (config.channel item in config.channels)
+            foreach (Channel item in Configuration.ChannelList)
             {
                 User target = null;
                 lock (item.UserList)
@@ -360,11 +360,11 @@ namespace wmib
                 }
                 if (target != null)
                 {
-                    lock (Module.module)
+                    lock (ExtensionHandler.Extensions)
                     {
-                        foreach (Module module in Module.module)
+                        foreach (Module module in ExtensionHandler.Extensions)
                         {
-                            if (!module.working)
+                            if (!module.IsWorking)
                             {
                                 continue;
                             }
@@ -375,7 +375,7 @@ namespace wmib
                             catch (Exception fail)
                             {
                                 Syslog.Log("MODULE: exception at Hook_ChannelQuit in " + module.Name, true);
-                                core.handleException(fail);
+                                Core.HandleException(fail);
                             }
                         }
                     }
@@ -401,15 +401,15 @@ namespace wmib
             User Source = new User(user2, _host, _ident);
             // petan!pidgeon@petan.staff.tm-irc.org KICK #support HelpBot :Removed from the channel
             string chan = parameters.Substring(0, parameters.IndexOf(" "));
-            if (chan == config.DebugChan && instance.Nick != core.irc.NickName)
+            if (chan == Configuration.System.DebugChan && instance.Nick != Core.irc.NickName)
             {
                 return true; ;
             }
-            config.channel channel = core.getChannel(chan);
+            Channel channel = Core.GetChannel(chan);
             if (channel != null)
             {
-				SystemHooks.IrcKick(channel, Source, Target);
-                if (channel.containsUser(user))
+                SystemHooks.IrcKick(channel, Source, Target);
+                if (channel.ContainsUser(user))
                 {
                     User delete = null;
                     lock (channel.UserList)
@@ -442,11 +442,11 @@ namespace wmib
                 //string user = source;
                 if (chan.StartsWith("#"))
                 {
-                    if (chan == config.DebugChan && instance.Nick != core.irc.NickName)
+                    if (chan == Configuration.System.DebugChan && instance.Nick != Core.irc.NickName)
                     {
                         return true;
                     }
-                    config.channel channel = core.getChannel(chan);
+                    Channel channel = Core.GetChannel(chan);
                     if (channel != null)
                     {
                         string change = parameters.Substring(parameters.IndexOf(" "));
@@ -468,7 +468,7 @@ namespace wmib
 
                         foreach (SimpleMode m in formatter.getMode)
                         {
-                            if (core.irc.CUModes.Contains(m.Mode) && m.ContainsParameter)
+                            if (Core.irc.CUModes.Contains(m.Mode) && m.ContainsParameter)
                             {
                                 User flagged_user = channel.RetrieveUser(m.Parameter);
                                 if (flagged_user != null)
@@ -480,7 +480,7 @@ namespace wmib
 
                         foreach (SimpleMode m in formatter.getRemovingMode)
                         {
-                            if (core.irc.CUModes.Contains(m.Mode) && m.ContainsParameter)
+                            if (Core.irc.CUModes.Contains(m.Mode) && m.ContainsParameter)
                             {
                                 User flagged_user = channel.RetrieveUser(m.Parameter);
                                 if (flagged_user != null)
@@ -504,7 +504,7 @@ namespace wmib
             {
                 chan = value;
             }
-            if (chan == config.DebugChan && instance.Nick != core.irc.NickName)
+            if (chan == Configuration.System.DebugChan && instance.Nick != Core.irc.NickName)
             {
                 return true;
             }
@@ -512,17 +512,17 @@ namespace wmib
             string _host = source.Substring(source.IndexOf("@") + 1);
             string _ident = source.Substring(source.IndexOf("!") + 1);
             _ident = _ident.Substring(0, _ident.IndexOf("@"));
-            config.channel channel = core.getChannel(chan);
+            Channel channel = Core.GetChannel(chan);
             User _user = new User(user, _host, _ident);
             if (channel != null)
             {
-                lock (Module.module)
+                lock (ExtensionHandler.Extensions)
                 {
-                    foreach (Module module in Module.module)
+                    foreach (Module module in ExtensionHandler.Extensions)
                     {
                         try
                         {
-                            if (module.working)
+                            if (module.IsWorking)
                             {
                                 module.Hook_Join(channel, _user);
                             }
@@ -530,11 +530,11 @@ namespace wmib
                         catch (Exception fail)
                         {
                             Syslog.Log("MODULE: exception at Hook_Join in " + module.Name, true);
-                            core.handleException(fail);
+                            Core.HandleException(fail);
                         }
                     }
                 }
-                if (!channel.containsUser(user))
+                if (!channel.ContainsUser(user))
                 {
                     lock (channel.UserList)
                     {
@@ -729,7 +729,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail);
             }
             return true;
         }

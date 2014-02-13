@@ -1,4 +1,4 @@
-﻿//This program is free software: you can redistribute it and/or modify
+//This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
 //the Free Software Foundation, either version 3 of the License, or
 //(at your option) any later version.
@@ -11,7 +11,11 @@
 // Created by Petr Bena <benapetr@gmail.com>
 
 using MySql.Data.MySqlClient;
+using System.Xml;
 using System;
+using System.Xml.Serialization;
+using System.IO;
+using System.Threading;
 using System.Collections.Generic;
 using System.Text;
 
@@ -22,7 +26,36 @@ namespace wmib
     /// </summary>
     public class WMIBMySQL : Database
     {
-        MySql.Data.MySqlClient.MySqlConnection Connection = null;
+        [Serializable]
+        public class Unwritten
+        {
+            public List<SerializedRow> PendingRows = new List<SerializedRow>();
+        }
+
+        [Serializable]
+        public class SerializedRow
+        {
+            public Row row;
+            public string table;
+
+            public SerializedRow()
+            {
+                row = null;
+                table = null;
+            }
+
+            public SerializedRow(string name, Row _row)
+            {
+                row = _row;
+                table = name;
+            }
+        }
+
+        private Thread reco = null;
+        private bool Recovering = false;
+        private Unwritten unwritten = new Unwritten();
+        
+        private MySql.Data.MySqlClient.MySqlConnection Connection = null;
         /// <summary>
         /// Return true if mysql is connected to server
         /// </summary>
@@ -35,6 +68,76 @@ namespace wmib
         }
 
         private bool connected = false;
+
+        public WMIBMySQL()
+        {
+            string file = Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "unwrittensql.xml";
+            Core.RecoverFile(file);
+            if (File.Exists(file))
+            {
+                Syslog.WarningLog("There is a mysql dump file from previous run containing mysql rows that were never successfuly inserted, trying to recover them");
+                XmlDocument document = new XmlDocument();
+                TextReader sr = new StreamReader(file);
+                document.Load(sr);
+                XmlNodeReader reader = new XmlNodeReader(document.DocumentElement);
+                XmlSerializer xs = new XmlSerializer(typeof(Unwritten));
+                Unwritten un = (Unwritten)xs.Deserialize(reader);
+                reader.Close();
+                sr.Close();
+                lock (unwritten.PendingRows)
+                {
+                    unwritten.PendingRows.AddRange(un.PendingRows);
+                }
+            }
+            reco = new Thread(Exec);
+            reco.Name = "Recovery";
+            Core.ThreadManager.RegisterThread(reco);
+            reco.Start();
+        }
+
+        private void Exec()
+        {
+            try
+            {
+                Thread.Sleep(8000);
+                while (Core.IsRunning)
+                {
+                    if (unwritten.PendingRows.Count > 0)
+                    {
+                        int count = 0;
+                        Syslog.WarningLog("Performing recovery of " + unwritten.PendingRows.Count.ToString() + " MySQL rows");
+                        Recovering = true;
+                        List<SerializedRow> rows = new List<SerializedRow>();
+                        lock (unwritten.PendingRows)
+                        {
+                            count = unwritten.PendingRows.Count;
+                            rows.AddRange(unwritten.PendingRows);
+                            unwritten.PendingRows.Clear();
+                        }
+                        int recovered = 0;
+                        foreach (SerializedRow row in rows)
+                        {
+                            if (InsertRow(row.table, row.row))
+                            {
+                                recovered++;
+                            } else
+                            {
+                                Syslog.DebugLog("Failed to recover 1 row", 2);
+                            }
+                        }
+                        Syslog.WarningLog("Recovery finished, recovered " + recovered.ToString() + " of total " + count.ToString());
+                        Recovering = false;
+                        FlushRows();
+                        Thread.Sleep(200000);
+                    }
+                    Thread.Sleep(200);
+                }
+            } catch (Exception fail)
+            {
+                Core.HandleException(fail);
+                Syslog.ErrorLog("Recovery thread for Mysql is down");
+            }
+        }
 
         public override string Select(string table, string rows, string query, int columns, char separator = '|')
         {
@@ -80,13 +183,18 @@ namespace wmib
         public override bool InsertRow(string table, Row row)
         {
             string sql = "";
-            lock (DatabaseLock)
+            lock(DatabaseLock)
             {
                 try
                 {
                     if (!IsConnected)
                     {
-                        Syslog.DebugLog("Ignoring request to insert a row into database which is not connected");
+                        Syslog.DebugLog("Postponing request to insert a row into database which is not connected");
+                        lock(unwritten.PendingRows)
+                        {
+                            unwritten.PendingRows.Add(new SerializedRow(table, row));
+                        }
+                        FlushRows();
                         return false;
                     }
 
@@ -115,13 +223,64 @@ namespace wmib
                     xx.CommandText = sql;
                     xx.ExecuteNonQuery();
                     return true;
-                }
-                catch (MySqlException me)
+                } catch (MySqlException me)
                 {
                     ErrorBuffer = me.Message;
                     Syslog.Log("Error while storing a row to DB " + me.ToString(), true);
                     Syslog.DebugLog("SQL: " + sql);
+                    lock(unwritten.PendingRows)
+                    {
+                        unwritten.PendingRows.Add(new SerializedRow(table, row));
+                    }
+                    FlushRows();
                     return false;
+                }
+            }
+        }
+
+        public override int CacheSize()
+        {
+            return unwritten.PendingRows.Count;
+        }
+
+        private void FlushRows()
+        {
+            if (Recovering)
+            {
+                return;
+            }
+            // prevent multiple threads calling this function at same time
+            lock(this)
+            {
+                string file = Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "unwrittensql.xml";
+                if (File.Exists(file))
+                {
+                    Core.BackupData(file);
+                    if (!File.Exists(Configuration.TempName(file)))
+                    {
+                        Syslog.WarningLog("Unable to create backup file for " + file);
+                        return;
+                    }
+                }
+                try
+                {
+                    File.Delete(file);
+                    XmlSerializer xs = new XmlSerializer(typeof(Unwritten));
+                    StreamWriter writer = File.AppendText(file);
+                    lock(unwritten)
+                    {
+                        xs.Serialize(writer, unwritten);
+                    }
+                    writer.Close();
+                    if (File.Exists(Configuration.TempName(file)))
+                    {
+                        File.Delete(Configuration.TempName(file));
+                    }
+                } catch (Exception fail)
+                {
+                    Core.HandleException(fail);
+                    Syslog.WarningLog("Recovering the mysql unwritten dump because of exception to: " + file);
+                    Core.RecoverFile(file);
                 }
             }
         }
@@ -154,11 +313,11 @@ namespace wmib
                 }
                 try
                 {
-                    Connection = new MySql.Data.MySqlClient.MySqlConnection("Server=" + config.MysqlHost + ";" +
-                                                                              "Database=" + config.Mysqldb + ";" +
-                                                                              "User ID=" + config.MysqlUser + ";" +
-                                                                              "Password=" + config.MysqlPw + ";" +
-                                                                              "port=" + config.MysqlPort + ";" +
+                    Connection = new MySql.Data.MySqlClient.MySqlConnection("Server=" + Configuration.MySQL.MysqlHost + ";" +
+                                                                              "Database=" + Configuration.MySQL.Mysqldb + ";" +
+                                                                              "User ID=" + Configuration.MySQL.MysqlUser + ";" +
+                                                                              "Password=" + Configuration.MySQL.MysqlPw + ";" +
+                                                                              "port=" + Configuration.MySQL.MysqlPort + ";" +
                                                                               "Pooling=false");
                     Connection.Open();
                     connected = true;

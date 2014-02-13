@@ -139,7 +139,7 @@ namespace wmib
                                 }
 
                                 // user mode, has a parameter
-                                if (core.irc.CUModes.Contains(CurrentMode) || core.irc.PModes.Contains(CurrentMode))
+                                if (Core.irc.CUModes.Contains(CurrentMode) || Core.irc.PModes.Contains(CurrentMode))
                                 {
                                     if (parts.Count < CurrentParam + 1)
                                     {
@@ -161,7 +161,7 @@ namespace wmib
                                 }
 
                                 // channel special mode with parameter
-                                if (core.irc.SModes.Contains(CurrentMode) || core.irc.XModes.Contains(CurrentMode))
+                                if (Core.irc.SModes.Contains(CurrentMode) || Core.irc.XModes.Contains(CurrentMode))
                                 {
                                     if (parts.Count < CurrentParam + 1)
                                     {
@@ -187,7 +187,7 @@ namespace wmib
                                 }
 
                                 // channel mode
-                                if (core.irc.CModes.Contains(CurrentMode))
+                                if (Core.irc.CModes.Contains(CurrentMode))
                                 {
                                     SimpleMode mode = new SimpleMode(CurrentMode, null);
                                     if (rm)

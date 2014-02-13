@@ -1,4 +1,4 @@
-﻿//This program is free software: you can redistribute it and/or modify
+//This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
 //the Free Software Foundation, either version 3 of the License, or
 //(at your option) any later version.
@@ -20,24 +20,20 @@ namespace wmib
     /// <summary>
     /// variables
     /// </summary>
-    public class variables
+    public class Variables
     {
         /// <summary>
         /// Configuration directory
         /// </summary>
-        public static readonly string config = "configuration";
-        /// <summary>
-        /// Prefix for a log directory
-        /// </summary>
-        public static readonly string prefix_logdir = "log";
+        public static readonly string ConfigurationDirectory = "configuration";
         /// <summary>
         /// This string represent a character that changes color
         /// </summary>
-        public static readonly string color = ((char)003).ToString();
+        public static readonly string ColorChar = ((char)003).ToString();
         /// <summary>
         /// This string represent a character that changes text to bold
         /// </summary>
-        public static readonly string bold = ((char)002).ToString();
+        public static readonly string BoldChar = ((char)002).ToString();
     }
 
     /// <summary>

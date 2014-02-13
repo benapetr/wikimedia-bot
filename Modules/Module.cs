@@ -23,10 +23,6 @@ namespace wmib
     public abstract class Module
     {
         /// <summary>
-        /// List of all modules loaded in kernel
-        /// </summary>
-        public static List<Module> module = new List<Module>();
-        /// <summary>
         /// Name of module
         /// </summary>
         public string Name = "";
@@ -41,7 +37,7 @@ namespace wmib
         /// <summary>
         /// Whether it should be reloaded on crash
         /// </summary>
-        public bool Reload = false;
+        public bool RestartOnModuleCrash = false;
         /// <summary>
         /// If the module is in warning mode
         /// </summary>
@@ -54,16 +50,7 @@ namespace wmib
         /// <summary>
         /// Whether it is working
         /// </summary>
-        public bool working = false;
-        /// <summary>
-        /// Parent domain of this module
-        /// </summary>
-        [NonSerialized]
-        public AppDomain ParentDomain = null;
-        /// <summary>
-        /// Whether it has started or not
-        /// </summary>
-        public bool start = false;
+        public bool IsWorking = false;
         /// <summary>
         /// If this module contains own thread
         /// </summary>
@@ -83,19 +70,11 @@ namespace wmib
         ~Module()
         {
             Exit();
-            lock (module)
+            lock (ExtensionHandler.Extensions)
             {
-                if (module.Contains(this))
+                if (ExtensionHandler.Extensions.Contains(this))
                 {
-                    module.Remove(this);
-                }
-            }
-            if (core.Domains.ContainsKey(this) && core.Domains[this] != ParentDomain)
-            {
-                lock (core.Domains)
-                {
-                    //AppDomain.Unload(core.Domains[this]);
-                    core.Domains.Remove(this);
+                    ExtensionHandler.Extensions.Remove(this);
                 }
             }
             Syslog.Log("Module was unloaded: " + this.Name);
@@ -117,17 +96,18 @@ namespace wmib
         {
             try
             {
-                working = true;
+                IsWorking = true;
                 Hook_OnRegister();
                 if (HasSeparateThreadInstance)
                 {
-                    thread = new Thread(Exec) { Name = "Module " + Name };
+                    thread = new Thread(Exec) { Name = "Module:" + Name };
+                    Core.ThreadManager.RegisterThread(thread);
                     thread.Start();
                 }
             }
             catch (Exception f)
             {
-                core.handleException(f);
+                Core.HandleException(f);
             }
         }
 
@@ -137,7 +117,7 @@ namespace wmib
         /// </summary>
         /// <param name="html"></param>
         /// <param name="channel"></param>
-        public virtual void Hook_AfterChannelWeb(ref string html, config.channel channel)
+        public virtual void Hook_AfterChannelWeb(ref string html, Channel channel)
         {
             return;
         }
@@ -148,7 +128,7 @@ namespace wmib
         /// <param name="channel"></param>
         /// <param name="source"></param>
         /// <param name="user"></param>
-        public virtual void Hook_Kick(config.channel channel, User source, User user)
+        public virtual void Hook_Kick(Channel channel, User source, User user)
         {
             return;
         }
@@ -159,7 +139,7 @@ namespace wmib
         /// </summary>
         /// <param name="html"></param>
         /// <param name="channel"></param>
-        public virtual void Hook_ChannelWeb(ref string html, config.channel channel)
+        public virtual void Hook_ChannelWeb(ref string html, Channel channel)
         {
             return;
         }
@@ -169,7 +149,7 @@ namespace wmib
         /// </summary>
         /// <param name="channel"></param>
         /// <param name="user"></param>
-        public virtual void Hook_Join(config.channel channel, User user)
+        public virtual void Hook_Join(Channel channel, User user)
         {
             return;
         }
@@ -180,7 +160,7 @@ namespace wmib
         /// <param name="channel">channel</param>
         /// <param name="invoker">invoker</param>
         /// <param name="message">message</param>
-        public virtual void Hook_PRIV(config.channel channel, User invoker, string message)
+        public virtual void Hook_PRIV(Channel channel, User invoker, string message)
         {
             return;
         }
@@ -191,7 +171,7 @@ namespace wmib
         /// <param name="channel"></param>
         /// <param name="invoker"></param>
         /// <param name="message"></param>
-        public virtual void Hook_ACTN(config.channel channel, User invoker, string message)
+        public virtual void Hook_ACTN(Channel channel, User invoker, string message)
         {
             return;
         }
@@ -203,7 +183,7 @@ namespace wmib
         /// <param name="invoker"></param>
         /// <param name="config"></param>
         /// <returns></returns>
-        public virtual bool Hook_GetConfig(config.channel chan, User invoker, string config)
+        public virtual bool Hook_GetConfig(Channel chan, User invoker, string config)
         {
             return false;
         }
@@ -216,7 +196,7 @@ namespace wmib
         /// <param name="config"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public virtual bool Hook_SetConfig(config.channel chan, User invoker, string config, string value)
+        public virtual bool Hook_SetConfig(Channel chan, User invoker, string config, string value)
         {
             return false;
         }
@@ -225,7 +205,7 @@ namespace wmib
         /// When a config of channel is being reload
         /// </summary>
         /// <param name="chan"></param>
-        public virtual void Hook_ReloadConfig(config.channel chan)
+        public virtual void Hook_ReloadConfig(Channel chan)
         {
             return;
         }
@@ -234,7 +214,7 @@ namespace wmib
         /// When a channel is removed from operating memory
         /// </summary>
         /// <param name="chan"></param>
-        public virtual void Hook_ChannelDrop(config.channel chan)
+        public virtual void Hook_ChannelDrop(Channel chan)
         {
             return;
         }
@@ -245,7 +225,7 @@ namespace wmib
         /// <param name="channel"></param>
         /// <param name="user"></param>
         /// <param name="mesg"></param>
-        public virtual void Hook_ChannelQuit(config.channel channel, User user, string mesg)
+        public virtual void Hook_ChannelQuit(Channel channel, User user, string mesg)
         {
             return;
         }
@@ -255,7 +235,7 @@ namespace wmib
         /// </summary>
         /// <param name="channel"></param>
         /// <param name="user"></param>
-        public virtual void Hook_Part(config.channel channel, User user)
+        public virtual void Hook_Part(Channel channel, User user)
         {
             return;
         }
@@ -266,7 +246,7 @@ namespace wmib
         /// <param name="channel"></param>
         /// <param name="self"></param>
         /// <param name="message"></param>
-        public virtual void Hook_OnSelf(config.channel channel, User self, string message)
+        public virtual void Hook_OnSelf(Channel channel, User self, string message)
         {
             return;
         }
@@ -276,7 +256,7 @@ namespace wmib
         /// </summary>
         /// <param name="channel"></param>
         /// <returns></returns>
-        public virtual string Extension_DumpHtml(config.channel channel)
+        public virtual string Extension_DumpHtml(Channel channel)
         {
             return null;
         }
@@ -285,7 +265,7 @@ namespace wmib
         /// This hook is called when channel is constructed
         /// </summary>
         /// <param name="channel"></param>
-        public virtual void Hook_Channel(config.channel channel)
+        public virtual void Hook_Channel(Channel channel)
         {
             return;
         }
@@ -342,9 +322,9 @@ namespace wmib
         /// <param name="channel"></param>
         /// <param name="Target"></param>
         /// <param name="OldNick"></param>
-        public virtual void Hook_Nick(config.channel channel, User Target, string OldNick)
+        public virtual void Hook_Nick(Channel channel, User Target, string OldNick)
         { 
-            
+            return;
         }
 
         /// <summary>
@@ -354,7 +334,7 @@ namespace wmib
         /// <param name="name"></param>
         /// <param name="invalid"></param>
         /// <returns></returns>
-        public static int GetConfig(config.channel chan, string name, int invalid)
+        public static int GetConfig(Channel chan, string name, int invalid)
         {
             try
             {
@@ -370,7 +350,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail);
             }
             return invalid;
         }
@@ -402,7 +382,7 @@ namespace wmib
         /// <param name="name"></param>
         /// <param name="invalid"></param>
         /// <returns></returns>
-        public static string GetConfig(config.channel chan, string name, string invalid)
+        public static string GetConfig(Channel chan, string name, string invalid)
         {
             try
             {
@@ -418,7 +398,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail);
             }
             return invalid;
         }
@@ -429,7 +409,7 @@ namespace wmib
         /// <param name="chan"></param>
         /// <param name="name"></param>
         /// <param name="data"></param>
-        public static void SetConfig(config.channel chan, string name, bool data)
+        public static void SetConfig(Channel chan, string name, bool data)
         {
             try
             {
@@ -440,7 +420,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail);
             }
         }
 
@@ -449,13 +429,15 @@ namespace wmib
         /// </summary>
         /// <param name="ex">Exception pointer</param>
         /// <param name="chan">Channel name</param>
-        public void handleException(Exception ex, string chan = "")
+        public void HandleException(Exception ex, string chan = "")
         {
             try
             {
-                if (!string.IsNullOrEmpty(config.DebugChan))
+                if (!string.IsNullOrEmpty(Configuration.System.DebugChan))
                 {
-                    core.irc._SlowQueue.DeliverMessage("DEBUG Exception in plugin " + Name + ": " + ex.Message + " last input was " + core.LastText, config.DebugChan);
+                    Core.irc.Queue.DeliverMessage("DEBUG Exception in plugin " + Name + ": " + ex.Message +
+                                                       " last input was " + Core.LastText,
+                                                       Configuration.System.DebugChan);
                 }
                 Syslog.Log("DEBUG Exception in module " + Name + ": " + ex.Message + ex.Source + ex.StackTrace, true);
             }
@@ -469,7 +451,7 @@ namespace wmib
         /// <param name="chan"></param>
         /// <param name="name"></param>
         /// <param name="data"></param>
-        public static void SetConfig(config.channel chan, string name, string data)
+        public static void SetConfig(Channel chan, string name, string data)
         {
             try
             {
@@ -480,7 +462,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail);
             }
         }
 
@@ -491,7 +473,7 @@ namespace wmib
         /// <param name="name"></param>
         /// <param name="invalid"></param>
         /// <returns></returns>
-        public static bool GetConfig(config.channel chan, string name, bool invalid)
+        public static bool GetConfig(Channel chan, string name, bool invalid)
         {
             try
             {
@@ -508,7 +490,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail);
                 return invalid;
             }
         }
@@ -519,39 +501,42 @@ namespace wmib
             {
                 Load();
                 Syslog.Log("Module terminated: " + Name, true);
-                working = false;
+                IsWorking = false;
+                Core.ThreadManager.UnregisterThread(thread);
             }
             catch (ThreadAbortException)
             {
                 Syslog.Log("Module terminated: " + Name, true);
+                Core.ThreadManager.UnregisterThread(thread);
                 return;
             }
             catch (Exception f)
             {
-                core.handleException(f);
-                working = false;
+                Core.HandleException(f);
+                IsWorking = false;
                 Syslog.Log("Module crashed: " + Name, true);
             }
-            while (Reload)
+            while (Core.IsRunning && RestartOnModuleCrash)
             {
                 try
                 {
                     Warning = true;
-                    working = true;
+                    IsWorking = true;
                     Syslog.Log("Restarting the module: " + Name, true);
                     Load();
                     Syslog.Log("Module terminated: " + Name, true);
-                    working = false;
+                    IsWorking = false;
                 }
                 catch (ThreadAbortException)
                 {
                     Syslog.Log("Module terminated: " + Name, true);
+                    Core.ThreadManager.UnregisterThread(thread);
                     return;
                 }
                 catch (Exception f)
                 {
-                    core.handleException(f);
-                    working = false;
+                    Core.HandleException(f);
+                    IsWorking = false;
                     Syslog.Log("Module crashed: " + Name, true);
                 }
             }
@@ -574,8 +559,8 @@ namespace wmib
         public virtual void Load()
         { 
             Syslog.Log("Module " + Name + " is missing core thread, terminated", true);
-            Reload = false;
-            working = false;
+            RestartOnModuleCrash = false;
+            IsWorking = false;
             return;
         }
 
@@ -591,31 +576,28 @@ namespace wmib
                 {
                     Syslog.Log("Unable to unload module, forcefully removed from memory: " + Name, true);
                 }
-                working = false;
-                Reload = false;
+                IsWorking = false;
+                RestartOnModuleCrash = false;
                 if (thread != null)
                 {
-                    if (thread.ThreadState == System.Threading.ThreadState.Running)
+                    Syslog.Log("Terminating module: " + Name, true);
+                    if (RestartOnModuleCrash)
                     {
-                        Syslog.Log("Terminating module: " + Name, true);
-                        if (Reload)
-                        {
-                            Reload = false;
-                        }
-                        thread.Abort();
+                        RestartOnModuleCrash = false;
                     }
+                    Core.ThreadManager.KillThread(thread);
                 }
-                lock (module)
+                lock (ExtensionHandler.Extensions)
                 {
-                    if (module.Contains(this))
+                    if (ExtensionHandler.Extensions.Contains(this))
                     {
-                        module.Remove(this);
+                        ExtensionHandler.Extensions.Remove(this);
                     }
                 }
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail);
             }
         }
 
@@ -628,9 +610,9 @@ namespace wmib
         {
             try
             {
-                lock (module)
+                lock (ExtensionHandler.Extensions)
                 {
-                    foreach (Module x in module)
+                    foreach (Module x in ExtensionHandler.Extensions)
                     {
                         if (x.Name == Name)
                         {
@@ -641,7 +623,7 @@ namespace wmib
             }
             catch (Exception f)
             {
-                core.handleException(f);
+                Core.HandleException(f);
             }
             return false;
         }

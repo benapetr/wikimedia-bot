@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C# Express 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wmib_rafeed", "wmib_rafeed\wmib_rafeed.csproj", "{82EC6779-13DE-4281-9672-EC3CF728A42A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wmib_rafeed", "wmib_rafeed.csproj", "{82EC6779-13DE-4281-9672-EC3CF728A42A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

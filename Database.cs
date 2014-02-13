@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -12,11 +12,13 @@ namespace wmib
         /// <summary>
         /// One row in a database
         /// </summary>
+        [Serializable]
         public class Row
         {
             /// <summary>
             /// One value in a row
             /// </summary>
+            [Serializable]
             public class Value
             {
                 /// <summary>
@@ -27,6 +29,12 @@ namespace wmib
                 /// Data
                 /// </summary>
                 public string Data = null;
+
+                public Value()
+                {
+                    Data = "false";
+                    Type = DataType.Boolean;
+                }
 
                 /// <summary>
                 /// Creates a new value of type int
@@ -44,7 +52,8 @@ namespace wmib
                 /// <param name="date"></param>
                 public Value(DateTime date)
                 {
-                    Data = date.Year.ToString() + "-" + date.Month.ToString().PadLeft(2, '0') + "-" + date.Day.ToString().PadLeft(2, '0') + " " + date.Hour.ToString().PadLeft(2, '0') + ":" 
+                    Data = date.Year.ToString() + "-" + date.Month.ToString().PadLeft(2, '0') + "-" 
+                        + date.Day.ToString().PadLeft(2, '0') + " " + date.Hour.ToString().PadLeft(2, '0') + ":" 
                         + date.Minute.ToString().PadLeft(2, '0') + ":" + date.Second.ToString().PadLeft(2, '0');
                     Type = DataType.Date;
                 }
@@ -105,6 +114,11 @@ namespace wmib
         public virtual void Commit() { }
 
         public virtual void Rollback() { }
+
+        public virtual int CacheSize()
+        {
+            return 0;
+        }
 
         public virtual bool InsertRow(string table, Row row)
         {

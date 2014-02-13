@@ -16,7 +16,7 @@ namespace wmib
 {
     /// <summary>
     /// Network user, keep in mind that bot is also recognizing own users
-	/// that are defined in System/User.cs only for core
+    /// that are defined in System/User.cs only for core
     /// </summary>
     [Serializable]
     public class User : IComparable
@@ -68,9 +68,9 @@ namespace wmib
                 return;
             }
 
-            if (core.irc.UChars.Contains(symbol))
+            if (Core.irc.UChars.Contains(symbol))
             {
-                char mode = core.irc.CUModes[core.irc.UChars.IndexOf(symbol)];
+                char mode = Core.irc.CUModes[Core.irc.UChars.IndexOf(symbol)];
                 ChannelMode.ChangeMode("+" + mode.ToString());
             }
         }
@@ -86,7 +86,7 @@ namespace wmib
             if (nick != "")
             {
                 char prefix = nick[0];
-                if (core.irc.UChars.Contains(prefix))
+                if (Core.irc.UChars.Contains(prefix))
                 {
                     SymbolMode(prefix);
                     nick = nick.Substring(1);

@@ -13,57 +13,24 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Mono.Unix.Native;
+using Mono.Unix;
 using System.Threading;
 
 namespace wmib
 {
     internal class Program
     {
-		/// <summary>
-		/// Log the specified message
-		/// </summary>
-		/// <param name='msg'>
-		/// Message that you want to log.
-		/// </param>
-		/// <param name='warn'>
-		/// If this is true the message will be classified as a warning.
-		/// </param>
-		[Obsolete]
-        public static bool Log(string msg, bool warn = false)
-        {
-            Logging.Write(msg, warn);
-            return true;
-        }
-
-		/// <summary>
-		/// Writes the message immediately to console with no thread sync
-		/// </summary>
-		/// <returns>
-		/// The now.
-		/// </returns>
-		/// <param name='msg'>
-		/// Message that you want to log.
-		/// </param>
-		/// <param name='warn'>
-		/// If this is true the message will be classified as a warning.
-		/// </param>
-        [Obsolete]
-		public static bool WriteNow(string msg, bool warn = false)
-        {
-            Logging.Display(DateTime.Now, msg, warn);
-            return true;
-        }
-
-		/// <summary>
-		/// Copy the selected file to a temporary file name
-		/// 
-		/// this function is used mostly for restore of corrupted data,
-		/// so that the corrupted version of file can be stored in /tmp
-		/// for debugging
-		/// </summary>
-		/// <param name='file'>
-		/// File
-		/// </param>
+        /// <summary>
+        /// Copy the selected file to a temporary file name
+        /// 
+        /// this function is used mostly for restore of corrupted data,
+        /// so that the corrupted version of file can be stored in /tmp
+        /// for debugging
+        /// </summary>
+        /// <param name='file'>
+        /// File
+        /// </param>
         public static bool Temp(string file)
         {
             string path = System.IO.Path.GetTempFileName();
@@ -76,49 +43,51 @@ namespace wmib
             return false;
         }
 
-		/// <summary>
-		/// This is used to handle UNIX signals
-		/// </summary>
-		/// <param name='sender'>
-		/// Sender.
-		/// </param>
-		/// <param name='args'>
-		/// Arguments.
-		/// </param>
-        protected static void myHandler(object sender, ConsoleCancelEventArgs args)
+        /// <summary>
+        /// This is used to handle UNIX signals
+        /// </summary>
+        /// <param name='sender'>
+        /// Sender.
+        /// </param>
+        /// <param name='args'>
+        /// Arguments.
+        /// </param>
+        protected static void SigInt(object sender, ConsoleCancelEventArgs args)
         {
-            Syslog.WriteNow("SIGINT");
-            Syslog.WriteNow("Shutting down");
+            Syslog.WriteNow("SIGINT - Shutting down", true);
             try
             {
-                core.Kill();
+                Core.Kill();
             }
-            catch (Exception)
+            catch (Exception fail)
             {
-                core.irc.Disconnect();
-                core._Status = core.Status.ShuttingDown;
+                Core.HandleException(fail);
             }
-            Syslog.WriteNow("Terminated");
+            Syslog.WriteNow("Terminated (emergency)");
+            System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
 
-		/// <summary>
-		/// Processes the terminal parameters
-		/// </summary>
-		/// <param name='gs'>
-		/// Gs.
-		/// </param>
+        /// <summary>
+        /// Processes the terminal parameters
+        /// </summary>
+        /// <param name='gs'>
+        /// Gs.
+        /// </param>
         private static void ProcessVerbosity(string[] gs)
         {
-            foreach (string item in gs)
+            int i = 0;
+            List<string> parameters = new List<string>(gs);
+            foreach (string item in parameters)
             {
+                i++;
                 if (item == "--nocolors")
                 {
-                    config.Colors = false;
+                    Configuration.System.Colors = false;
                     continue;
                 }
                 if (item == "--traffic" )
                 {
-                    config.Logging = true;
+                    Configuration.Network.Logging = true;
                 }
                 if (item == "-h" || item == "--help")
                 {
@@ -126,10 +95,20 @@ namespace wmib
                         "Parameters:\n" +
                         "    --nocolors: Disable colors in system logs\n" +
                         "    -h [--help]: Display help\n" +
+                        "    --pid file: Write a pid to a file\n" +
                         "    --traffic: Enable traffic logs\n" +
                         "    -v: Increases verbosity\n\n" +
                         "This software is open source, licensed under GPLv3");
                     Environment.Exit(0);
+                }
+                if (item == "--pid")
+                {
+                    if (parameters.Count <= i)
+                    {
+                        Console.WriteLine("You didn't provide a name for pid file");
+                        Environment.Exit(0);
+                    }
+                    System.IO.File.WriteAllText(parameters[i], System.Diagnostics.Process.GetCurrentProcess().Id.ToString());
                 }
                 if (item.StartsWith("-v"))
                 {
@@ -137,60 +116,88 @@ namespace wmib
                     {
                         if (x == 'v')
                         {
-                            config.SelectedVerbosity++;
+                            Configuration.System.SelectedVerbosity++;
                         }
                     }
                 }
             }
-            if (config.SelectedVerbosity >= 1)
+            if (Configuration.System.SelectedVerbosity >= 1)
             {
-                Syslog.DebugLog("System verbosity: " + config.SelectedVerbosity.ToString());
+                Syslog.DebugLog("System verbosity: " + Configuration.System.SelectedVerbosity.ToString());
             }
         }
 
-		/// <summary>
-		/// The entry point of the program, where the program control starts and ends.
-		/// </summary>
-		/// <param name='args'>
-		/// The command-line arguments.
-		/// </param>
+        /// <summary>
+        /// The entry point of the program, where the program control starts and ends.
+        /// </summary>
+        /// <param name='args'>
+        /// The command-line arguments.
+        /// </param>
         private static void Main(string[] args)
         {
             try
             {
-                config.UpTime = DateTime.Now;
+                Configuration.System.UpTime = DateTime.Now;
+                Core.KernelThread = Thread.CurrentThread;
+                Core.KernelThread.Name = "Kernel";
                 Thread logger = new Thread(Logging.Exec);
-                core.domain = AppDomain.CurrentDomain;
+                logger.Name = "Logger";
+                Core.ThreadManager.RegisterThread(logger);
                 ProcessVerbosity(args);
-                Syslog.WriteNow(config.Version);
+                Syslog.WriteNow(Configuration.System.Version);
                 Syslog.WriteNow("Loading...");
                 logger.Start();
-                Console.CancelKeyPress += myHandler;
+                Console.CancelKeyPress += SigInt;
                 messages.LoadLD();
-                if (config.Load() != 0)
+                if (Configuration.Load() != 0)
                 {
                     Syslog.WriteNow("Error while loading the config file, exiting", true);
                     Environment.Exit(-2);
                     return;
                 }
                 Terminal.Init();
-                core.Help.CreateHelp();
-                core.WriterThread = new System.Threading.Thread(StorageWriter.Core);
-                core.WriterThread.Start();
-                if (core.DatabaseServerIsAvailable)
+                Core.Help.CreateHelp();
+                Core.WriterThread = new System.Threading.Thread(StorageWriter.Exec);
+                Core.ThreadManager.RegisterThread(Core.WriterThread);
+                Core.WriterThread.Name = "Writer";
+                Core.WriterThread.Start();
+                if (Core.DatabaseServerIsAvailable)
                 {
                     Syslog.Log("Initializing MySQL");
-                    core.DB = new WMIBMySQL();
+                    Core.DB = new WMIBMySQL();
                 }
                 Syslog.Log("Loading modules");
-                core.SearchMods();
-                IRCTrust.Global();
+                ExtensionHandler.SearchMods();
+                Security.Global();
                 Syslog.Log("Connecting");
-                core.Connect();
+                Core.Connect();
+                UnixSignal[] signals = new UnixSignal []
+                {
+                    new UnixSignal (Signum.SIGINT),
+                    new UnixSignal (Signum.SIGTERM),
+                    new UnixSignal (Signum.SIGQUIT),
+                    new UnixSignal (Signum.SIGHUP),
+                };
+                while(Core.IsRunning)
+                {
+                    int index = UnixSignal.WaitAny (signals,-1);
+                    Signum signal = signals [index].Signum;
+                    switch (signal)
+                    {
+                        case Signum.SIGINT:
+                            SigInt(null, null);
+                            return;
+                        case Signum.SIGTERM:
+                            Syslog.WriteNow("SIGTERM - Shutting down", true);
+                            Core.Kill();
+                            return;
+                    }
+                    Thread.Sleep(200);
+                }
             }
             catch (Exception fatal)
             {
-                Syslog.WriteNow("ERROR: bot crashed, bellow is debugging information");
+                Syslog.WriteNow("bot crashed, bellow is debugging information", Syslog.Type.Error);
                 Console.WriteLine("------------------------------------------------------------------------");
                 Console.WriteLine("Description: " + fatal.Message);
                 Console.WriteLine("Stack trace: " + fatal.StackTrace);

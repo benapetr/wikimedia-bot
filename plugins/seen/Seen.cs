@@ -13,12 +13,11 @@ namespace wmib
         public override bool Construct()
         {
             Name = "SEEN";
-            start = true;
             Version = "2.2.1.10";
             return true;
         }
 
-        public override void Hook_ACTN(config.channel channel, User invoker, string message)
+        public override void Hook_ACTN(Channel channel, User invoker, string message)
         {
             WriteStatus(invoker.Nick, invoker.Host, channel.Name, item.Action.Talk);
         }
@@ -26,7 +25,7 @@ namespace wmib
         public override bool Hook_OnPrivateFromUser(string message, User user)
         {
             WriteStatus(user.Nick, user.Host, "<private message>", item.Action.Talk);
-            if (message.StartsWith(config.CommandPrefix + "seen "))
+            if (message.StartsWith(Configuration.System.CommandPrefix + "seen "))
             {
                     string parameter = "";
                         parameter = message.Substring(message.IndexOf(" ") + 1);
@@ -37,18 +36,18 @@ namespace wmib
                     }
             }
 
-            if (message.StartsWith(config.CommandPrefix + "seenrx "))
+            if (message.StartsWith(Configuration.System.CommandPrefix + "seenrx "))
             {
-                    core.irc._SlowQueue.DeliverMessage("Sorry but this command can be used in channels only (it's cpu expensive so it can be used on public by trusted users only)", user.Nick, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage("Sorry but this command can be used in channels only (it's cpu expensive so it can be used on public by trusted users only)", user.Nick, IRC.priority.low);
                     return true;
             }
             return false;
         }
 
-        public override void Hook_PRIV(config.channel channel, User invoker, string message)
+        public override void Hook_PRIV(Channel channel, User invoker, string message)
         {
             WriteStatus(invoker.Nick, invoker.Host, channel.Name, item.Action.Talk);
-            if (message.StartsWith(config.CommandPrefix + "seen "))
+            if (message.StartsWith(Configuration.System.CommandPrefix + "seen "))
             {
                 if (GetConfig(channel, "Seen.Enabled", false))
                 {
@@ -65,9 +64,9 @@ namespace wmib
                 }
             }
 
-            if (message.StartsWith(config.CommandPrefix + "seenrx "))
+            if (message.StartsWith(Configuration.System.CommandPrefix + "seenrx "))
             {
-                if (channel.Users.IsApproved(invoker, "trust"))
+                if (channel.SystemUsers.IsApproved(invoker, "trust"))
                 {
                     if (GetConfig(channel, "Seen.Enabled", false))
                     {
@@ -84,76 +83,76 @@ namespace wmib
                     }
                     return;
                 }
-                if (!channel.suppress_warnings)
+                if (!channel.SuppressWarnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
                 return;
             }
 
-            if (message == config.CommandPrefix + "seen-off")
+            if (message == Configuration.System.CommandPrefix + "seen-off")
             {
-                if (channel.Users.IsApproved(invoker, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker, "admin"))
                 {
                     if (!GetConfig(channel, "Seen.Enabled", false))
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("seen-e2", channel.Language), channel.Name);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("seen-e2", channel.Language), channel.Name);
                         return;
                     }
                     else
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("seen-off", channel.Language), channel.Name, IRC.priority.high);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("seen-off", channel.Language), channel.Name, IRC.priority.high);
                         SetConfig(channel, "Seen.Enabled", false);
                         channel.SaveConfig();
                         return;
                     }
                 }
-                if (!channel.suppress_warnings)
+                if (!channel.SuppressWarnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
                 return;
             }
 
-            if (message == config.CommandPrefix + "seen-on")
+            if (message == Configuration.System.CommandPrefix + "seen-on")
             {
-                if (channel.Users.IsApproved(invoker, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker, "admin"))
                 {
                     if (GetConfig(channel, "Seen.Enabled", false))
                     {
-                        core.irc._SlowQueue.DeliverMessage(messages.get("seen-oe", channel.Language), channel.Name);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("seen-oe", channel.Language), channel.Name);
                         return;
                     }
                     SetConfig(channel, "Seen.Enabled", true);
                     channel.SaveConfig();
-                    core.irc._SlowQueue.DeliverMessage(messages.get("seen-on", channel.Language), channel.Name, IRC.priority.high);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("seen-on", channel.Language), channel.Name, IRC.priority.high);
                     return;
                 }
-                if (!channel.suppress_warnings)
+                if (!channel.SuppressWarnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
                 return;
             }
         }
 
-        public override void Hook_Join(config.channel channel, User user)
+        public override void Hook_Join(Channel channel, User user)
         {
             WriteStatus(user.Nick, user.Host, channel.Name, item.Action.Join);
         }
 
-        public override void Hook_Nick(config.channel channel, User Target, string OldNick)
+        public override void Hook_Nick(Channel channel, User Target, string OldNick)
         {
             WriteStatus(OldNick, Target.Host, channel.Name, item.Action.Nick, Target.Nick);
             return;
         }
 
-        public override void Hook_Kick(config.channel channel, User source, User user)
+        public override void Hook_Kick(Channel channel, User source, User user)
         {
             WriteStatus(user.Nick, user.Host, channel.Name, item.Action.Kick);
         }
 
-        public override void Hook_Part(config.channel channel, User user)
+        public override void Hook_Part(Channel channel, User user)
         {
             WriteStatus(user.Nick, user.Host, channel.Name, item.Action.Part);
         }
@@ -165,11 +164,11 @@ namespace wmib
 
         public class ChannelRequest
         {
-            public config.channel channel;
+            public Channel channel;
             public string nick;
             public string source;
             public bool rg;
-            public ChannelRequest(string _nick, string _source, config.channel Channel, bool regexp)
+            public ChannelRequest(string _nick, string _source, Channel Channel, bool regexp)
             {
                 rg = regexp;
                 nick = _nick;
@@ -222,7 +221,7 @@ namespace wmib
         public bool Working = false;
 
         public string temp_nick;
-        public config.channel chan;
+        public Channel chan;
         public string temp_source;
 
         public override void Load()
@@ -251,7 +250,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                handleException(fail);
+                HandleException(fail);
             }
         }
 
@@ -317,15 +316,15 @@ namespace wmib
                                 continue;
                             }
                             found = true;
-                            config.channel last = null;
+                            Channel last = null;
                             switch (xx.LastAc)
                             {
                                 case item.Action.Join:
                                     action = "joining the channel";
-                                    last = core.getChannel(xx.lastplace);
+                                    last = Core.GetChannel(xx.lastplace);
                                     if (last != null)
                                     {
-                                        if (last.containsUser(xx.nick))
+                                        if (last.ContainsUser(xx.nick))
                                         {
                                             action += ", they are still in the channel";
                                         }
@@ -346,8 +345,8 @@ namespace wmib
                                     else
                                     {
                                         action = "changing the nickname to " + xx.newnick;
-                                        last = core.getChannel(xx.lastplace);
-                                        if (last.containsUser(xx.newnick))
+                                        last = Core.GetChannel(xx.lastplace);
+                                        if (last.ContainsUser(xx.newnick))
                                         {
                                             action += " and " + xx.newnick + " is still in the channel";
                                         }
@@ -379,10 +378,10 @@ namespace wmib
                                     break;
                                 case item.Action.Talk:
                                     action = "talking in the channel";
-                                    last = core.getChannel(xx.lastplace);
+                                    last = Core.GetChannel(xx.lastplace);
                                     if (last != null)
                                     {
-                                        if (last.containsUser(xx.nick))
+                                        if (last.ContainsUser(xx.nick))
                                         {
                                             action += ", they are still in the channel. It was in";
                                         }
@@ -420,18 +419,18 @@ namespace wmib
                     if (temp_nick.ToUpper() == temp_source.ToUpper())
                     {
                         response = "are you really looking for yourself?";
-                        core.irc._SlowQueue.DeliverMessage(temp_source + ": " + response, chan.Name);
+                        Core.irc.Queue.DeliverMessage(temp_source + ": " + response, chan.Name);
                         Working = false;
                         return;
                     }
-                    if (temp_nick.ToUpper() == config.NickName.ToUpper())
+                    if (temp_nick.ToUpper() == Configuration.IRC.NickName.ToUpper())
                     {
                         response = "I am right here";
-                        core.irc._SlowQueue.DeliverMessage(temp_source + ": " + response, chan.Name);
+                        Core.irc.Queue.DeliverMessage(temp_source + ": " + response, chan.Name);
                         Working = false;
                         return;
                     }
-                    if (chan.containsUser(temp_nick))
+                    if (chan.ContainsUser(temp_nick))
                     {
                         response = temp_nick + " is in here, right now";
                         found = true;
@@ -448,11 +447,11 @@ namespace wmib
                         }
                         response += " (multiple results were found: " + results + ")";
                     }
-                    core.irc._SlowQueue.DeliverMessage(temp_source + ": " + response, chan.Name);
+                    Core.irc.Queue.DeliverMessage(temp_source + ": " + response, chan.Name);
                     Working = false;
                     return;
                 }
-                core.irc._SlowQueue.DeliverMessage(messages.get("Error1", chan.Language), chan.Name);
+                Core.irc.Queue.DeliverMessage(messages.Localize("Error1", chan.Language), chan.Name);
                 Working = false;
             }
             catch (ThreadAbortException)
@@ -461,8 +460,8 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                handleException(fail);
-                Working = false;
+                HandleException(fail);
+                IsWorking = false;
             }
         }
 
@@ -500,11 +499,11 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                handleException(fail);
+                HandleException(fail);
             }
         }
 
-        public void RegEx2(string nick, config.channel channel, string source)
+        public void RegEx2(string nick, Channel channel, string source)
         {
             try
             {
@@ -522,7 +521,7 @@ namespace wmib
                     if (curr > 80)
                     {
                         SearchThread.Abort();
-                        core.irc._SlowQueue.DeliverMessage("This search took too much time, please optimize query", channel.Name);
+                        Core.irc.Queue.DeliverMessage("This search took too much time, please optimize query", channel.Name);
                         Working = false;
                         break;
                     }
@@ -530,11 +529,11 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                handleException(fail);
+                HandleException(fail);
             }
         }
 
-        public void RegEx(string nick, config.channel channel, string source)
+        public void RegEx(string nick, Channel channel, string source)
         {
             lock (requests)
             {
@@ -542,7 +541,7 @@ namespace wmib
             }
         }
 
-        public void RetrieveStatus(string nick, config.channel channel, string source)
+        public void RetrieveStatus(string nick, Channel channel, string source)
         {
             lock (requests)
             {
@@ -568,7 +567,7 @@ namespace wmib
             html += "<br><p>Seen data: " + global.Count.ToString() + "</p>";
         }
 
-        public void RetrieveStatus2(string nick, config.channel channel, string source)
+        public void RetrieveStatus2(string nick, Channel channel, string source)
         {
             try
             {
@@ -580,15 +579,15 @@ namespace wmib
                     if (nick.ToUpper() == xx.nick.ToUpper())
                     {
                         found = true;
-                        config.channel last;
+                        Channel last;
                         switch (xx.LastAc)
                         {
                             case item.Action.Join:
                                 action = "joining the channel";
-                                last = core.getChannel(xx.lastplace);
+                                last = Core.GetChannel(xx.lastplace);
                                 if (last != null)
                                 {
-                                    if (last.containsUser(nick))
+                                    if (last.ContainsUser(nick))
                                     {
                                         action += ", they are still in the channel";
                                     }
@@ -608,8 +607,8 @@ namespace wmib
                                     break;
                                 }
                                 action = "changing the nickname to " + xx.newnick;
-                                last = core.getChannel(xx.lastplace);
-                                if (last.containsUser(xx.newnick))
+                                last = Core.GetChannel(xx.lastplace);
+                                if (last.ContainsUser(xx.newnick))
                                 {
                                     action += " and " + xx.newnick + " is still in the channel";
                                 }
@@ -640,10 +639,10 @@ namespace wmib
                                 break;
                             case item.Action.Talk:
                                 action = "talking in the channel";
-                                last = core.getChannel(xx.lastplace);
+                                last = Core.GetChannel(xx.lastplace);
                                 if (last != null)
                                 {
-                                    if (last.containsUser(nick))
+                                    if (last.ContainsUser(nick))
                                     {
                                         action += ", they are still in the channel";
                                     }
@@ -679,18 +678,18 @@ namespace wmib
                 if (nick.ToUpper() == source.ToUpper())
                 {
                     response = "are you really looking for yourself?";
-                    core.irc._SlowQueue.DeliverMessage(source + ": " + response, target, IRC.priority.normal);
+                    Core.irc.Queue.DeliverMessage(source + ": " + response, target, IRC.priority.normal);
                     return;
                 }
-                if (nick.ToUpper() == config.NickName.ToUpper())
+                if (nick.ToUpper() == Configuration.IRC.NickName.ToUpper())
                 {
                     response = "I am right here";
-                    core.irc._SlowQueue.DeliverMessage(source + ": " + response, target, IRC.priority.normal);
+                    Core.irc.Queue.DeliverMessage(source + ": " + response, target, IRC.priority.normal);
                     return;
                 }
                 if (channel != null)
                 {
-                    if (channel.containsUser(nick))
+                    if (channel.ContainsUser(nick))
                     {
                         response = nick + " is in here, right now";
                         found = true;
@@ -698,20 +697,20 @@ namespace wmib
                 }
                 if (!found)
                 {
-                    foreach (config.channel Item in config.channels)
+                    foreach (Channel Item in Configuration.ChannelList)
                     {
-                        if (Item.containsUser(nick))
+                        if (Item.ContainsUser(nick))
                         {
                             response = nick + " is in " + Item.Name + " right now";
                             break;
                         }
                     }
                 }
-                core.irc._SlowQueue.DeliverMessage(source + ": " + response, target, IRC.priority.normal);
+                Core.irc.Queue.DeliverMessage(source + ": " + response, target, IRC.priority.normal);
             }
             catch (Exception fail)
             {
-                handleException(fail);
+                HandleException(fail);
             }
         }
 
@@ -776,19 +775,19 @@ namespace wmib
                     }
                 }
                 stat.AppendChild(xmlnode);
-                if (System.IO.File.Exists(variables.config + System.IO.Path.DirectorySeparatorChar + "seen.db"))
+                if (System.IO.File.Exists(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "seen.db"))
                 {
-                    core.backupData(variables.config + System.IO.Path.DirectorySeparatorChar + "seen.db");
+                    Core.BackupData(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "seen.db");
                 }
-                stat.Save(variables.config + System.IO.Path.DirectorySeparatorChar + "seen.db");
-                if (System.IO.File.Exists(config.tempName(variables.config + System.IO.Path.DirectorySeparatorChar + "seen.db")))
+                stat.Save(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "seen.db");
+                if (System.IO.File.Exists(Configuration.TempName(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "seen.db")))
                 {
-                    System.IO.File.Delete(config.tempName(variables.config + System.IO.Path.DirectorySeparatorChar + "seen.db"));
+                    System.IO.File.Delete(Configuration.TempName(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "seen.db"));
                 }
             }
             catch (Exception fail)
             {
-                handleException(fail);
+                HandleException(fail);
             }
         }
 
@@ -798,14 +797,14 @@ namespace wmib
             SearchHostThread.Start();
             try
             {
-                core.recoverFile(variables.config + System.IO.Path.DirectorySeparatorChar + "seen.db");
-                if (System.IO.File.Exists(variables.config + System.IO.Path.DirectorySeparatorChar + "seen.db"))
+                Core.RecoverFile(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "seen.db");
+                if (System.IO.File.Exists(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "seen.db"))
                 {
                     lock (global)
                     {
                         global = new List<item>();
                         XmlDocument stat = new XmlDocument();
-                        stat.Load(variables.config + System.IO.Path.DirectorySeparatorChar + "seen.db");
+                        stat.Load(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "seen.db");
                         if (stat.ChildNodes[0].ChildNodes.Count > 0)
                         {
                             foreach (XmlNode curr in stat.ChildNodes[0].ChildNodes)
@@ -857,7 +856,7 @@ namespace wmib
                                 }
                                 catch (Exception fail)
                                 {
-                                    handleException(fail);
+                                    HandleException(fail);
                                 }
                             }
                         }
@@ -866,7 +865,7 @@ namespace wmib
             }
             catch (Exception f)
             {
-                handleException(f);
+                HandleException(f);
             }
         }
 

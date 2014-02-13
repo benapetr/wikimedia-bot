@@ -21,7 +21,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>3</WarningLevel>
     <DocumentationFile>bin\Debug\wmib.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
@@ -31,7 +31,7 @@
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>3</WarningLevel>
     <DocumentationFile>bin\Release\wmib.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
@@ -42,24 +42,18 @@
       <HintPath>MySql.Data.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
+    <Reference Include="Mono.Posix" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Channel.cs" />
-    <Compile Include="Commands\Admin.cs" />
     <Compile Include="Database.cs" />
     <Compile Include="IRC\Instance.cs" />
     <Compile Include="IRC\ChannelMode.cs" />
     <Compile Include="IRC\ProcessorIRC.cs" />
     <Compile Include="MySQL.cs" />
-    <Compile Include="System\Channels_Core.cs" />
-    <Compile Include="Commands\Permissions.cs" />
-    <Compile Include="Config.cs" />
     <Compile Include="System\Core.cs" />
     <Compile Include="IRC\IRCcln.cs" />
-    <Compile Include="Irctrust.cs" />
     <Compile Include="l10n.cs" />
     <Compile Include="Modules\Module.cs" />
-    <Compile Include="Modules\Modules_Loader.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -68,14 +62,23 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="System\Formatter.cs" />
-    <Compile Include="System\Regex_Core.cs" />
     <Compile Include="System\StorageWriter.cs" />
-    <Compile Include="System\User.cs" />
     <Compile Include="System\Variables.cs" />
     <Compile Include="Terminal.cs" />
     <Compile Include="Syslog\Logging.cs" />
     <Compile Include="System\SystemHooks.cs" />
     <Compile Include="User.cs" />
+    <Compile Include="IRC\Channel.cs" />
+    <Compile Include="Configuration.cs" />
+    <Compile Include="Commands\Admin.cs" />
+    <Compile Include="Commands\Permissions.cs" />
+    <Compile Include="Commands\Channel.cs" />
+    <Compile Include="System\RegexCheck.cs" />
+    <Compile Include="System\User.cs" />
+    <Compile Include="Modules\Handler.cs" />
+    <Compile Include="Security.cs" />
+    <Compile Include="IRC\MessageQueue.cs" />
+    <Compile Include="System\ThreadManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">

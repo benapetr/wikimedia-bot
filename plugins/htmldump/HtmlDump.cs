@@ -23,14 +23,12 @@ namespace wmib
         {
             Name = "Html dump";
             Version = "1.0.8.6";
-            Reload = false;
-            start = true;
             return true;
         }
 
         public override bool Hook_OnRegister()
         {
-            foreach (config.channel chan in config.ChannelList)
+            foreach (Channel chan in Configuration.ChannelList)
             {
                 SetConfig(chan, "HTML.Update", true);
             }
@@ -43,13 +41,13 @@ namespace wmib
             Thread.Sleep(10000);
             while (true)
             {
-                foreach (config.channel chan in config.ChannelList)
+                foreach (Channel chan in Configuration.ChannelList)
                 {
                     if (GetConfig(chan, "HTML.Update", true))
                     {
                         HtmlDump dump = new HtmlDump(chan);
                         dump.Make();
-                        core.DebugLog("Making dump for " + chan.Name);
+                        Syslog.DebugLog("Making dump for " + chan.Name);
                         SetConfig(chan, "HTML.Update", false);
                     }
                 }
@@ -64,7 +62,7 @@ namespace wmib
         /// <summary>
         /// Channel name
         /// </summary>
-        public config.channel Channel;
+        public Channel _Channel;
 
         /// <summary>
         /// Dump
@@ -75,15 +73,15 @@ namespace wmib
         /// Constructor
         /// </summary>
         /// <param name="channel"></param>
-        public HtmlDump(config.channel channel)
+        public HtmlDump(Channel channel)
         {
-            dumpname = config.DumpDir + "/" + channel.Name + ".htm";
-            if (!System.IO.Directory.Exists(config.DumpDir))
+            dumpname = Configuration.Paths.DumpDir + "/" + channel.Name + ".htm";
+            if (!System.IO.Directory.Exists(Configuration.Paths.DumpDir))
             {
-                core.Log("Creating a directory for dump");
-                System.IO.Directory.CreateDirectory(config.DumpDir);
+                Syslog.Log("Creating a directory for dump");
+                System.IO.Directory.CreateDirectory(Configuration.Paths.DumpDir);
             }
-            Channel = channel;
+            _Channel = channel;
         }
 
         /// <summary>
@@ -102,9 +100,9 @@ namespace wmib
         private static string CreateHeader(string page_name)
         {
             string html = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n\n\n\n<html><head>";
-            if (config.css != "")
+            if (Configuration.WebPages.Css != "")
             {
-                html += "<link rel=\"stylesheet\" href=\"" + config.css + "\" type=\"text/css\"/>";
+                html += "<link rel=\"stylesheet\" href=\"" + Configuration.WebPages.Css + "\" type=\"text/css\"/>";
             }
             html += "<title>" + page_name + "</title>\n\n<meta charset=\"UTF-8\"></head><body>\n";
             return html;
@@ -180,37 +178,37 @@ namespace wmib
                 string text = CreateHeader("System info");
                 text += "<h1>System data</h1><p class=info>List of channels:</p>\n";
                 text += "<table class=\"channels\">\n<tr><th>Channel name</th><th>Options</th></tr>\n";
-                foreach (config.channel chan in config.ChannelList)
+                foreach (Channel chan in Configuration.ChannelList)
                 {
                     text = text + "<tr>";
                     text = text + "<td><a href=\"" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm\">" + chan.Name + "</a></td><td>";
                     text += "infobot: " + Module.GetConfig(chan, "Infobot.Enabled", true).ToString() 
                         + ", Recent Changes: " + Module.GetConfig(chan, "RC.Enabled", false).ToString() 
                         + ", Logs: " + Module.GetConfig(chan, "Logging.Enabled", false).ToString() 
-                        + ", Suppress: " + chan.suppress.ToString() 
+                        + ", Suppress: " + chan.Suppress.ToString() 
                         + ", Seen: " + Module.GetConfig(chan, "Seen.Enabled", false).ToString() 
                         + ", rss: " + Module.GetConfig(chan, "Rss.Enabled", false).ToString() 
                         + ", statistics: " + Module.GetConfig(chan, "Statistics.Enabled", false).ToString() 
-                        + " Instance: " + chan.instance.Nick + "</td></tr>\n";
+                        + " Instance: " + chan.PrimaryInstance.Nick + "</td></tr>\n";
                 }
 
 
-                text += "</table>Uptime: " + core.getUptime() + " Memory usage: " + (System.Diagnostics.Process.GetCurrentProcess().PrivateMemorySize64 / 1024).ToString() + "kb Database size: " + getSize();
+                text += "</table>Uptime: " + Core.getUptime() + " Memory usage: " + (System.Diagnostics.Process.GetCurrentProcess().PrivateMemorySize64 / 1024).ToString() + "kb Database size: " + getSize();
 
-                lock (Module.module)
+                lock (ExtensionHandler.Extensions)
                 {
-                    foreach (Module mm in Module.module)
+                    foreach (Module mm in ExtensionHandler.Extensions)
                     {
                         mm.Hook_BeforeSysWeb(ref text);
                     }
 
-                    text += "<br>Core version: " + config.Version + "<br>\n";
+                    text += "<br>Core version: " + Configuration.System.Version + "<br>\n";
 
                     text += "<h2>Bots</h2><table class=\"text\"><th>Name</th><th>Status</th><th>Bouncer</th>";
 
-                    lock (core.Instances)
+                    lock (Core.Instances)
                     {
-                        foreach (Instance xx in core.Instances.Values)
+                        foreach (Instance xx in Core.Instances.Values)
                         {
                             string status = "Online in " + xx.ChannelCount.ToString() + " channels";
                             if (!xx.IsWorking || !xx.irc.IsConnected)
@@ -225,10 +223,10 @@ namespace wmib
                         
                     text += "<h2>Plugins</h2><table class=\"modules\">";
 
-                    foreach (Module module in Module.module)
+                    foreach (Module module in ExtensionHandler.Extensions)
                     {
                         string status = "Terminated";
-                        if (module.working)
+                        if (module.IsWorking)
                         {
                             status = "OK";
                             if (module.Warning)
@@ -240,12 +238,12 @@ namespace wmib
                     }
                 }
                 text += "</table>\n\n</body></html>";
-                File.WriteAllText(config.DumpDir + "/systemdata.htm", text);
+                File.WriteAllText(Configuration.Paths.DumpDir + "/systemdata.htm", text);
 
             }
             catch (Exception b)
             {
-                core.handleException(b);
+                Core.HandleException(b, "HtmlDump");
             }
         }
 
@@ -257,44 +255,44 @@ namespace wmib
             try
             {
                 Dictionary<string, string> ModuleData = new Dictionary<string, string>();
-                lock (Module.module)
+                lock (ExtensionHandler.Extensions)
                 {
-                    foreach (Module xx in Module.module)
+                    foreach (Module xx in ExtensionHandler.Extensions)
                     {
                         try
                         {
-                            if (xx.working)
+                            if (xx.IsWorking)
                             {
-                                string html = xx.Extension_DumpHtml(Channel);
+                                string html = xx.Extension_DumpHtml(_Channel);
                                 if (html != null && html != "")
                                 {
-                                    ModuleData.Add(xx.Name.ToLower(), xx.Extension_DumpHtml(Channel));
+                                    ModuleData.Add(xx.Name.ToLower(), xx.Extension_DumpHtml(_Channel));
                                 }
                             }
                         }
                         catch (Exception fail)
                         {
-                            core.Log("Unable to retrieve web data", true);
-                            core.handleException(fail);
+                            Syslog.Log("Unable to retrieve web data", true);
+                            Core.HandleException(fail, "HtmlDump");
                         }
                     }
                 }
-                string text = CreateHeader(Channel.Name);
+                string text = CreateHeader(_Channel.Name);
                 if (ModuleData.ContainsKey("infobot core"))
                 {
-                    if (Module.GetConfig(Channel, "Infobot.Enabled", true))
+                    if (Module.GetConfig(_Channel, "Infobot.Enabled", true))
                     {
                         text += "<h4>Infobot</h4>\n";
-                        if (Channel.shared != "" && Channel.shared != "local")
+                        if (_Channel.SharedDB != "" && _Channel.SharedDB != "local")
                         {
-                            config.channel temp = core.getChannel(Channel.shared);
+                            Channel temp = Core.GetChannel(_Channel.SharedDB);
                             if (temp != null)
                             {
                                 text += "Linked to <a href=" + System.Web.HttpUtility.UrlEncode(temp.Name) + ".htm>" + temp.Name + "</a>\n";
                             }
                             else
                             {
-                                text += "Channel is linked to " + Channel.shared + " which isn't in my db, that's weird";
+                                text += "Channel is linked to " + _Channel.SharedDB + " which isn't in my db, that's weird";
                             }
                         }
                         else
@@ -306,7 +304,7 @@ namespace wmib
                 }
                 if (ModuleData.ContainsKey("rc"))
                 {
-                    if (Module.GetConfig(Channel, "RC.Enabled", false))
+                    if (Module.GetConfig(_Channel, "RC.Enabled", false))
                     {
                         text += "\n<br><h4>Recent changes</h4>";
                         text += ModuleData["rc"];
@@ -315,7 +313,7 @@ namespace wmib
                 }
                 if (ModuleData.ContainsKey("statistics") && ModuleData["statistics"] != null)
                 {
-                    if (Module.GetConfig(Channel, "Statistics.Enabled", false))
+                    if (Module.GetConfig(_Channel, "Statistics.Enabled", false))
                     {
                         text += ModuleData["statistics"];
                         ModuleData.Remove("statistics");
@@ -323,7 +321,7 @@ namespace wmib
                 }
                 if (ModuleData.ContainsKey("feed"))
                 {
-                    if (Module.GetConfig(Channel, "Rss.Enable", false))
+                    if (Module.GetConfig(_Channel, "Rss.Enable", false))
                     {
                         text += ModuleData["feed"];
                         ModuleData.Remove("feed");
@@ -341,7 +339,7 @@ namespace wmib
             }
             catch (Exception b)
             {
-                core.handleException(b);
+                Core.HandleException(b, "HtmlDump");
             }
         }
     }

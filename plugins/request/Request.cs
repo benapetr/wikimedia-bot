@@ -14,7 +14,7 @@ namespace wmib
 		/// This is a reference / pointer to channel object where we want to report
 		/// the requests to if it exists
 		/// </summary>
-        public config.channel pRequestsChannel = null;
+        public Channel pRequestsChannel = null;
 		private Thread PendingRequests = null;
 		private List<string> WaitingRequests = new List<string>();
 		public static readonly string RequestChannel = "#wikimedia-labs-requests";
@@ -22,7 +22,6 @@ namespace wmib
         public override bool Construct()
         {
             Name = "Requests";
-            start = true;
             Version = "1.20.0";
             return true;
         }
@@ -89,9 +88,9 @@ namespace wmib
             ArrayList toolsRequests = getWaitingUsernames("Tools Access Requests", "Tools Request User Name");
 
             if (shellRequests.Count != 0 || reportNoUsersWaiting)
-                core.irc._SlowQueue.DeliverMessage(formatReportLine(shellRequests, "shell access"), RequestChannel);
+                Core.irc.Queue.DeliverMessage(formatReportLine(shellRequests, "shell access"), RequestChannel);
             if (toolsRequests.Count != 0 || reportNoUsersWaiting)
-                core.irc._SlowQueue.DeliverMessage(formatReportLine(toolsRequests, "Tools access"), RequestChannel);
+                Core.irc.Queue.DeliverMessage(formatReportLine(toolsRequests, "Tools access"), RequestChannel);
 
             return shellRequests.Count != 0 || toolsRequests.Count != 0;
         }
@@ -100,7 +99,7 @@ namespace wmib
 		{
 			try
             {
-				while (this.working)
+				while (this.IsWorking)
 				{
 					List<string> requests = new List<string>();
 					// first copy all requests so that we don't keep the array locked for too long
@@ -122,7 +121,7 @@ namespace wmib
 			}
 			catch (Exception fail)
             {
-                handleException(fail);
+                HandleException(fail);
             }
 		}
 
@@ -134,7 +133,7 @@ namespace wmib
                 // Mono.
                 ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => { return true; };
 
-                pRequestsChannel = core.getChannel(RequestChannel);
+                pRequestsChannel = Core.GetChannel(RequestChannel);
                 if (pRequestsChannel == null)
                 {
                     Log("CRITICAL: the bot isn't in " + RequestChannel + " unloading requests", true);
@@ -146,7 +145,7 @@ namespace wmib
 				this.PendingRequests.Start();
 
                 Thread.Sleep(60000);
-                while (this.working)
+                while (this.IsWorking)
                 {
                     if (GetConfig(pRequestsChannel, "Requests.Enabled", false) && displayWaiting(false))
                         Thread.Sleep(800000);
@@ -156,11 +155,11 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                handleException(fail);
+                HandleException(fail);
             }
         }
 
-        public override void Hook_PRIV(config.channel channel, User invoker, string message)
+        public override void Hook_PRIV(Channel channel, User invoker, string message)
         {
             if (channel.Name != RequestChannel)
             {
@@ -169,45 +168,45 @@ namespace wmib
 
             if (message == "@requests-off")
             {
-                if (channel.Users.IsApproved(invoker.Nick, invoker.Host, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (!GetConfig(channel, "Requests.Enabled", false))
                     {
-                        core.irc._SlowQueue.DeliverMessage("Requests are already disabled", channel.Name);
+                        Core.irc.Queue.DeliverMessage("Requests are already disabled", channel.Name);
                         return;
                     }
                     else
                     {
-                        core.irc._SlowQueue.DeliverMessage("Requests were disabled", channel.Name, IRC.priority.high);
+                        Core.irc.Queue.DeliverMessage("Requests were disabled", channel.Name, IRC.priority.high);
                         SetConfig(channel, "Requests.Enabled", false);
                         channel.SaveConfig();
                         return;
                     }
                 }
-                if (!channel.suppress_warnings)
+                if (!channel.SuppressWarnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
                 return;
             }
 
             if (message == "@requests-on")
             {
-                if (channel.Users.IsApproved(invoker.Nick, invoker.Host, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (GetConfig(channel, "Requests.Enabled", false))
                     {
-                        core.irc._SlowQueue.DeliverMessage("Requests system is already enabled", channel.Name);
+                        Core.irc.Queue.DeliverMessage("Requests system is already enabled", channel.Name);
                         return;
                     }
                     SetConfig(channel, "Requests.Enabled", true);
                     channel.SaveConfig();
-                    core.irc._SlowQueue.DeliverMessage("Requests were enabled", channel.Name, IRC.priority.high);
+                    Core.irc.Queue.DeliverMessage("Requests were enabled", channel.Name, IRC.priority.high);
                     return;
                 }
-                if (!channel.suppress_warnings)
+                if (!channel.SuppressWarnings)
                 {
-                    core.irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
                 return;
             }
@@ -216,18 +215,18 @@ namespace wmib
 			{
 				if (!GetConfig(channel, "Requests.Enabled", false))
                 {
-					core.irc._SlowQueue.DeliverMessage("You need to enable requests in this channel for this command to work", channel.Name);
+					Core.irc.Queue.DeliverMessage("You need to enable requests in this channel for this command to work", channel.Name);
 					return;
 				}
                 lock (this.WaitingRequests)
 				{
 					if (this.WaitingRequests.Contains(channel.Name))
 				    {
-						core.irc._SlowQueue.DeliverMessage("I am already fetching the list of waiting users for this channel", channel.Name);
+						Core.irc.Queue.DeliverMessage("I am already fetching the list of waiting users for this channel", channel.Name);
 						return;
 					} else
 					{
-						core.irc._SlowQueue.DeliverMessage("I am fetching the list of waiting users...", channel.Name);
+						Core.irc.Queue.DeliverMessage("I am fetching the list of waiting users...", channel.Name);
 					}
 
 					this.WaitingRequests.Add(channel.Name);

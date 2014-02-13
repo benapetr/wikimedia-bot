@@ -25,11 +25,18 @@ namespace wmib
         /// List of all data to write
         /// </summary>
         private static readonly List<STI> Data = new List<STI>();
+        public static int Count
+        {
+            get
+            {
+                return Data.Count;
+            }
+        }
 
         /// <summary>
         /// Whether storage is running
         /// </summary>
-        public static bool isRunning = true;
+        public static bool IsRunning = true;
 
         private static bool Write(STI item)
         {
@@ -63,7 +70,7 @@ namespace wmib
             }
             catch (Exception crashed)
             {
-                core.handleException(crashed);
+                Core.HandleException(crashed);
             }
         }
 
@@ -95,12 +102,13 @@ namespace wmib
         /// <summary>
         /// Thread
         /// </summary>
-        public static void Core()
+        public static void Exec()
         {
             try
             {
+                Core.ThreadManager.Writer = true;
                 Syslog.Log("KERNEL: loaded writer thread");
-                while (isRunning)
+                while (IsRunning)
                 {
                     try
                     {
@@ -112,31 +120,34 @@ namespace wmib
                     }
                     catch (ThreadAbortException)
                     {
-                        isRunning = false;
+                        IsRunning = false;
                         break;
                     }
                     catch (Exception fail)
                     {
-                        core.handleException(fail);
+                        Core.HandleException(fail);
                     }
                 }
                 if (Data.Count > 0)
                 {
                     Syslog.Log("KERNEL: Writer thread was requested to stop, but there is still some data to write");
                     WriteData();
-                    Syslog.Log("No remaining data, stopping writer thread");
+                    Syslog.Log("KERNEL: No remaining data, stopping writer thread");
+                    Core.ThreadManager.Writer = false;
                     return;
                 }
                 else
                 {
-                    Syslog.Log("No remaining data, stopping writer thread");
+                    Syslog.Log("KERNEL: No remaining data, stopping writer thread");
+                    Core.ThreadManager.Writer = false;
                     return;
                 }
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail);
                 Syslog.Log("KERNEL: The writer thread was terminated", true);
+                Core.ThreadManager.Writer = false;
                 return;
             }
         }

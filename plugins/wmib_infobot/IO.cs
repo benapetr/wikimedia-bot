@@ -12,8 +12,7 @@ namespace wmib
         {
             Version = "1.2.0";
             Name = "Infobot DB";
-            start = true;
-            Reload = true;
+            RestartOnModuleCrash = true;
             return true;
         }
 
@@ -33,17 +32,17 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                core.handleException(fail);
+                Core.HandleException(fail, "infobot");
             }
         }
 
         public void SaveData()
         {
-            lock (config.channels)
+            lock (Configuration.Channels)
             {
-                foreach (config.channel x in config.channels)
+                foreach (Channel x in Configuration.Channels)
                 {
-                    infobot_core infobot = (infobot_core)x.RetrieveObject("Infobot");
+                    Infobot infobot = (Infobot)x.RetrieveObject("Infobot");
                     if (infobot != null)
                     {
                         if (infobot.stored == false)

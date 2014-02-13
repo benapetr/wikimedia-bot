@@ -35,6 +35,10 @@ namespace wmib
         /// </summary>
         public string Hostname = "127.0.0.1";
         /// <summary>
+        /// If you need to permanently disconnect this instance, change this to false
+        /// </summary>
+        public bool IsActive = true;
+        /// <summary>
         /// If this instance is connected
         /// </summary>
         public bool IsConnected
@@ -49,28 +53,25 @@ namespace wmib
             }
         }
 
-        public Thread JoinThread = null;
+        private Thread JoinThread = null;
         /// <summary>
         /// Each instance is running in its own thread, this is pointer to that thread
         /// </summary>
-        public Thread thread = null;
+        private Thread thread = null;
 
         /// <summary>
         /// List of channels this instance is in
         /// </summary>
-        public List<config.channel> ChannelList
+        public List<Channel> ChannelList
         {
             get
             {
-                List<config.channel> list = new List<config.channel>();
-                lock (config.channels)
+                List<Channel> list = new List<Channel>();
+                foreach (Channel ch in Configuration.ChannelList)
                 {
-                    foreach (config.channel ch in config.channels)
+                    if (ch.PrimaryInstance == this)
                     {
-                        if (ch.instance == this)
-                        {
-                            list.Add(ch);
-                        }
+                        list.Add(ch);
                     }
                 }
                 return list;
@@ -95,14 +96,11 @@ namespace wmib
             get
             {
                 int Channels = 0;
-                lock (config.channels)
+                foreach (Channel channel in Configuration.ChannelList)
                 {
-                    foreach (config.channel channel in config.channels)
+                    if (channel.PrimaryInstance == this)
                     {
-                        if (channel.instance == this)
-                        {
-                            Channels++;
-                        }
+                        Channels++;
                     }
                 }
                 return Channels;
@@ -123,7 +121,7 @@ namespace wmib
         {
             Nick = name;
             Port = port;
-            irc = new IRC(config.NetworkHost, Nick, config.Username, config.Username, this);
+            irc = new IRC(Configuration.IRC.NetworkHost, Nick, Configuration.IRC.Username, Configuration.IRC.Username, this);
             irc.Bouncer = Hostname;
             irc.BouncerPort = Port;
         }
@@ -134,7 +132,8 @@ namespace wmib
         public void Join()
         {
             JoinThread = new Thread(JoinAll);
-            JoinThread.Name = "Jointhread " + Nick;
+            JoinThread.Name = "Jointhread:" + Nick;
+            Core.ThreadManager.RegisterThread(JoinThread);
             JoinThread.Start();
         }
 
@@ -145,13 +144,13 @@ namespace wmib
         {
             if (irc.ChannelsJoined == false)
             {
-                if (config.DebugChan != null)
+                if (Configuration.System.DebugChan != null)
                 {
-                    irc.SendData("JOIN " + config.DebugChan);
+                    irc.SendData("JOIN " + Configuration.System.DebugChan);
                 }
-                foreach (config.channel channel in ChannelList)
+                foreach (Channel channel in ChannelList)
                 {
-                    if (channel.Name != "" && channel.Name != config.DebugChan)
+                    if (channel.Name != "" && channel.Name != Configuration.System.DebugChan)
                     {
                         Syslog.DebugLog("Joining " + channel.Name + " on " + Nick);
                         irc.Join(channel);
@@ -162,7 +161,10 @@ namespace wmib
             }
 
             irc.ChannelThread = new Thread(irc.ChannelList);
+            irc.ChannelThread.Name = "ChannelList:" + Nick;
+            Core.ThreadManager.RegisterThread(irc.ChannelThread);
             irc.ChannelThread.Start();
+            Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
         }
 
         /// <summary>
@@ -171,7 +173,8 @@ namespace wmib
         public void Init()
         {
             thread = new Thread(Connect);
-            thread.Name = Nick;
+            thread.Name = "Instance:" + Nick;
+            Core.ThreadManager.RegisterThread(thread);
             thread.Start();
         }
 
@@ -182,7 +185,7 @@ namespace wmib
         {
             if (thread != null)
             {
-                thread.Abort();
+                Core.ThreadManager.KillThread(thread);
             }
             if (irc != null)
             {
@@ -195,7 +198,28 @@ namespace wmib
         /// </summary>
         private void Connect()
         {
-            irc.Connect();
+            while (this.IsActive && Core.IsRunning)
+            {
+                try
+                {
+                    // we first attempt to disconnect this instance, if this is first loop
+                    // it will just skip it
+                    irc.Disconnect();
+                    irc.Connect();
+                    irc.ParserExec();
+                    Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
+
+                } catch (ThreadAbortException)
+                {
+                    Syslog.DebugLog("Terminated primary thread for instance " + Nick);
+                    return;
+                } catch (Exception fail)
+                {
+                    Core.HandleException(fail);
+                    Syslog.ErrorLog("Failure of primary thread of instance " + Nick + " attempting to recover");
+                    Thread.Sleep(20000);
+                }
+            }
         }
     }
 }
