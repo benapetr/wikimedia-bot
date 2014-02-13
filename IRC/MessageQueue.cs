@@ -41,7 +41,7 @@ namespace wmib
                 /// Channel which the message should be delivered to
                 /// </summary>
                 public string Channel = null;
-				public Channel pChannel = null;
+                public Channel pChannel = null;
                 /// <summary>
                 /// If this is true the message will be sent as raw command
                 /// </summary>
@@ -218,20 +218,20 @@ namespace wmib
             }
 
             private void Transfer(Message text)
-			{
-				if (text.Command)
-				{
-					Parent.SendData(text.Text);
-					return;
-				}
-				if (text.pChannel != null)
-				{
-					Parent.Message(text.Text, text.pChannel);
-				}
-				if (text.Channel != null)
-				{
-					Parent.Message(text.Text, text.Channel);
-				}
+            {
+                if (text.Command)
+                {
+                    Parent.SendData(text.Text);
+                    return;
+                }
+                if (text.pChannel != null)
+                {
+                    Parent.Message(text.Text, text.pChannel);
+                }
+                if (text.Channel != null)
+                {
+                    Parent.Message(text.Text, text.Channel);
+                }
             }
 
             /// <summary>

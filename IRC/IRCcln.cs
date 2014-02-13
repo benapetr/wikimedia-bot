@@ -145,7 +145,7 @@ namespace wmib
             ParentInstance = _instance;
         }
 
-		/// <summary>
+        /// <summary>
         /// Send a message to channel
         /// </summary>
         /// <param name="message">Message</param>
@@ -257,10 +257,10 @@ namespace wmib
         /// </summary>
         public void RestartIRCMessageDelivery()
         {
-			Core.ThreadManager.KillThread(_Queue);
+            Core.ThreadManager.KillThread(_Queue);
             this.Queue.newmessages.Clear();
             this._Queue = new System.Threading.Thread(new System.Threading.ThreadStart(Queue.Run));
-			Core.ThreadManager.RegisterThread(_Queue);
+            Core.ThreadManager.RegisterThread(_Queue);
             this.Queue.Messages.Clear();
             this._Queue.Start();
         }

@@ -8,7 +8,7 @@ namespace wmib
 {
     public class RegularModule : Module
     {
-		public class ChannelRequest
+        public class ChannelRequest
         {
             public Channel channel;
             public string nick;
@@ -65,8 +65,8 @@ namespace wmib
         public Thread SearchThread;
         public Thread SearchHostThread;
         public bool Working = false;
-		public List<item> GlobalList = new List<item>();
-		private bool save = false;
+        public List<item> GlobalList = new List<item>();
+        private bool save = false;
 
         public string temp_nick;
         public Channel chan;
@@ -224,7 +224,7 @@ namespace wmib
         {
             WriteStatus(user.Nick, user.Host, "N/A", item.Action.Exit, "", Message);
         }
-		
+        
         public override void Load()
         {
             try
@@ -300,124 +300,124 @@ namespace wmib
                     string results = "";
                     int cn = 0;
                     string action = "quitting the network with reason " ;
-					lock (GlobalList)
-					{
-	                    foreach (item xx in GlobalList)
-	                    {
-	                        if (ex.IsMatch(xx.nick))
-	                        {
-	                            if (found)
-	                            {
-	                                cn++;
-	                                if (cn < 6)
-	                                {
-	                                    results += xx.nick + ", ";
-	                                }
-	                                multiple = true;
-	                                continue;
-	                            }
-	                            found = true;
-	                            Channel last = null;
-	                            switch (xx.LastAc)
-	                            {
-	                                case item.Action.Join:
-	                                    action = "joining the channel";
-	                                    last = Core.GetChannel(xx.lastplace);
-	                                    if (last != null)
-	                                    {
-	                                        if (last.ContainsUser(xx.nick))
-	                                        {
-	                                            action += ", they are still in the channel";
-	                                        }
-	                                        else
-	                                        {
-	                                            action += ", but they are not in the channel now and I don't know why, in";
-	                                        }
-	                                    }
-	                                    break;
-	                                case item.Action.Kick:
-	                                    action = "kicked from the channel";
-	                                    break;
-	                                case item.Action.Nick:
-	                                    if (xx.newnick == null)
-	                                    {
-	                                        action = "error NULL pointer at record";
-	                                    }
-	                                    else
-	                                    {
-	                                        action = "changing the nickname to " + xx.newnick;
-	                                        last = Core.GetChannel(xx.lastplace);
-	                                        if (last.ContainsUser(xx.newnick))
-	                                        {
-	                                            action += " and " + xx.newnick + " is still in the channel";
-	                                        }
-	                                        else
-	                                        {
-	                                            action += ", but " + xx.newnick + " is no longer in channel";
-	                                        }
-	                                        item nick = getItem(xx.newnick);
-	                                        if (nick != null)
-	                                        {
-	                                            TimeSpan span3 = DateTime.Now - nick.LastSeen;
-	                                            switch (nick.LastAc)
-	                                            {
-	                                                case item.Action.Exit:
-	                                                    action += " because he quitted the network " + span3.ToString() + " ago. The nick change was done in";
-	                                                    break;
-	                                                case item.Action.Kick:
-	                                                    action += " because he was kicked from the channel " + span3.ToString() + " ago. The nick change was done in";
-	                                                    break;
-	                                                case item.Action.Part:
-	                                                    action += " because he left the channel " + span3.ToString() + " ago. The nick change was done in";
-	                                                    break;
-	                                            }
-	                                        }
-	                                    }
-	                                    break;
-	                                case item.Action.Part:
-	                                    action = "leaving the channel";
-	                                    break;
-	                                case item.Action.Talk:
-	                                    action = "talking in the channel";
-	                                    last = Core.GetChannel(xx.lastplace);
-	                                    if (last != null)
-	                                    {
-	                                        if (last.ContainsUser(xx.nick))
-	                                        {
-	                                            action += ", they are still in the channel. It was in";
-	                                        }
-	                                        else
-	                                        {
-	                                            action += ", but they are not in the channel now and I don't know why. It was in";
-	                                        }
-	                                    }
-	                                    break;
-	                                case item.Action.Exit:
-	                                    string reason = xx.quit;
-	                                    if (reason == "")
-	                                    {
-	                                        reason = "no reason was given";
-	                                    }
-	                                    action = "quitting the network with reason: " + reason;
-	                                    break;
-	                            }
-	                            TimeSpan span2 = DateTime.Now - xx.LastSeen;
-	                            if (xx.lastplace == null)
-	                            {
-	                                xx.lastplace = "N/A";
-	                            }
-	
-	                            if (xx.LastAc == item.Action.Exit)
-	                            {
-	                                response = "Last time I saw " + xx.nick + " they were " + action + " at " + xx.LastSeen.ToString() + " (" + RegularModule.FormatTimeSpan(span2) + " ago)";
-	                            }
-	                            else
-	                            {
-	                                response = "Last time I saw " + xx.nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString() + " (" + RegularModule.FormatTimeSpan(span2) + " ago)";
-	                            }
-	                        }
-	                    }
-					}
+                    lock (GlobalList)
+                    {
+                        foreach (item xx in GlobalList)
+                        {
+                            if (ex.IsMatch(xx.nick))
+                            {
+                                if (found)
+                                {
+                                    cn++;
+                                    if (cn < 6)
+                                    {
+                                        results += xx.nick + ", ";
+                                    }
+                                    multiple = true;
+                                    continue;
+                                }
+                                found = true;
+                                Channel last = null;
+                                switch (xx.LastAc)
+                                {
+                                    case item.Action.Join:
+                                        action = "joining the channel";
+                                        last = Core.GetChannel(xx.lastplace);
+                                        if (last != null)
+                                        {
+                                            if (last.ContainsUser(xx.nick))
+                                            {
+                                                action += ", they are still in the channel";
+                                            }
+                                            else
+                                            {
+                                                action += ", but they are not in the channel now and I don't know why, in";
+                                            }
+                                        }
+                                        break;
+                                    case item.Action.Kick:
+                                        action = "kicked from the channel";
+                                        break;
+                                    case item.Action.Nick:
+                                        if (xx.newnick == null)
+                                        {
+                                            action = "error NULL pointer at record";
+                                        }
+                                        else
+                                        {
+                                            action = "changing the nickname to " + xx.newnick;
+                                            last = Core.GetChannel(xx.lastplace);
+                                            if (last.ContainsUser(xx.newnick))
+                                            {
+                                                action += " and " + xx.newnick + " is still in the channel";
+                                            }
+                                            else
+                                            {
+                                                action += ", but " + xx.newnick + " is no longer in channel";
+                                            }
+                                            item nick = getItem(xx.newnick);
+                                            if (nick != null)
+                                            {
+                                                TimeSpan span3 = DateTime.Now - nick.LastSeen;
+                                                switch (nick.LastAc)
+                                                {
+                                                    case item.Action.Exit:
+                                                        action += " because he quitted the network " + span3.ToString() + " ago. The nick change was done in";
+                                                        break;
+                                                    case item.Action.Kick:
+                                                        action += " because he was kicked from the channel " + span3.ToString() + " ago. The nick change was done in";
+                                                        break;
+                                                    case item.Action.Part:
+                                                        action += " because he left the channel " + span3.ToString() + " ago. The nick change was done in";
+                                                        break;
+                                                }
+                                            }
+                                        }
+                                        break;
+                                    case item.Action.Part:
+                                        action = "leaving the channel";
+                                        break;
+                                    case item.Action.Talk:
+                                        action = "talking in the channel";
+                                        last = Core.GetChannel(xx.lastplace);
+                                        if (last != null)
+                                        {
+                                            if (last.ContainsUser(xx.nick))
+                                            {
+                                                action += ", they are still in the channel. It was in";
+                                            }
+                                            else
+                                            {
+                                                action += ", but they are not in the channel now and I don't know why. It was in";
+                                            }
+                                        }
+                                        break;
+                                    case item.Action.Exit:
+                                        string reason = xx.quit;
+                                        if (reason == "")
+                                        {
+                                            reason = "no reason was given";
+                                        }
+                                        action = "quitting the network with reason: " + reason;
+                                        break;
+                                }
+                                TimeSpan span2 = DateTime.Now - xx.LastSeen;
+                                if (xx.lastplace == null)
+                                {
+                                    xx.lastplace = "N/A";
+                                }
+    
+                                if (xx.LastAc == item.Action.Exit)
+                                {
+                                    response = "Last time I saw " + xx.nick + " they were " + action + " at " + xx.LastSeen.ToString() + " (" + RegularModule.FormatTimeSpan(span2) + " ago)";
+                                }
+                                else
+                                {
+                                    response = "Last time I saw " + xx.nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString() + " (" + RegularModule.FormatTimeSpan(span2) + " ago)";
+                                }
+                            }
+                        }
+                    }
                     if (temp_nick.ToUpper() == temp_source.ToUpper())
                     {
                         response = "are you really looking for yourself?";
@@ -554,16 +554,16 @@ namespace wmib
         public item getItem(string nick)
         {
             nick = nick.ToUpper();
-			lock (GlobalList)
-			{
-	            foreach (item xx in GlobalList)
-	            {
-	                if (nick == xx.nick.ToUpper())
-	                {
-	                    return xx;
-	                }
-	            }
-			}
+            lock (GlobalList)
+            {
+                foreach (item xx in GlobalList)
+                {
+                    if (nick == xx.nick.ToUpper())
+                    {
+                        return xx;
+                    }
+                }
+            }
             return null;
         }
 
@@ -579,105 +579,105 @@ namespace wmib
                 string response = "I have never seen " + nick;
                 bool found = false;
                 string action = "quiting the network";
-				lock (GlobalList)
-				{
-	                foreach (item xx in GlobalList)
-	                {
-	                    if (nick.ToUpper() == xx.nick.ToUpper())
-	                    {
-	                        found = true;
-	                        Channel last;
-	                        switch (xx.LastAc)
-	                        {
-	                            case item.Action.Join:
-	                                action = "joining the channel";
-	                                last = Core.GetChannel(xx.lastplace);
-	                                if (last != null)
-	                                {
-	                                    if (last.ContainsUser(nick))
-	                                    {
-	                                        action += ", they are still in the channel";
-	                                    }
-	                                    else
-	                                    {
-	                                        action += ", but they are not in the channel now and I don't know why, in";
-	                                    }
-	                                }
-	                                break;
-	                            case item.Action.Kick:
-	                                action = "kicked from the channel";
-	                                break;
-	                            case item.Action.Nick:
-	                                if (xx.newnick == null)
-	                                {
-	                                    action = "error NULL pointer at record";
-	                                    break;
-	                                }
-	                                action = "changing the nickname to " + xx.newnick;
-	                                last = Core.GetChannel(xx.lastplace);
-	                                if (last.ContainsUser(xx.newnick))
-	                                {
-	                                    action += " and " + xx.newnick + " is still in the channel";
-	                                }
-	                                else
-	                                {
-	                                    action += ", but " + xx.newnick + " is no longer in channel";
-	                                }
-	                                item nick2 = getItem(xx.newnick);
-	                                if (nick2 != null)
-	                                {
-	                                    TimeSpan span3 = DateTime.Now - nick2.LastSeen;
-	                                    switch (nick2.LastAc)
-	                                    {
-	                                        case item.Action.Exit:
-	                                            action += " because he quitted the network " + span3.ToString() + " ago. The nick change was done in";
-	                                            break;
-	                                        case item.Action.Kick:
-	                                            action += " because he was kicked from the channel " + span3.ToString() + " ago. The nick change was done in";
-	                                            break;
-	                                        case item.Action.Part:
-	                                            action += " because he left the channel " + span3.ToString() + " ago. The nick change was done in";
-	                                            break;
-	                                    }
-	                                }
-	                                break;
-	                            case item.Action.Part:
-	                                action = "leaving the channel";
-	                                break;
-	                            case item.Action.Talk:
-	                                action = "talking in the channel";
-	                                last = Core.GetChannel(xx.lastplace);
-	                                if (last != null)
-	                                {
-	                                    if (last.ContainsUser(nick))
-	                                    {
-	                                        action += ", they are still in the channel";
-	                                    }
-	                                    else
-	                                    {
-	                                        action += ", but they are not in the channel now and I don't know why, in";
-	                                    }
-	                                }
-	                                break;
-	                            case item.Action.Exit:
-	                                string reason = xx.quit;
-	                                if (reason == "")
-	                                {
-	                                    reason = "no reason was given";
-	                                }
-	                                action = "quitting the network with reason: " + reason;
-	                                break;
-	                        }
-	                        TimeSpan span = DateTime.Now - xx.LastSeen;
-	                        if (xx.LastAc == item.Action.Exit)
-	                        {
-	                            response = "Last time I saw " + nick + " they were " + action + " at " + xx.LastSeen.ToString() + " (" + RegularModule.FormatTimeSpan (span) + " ago)";
-	                        }
-	                        response = "Last time I saw " + nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString() + " (" + RegularModule.FormatTimeSpan (span) + " ago)";
-	                        break;
-	                    }
-	                }
-				}
+                lock (GlobalList)
+                {
+                    foreach (item xx in GlobalList)
+                    {
+                        if (nick.ToUpper() == xx.nick.ToUpper())
+                        {
+                            found = true;
+                            Channel last;
+                            switch (xx.LastAc)
+                            {
+                                case item.Action.Join:
+                                    action = "joining the channel";
+                                    last = Core.GetChannel(xx.lastplace);
+                                    if (last != null)
+                                    {
+                                        if (last.ContainsUser(nick))
+                                        {
+                                            action += ", they are still in the channel";
+                                        }
+                                        else
+                                        {
+                                            action += ", but they are not in the channel now and I don't know why, in";
+                                        }
+                                    }
+                                    break;
+                                case item.Action.Kick:
+                                    action = "kicked from the channel";
+                                    break;
+                                case item.Action.Nick:
+                                    if (xx.newnick == null)
+                                    {
+                                        action = "error NULL pointer at record";
+                                        break;
+                                    }
+                                    action = "changing the nickname to " + xx.newnick;
+                                    last = Core.GetChannel(xx.lastplace);
+                                    if (last.ContainsUser(xx.newnick))
+                                    {
+                                        action += " and " + xx.newnick + " is still in the channel";
+                                    }
+                                    else
+                                    {
+                                        action += ", but " + xx.newnick + " is no longer in channel";
+                                    }
+                                    item nick2 = getItem(xx.newnick);
+                                    if (nick2 != null)
+                                    {
+                                        TimeSpan span3 = DateTime.Now - nick2.LastSeen;
+                                        switch (nick2.LastAc)
+                                        {
+                                            case item.Action.Exit:
+                                                action += " because he quitted the network " + span3.ToString() + " ago. The nick change was done in";
+                                                break;
+                                            case item.Action.Kick:
+                                                action += " because he was kicked from the channel " + span3.ToString() + " ago. The nick change was done in";
+                                                break;
+                                            case item.Action.Part:
+                                                action += " because he left the channel " + span3.ToString() + " ago. The nick change was done in";
+                                                break;
+                                        }
+                                    }
+                                    break;
+                                case item.Action.Part:
+                                    action = "leaving the channel";
+                                    break;
+                                case item.Action.Talk:
+                                    action = "talking in the channel";
+                                    last = Core.GetChannel(xx.lastplace);
+                                    if (last != null)
+                                    {
+                                        if (last.ContainsUser(nick))
+                                        {
+                                            action += ", they are still in the channel";
+                                        }
+                                        else
+                                        {
+                                            action += ", but they are not in the channel now and I don't know why, in";
+                                        }
+                                    }
+                                    break;
+                                case item.Action.Exit:
+                                    string reason = xx.quit;
+                                    if (reason == "")
+                                    {
+                                        reason = "no reason was given";
+                                    }
+                                    action = "quitting the network with reason: " + reason;
+                                    break;
+                            }
+                            TimeSpan span = DateTime.Now - xx.LastSeen;
+                            if (xx.LastAc == item.Action.Exit)
+                            {
+                                response = "Last time I saw " + nick + " they were " + action + " at " + xx.LastSeen.ToString() + " (" + RegularModule.FormatTimeSpan (span) + " ago)";
+                            }
+                            response = "Last time I saw " + nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString() + " (" + RegularModule.FormatTimeSpan (span) + " ago)";
+                            break;
+                        }
+                    }
+                }
                 string target = source;
                 if (channel != null)
                 {
@@ -808,7 +808,7 @@ namespace wmib
                 Core.RecoverFile(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "seen.db");
                 if (System.IO.File.Exists(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "seen.db"))
                 {
-					GlobalList = new List<item>();
+                    GlobalList = new List<item>();
                     lock (GlobalList)
                     {
                         XmlDocument stat = new XmlDocument();

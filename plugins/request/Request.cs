@@ -10,14 +10,14 @@ namespace wmib
 {
     public class RequestsPlugin : Module
     {
-		/// <summary>
-		/// This is a reference / pointer to channel object where we want to report
-		/// the requests to if it exists
-		/// </summary>
+        /// <summary>
+        /// This is a reference / pointer to channel object where we want to report
+        /// the requests to if it exists
+        /// </summary>
         public Channel pRequestsChannel = null;
-		private Thread PendingRequests = null;
-		private List<string> WaitingRequests = new List<string>();
-		public static readonly string RequestChannel = "#wikimedia-labs-requests";
+        private Thread PendingRequests = null;
+        private List<string> WaitingRequests = new List<string>();
+        public static readonly string RequestChannel = "#wikimedia-labs-requests";
 
         public override bool Construct()
         {
@@ -36,8 +36,8 @@ namespace wmib
             // the printouts to calculate "Waiting for x minutes"
             // data.
             string Url = "https://wikitech.wikimedia.org/w/api.php" + "?action=ask" + "&query=" + 
-				Uri.EscapeUriString("[[Category:" + categoryName + "]] [[Is Completed::No]]|?" + 
-				                    usernamePrintout) + "&format=wddx";
+                Uri.EscapeUriString("[[Category:" + categoryName + "]] [[Is Completed::No]]|?" + 
+                                    usernamePrintout) + "&format=wddx";
 
             // Get the query results.
             string Result = client.DownloadString(Url);
@@ -95,35 +95,35 @@ namespace wmib
             return shellRequests.Count != 0 || toolsRequests.Count != 0;
         }
 
-		private void Run()
-		{
-			try
+        private void Run()
+        {
+            try
             {
-				while (this.IsWorking)
-				{
-					List<string> requests = new List<string>();
-					// first copy all requests so that we don't keep the array locked for too long
-					// because it can be locked by main thread, we need to acquire the lock for shortest time
-					lock (this.WaitingRequests)
-					{
-						requests.AddRange(this.WaitingRequests);
-						this.WaitingRequests.Clear();
-					}
+                while (this.IsWorking)
+                {
+                    List<string> requests = new List<string>();
+                    // first copy all requests so that we don't keep the array locked for too long
+                    // because it can be locked by main thread, we need to acquire the lock for shortest time
+                    lock (this.WaitingRequests)
+                    {
+                        requests.AddRange(this.WaitingRequests);
+                        this.WaitingRequests.Clear();
+                    }
 
-					foreach (string channel in requests)
-					{
-						// TODO: here we should implement the channel parameter so that we could use this module
-						// in more channels than one
-						displayWaiting(true);
-					}
-					Thread.Sleep(600);
-				}
-			}
-			catch (Exception fail)
+                    foreach (string channel in requests)
+                    {
+                        // TODO: here we should implement the channel parameter so that we could use this module
+                        // in more channels than one
+                        displayWaiting(true);
+                    }
+                    Thread.Sleep(600);
+                }
+            }
+            catch (Exception fail)
             {
                 HandleException(fail);
             }
-		}
+        }
 
         public override void Load()
         {
@@ -140,9 +140,9 @@ namespace wmib
                     return;
                 }
 
-				this.PendingRequests = new Thread(Run);
-				this.PendingRequests.Name = "Pending queries thread for requests extension";
-				this.PendingRequests.Start();
+                this.PendingRequests = new Thread(Run);
+                this.PendingRequests.Name = "Pending queries thread for requests extension";
+                this.PendingRequests.Start();
 
                 Thread.Sleep(60000);
                 while (this.IsWorking)
@@ -212,25 +212,25 @@ namespace wmib
             }
 
             if (message == "@requests")
-			{
-				if (!GetConfig(channel, "Requests.Enabled", false))
+            {
+                if (!GetConfig(channel, "Requests.Enabled", false))
                 {
-					Core.irc.Queue.DeliverMessage("You need to enable requests in this channel for this command to work", channel.Name);
-					return;
-				}
+                    Core.irc.Queue.DeliverMessage("You need to enable requests in this channel for this command to work", channel.Name);
+                    return;
+                }
                 lock (this.WaitingRequests)
-				{
-					if (this.WaitingRequests.Contains(channel.Name))
-				    {
-						Core.irc.Queue.DeliverMessage("I am already fetching the list of waiting users for this channel", channel.Name);
-						return;
-					} else
-					{
-						Core.irc.Queue.DeliverMessage("I am fetching the list of waiting users...", channel.Name);
-					}
+                {
+                    if (this.WaitingRequests.Contains(channel.Name))
+                    {
+                        Core.irc.Queue.DeliverMessage("I am already fetching the list of waiting users for this channel", channel.Name);
+                        return;
+                    } else
+                    {
+                        Core.irc.Queue.DeliverMessage("I am fetching the list of waiting users...", channel.Name);
+                    }
 
-					this.WaitingRequests.Add(channel.Name);
-				}
+                    this.WaitingRequests.Add(channel.Name);
+                }
                 return;
             }
         }

@@ -211,7 +211,7 @@ namespace wmib
             }
         }
 
-		private static Dictionary<string, string> ConfigurationData = null;
+        private static Dictionary<string, string> ConfigurationData = null;
 
         /// <summary>
         /// Save a wm-bot channel list
@@ -240,14 +240,14 @@ namespace wmib
             return (file + "~");
         }
 
-		public static string RetrieveConfig(string key)
-		{
-			if (ConfigurationData.ContainsKey(key))
-			{
-				return ConfigurationData[key];
-			}
-			return null;
-		}
+        public static string RetrieveConfig(string key)
+        {
+            if (ConfigurationData.ContainsKey(key))
+            {
+                return ConfigurationData[key];
+            }
+            return null;
+        }
 
         private static Dictionary<string, string> File2Dict()
         {
