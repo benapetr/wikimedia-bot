@@ -72,6 +72,14 @@ text "Building module op"
 cd ../op || exit 1
 xbuild > /dev/null || exit 1
 ok
+text "Building module netcat"
+cd ../NetCat || exit 1
+xbuild > /dev/null || exit 1
+ok
+text "Building module requests"
+cd ../requests || exit 1
+xbuild > /dev/null || exit 1
+ok
 text "Building module wmib_infobot"
 cd ../wmib_infobot || exit 1
 xbuild > /dev/null || exit 1
@@ -128,6 +136,8 @@ cp "$source/plugins/wmib_infobot/bin/Debug/wmib_infobot.dll" "$target/modules/wm
 cp "$source/plugins/Thanks/bin/Debug/Thanks.dll" "$target/modules/thanks.bin" || exit 1
 cp "$source/plugins/wmib_rc/bin/Debug/wmib_rc.dll" "$target/modules/wmib_rc.bin" || exit 1
 cp "$source/plugins/wmib_statistics/bin/Debug/wmib_statistics.dll" "$target/modules/wmib_statistics.bin" || exit 1
+cp "$source/plugins/wmib_rafeed/bin/Debug/requests.dll" "$target/modules/requests.bin" || exit 1
+cp "$source/plugins/wmib_rafeed/bin/Debug/NetCat.dll" "$target/modules/NetCat.bin" || exit 1
 cp "$source/plugins/wmib_rafeed/bin/Debug/wmib_rafeed.dll" "$target/modules/wmib_rafeed.bin" || exit 1
 cp "$source/plugins/wmib_notify/bin/Debug/wmib_notify.dll" "$target/modules/wmib_notify.bin" || exit 1
 ok
