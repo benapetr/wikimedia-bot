@@ -210,51 +210,13 @@ namespace wmib
         public static void Save()
         {
             StringBuilder text = new StringBuilder("");
-            AddConfig("username", NickName, text);
-            AddConfig("password", LoginPw, text);
-            AddConfig("web", WebpageURL, text);
-            AddConfig("serverIO", UsingNetworkIOLayer.ToString(), text);
-            AddConfig("debug", DebugChan, text);
-            AddConfig("network", NetworkHost, text);
-            AddConfig("bouncerp", BouncerPort.ToString(), text);
-            AddConfig("style_html_file", css, text);
-            AddConfig("interval", Interval.ToString(), text);
-            AddConfig("nick", LoginNick, text);
-            AddConfig("mysql_user", MysqlUser, text);
-            AddConfig("mysql_host", MysqlHost, text);
-            AddConfig("mysql_pw", MysqlPw, text);
-            AddConfig("mysql_db", Mysqldb, text);
-            AddConfig("mysql_port", MysqlPort.ToString(), text);
-            text.Append("\nchannels=");
 
-            lock (channels)
-            {
-                foreach (channel current in channels)
+                foreach (config.channel channel in channels)
                 {
-                    text.Append(current.Name + ",\n");
+                    text.Append(channel.Name + "\n");
                 }
-            }
-            if (text.ToString().EndsWith(",\n"))
-            {
-                string x = text.ToString();
-                x = x.Substring(0, x.Length - 2);
-                text = new StringBuilder(x);
-            }
-            text.Append(";\n");
-            lock (core.Instances)
-            {
-                int current = 0;
-                foreach (Instance blah in core.Instances.Values)
-                {
-                    if (blah.Nick != NickName)
-                    {
-                        AddConfig("instancename" + current.ToString(), blah.Nick, text);
-                        AddConfig("instanceport" + current.ToString(), blah.Port.ToString(), text);
-                        current++;
-                    }
-                }
-            }
-            File.WriteAllText(variables.config + Path.DirectorySeparatorChar + "wmib", text.ToString());
+            File.WriteAllText("configuration/channels.conf", 
+                              text.ToString());
         }
 
         /// <summary>
@@ -331,92 +293,12 @@ namespace wmib
         /// </summary>
         public static int Load()
         {
-            if (Directory.Exists(variables.config) == false)
-            {
-                Directory.CreateDirectory(variables.config);
-            }
             if (!File.Exists(variables.config + Path.DirectorySeparatorChar + "wmib"))
             {
                 Console.WriteLine("Error: unable to find config file in configuration/wmib");
                 return 2;
             }
             Dictionary<string, string> Configuration = File2Dict();
-            if (Configuration.ContainsKey("username"))
-            {
-                NickName = Configuration["username"];
-            }
-            if (Configuration.ContainsKey("network"))
-            {
-                NetworkHost = Configuration["network"];
-            }
-            if (Configuration.ContainsKey("nick"))
-            {
-                LoginNick = Configuration["nick"];
-            }
-            if (Configuration.ContainsKey("debug"))
-            {
-                DebugChan = Configuration["debug"];
-            }
-            if (Configuration.ContainsKey("bouncerp"))
-            {
-                BouncerPort = int.Parse(Configuration["bouncerp"]);
-            }
-            if (Configuration.ContainsKey("style_html_file"))
-            {
-                css = Configuration["style_html_file"];
-            }
-            if (Configuration.ContainsKey("web"))
-            {
-                WebpageURL = Configuration["web"];
-            }
-            if (Configuration.ContainsKey("password"))
-            {
-                LoginPw = Configuration["password"];
-            }
-            if (Configuration.ContainsKey("mysql_pw"))
-            {
-                MysqlPw = Configuration["mysql_pw"];
-            }
-            if (Configuration.ContainsKey("mysql_db"))
-            {
-                Mysqldb = Configuration["mysql_db"];
-            }
-            if (Configuration.ContainsKey("mysql_user"))
-            {
-                MysqlUser = Configuration["mysql_user"];
-            }
-            if (Configuration.ContainsKey("interval"))
-            {
-                Interval = int.Parse(Configuration["interval"]);
-            }
-            if (Configuration.ContainsKey("mysql_port"))
-            {
-                MysqlPort = int.Parse(Configuration["mysql_port"]);
-            }
-            if (Configuration.ContainsKey("mysql_host"))
-            {
-                MysqlHost = Configuration["mysql_host"];
-            }
-            if (string.IsNullOrEmpty(LoginNick))
-            {
-                Console.WriteLine("Error there is no login for bot");
-                return 1;
-            }
-            if (string.IsNullOrEmpty(NetworkHost))
-            {
-                Console.WriteLine("Error irc server is wrong");
-                return 4;
-            }
-            if (string.IsNullOrEmpty(NickName))
-            {
-                Console.WriteLine("Error there is no username for bot");
-                return 6;
-            }
-            if (Configuration.ContainsKey("serverIO"))
-            {
-                UsingNetworkIOLayer = bool.Parse(Configuration["serverIO"]);
-            }
-            Syslog.Log("Creating instances");
             core.CreateInstance(NickName, BouncerPort); // primary instance
             int CurrentInstance = 0;
             while (CurrentInstance < 20)
@@ -426,10 +308,8 @@ namespace wmib
                     break;
                 }
                 string InstanceName = Configuration["instancename" + CurrentInstance.ToString()];
-                Syslog.DebugLog("Instance found: " + InstanceName);
                 if (UsingNetworkIOLayer)
-                {
-                    Syslog.DebugLog("Using bouncer, looking for instance port");
+                {;
                     if (!Configuration.ContainsKey("instanceport" + CurrentInstance.ToString()))
                     {
                         Syslog.WriteNow("Instance " + InstanceName + " has invalid port, not using", true);
@@ -452,23 +332,13 @@ namespace wmib
                 {
                     lock (channels)
                     {
-                        channels.Add(new channel(name));
+						config.channel temp = new channel(name);
+						temp.SaveConfig();
+                        channels.Add(temp);
                     }
                 }
             }
-            Syslog.WriteNow("Channels were all loaded");
-
-            // Now when all chans are loaded let's link them together
-            foreach (channel ch in channels)
-            {
-                ch.Shares();
-            }
-
-            Syslog.WriteNow("Channel db's working");
-            if (!Directory.Exists(DumpDir))
-            {
-                Directory.CreateDirectory(DumpDir);
-            }
+            Syslog.WriteNow("Channels were all converted");
             return 0;
         }
     }

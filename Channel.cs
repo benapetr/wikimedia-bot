@@ -294,7 +294,6 @@ namespace wmib
                     XmlDocument data = new XmlDocument();
                     if (!File.Exists(conf_file))
                     {
-                        SaveConfig();
                         return;
                     }
                     data.Load(conf_file);
@@ -375,6 +374,7 @@ namespace wmib
             {
                 try
                 {
+					Syslog.WriteNow("Processing " + Name);
                     XmlDocument data = new XmlDocument();
                     XmlNode xmlnode = data.CreateElement("channel");
                     InsertData("talkmode", suppress.ToString(), ref data, ref xmlnode);
@@ -406,7 +406,18 @@ namespace wmib
                             InsertData(item.Key, item.Value, ref data, ref xmlnode, "extension");
                         }
                     }
-                    if (File.Exists(variables.config + "/" + Name + ".setting"))
+	                    foreach (core.SystemUser user in this.Users.Users)
+	                    {
+	                        XmlAttribute name = data.CreateAttribute("regex");
+	                        name.Value = user.name;
+	                        XmlAttribute kk = data.CreateAttribute("role");
+	                        kk.Value = user.level;
+	                        XmlNode db = data.CreateElement("user");
+	                        db.Attributes.Append(name);
+	                        db.Attributes.Append(kk);
+	                        xmlnode.AppendChild(db);
+	                    }
+                    if (File.Exists(variables.config + "/" + Name + ".xml"))
                     {
                         core.backupData(variables.config + "/" + Name + ".setting");
                         if (!File.Exists(tempName(variables.config + "/" + Name + ".setting")))
@@ -415,15 +426,16 @@ namespace wmib
                         }
                     }
                     data.AppendChild(xmlnode);
-                    data.Save(variables.config + "/" + Name + ".setting");
+                    data.Save(variables.config + "/" + Name + ".xml");
                     if (File.Exists(tempName(variables.config + "/" + Name + ".setting")))
                     {
                         File.Delete(tempName(variables.config + "/" + Name + ".setting"));
                     }
+					Syslog.WriteNow("OK");
                 }
                 catch (Exception)
                 {
-                    core.recoverFile(variables.config + "/" + Name + ".setting", Name);
+                    core.recoverFile(variables.config + "/" + Name + ".xml", Name);
                 }
             }
 
@@ -511,7 +523,6 @@ namespace wmib
                     instance = core.getInstance();
                     // we need to save the instance so that next time bot reconnect to bouncer it uses the same instance
                     DefaultInstance = instance.Nick;
-                    SaveConfig();
                 }
                 else
                 {
@@ -528,43 +539,8 @@ namespace wmib
                         }
                     }
                 }
-                if (!Directory.Exists(path_txt))
-                {
-                    Directory.CreateDirectory(path_txt);
-                }
-                if (!Directory.Exists(path_txt + "/" + Name))
-                {
-                    Directory.CreateDirectory(path_txt + "/" + Name);
-                }
-                if (!Directory.Exists(path_htm))
-                {
-                    Directory.CreateDirectory(path_htm);
-                }
-                if (!Directory.Exists(path_htm + Path.DirectorySeparatorChar + Name))
-                {
-                    Directory.CreateDirectory(path_htm + Path.DirectorySeparatorChar + Name);
-                }
                 LogDir = Path.DirectorySeparatorChar + Name + Path.DirectorySeparatorChar;
                 Users = new IRCTrust(Name);
-                lock (Module.module)
-                {
-                    foreach (Module module in Module.module)
-                    {
-                        try
-                        {
-                            if (module.working)
-                            {
-                                channel self = this;
-                                module.Hook_Channel(self);
-                            }
-                        }
-                        catch (Exception fail)
-                        {
-                            Syslog.Log("MODULE: exception at Hook_Channel in " + module.Name, true);
-                            core.handleException(fail);
-                        }
-                    }
-                }
             }
         }
     }

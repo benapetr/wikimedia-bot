@@ -39,30 +39,4 @@ namespace wmib
         /// </summary>
         public static readonly string bold = ((char)002).ToString();
     }
-
-    /// <summary>
-    /// misc
-    /// </summary>
-    public class misc
-    {
-        /// <summary>
-        /// Check if a regex is valid
-        /// </summary>
-        /// <param name="pattern"></param>
-        /// <returns></returns>
-        public static bool IsValidRegex(string pattern)
-        {
-            if (string.IsNullOrEmpty(pattern)) return false;
-
-            try
-            {
-                Regex.Match("", pattern);
-            }
-            catch (ArgumentException)
-            {
-                return false;
-            }
-            return true;
-        }
-    }
 }

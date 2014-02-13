@@ -29,7 +29,7 @@ namespace wmib
         /// <summary>
         /// List of all users in a channel
         /// </summary>
-        private readonly List<core.SystemUser> Users = new List<core.SystemUser>();
+        public List<core.SystemUser> Users = new List<core.SystemUser>();
         /// <summary>
         /// Channel this class belong to
         /// </summary>
@@ -198,32 +198,7 @@ namespace wmib
             return name;
         }
 
-        /// <summary>
-        /// Add
-        /// </summary>
-        /// <param name="level">Level</param>
-        /// <param name="user">Regex</param>
-        /// <returns></returns>
-        public bool addUser(string level, string user)
-        {
-            if (!misc.IsValidRegex(user))
-            {
-                Syslog.Log("Unable to create user " + user + " because the regex is invalid", true);
-                core.irc._SlowQueue.DeliverMessage("Unable to add user because this regex is a piece of shit", ChannelName);
-                return false;
-            }
-            foreach (core.SystemUser u in Users)
-            {
-                if (u.name == user)
-                {
-                    core.irc._SlowQueue.DeliverMessage("Unable to add user because this user is already in a list", ChannelName);
-                    return false;
-                }
-            }
-            Users.Add(new core.SystemUser(level, user));
-            Save();
-            return true;
-        }
+      
 
         /// <summary>
         /// Delete user

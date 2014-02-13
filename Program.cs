@@ -13,6 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 using System.Threading;
 
 namespace wmib
@@ -76,77 +77,6 @@ namespace wmib
             return false;
         }
 
-		/// <summary>
-		/// This is used to handle UNIX signals
-		/// </summary>
-		/// <param name='sender'>
-		/// Sender.
-		/// </param>
-		/// <param name='args'>
-		/// Arguments.
-		/// </param>
-        protected static void myHandler(object sender, ConsoleCancelEventArgs args)
-        {
-            Syslog.WriteNow("SIGINT");
-            Syslog.WriteNow("Shutting down");
-            try
-            {
-                core.Kill();
-            }
-            catch (Exception)
-            {
-                core.irc.Disconnect();
-                core._Status = core.Status.ShuttingDown;
-            }
-            Syslog.WriteNow("Terminated");
-        }
-
-		/// <summary>
-		/// Processes the terminal parameters
-		/// </summary>
-		/// <param name='gs'>
-		/// Gs.
-		/// </param>
-        private static void ProcessVerbosity(string[] gs)
-        {
-            foreach (string item in gs)
-            {
-                if (item == "--nocolors")
-                {
-                    config.Colors = false;
-                    continue;
-                }
-                if (item == "--traffic" )
-                {
-                    config.Logging = true;
-                }
-                if (item == "-h" || item == "--help")
-                {
-                    Console.WriteLine("This is a wikimedia bot binary\n\n" +
-                        "Parameters:\n" +
-                        "    --nocolors: Disable colors in system logs\n" +
-                        "    -h [--help]: Display help\n" +
-                        "    --traffic: Enable traffic logs\n" +
-                        "    -v: Increases verbosity\n\n" +
-                        "This software is open source, licensed under GPLv3");
-                    Environment.Exit(0);
-                }
-                if (item.StartsWith("-v"))
-                {
-                    foreach (char x in item)
-                    {
-                        if (x == 'v')
-                        {
-                            config.SelectedVerbosity++;
-                        }
-                    }
-                }
-            }
-            if (config.SelectedVerbosity >= 1)
-            {
-                Syslog.DebugLog("System verbosity: " + config.SelectedVerbosity.ToString());
-            }
-        }
 
 		/// <summary>
 		/// The entry point of the program, where the program control starts and ends.
@@ -158,35 +88,21 @@ namespace wmib
         {
             try
             {
-                config.UpTime = DateTime.Now;
-                Thread logger = new Thread(Logging.Exec);
-                core.domain = AppDomain.CurrentDomain;
-                ProcessVerbosity(args);
-                Syslog.WriteNow(config.Version);
-                Syslog.WriteNow("Loading...");
-                logger.Start();
-                Console.CancelKeyPress += myHandler;
-                messages.LoadLD();
+                Syslog.WriteNow("Loading convertor...");
+				if (File.Exists("configuration/channels.conf"))
+				{
+					Syslog.WriteNow("Refusing to run convertor, because config file already exist");
+					return;
+				}
                 if (config.Load() != 0)
                 {
                     Syslog.WriteNow("Error while loading the config file, exiting", true);
                     Environment.Exit(-2);
                     return;
                 }
-                Terminal.Init();
-                core.Help.CreateHelp();
-                core.WriterThread = new System.Threading.Thread(StorageWriter.Core);
-                core.WriterThread.Start();
-                if (core.DatabaseServerIsAvailable)
-                {
-                    Syslog.Log("Initializing MySQL");
-                    core.DB = new WMIBMySQL();
-                }
-                Syslog.Log("Loading modules");
-                core.SearchMods();
-                IRCTrust.Global();
-                Syslog.Log("Connecting");
-                core.Connect();
+				config.Save();
+				Syslog.WriteNow("Conversion finished");
+				return;
             }
             catch (Exception fatal)
             {

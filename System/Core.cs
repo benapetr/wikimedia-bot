@@ -630,49 +630,7 @@ namespace wmib
 			/// </summary>
 			public static void CreateHelp()
 			{
-				Register("infobot-ignore-", null);
-				Register("infobot-ignore-", null);
-				Register("infobot-ignore+", null);
-				Register("trustdel", null);
-				Register("refresh", null);
-				Register("infobot-on", null);
-				Register("seen-on", null);
-				Register("seen", null);
-				Register("infobot-off", null);
-				Register("seen-off", null);
-				Register("channellist", null);
-				Register("trusted", null);
-				Register("trustadd", null);
-				Register("drop", null);
-				Register("part", null);
-				Register("language", null);
-				Register("whoami", null);
-				Register("suppress-on", null);
-				Register("infobot-detail", null);
-				Register("configure", null);
-				Register("add", null);
-				Register("reload", null);
-				Register("logon", null);
-				Register("logoff", null);
-				Register("recentchanges-on", null);
-				Register("recentchanges-off", null);
-				Register("statistics-reset", null);
-				Register("statistics-off", null);
-				Register("statistics-on", null);
-				Register("recentchanges-", null);
-				Register("recentchanges+", null);
-				Register("infobot-share-on", null);
-				Register("infobot-share-trust+", null);
-				Register("infobot-share-trust-", null);
-				Register("infobot-link", null);
-				Register("info", null);
-				Register("rc-", null);
-				Register("search", null);
-				Register("commands", null);
-				Register("regsearch", null);
-				Register("infobot-share-off", null);
-				Register("rc+", null);
-				Register("suppress-off", null);
+
 			}
 
 			/// <summary>
@@ -736,24 +694,7 @@ namespace wmib
 
 		private static bool ShowHelp(string parameter, config.channel channel)
 		{
-			if (parameter.StartsWith("@"))
-			{
-				parameter = parameter.Substring(1);
-			}
-			lock(HelpData)
-			{
-				if (HelpData.ContainsKey(parameter.ToLower()))
-				{
-					if (HelpData[parameter.ToLower()] == null)
-					{
-						showInfo(parameter, messages.get(parameter.ToLower(), channel.Language), channel.Name);
-						return true;
-					}
-					showInfo(parameter, HelpData[parameter.ToLower()], channel.Name);
-					return true;
-				}
-			}
-			irc._SlowQueue.DeliverMessage("Unknown command type @commands for a list of all commands I know", channel.Name);
+
 			return false;
 		}
 

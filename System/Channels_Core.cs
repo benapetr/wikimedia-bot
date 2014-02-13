@@ -27,62 +27,7 @@ namespace wmib
         /// <param name="message">Message</param>
         public static void addChannel(config.channel chan, string user, string host, string message)
         {
-            try
-            {
-                if (message.StartsWith(config.CommandPrefix + "add"))
-                {
-                    if (chan.Users.IsApproved(user, host, "admin"))
-                    {
-                        while (!core.FinishedJoining)
-                        {
-                            Syslog.Log("Postponing request to join because bot is still loading", true);
-                            Thread.Sleep(2000);
-                        }
-                        if (message.Contains(" "))
-                        {
-                            string channel = message.Substring(message.IndexOf(" ") + 1);
-                            if (!validFile(channel) || (channel.Contains("#") == false))
-                            {
-                                irc._SlowQueue.DeliverMessage(messages.get("InvalidName", chan.Language), chan);
-                                return;
-                            }
-                            lock (config.channels)
-                            {
-                                foreach (config.channel cu in config.channels)
-                                {
-                                    if (channel == cu.Name)
-                                    {
-                                        irc._SlowQueue.DeliverMessage(messages.get("ChannelIn", chan.Language), chan);
-                                        return;
-                                    }
-                                }
-                            }
-                            bool existing = config.channel.channelExist(channel);
-                            config.channel xx = new config.channel(channel);
-                            lock (config.channels)
-                            {
-                                config.channels.Add(xx);
-                            }
-                            config.Save();
-                            xx.instance.irc.SendData("JOIN " + channel);
-                            Thread.Sleep(100);
-                            config.channel Chan = getChannel(channel);
-                            if (!existing)
-                            {
-                                Chan.Users.addUser("admin", IRCTrust.normalize(user) + "!.*@" + IRCTrust.normalize(host));
-                            }
-                            return;
-                        }
-                        chan.instance.irc.Message(messages.get("InvalidName", chan.Language), chan.Name);
-                        return;
-                    }
-                    irc._SlowQueue.DeliverMessage(messages.get("PermissionDenied", chan.Language), chan);
-                }
-            }
-            catch (Exception b)
-            {
-                handleException(b);
-            }
+            
         }
 
         /// <summary>
