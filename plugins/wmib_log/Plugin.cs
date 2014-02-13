@@ -45,7 +45,7 @@ namespace wmib
             public Channel channel;
         }
 
-        public string TextPath = "logs" + Path.DirectorySeparatorChar;
+        public string TextPath = "log" + Path.DirectorySeparatorChar;
         //private List<char> Separator = new List<char> { ' ', ',', (char)3, '(', ')', '{', '}', (char)2, '<', '>' };
         private bool Unloading = false;
         private List<Job> jobs = new List<Job>();
