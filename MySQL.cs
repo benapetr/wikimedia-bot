@@ -100,6 +100,11 @@ namespace wmib
             try
             {
                 Thread.Sleep(8000);
+				if (unwritten.PendingRows.Count == 0 && File.Exists (Variables.ConfigurationDirectory + 
+				    Path.DirectorySeparatorChar + "unwrittensql.xml"))
+				{
+					File.Delete (Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "unwrittensql.xml");
+				}
                 while (Core.IsRunning)
                 {
                     if (unwritten.PendingRows.Count > 0)
@@ -129,6 +134,11 @@ namespace wmib
                         Recovering = false;
                         FlushRows();
                         Thread.Sleep(200000);
+						if (unwritten.PendingRows.Count == 0 && File.Exists(Variables.ConfigurationDirectory + 
+						                                                    Path.DirectorySeparatorChar + "unwrittensql.xml"))
+						{
+							File.Delete(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "unwrittensql.xml");
+						}
                     }
                     Thread.Sleep(200);
                 }
