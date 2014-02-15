@@ -185,14 +185,14 @@ namespace wmib
         public void ShutDown()
         {
 			this.IsActive = false;
-			if (irc != null)
-            {
-                irc.Disconnect();
-            }
-			Thread.Sleep(200);
             if (thread != null)
             {
                 Core.ThreadManager.KillThread(thread);
+            }
+			Thread.Sleep(200);
+			if (irc != null)
+            {
+                irc.Disconnect();
             }
         }
 
