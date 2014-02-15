@@ -87,7 +87,7 @@ namespace wmib
         public List<string> ScannerMatches = new List<string>();
         public List<Item> Content = new List<Item>();
 
-        public string DB = "";
+        private string DB = "";
 
         private Channel owner = null;
 
@@ -109,17 +109,17 @@ namespace wmib
             {
                 if (File.Exists(DB))
                 {
-                    System.Xml.XmlDocument data = new System.Xml.XmlDocument();
+                    XmlDocument data = new System.Xml.XmlDocument();
                     data.Load(DB);
                     lock (Content)
                     {
                         Content.Clear();
-                        foreach (System.Xml.XmlNode xx in data.ChildNodes[0].ChildNodes)
+                        foreach (XmlNode xx in data.ChildNodes[0].ChildNodes)
                         {
                             Item i = new Item();
                             try
                             {
-                                foreach (System.Xml.XmlAttribute property in xx.Attributes)
+                                foreach (XmlAttribute property in xx.Attributes)
                                 {
                                     switch (property.Name)
                                     {
@@ -142,8 +142,9 @@ namespace wmib
                                     }
                                 }
                             }
-                            catch (Exception)
+                            catch (Exception fail)
                             {
+								RSS.m.HandleException(fail);
                                 RSS.m.DebugLog("unable to load item for feed item name: " + i.name + " channel name " + owner.Name + " item was removed");
                                 i.disabled = false;
                             }
@@ -154,7 +155,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                RSS.m.HandleException(fail, "Feed");
+                RSS.m.HandleException(fail);
             }
         }
 
@@ -181,12 +182,12 @@ namespace wmib
                         name.Value = key.name;
                         XmlAttribute url = data.CreateAttribute("url");
                         url.Value = key.URL;
-                        XmlAttribute disabled = data.CreateAttribute("disb");
+                        XmlAttribute disabled = data.CreateAttribute("disabled");
                         disabled.Value = key.disabled.ToString();
                         XmlAttribute template = data.CreateAttribute("template");
                         template.Value = key.template;
                         XmlAttribute scan = data.CreateAttribute("so");
-                        template.Value = key.ScannerOnly.ToString();
+                        scan.Value = key.ScannerOnly.ToString();
                         System.Xml.XmlNode db = data.CreateElement("data");
                         db.Attributes.Append(name);
                         db.Attributes.Append(url);
@@ -310,10 +311,15 @@ namespace wmib
                     }
                 }
             }
+			catch (ThreadAbortException)
+			{
+				return false;
+			}
             catch (Exception fail)
             {
                 RSS.m.Log("Unable to handle rss in " + owner.Name, true);
-                RSS.m.HandleException(fail, "Feed");
+                RSS.m.HandleException(fail);
+				return false;
             }
             return true;
         }

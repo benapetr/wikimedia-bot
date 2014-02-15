@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Text;
 
@@ -216,12 +217,25 @@ namespace wmib
                 {
                     Syslog.DebugLog("Terminated primary thread for instance " + Nick);
                     return;
-                } catch (Exception fail)
+                }catch (IOException fail) 
+				{
+					if (this.IsActive)
+					{
+                    	Syslog.ErrorLog("Failure of primary thread of instance " + Nick + " attempting to recover");
+						Core.HandleException(fail);
+					} else
+					{
+						return;
+					}
+				}catch (Exception fail)
                 {
                     Core.HandleException(fail);
 					if (this.IsActive)
 					{
                     	Syslog.ErrorLog("Failure of primary thread of instance " + Nick + " attempting to recover");
+					} else
+					{
+						return;
 					}
                     Thread.Sleep(20000);
                 }
