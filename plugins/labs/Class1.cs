@@ -199,7 +199,7 @@ namespace wmib
                     {
                         if (!silent)
                         {
-                            Syslog.DebugLog("JSON returned property when I requested value", 6);
+                            DebugLog("JSON returned property when I requested value", 6);
                         }
                         return "{unknown}";
                     }
@@ -250,7 +250,7 @@ namespace wmib
                         {
                             if (b.Value == null)
                             {
-                                Syslog.DebugLog("null at value");
+                                DebugLog("null at value");
                                 continue;
                             }
                             string value = b.Value.ToString();
@@ -279,7 +279,7 @@ namespace wmib
                                     }
                                     catch (Exception)
                                     {
-                                        Syslog.DebugLog("can't resolve" + resource);
+                                        DebugLog("can't resolve" + resource, 8);
                                     }
                                     instance = new Instance(resource, name, host, ip, type, true);
                                     instance.fqdn = fqdn;
