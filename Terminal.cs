@@ -27,7 +27,7 @@ namespace wmib
         /// <summary>
         /// Thread this console run in
         /// </summary>
-        public static Thread thread;
+        private static Thread thread;
         /// <summary>
         /// Gets a value indicating whether this instance is online.
         /// </summary>
@@ -214,8 +214,9 @@ namespace wmib
                         case "kill":
                             if (Core.Instances.ContainsKey(parameters))
                             {
-                                Core.Instances[parameters].irc.Disconnect();
-                                Writer.WriteLine("Offline: " + parameters);
+								Core.Instances[parameters].IsActive = false;
+                                Core.Instances[parameters].ShutDown();
+                                Writer.WriteLine("Killed: " + parameters);
                                 Writer.Flush();
                                 break;
                             }

@@ -173,6 +173,7 @@ namespace wmib
         public void Init()
         {
             thread = new Thread(Connect);
+			this.IsActive = true;
             thread.Name = "Instance:" + Nick;
             Core.ThreadManager.RegisterThread(thread);
             thread.Start();
@@ -181,15 +182,17 @@ namespace wmib
         /// <summary>
         /// Shut down
         /// </summary>
-        public void Shut()
+        public void ShutDown()
         {
+			this.IsActive = false;
+			if (irc != null)
+            {
+                irc.Disconnect();
+            }
+			Thread.Sleep(200);
             if (thread != null)
             {
                 Core.ThreadManager.KillThread(thread);
-            }
-            if (irc != null)
-            {
-                irc.Disconnect();
             }
         }
 
@@ -216,7 +219,10 @@ namespace wmib
                 } catch (Exception fail)
                 {
                     Core.HandleException(fail);
-                    Syslog.ErrorLog("Failure of primary thread of instance " + Nick + " attempting to recover");
+					if (this.IsActive)
+					{
+                    	Syslog.ErrorLog("Failure of primary thread of instance " + Nick + " attempting to recover");
+					}
                     Thread.Sleep(20000);
                 }
             }
