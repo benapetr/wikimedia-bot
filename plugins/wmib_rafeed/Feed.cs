@@ -144,7 +144,7 @@ namespace wmib
                             }
                             catch (Exception fail)
                             {
-								RSS.m.HandleException(fail);
+                                RSS.m.HandleException(fail);
                                 RSS.m.DebugLog("unable to load item for feed item name: " + i.name + " channel name " + owner.Name + " item was removed");
                                 i.disabled = false;
                             }
@@ -311,15 +311,15 @@ namespace wmib
                     }
                 }
             }
-			catch (ThreadAbortException)
-			{
-				return false;
-			}
+            catch (ThreadAbortException)
+            {
+                return false;
+            }
             catch (Exception fail)
             {
                 RSS.m.Log("Unable to handle rss in " + owner.Name, true);
                 RSS.m.HandleException(fail);
-				return false;
+                return false;
             }
             return true;
         }

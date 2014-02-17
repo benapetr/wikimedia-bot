@@ -174,7 +174,7 @@ namespace wmib
         public void Init()
         {
             thread = new Thread(Connect);
-			this.IsActive = true;
+            this.IsActive = true;
             thread.Name = "Instance:" + Nick;
             Core.ThreadManager.RegisterThread(thread);
             thread.Start();
@@ -185,13 +185,13 @@ namespace wmib
         /// </summary>
         public void ShutDown()
         {
-			this.IsActive = false;
+            this.IsActive = false;
             if (thread != null)
             {
                 Core.ThreadManager.KillThread(thread);
             }
-			Thread.Sleep(200);
-			if (irc != null)
+            Thread.Sleep(200);
+            if (irc != null)
             {
                 irc.Disconnect();
             }
@@ -218,25 +218,25 @@ namespace wmib
                     Syslog.DebugLog("Terminated primary thread for instance " + Nick);
                     return;
                 }catch (IOException fail) 
-				{
-					if (this.IsActive)
-					{
-                    	Syslog.ErrorLog("Failure of primary thread of instance " + Nick + " attempting to recover");
-						Core.HandleException(fail);
-					} else
-					{
-						return;
-					}
-				}catch (Exception fail)
+                {
+                    if (this.IsActive)
+                    {
+                        Syslog.ErrorLog("Failure of primary thread of instance " + Nick + " attempting to recover");
+                        Core.HandleException(fail);
+                    } else
+                    {
+                        return;
+                    }
+                }catch (Exception fail)
                 {
                     Core.HandleException(fail);
-					if (this.IsActive)
-					{
-                    	Syslog.ErrorLog("Failure of primary thread of instance " + Nick + " attempting to recover");
-					} else
-					{
-						return;
-					}
+                    if (this.IsActive)
+                    {
+                        Syslog.ErrorLog("Failure of primary thread of instance " + Nick + " attempting to recover");
+                    } else
+                    {
+                        return;
+                    }
                     Thread.Sleep(20000);
                 }
             }

@@ -346,7 +346,7 @@ namespace wmib
             }
             Syslog.DebugLog("Closing connection for " + NickName);
             connected = false;
-			this.ChannelsJoined = false;
+            this.ChannelsJoined = false;
             if (_Queue != null)
             {
                 Core.ThreadManager.KillThread(_Queue);

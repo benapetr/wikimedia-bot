@@ -214,7 +214,7 @@ namespace wmib
                         case "kill":
                             if (Core.Instances.ContainsKey(parameters))
                             {
-								Core.Instances[parameters].IsActive = false;
+                                Core.Instances[parameters].IsActive = false;
                                 Core.Instances[parameters].ShutDown();
                                 Writer.WriteLine("Killed: " + parameters);
                                 Writer.Flush();
