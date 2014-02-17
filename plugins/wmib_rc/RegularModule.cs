@@ -20,6 +20,7 @@ namespace wmib
 {
     public class ModuleRC : Module
     {
+		public static Module ptrModule = null;
         public override void Hook_Channel(Channel channel)
         {
             if (channel.RetrieveObject("RC") == null)
@@ -270,6 +271,7 @@ namespace wmib
 
         public override bool Construct()
         {
+			ptrModule = this;
             Name = "RC";
             Version = "1.2.0.5";
             return true;
@@ -472,14 +474,14 @@ namespace wmib
             try
             {
                 RecentChanges.channels = new List<string>();
-                if (!File.Exists(RecentChanges.channeldata))
+                if (!File.Exists(RecentChanges.WikiFile))
                 {
-                    File.WriteAllText(RecentChanges.channeldata, "#mediawiki.wikipedia");
+                    File.WriteAllText(RecentChanges.WikiFile, "#mediawiki.wikipedia");
                 }
                 string message = "";
                 try
                 {
-                    string[] list = System.IO.File.ReadAllLines(RecentChanges.channeldata);
+                    string[] list = System.IO.File.ReadAllLines(RecentChanges.WikiFile);
                     Log("Loading feed", false);
                     lock (RecentChanges.channels)
                     {
@@ -527,14 +529,20 @@ namespace wmib
                                             }
                                             if (GetConfig(curr.channel, "RC.Enabled", false))
                                             {
-                                                lock (curr.pages)
+                                                lock (curr.MonitoredPages)
                                                 {
-                                                    foreach (RecentChanges.IWatch w in curr.pages)
+                                                    foreach (RecentChanges.IWatch w in curr.MonitoredPages)
                                                     {
                                                         if (w != null)
                                                         {
+															RecentChanges.wiki wiki_ = w.URL;
                                                             if (w.Channel == _channel || w.Channel == "all")
                                                             {
+
+																if (w.Channel == "all")
+																{
+																	wiki_ = RecentChanges.WikiFromChannelID(w.Channel);
+																}
                                                                 if (edit.Page == w.Page)
                                                                 {
                                                                     if (edit.Size != null)
@@ -545,10 +553,14 @@ namespace wmib
                                                                     {
                                                                         DebugLog("NULL pointer on idata 1", 2);
                                                                     }
+
+
                                                                     Core.irc.Queue.DeliverMessage(
-                                                                       Format(w.URL.name, w.URL.url, edit.Page, edit.User, edit.diff, edit.Summary, curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
+                                                                       Format(wiki_.name, wiki_.url, edit.Page, edit.User, edit.diff, edit.Summary, 
+																	       curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
                                                                 }
                                                                 else
+																{
                                                                     if (w.Page.EndsWith("*"))
                                                                     {
                                                                         if (edit.Page.StartsWith(w.Page.Replace("*", "")))
@@ -558,9 +570,11 @@ namespace wmib
                                                                                 DebugLog("NULL pointer on idata 2", 2);
                                                                             }
                                                                             Core.irc.Queue.DeliverMessage(
-                                                                            Format(w.URL.name, w.URL.url, edit.Page, edit.User, edit.diff, edit.Summary, curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
+                                                                            Format(wiki_.name, wiki_.url, edit.Page, edit.User, edit.diff, edit.Summary, curr.channel, edit.Bot,
+																			       edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
                                                                         }
                                                                     }
+																}
                                                             }
                                                         }
                                                     }

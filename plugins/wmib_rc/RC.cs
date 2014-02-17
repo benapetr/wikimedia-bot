@@ -69,33 +69,29 @@ namespace wmib
             }
         }
 
-        public static wiki all = new wiki("all", "all", "all");
+        private static wiki all = new wiki("all", "all", "unknown");
 
         /// <summary>
         /// List of pages
         /// </summary>
-        public List<IWatch> pages = new List<IWatch>();
+        public List<IWatch> MonitoredPages = new List<IWatch>();
 
         /// <summary>
         /// Wiki
         /// </summary>
-        public static List<wiki> wikiinfo = new List<wiki>();
+        private static List<wiki> wikiinfo = new List<wiki>();
 
         /// <summary>
         /// Nickname in feed
         /// </summary>
-        public static string nick;
+        private static string Nick;
 
-        public static bool Loaded = false;
+        private static bool Loaded = false;
 
         /// <summary>
         /// Channels
         /// </summary>
         public static List<string> channels = new List<string>();
-
-        public bool changed;
-
-        public bool writable = true;
 
         public static bool terminated = false;
 
@@ -109,11 +105,11 @@ namespace wmib
         /// </summary>
         public static StreamReader RD;
 
-        public static string channeldata = Variables.ConfigurationDirectory + "/feed";
+        public static string WikiFile = Variables.ConfigurationDirectory + "/feed";
         public static StreamWriter WD;
         public static System.Net.Sockets.NetworkStream stream;
 
-        public static Regex line =
+        public static Regex RegexIrc =
             new Regex(":rc-pmtpa!~rc-pmtpa@[^ ]* PRIVMSG #[^:]*:14\\[\\[07([^]*)14\\]\\]4 N?(M?)(B?)10 02.*di" +
                       "ff=([^&]*)&oldid=([^]*) 5\\* 03([^]*) 5\\* \\(?([^]*)?\\) 10([^]*)?");
 
@@ -139,22 +135,19 @@ namespace wmib
             string output = "<table align=\"left\" border=1>\n";
             try
             {
-                lock (pages)
+                lock (MonitoredPages)
                 {
-                    writable = false;
-                    foreach (IWatch b in pages)
+                    foreach (IWatch b in MonitoredPages)
                     {
                         output = output + "<tr><td>" + b.Channel + "</td><td>" + System.Web.HttpUtility.HtmlEncode(b.Page) + "</td></tr>\n";
                     }
                     output = output + "</table>";
-                    writable = true;
                 }
                 return output;
             }
             catch (Exception fail)
             {
                 Core.HandleException(fail, "RC");
-                writable = true;
                 return "";
             }
         }
@@ -169,13 +162,27 @@ namespace wmib
         public RecentChanges(Channel _channel)
         {
             channel = _channel;
-            changed = false;
             Load();
             lock (rc)
             {
                 rc.Add(this);
             }
         }
+
+		public static wiki WikiFromChannelID(string channel)
+		{
+			lock(wikiinfo)
+			{
+				foreach (wiki w in wikiinfo)
+				{
+					if (w.channel == channel)
+					{
+						return w;
+					}
+				}
+			}
+			return all;
+		}
 
         /// <summary>
         /// New channel to watch by a bot
@@ -216,10 +223,10 @@ namespace wmib
                 channels.Add(web.channel);
                 WD.WriteLine("JOIN " + web.channel);
                 WD.Flush();
-                File.WriteAllText(channeldata, "");
+                File.WriteAllText(WikiFile, "");
                 foreach (string x in channels)
                 {
-                    File.AppendAllText(channeldata, x + "\n");
+                    File.AppendAllText(WikiFile, x + "\n");
                 }
             }
             catch (Exception f)
@@ -266,10 +273,10 @@ namespace wmib
                 channels.Remove(W.channel);
                 Send("PART " + W.channel);
                 WD.Flush();
-                File.WriteAllText(channeldata, "");
+                File.WriteAllText(WikiFile, "");
                 foreach (string x in channels)
                 {
-                    File.AppendAllText(channeldata, x + "\n");
+                    File.AppendAllText(WikiFile, x + "\n");
                 }
             }
             catch (Exception f)
@@ -288,23 +295,28 @@ namespace wmib
             {
                 Random rand = new Random(DateTime.Now.Millisecond);
                 int random_number = rand.Next(10000);
-                nick = "wm-bot" + System.DateTime.Now.ToString().Replace("/", "").Replace(":", "").Replace("\\", "").Replace(".", "").Replace(" ", "") + random_number.ToString();
-                Syslog.Log("Connecting to wikimedia recent changes feed as " + nick + ", hold on");
+                Nick = "wm-bot" + random_number.ToString();
+                ModuleRC.ptrModule.Log("Connecting to wikimedia recent changes feed as " + Nick + ", hold on");
                 stream = new System.Net.Sockets.TcpClient("irc.wikimedia.org", 6667).GetStream();
                 WD = new StreamWriter(stream);
                 RD = new StreamReader(stream, System.Text.Encoding.UTF8);
                 Thread pinger = new Thread(Pong);
+				pinger.Name = "Module:RC/Pinger";
+				Core.ThreadManager.RegisterThread(pinger);
                 Send("USER " + "wm-bot" + " 8 * :" + "wm-bot");
-                Send("NICK " + nick);
+                Send("NICK " + Nick);
                 WD.Flush();
                 pinger.Start();
-                foreach (string b in channels)
-                {
-                    System.Threading.Thread.Sleep(800);
-                    Send("JOIN " + b);
-                    WD.Flush();
-                }
-                Syslog.Log("Connected to feed - OK");
+				lock (channels)
+				{
+	                foreach (string b in channels)
+	                {
+	                    System.Threading.Thread.Sleep(800);
+	                    Send("JOIN " + b);
+	                    WD.Flush();
+	                }
+				}
+                ModuleRC.ptrModule.Log("Connected to feed - OK");
                 Loaded = true;
             }
         }
@@ -327,7 +339,7 @@ namespace wmib
                     return curr;
                 }
             }
-            Syslog.Log("There is no wiki " + Name + " known by me");
+            ModuleRC.ptrModule.Log("There is no wiki " + Name + " known by me");
             return null;
         }
 
@@ -337,25 +349,23 @@ namespace wmib
         public void Load()
         {
             string name = Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + channel.Name + ".list";
-            writable = false;
             Core.RecoverFile(name, channel.Name);
             if (File.Exists(name))
             {
                 string[] content = File.ReadAllLines(name);
-                lock (pages)
+                lock (MonitoredPages)
                 {
-                    pages.Clear();
+                    MonitoredPages.Clear();
                     foreach (string value in content)
                     {
                         string[] values = value.Split('|');
                         if (values.Length == 3)
                         {
-                            pages.Add(new IWatch(getWiki(values[0]), values[1].Replace("<separator>", "|"), values[2]));
+                            MonitoredPages.Add(new IWatch(getWiki(values[0]), values[1].Replace("<separator>", "|"), values[2]));
                         }
                     }
                 }
             }
-            writable = true;
         }
 
         /// <summary>
@@ -368,9 +378,9 @@ namespace wmib
             {
                 string content = "";
                 Core.BackupData(dbn);
-                lock (pages)
+                lock (MonitoredPages)
                 {
-                    foreach (IWatch values in pages)
+                    foreach (IWatch values in MonitoredPages)
                     {
                         content = content + values.URL.name + "|" + values.Page.Replace("|", "<separator>") + "|" +
                                   values.Channel + "\n";
@@ -381,7 +391,7 @@ namespace wmib
             }
             catch (Exception er)
             {
-                Syslog.Log("Error while saving to: " + channel.Name + ".list");
+                ModuleRC.ptrModule.Log("Error while saving to: " + channel.Name + ".list");
                 Core.HandleException(er, "RC");
                 Core.RecoverFile(dbn, channel.Name);
             }
@@ -391,7 +401,7 @@ namespace wmib
         {
             try
             {
-                while (true)
+                while (Core.IsRunning)
                 {
                     Send("PING irc.wikimedia.org");
                     WD.Flush();
@@ -400,7 +410,7 @@ namespace wmib
             }
             catch (IOException)
             {
-                Thread.CurrentThread.Abort();
+                return;
             }
             catch (ThreadAbortException)
             {
@@ -422,9 +432,9 @@ namespace wmib
                 if (WS == "all" || channels.Contains(site.channel))
                 {
                     IWatch currpage = null;
-                    lock (pages)
+                    lock (MonitoredPages)
                     {
-                        foreach (IWatch iw in pages)
+                        foreach (IWatch iw in MonitoredPages)
                         {
                             if (iw.Page == Page && site.channel == iw.Channel)
                             {
@@ -432,19 +442,15 @@ namespace wmib
                                 break;
                             }
                         }
-                    }
-                    if (pages.Contains(currpage))
-                    {
-                        while (!writable)
-                        {
-                            System.Threading.Thread.Sleep(100);
-                        }
-                        pages.Remove(currpage);
-                        Module.SetConfig(channel, "HTML.Update", true);
-                        Save();
-                        Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed4", channel.Language), channel.Name);
-                        return true;
-                    }
+	                    if (MonitoredPages.Contains(currpage))
+	                    {
+	                        MonitoredPages.Remove(currpage);
+	                        Module.SetConfig(channel, "HTML.Update", true);
+	                        Save();
+	                        Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed4", channel.Language), channel.Name);
+	                        return true;
+	                    }
+					}
                     Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed5", channel.Language), channel.Name);
                     return true;
                 }
@@ -471,11 +477,11 @@ namespace wmib
                         wikiinfo.Add(new wiki(values[0], values[1], values[2]));
                     }
                 }
-                Syslog.Log("Loaded wiki " + content.Length.ToString());
+                ModuleRC.ptrModule.Log("Loaded wiki " + content.Length.ToString());
             }
             else
             {
-                Syslog.Log("There is no sites file, skipping load", true);
+                ModuleRC.ptrModule.Log("There is no sites file, skipping load", true);
             }
             wikiinfo.Add(new wiki("#mediawiki.wikipedia", "https://www.mediawiki.org/w/index.php", "mediawiki"));
             wikiinfo.Add(new wiki("#test.wikipedia", "https://test.wikipedia.org/w/index.php", "test_wikipedia"));
@@ -491,9 +497,9 @@ namespace wmib
                 if (WS == "all" || channels.Contains(site.channel))
                 {
                     IWatch currpage = null;
-                    lock (pages)
+                    lock (MonitoredPages)
                     {
-                        foreach (IWatch iw in pages)
+                        foreach (IWatch iw in MonitoredPages)
                         {
                             if (iw.Channel == site.channel && iw.Page == Page)
                             {
@@ -510,15 +516,15 @@ namespace wmib
                             return true;
                         }
                     }
-                    if (pages.Contains(currpage))
+                    if (MonitoredPages.Contains(currpage))
                     {
                         Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed9", channel.Language),
                                                      channel.Name);
                         return true;
                     }
-                    lock (pages)
+                    lock (MonitoredPages)
                     {
-                        pages.Add(new IWatch(site, Page, site.channel));
+                        MonitoredPages.Add(new IWatch(site, Page, site.channel));
                     }
                     Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed10", channel.Language), channel.Name);
                     Module.SetConfig(channel, "HTML.Update", true);
