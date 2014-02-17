@@ -61,7 +61,7 @@ namespace wmib
         {
             if (File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + chan.Name + ".list"))
             {
-                Syslog.Log("RC: Removing db of " + chan.Name + " RC feed");
+                Log("Removing db of " + chan.Name + " RC feed");
                 File.Delete(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + chan.Name + ".list");
             }
         }
@@ -340,7 +340,7 @@ namespace wmib
             // get a page
             if (!text.Contains(Variables.ColorChar + "14[["))
             {
-                Syslog.DebugLog("Parser error #1", 6);
+                ptrModule.DebugLog("Parser error #1", 6);
                 return null;
             }
             Change change = new Change("", "", "");
@@ -371,7 +371,7 @@ namespace wmib
             change.Page = change.Page.Substring(3);
             if (!change.Page.Contains(Variables.ColorChar + "14]]"))
             {
-                Syslog.DebugLog("Parser error #2", 6);
+                ptrModule.DebugLog("Parser error #2", 6);
                 return null;
             }
 
@@ -385,7 +385,7 @@ namespace wmib
 
                 if (!change.oldid.Contains("&") && !change.oldid.Contains(" "))
                 {
-                    Syslog.DebugLog("Parser error #4", 6);
+                    ptrModule.DebugLog("Parser error #4", 6);
                     return null;
                 }
 
@@ -406,7 +406,7 @@ namespace wmib
 
                 if (!change.diff.Contains("&"))
                 {
-                    Syslog.DebugLog("Parser error #4", 6);
+                    ptrModule.DebugLog("Parser error #4", 6);
                     return null;
                 }
                 change.diff = change.diff.Substring(0, change.diff.IndexOf("&"));
@@ -417,7 +417,7 @@ namespace wmib
 
             if (!text.Contains(Variables.ColorChar + "03"))
             {
-                Syslog.DebugLog("Parser error #5", 6);
+                ptrModule.DebugLog("Parser error #5", 6);
                 return null;
             }
 
@@ -425,7 +425,7 @@ namespace wmib
 
             if (!change.User.Contains(Variables.ColorChar + " " + Variables.ColorChar + "5*"))
             {
-                Syslog.DebugLog("Parser error #6", 6);
+                ptrModule.DebugLog("Parser error #6", 6);
                 return null;
             }
 
@@ -433,7 +433,7 @@ namespace wmib
 
             if (!text.Contains(Variables.ColorChar + "5"))
             {
-                Syslog.DebugLog("Parser error #7", 6);
+                ptrModule.DebugLog("Parser error #7", 6);
                 return null;
             }
 
@@ -445,7 +445,7 @@ namespace wmib
 
                 if (!change.Size.Contains(")"))
                 {
-                    Syslog.DebugLog("Parser error #10", 6);
+                    ptrModule.DebugLog("Parser error #10", 6);
                     return null;
                 }
 
@@ -454,7 +454,7 @@ namespace wmib
 
             if (!text.Contains(Variables.ColorChar + "10"))
             {
-                Syslog.DebugLog("Parser error #14", 6);
+                ptrModule.DebugLog("Parser error #14", 6);
                 return null;
             }
 
@@ -541,7 +541,7 @@ namespace wmib
 
 																if (w.Channel == "all")
 																{
-																	wiki_ = RecentChanges.WikiFromChannelID(w.Channel);
+																	wiki_ = RecentChanges.WikiFromChannelID(_channel);
 																}
                                                                 if (edit.Page == w.Page)
                                                                 {
