@@ -500,13 +500,13 @@ namespace wmib
             try
             {
                 Load();
-                Syslog.Log("Module terminated: " + Name, true);
+                Syslog.Log("Module terminated: " + Name);
                 IsWorking = false;
                 Core.ThreadManager.UnregisterThread(thread);
             }
             catch (ThreadAbortException)
             {
-                Syslog.Log("Module terminated: " + Name, true);
+                Syslog.Log("Module terminated: " + Name);
                 Core.ThreadManager.UnregisterThread(thread);
                 return;
             }
@@ -524,12 +524,12 @@ namespace wmib
                     IsWorking = true;
                     Syslog.Log("Restarting the module: " + Name, true);
                     Load();
-                    Syslog.Log("Module terminated: " + Name, true);
+                    Syslog.Log("Module terminated: " + Name);
                     IsWorking = false;
                 }
                 catch (ThreadAbortException)
                 {
-                    Syslog.Log("Module terminated: " + Name, true);
+                    Syslog.Log("Module terminated: " + Name);
                     Core.ThreadManager.UnregisterThread(thread);
                     return;
                 }
