@@ -258,7 +258,10 @@ namespace wmib
         public void RestartIRCMessageDelivery()
         {
             Core.ThreadManager.KillThread(_Queue);
-            this.Queue.newmessages.Clear();
+            lock(this.Queue.newmessages)
+            {
+                this.Queue.newmessages.Clear();
+            }
             this._Queue = new System.Threading.Thread(new System.Threading.ThreadStart(Queue.Run));
             Core.ThreadManager.RegisterThread(_Queue);
             this.Queue.Messages.Clear();

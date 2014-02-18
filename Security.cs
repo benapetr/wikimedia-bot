@@ -34,7 +34,7 @@ namespace wmib
         /// <summary>
         /// Channel this class belong to
         /// </summary>
-        private Channel Channel;
+        private Channel _Channel;
         /// <summary>
         /// File where data are stored
         /// </summary>
@@ -45,7 +45,7 @@ namespace wmib
         /// <param name="channel"></param>
         public Security(Channel channel)
         {
-            this.Channel = channel;
+            this._Channel = channel;
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace wmib
             }
             if (regex == null || role == null)
             {
-                Syslog.WarningLog("Skipping invalid user record for " + this.Channel.Name);
+                Syslog.WarningLog("Skipping invalid user record for " + this._Channel.Name);
             }
             lock (Users)
             {
@@ -170,7 +170,7 @@ namespace wmib
         /// <returns></returns>
         public bool Save()
         {
-            this.Channel.SaveConfig();
+            this._Channel.SaveConfig();
             return true;
         }
 
@@ -197,14 +197,14 @@ namespace wmib
             if (!misc.IsValidRegex(user))
             {
                 Syslog.Log("Unable to create user " + user + " because the regex is invalid", true);
-                Core.irc.Queue.DeliverMessage("Unable to add user because this regex is not valid", this.Channel);
+                Core.irc.Queue.DeliverMessage("Unable to add user because this regex is not valid", this._Channel);
                 return false;
             }
             foreach (SystemUser u in Users)
             {
                 if (u.Name == user)
                 {
-                    Core.irc.Queue.DeliverMessage("Unable to add user because this user is already in a list", this.Channel);
+                    Core.irc.Queue.DeliverMessage("Unable to add user because this user is already in a list", this._Channel);
                     return false;
                 }
             }
@@ -227,21 +227,21 @@ namespace wmib
                 {
                     if (GetLevel(u.Role) > GetLevel(origin.Role))
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Trust1", this.Channel.Language), this.Channel);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("Trust1", this._Channel.Language), this._Channel);
                         return true;
                     }
                     if (u.Name == origin.Name)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Trust2", this.Channel.Language), this.Channel);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("Trust2", this._Channel.Language), this._Channel);
                         return true;
                     }
                     Users.Remove(u);
                     Save();
-                    Core.irc.Queue.DeliverMessage(messages.Localize("Trust3", this.Channel.Language), this.Channel);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("Trust3", this._Channel.Language), this._Channel);
                     return true;
                 }
             }
-            Core.irc.Queue.DeliverMessage(messages.Localize("Trust4", this.Channel.Language), this.Channel);
+            Core.irc.Queue.DeliverMessage(messages.Localize("Trust4", this._Channel.Language), this._Channel);
             return true;
         }
 
@@ -320,7 +320,7 @@ namespace wmib
                     users_ok += " " + b.Name + " (2" + b.Role + ")" + ",";
                 }
             }
-            Core.irc.Queue.DeliverMessage(messages.Localize("TrustedUserList", Channel.Language) + users_ok, this.Channel);
+            Core.irc.Queue.DeliverMessage(messages.Localize("TrustedUserList", _Channel.Language) + users_ok, this._Channel);
         }
 
         /// <summary>

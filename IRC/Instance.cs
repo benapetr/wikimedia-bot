@@ -138,6 +138,15 @@ namespace wmib
             JoinThread.Start();
         }
 
+        public int QueueSize()
+        {
+            if (irc == null || irc.Queue == null)
+            {
+                return 0;
+            }
+            return irc.Queue.Size();
+        }
+
         /// <summary>
         /// This is a private handler for channel joining, never call it directly, use Join() for that
         /// </summary>

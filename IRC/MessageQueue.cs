@@ -69,6 +69,11 @@ namespace wmib
                 Parent = _parent;
             }
 
+            public int Size()
+            {
+                return Messages.Count + newmessages.Count;
+            }
+
             /// <summary>
             /// Deliver a message
             /// </summary>

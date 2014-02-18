@@ -169,7 +169,11 @@ namespace wmib
                         channel.PrimaryInstance.irc.SendData("PART " + channel.Name + " :" + "removed by " + user + " from " + origin);
                         Syslog.Log("Removed " + channel.Name + " removed by " + user + " from " + origin);
                         Thread.Sleep(100);
-                        Configuration.Channels.Remove(channel);
+                        lock (Configuration.Channels)
+                        {
+                            channel.Remove();
+                            Configuration.Channels.Remove(channel);
+                        }
                         Configuration.Save();
                         return;
                     }

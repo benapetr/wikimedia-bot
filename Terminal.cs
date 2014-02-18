@@ -179,7 +179,7 @@ namespace wmib
                                     Syslog.DebugLog("Retrieving information for user " + username + " of instance " +  instance.Nick, 2);
                                     result += instance.Nick + " channels: " + instance.ChannelCount.ToString() +
                                         " connected: " + instance.IsConnected.ToString() + " working: " +
-                                        instance.IsWorking.ToString() + "\n";
+                                        instance.IsWorking.ToString() + " queue: " + instance.QueueSize().ToString() + "\n";
                                 }
                             }
                             Writer.WriteLine(result);
