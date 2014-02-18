@@ -122,6 +122,7 @@ namespace wmib
 
         public virtual bool InsertRow(string table, Row row)
         {
+            ErrorBuffer = "INSERT: function is not implemented";
             return false;
         }
 

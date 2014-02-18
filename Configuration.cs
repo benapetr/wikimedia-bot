@@ -139,7 +139,7 @@ namespace wmib
             /// <summary>
             /// Version
             /// </summary>
-            public static string Version = "wikimedia bot v. 2.0.0.1";
+            public static string Version = "wikimedia bot v. 2.0.0.2";
         }
 
         public class MySQL
@@ -240,13 +240,13 @@ namespace wmib
             return (file + "~");
         }
 
-        public static string RetrieveConfig(string key)
+        public static string RetrieveConfig(string key, string default_ = null)
         {
             if (ConfigurationData.ContainsKey(key))
             {
                 return ConfigurationData[key];
             }
-            return null;
+            return default_;
         }
 
         private static Dictionary<string, string> File2Dict()
@@ -318,75 +318,32 @@ namespace wmib
             {
                 Directory.CreateDirectory(Variables.ConfigurationDirectory);
             }
-            if (!File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + Configuration.Paths.ConfigFile))
+            if (!File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar 
+                             + Configuration.Paths.ConfigFile))
             {
                 Console.WriteLine("Error: unable to find config file in configuration/" 
-                    + Configuration.Paths.ConfigFile
-                );
+                    + Configuration.Paths.ConfigFile);
                 return 2;
             }
             ConfigurationData = File2Dict();
-            if (ConfigurationData.ContainsKey("username"))
-            {
-                Configuration.IRC.Username = ConfigurationData["username"];
-            }
-            if (ConfigurationData.ContainsKey("network"))
-            {
-                Configuration.IRC.NetworkHost = ConfigurationData["network"];
-            }
-            if (ConfigurationData.ContainsKey("nick"))
-            {
-                Configuration.IRC.NickName = ConfigurationData["nick"];
-                Configuration.IRC.LoginNick = ConfigurationData["nick"];
-            }
-            if (ConfigurationData.ContainsKey("debug"))
-            {
-                Configuration.System.DebugChan = ConfigurationData["debug"];
-            }
-            if (ConfigurationData.ContainsKey("bouncerp"))
-            {
-                Configuration.Network.BouncerPort = int.Parse(ConfigurationData["bouncerp"]);
-            }
-            if (ConfigurationData.ContainsKey("web"))
-            {
-                Configuration.WebPages.WebpageURL = ConfigurationData["web"];
-            }
-            if (ConfigurationData.ContainsKey("password"))
-            {
-                Configuration.IRC.LoginPw = ConfigurationData["password"];
-            }
-            if (ConfigurationData.ContainsKey("mysql_pw"))
-            {
-                Configuration.MySQL.MysqlPw = ConfigurationData["mysql_pw"];
-            }
-            if (ConfigurationData.ContainsKey("mysql_db"))
-            {
-                Configuration.MySQL.Mysqldb = ConfigurationData["mysql_db"];
-            }
-            if (ConfigurationData.ContainsKey("mysql_user"))
-            {
-                Configuration.MySQL.MysqlUser = ConfigurationData["mysql_user"];
-            }
-            if (ConfigurationData.ContainsKey("interval"))
-            {
-                Configuration.IRC.Interval = int.Parse(ConfigurationData["interval"]);
-            }
-            if (ConfigurationData.ContainsKey("mysql_port"))
-            {
-                Configuration.MySQL.MysqlPort = int.Parse(ConfigurationData["mysql_port"]);
-            }
-            if (ConfigurationData.ContainsKey("mysql_host"))
-            {
-                Configuration.MySQL.MysqlHost = ConfigurationData["mysql_host"];
-            }
-            if (ConfigurationData.ContainsKey("style_html_file"))
-            {
-                Configuration.WebPages.Css = ConfigurationData["style_html_file"];
-            }
-            if (ConfigurationData.ContainsKey("system_port"))
-            {
-                Configuration.Network.SystemPort = int.Parse(ConfigurationData["system_port"]);
-            }
+            Configuration.IRC.Username = RetrieveConfig("username");
+            Configuration.IRC.NetworkHost = RetrieveConfig("network");
+            Configuration.IRC.NickName = RetrieveConfig("nick");
+            Configuration.IRC.LoginNick = RetrieveConfig("nick");
+            Configuration.System.DebugChan = RetrieveConfig("debug");
+            Configuration.Network.BouncerPort = int.Parse(RetrieveConfig("bouncerp", 
+                                                       Configuration.Network.BouncerPort.ToString()));
+            Configuration.WebPages.WebpageURL = RetrieveConfig("web", "");
+            Configuration.IRC.LoginPw = RetrieveConfig("password", "");
+            Configuration.MySQL.MysqlPw = RetrieveConfig("mysql_pw");
+            Configuration.MySQL.Mysqldb = RetrieveConfig("mysql_db", Configuration.MySQL.Mysqldb);
+            Configuration.MySQL.MysqlUser = RetrieveConfig("mysql_user");
+            Configuration.IRC.Interval = int.Parse(RetrieveConfig("interval", "800"));
+            Configuration.MySQL.MysqlPort = int.Parse(RetrieveConfig("mysql_port", Configuration.MySQL.MysqlPort.ToString()));
+            Configuration.MySQL.MysqlHost = RetrieveConfig("mysql_host");
+            Configuration.WebPages.Css = RetrieveConfig("style_html_file", "");
+            Configuration.Network.SystemPort = int.Parse(RetrieveConfig("system_port",
+                                Configuration.Network.SystemPort.ToString()));
             if (string.IsNullOrEmpty(Configuration.IRC.LoginNick))
             {
                 Console.WriteLine("Error there is no login for bot");
@@ -402,14 +359,8 @@ namespace wmib
                 Console.WriteLine("Error there is no username for bot");
                 return 6;
             }
-            if (ConfigurationData.ContainsKey("system_prefix"))
-            {
-                Configuration.System.prefix = ConfigurationData["system_prefix"];
-            }
-            if (ConfigurationData.ContainsKey("serverIO"))
-            {
-                Configuration.IRC.UsingBouncer = bool.Parse(ConfigurationData["serverIO"]);
-            }
+            Configuration.System.prefix = RetrieveConfig("system_prefix", Configuration.System.prefix);
+            Configuration.IRC.UsingBouncer = bool.Parse(RetrieveConfig("serverIO", "false"));
             Syslog.Log("Loading instances");
             Core.CreateInstance(Configuration.IRC.NickName, Configuration.Network.BouncerPort); // primary instance
             int CurrentInstance = 0;
@@ -429,8 +380,7 @@ namespace wmib
                         Syslog.WriteNow("Instance " + InstanceName + " has invalid port, not using", true);
                         continue;
                     }
-                    string InstancePort = ConfigurationData["instanceport" + CurrentInstance.ToString()];
-                    int port = int.Parse(InstancePort);
+                    int port = int.Parse(ConfigurationData["instanceport" + CurrentInstance.ToString()]);
                     Core.CreateInstance(InstanceName, port);
                 } else
                 {

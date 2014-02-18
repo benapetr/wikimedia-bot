@@ -20,7 +20,7 @@ namespace wmib
 {
     public class ModuleRC : Module
     {
-		public static Module ptrModule = null;
+        public static Module ptrModule = null;
         public override void Hook_Channel(Channel channel)
         {
             if (channel.RetrieveObject("RC") == null)
@@ -271,7 +271,7 @@ namespace wmib
 
         public override bool Construct()
         {
-			ptrModule = this;
+            ptrModule = this;
             Name = "RC";
             Version = "1.2.0.5";
             return true;
@@ -535,14 +535,14 @@ namespace wmib
                                                     {
                                                         if (w != null)
                                                         {
-															RecentChanges.wiki wiki_ = w.URL;
+                                                            RecentChanges.wiki wiki_ = w.URL;
                                                             if (w.Channel == _channel || w.Channel == "all")
                                                             {
 
-																if (w.Channel == "all")
-																{
-																	wiki_ = RecentChanges.WikiFromChannelID(_channel);
-																}
+                                                                if (w.Channel == "all")
+                                                                {
+                                                                    wiki_ = RecentChanges.WikiFromChannelID(_channel);
+                                                                }
                                                                 if (edit.Page == w.Page)
                                                                 {
                                                                     if (edit.Size != null)
@@ -557,10 +557,10 @@ namespace wmib
 
                                                                     Core.irc.Queue.DeliverMessage(
                                                                        Format(wiki_.name, wiki_.url, edit.Page, edit.User, edit.diff, edit.Summary, 
-																	       curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
+                                                                           curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
                                                                 }
                                                                 else
-																{
+                                                                {
                                                                     if (w.Page.EndsWith("*"))
                                                                     {
                                                                         if (edit.Page.StartsWith(w.Page.Replace("*", "")))
@@ -571,10 +571,10 @@ namespace wmib
                                                                             }
                                                                             Core.irc.Queue.DeliverMessage(
                                                                             Format(wiki_.name, wiki_.url, edit.Page, edit.User, edit.diff, edit.Summary, curr.channel, edit.Bot,
-																			       edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
+                                                                                   edit.New, edit.Minor), curr.channel.Name, IRC.priority.low);
                                                                         }
                                                                     }
-																}
+                                                                }
                                                             }
                                                         }
                                                     }

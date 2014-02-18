@@ -508,17 +508,17 @@ namespace wmib
         }
 
         public override void Hook_OnSelf(Channel channel, User self, string message)
-		{
-			if (channel == null)
-			{
-				Log("channel is NULL at Hook_OnSelf, message was: " + message, true);
-				return;
-			}
-			if (channel.PrimaryInstance == null)
-			{
-				Log("*PrimaryInstance is NULL at Hook_OnSelf, message was: " + message, true);
-				return;
-			}
+        {
+            if (channel == null)
+            {
+                Log("channel is NULL at Hook_OnSelf, message was: " + message, true);
+                return;
+            }
+            if (channel.PrimaryInstance == null)
+            {
+                Log("*PrimaryInstance is NULL at Hook_OnSelf, message was: " + message, true);
+                return;
+            }
             ChanLog(message, channel, channel.PrimaryInstance.Nick, "");
         }
 

@@ -169,20 +169,20 @@ namespace wmib
             }
         }
 
-		public static wiki WikiFromChannelID(string channel)
-		{
-			lock(wikiinfo)
-			{
-				foreach (wiki w in wikiinfo)
-				{
-					if (w.channel == channel)
-					{
-						return w;
-					}
-				}
-			}
-			return all;
-		}
+        public static wiki WikiFromChannelID(string channel)
+        {
+            lock(wikiinfo)
+            {
+                foreach (wiki w in wikiinfo)
+                {
+                    if (w.channel == channel)
+                    {
+                        return w;
+                    }
+                }
+            }
+            return all;
+        }
 
         /// <summary>
         /// New channel to watch by a bot
@@ -301,21 +301,21 @@ namespace wmib
                 WD = new StreamWriter(stream);
                 RD = new StreamReader(stream, System.Text.Encoding.UTF8);
                 Thread pinger = new Thread(Pong);
-				pinger.Name = "Module:RC/Pinger";
-				Core.ThreadManager.RegisterThread(pinger);
+                pinger.Name = "Module:RC/Pinger";
+                Core.ThreadManager.RegisterThread(pinger);
                 Send("USER " + "wm-bot" + " 8 * :" + "wm-bot");
                 Send("NICK " + Nick);
                 WD.Flush();
                 pinger.Start();
-				lock (channels)
-				{
-	                foreach (string b in channels)
-	                {
-	                    System.Threading.Thread.Sleep(800);
-	                    Send("JOIN " + b);
-	                    WD.Flush();
-	                }
-				}
+                lock (channels)
+                {
+                    foreach (string b in channels)
+                    {
+                        System.Threading.Thread.Sleep(800);
+                        Send("JOIN " + b);
+                        WD.Flush();
+                    }
+                }
                 ModuleRC.ptrModule.Log("Connected to feed - OK");
                 Loaded = true;
             }
@@ -442,15 +442,15 @@ namespace wmib
                                 break;
                             }
                         }
-	                    if (MonitoredPages.Contains(currpage))
-	                    {
-	                        MonitoredPages.Remove(currpage);
-	                        Module.SetConfig(channel, "HTML.Update", true);
-	                        Save();
-	                        Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed4", channel.Language), channel.Name);
-	                        return true;
-	                    }
-					}
+                        if (MonitoredPages.Contains(currpage))
+                        {
+                            MonitoredPages.Remove(currpage);
+                            Module.SetConfig(channel, "HTML.Update", true);
+                            Save();
+                            Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed4", channel.Language), channel.Name);
+                            return true;
+                        }
+                    }
                     Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed5", channel.Language), channel.Name);
                     return true;
                 }
