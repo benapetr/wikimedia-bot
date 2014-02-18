@@ -537,6 +537,7 @@ namespace wmib
                             Syslog.Log("CACHE: Lost connection to remote on " + this.ParentInstance.Nick + 
                                 ", creating new session on remote"
                             );
+							ChannelsJoined = false;
                             IsWorking = false;
                             while (!IsWorking)
                             {
@@ -548,6 +549,7 @@ namespace wmib
                                 {
 									Syslog.Log("Bouncer reconnected to network on: " + NickName);
                                     NetworkInit();
+									ParentInstance.Join();
                                 } else
 								{
 									Syslog.Log("Still waiting for bouncer on " + NickName);

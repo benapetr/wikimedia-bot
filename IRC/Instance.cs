@@ -154,6 +154,11 @@ namespace wmib
         {
             if (irc.ChannelsJoined == false)
             {
+				while (!irc.IsWorking)
+				{
+					Syslog.DebugLog("Waiting for " + Nick + " to finish connection to IRC server", 6);
+					Thread.Sleep(1000);
+				}
                 if (Configuration.System.DebugChan != null)
                 {
                     irc.SendData("JOIN " + Configuration.System.DebugChan);
