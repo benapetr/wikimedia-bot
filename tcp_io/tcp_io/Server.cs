@@ -8,14 +8,15 @@ namespace tcp_io
 {
     public struct BufferItem
     {
-        public string _text;
+        public string Text;
         public DateTime _datetime;
         public bool important;
     }
+
     public static class Buffer
     {
-        public static List<BufferItem> data_ou = new List<BufferItem>();
-        public static List<BufferItem> data_in = new List<BufferItem>();
+        public static List<BufferItem> OutgoingData = new List<BufferItem>();
+        public static List<BufferItem> IncomingData = new List<BufferItem>();
 
         public static bool Out(string message)
         {
@@ -23,10 +24,10 @@ namespace tcp_io
             {
                 BufferItem item = new BufferItem();
                 item._datetime = DateTime.Now;
-                item._text = message;
-                lock (data_ou)
+                item.Text = message;
+                lock (OutgoingData)
                 {
-                    data_ou.Add(item);
+                    OutgoingData.Add(item);
                 }
                 return true;
             }
@@ -43,10 +44,10 @@ namespace tcp_io
                 BufferItem item = new BufferItem();
                 item._datetime = DateTime.Now;
                 item.important = control;
-                item._text = message;
-                lock (data_in)
+                item.Text = message;
+                lock (IncomingData)
                 {
-                    data_in.Add(item);
+                    IncomingData.Add(item);
                 }
                 return true;
             }
@@ -62,27 +63,24 @@ namespace tcp_io
         public static string network = "irc.freenode.net";
         public static int port = 6667;
 
-        public static bool connection_remote = false;
+        private static bool IsConnected = false;
+        private static System.IO.StreamReader local_reader;
+        private static System.IO.StreamWriter local_writer;
 
-        public static bool connection_host = false;
+        private static System.IO.StreamWriter _w;
+        private static System.IO.StreamReader _r;
+        private static System.Net.Sockets.NetworkStream stream;
+        private static TcpClient client;
 
-        public static System.IO.StreamReader local_reader;
-        public static System.IO.StreamWriter local_writer;
-
-        public static System.IO.StreamWriter _w;
-        public static System.IO.StreamReader _r;
-        public static System.Net.Sockets.NetworkStream stream;
-        public static TcpClient client;
-
-        public static System.Threading.Thread listener;
-        public static System.Threading.Thread irc;
+        private static System.Threading.Thread listener;
+        private static System.Threading.Thread irc;
 
         public static void Listen()
         {
             TcpListener cache = new TcpListener(IPAddress.Parse("127.0.0.1"), port);
 
             cache.Start();
-            Console.WriteLine("Cache is ok");
+            Console.WriteLine("Cache is up");
             
             while (true)
             {
@@ -90,11 +88,7 @@ namespace tcp_io
                 NetworkStream temp = client.GetStream();
                 local_writer = new System.IO.StreamWriter(temp);
                 local_reader = new System.IO.StreamReader(temp, System.Text.Encoding.UTF8);
-                //_socket = cache.AcceptSocket();
-                
-                connection_host = true;
-                
-                //Console.WriteLine("");
+
                 try
                 {
                     while (!local_reader.EndOfStream)
@@ -119,7 +113,7 @@ namespace tcp_io
                                 switch (code)
                                 {
                                     case "STATUS":
-                                        if (connection_remote)
+                                        if (IsConnected)
                                         {
                                             Buffer.In("CONTROL: TRUE", true);
                                         } else
@@ -138,11 +132,9 @@ namespace tcp_io
                 }
                 catch (System.IO.IOException)
                 {
-                    connection_host = false;
                     Console.WriteLine("Remote dced");
                 }
 
-                connection_host = false;
                 System.Threading.Thread.Sleep(20);
             }
         }
@@ -151,18 +143,19 @@ namespace tcp_io
         {
             try
             {
-                if (connection_remote)
+                if (IsConnected)
                 {
                     return false;
                 }
                 stream = new System.Net.Sockets.TcpClient(network, 6667).GetStream();
                 _r = new System.IO.StreamReader(stream, System.Text.Encoding.UTF8);
                 _w = new System.IO.StreamWriter(stream);
-                connection_remote = true;
+                IsConnected = true;
             }
-            catch (Exception x)
+            catch (Exception fail)
             {
-                connection_remote = false;
+				Console.Write(fail.ToString() + "\n");
+                IsConnected = false;
             }
             return false;
         }
@@ -173,7 +166,7 @@ namespace tcp_io
             {
                 try
                 {
-                    if (connection_remote)
+                    if (IsConnected)
                     {
                         while (!_r.EndOfStream)
                         {
@@ -182,12 +175,12 @@ namespace tcp_io
                             System.Threading.Thread.Sleep(20);
                         }
                         Buffer.In("CONTROL: DC");
-                        connection_remote = false;
+                        IsConnected = false;
                     }
                 }
                 catch (System.IO.IOException)
                 {
-                    connection_remote = false;
+                    IsConnected = false;
                     Buffer.In("CONTROL: DC");
                 }
                 System.Threading.Thread.Sleep(10);
@@ -209,13 +202,13 @@ namespace tcp_io
                     {
                         if (client.Connected)
                         {
-                            if (Buffer.data_in.Count > 0)
+                            if (Buffer.IncomingData.Count > 0)
                             {
                                 BufferItem lastitem;
-                                lock (Buffer.data_in)
+                                lock (Buffer.IncomingData)
                                 {
-                                    lastitem = Buffer.data_in[0];
-                                    foreach (BufferItem Item in Buffer.data_in)
+                                    lastitem = Buffer.IncomingData[0];
+                                    foreach (BufferItem Item in Buffer.IncomingData)
                                     {
                                         if (Item.important)
                                         {
@@ -223,27 +216,25 @@ namespace tcp_io
                                             break;
                                         }
                                     }
-                                    Buffer.data_in.Remove(lastitem);
+                                    Buffer.IncomingData.Remove(lastitem);
                                 }
-                                //UTF8Encoding dc = new UTF8Encoding();
-                                local_writer.WriteLine(lastitem._text);
+                                local_writer.WriteLine(lastitem.Text);
                                 local_writer.Flush();
-                                //_socket.Send(dc.GetBytes(lastitem._text + "\n"));
                             }
                         }
                     }
 
-                    if (connection_remote)
+                    if (IsConnected)
                     {
-                        if (Buffer.data_ou.Count > 0)
+                        if (Buffer.OutgoingData.Count > 0)
                         {
                             BufferItem lastitem;
-                            lock (Buffer.data_ou)
+                            lock (Buffer.OutgoingData)
                             {
-                                lastitem = Buffer.data_ou[0];
-                                Buffer.data_ou.Remove(lastitem);
+                                lastitem = Buffer.OutgoingData[0];
+                                Buffer.OutgoingData.Remove(lastitem);
                             }
-                            _w.WriteLine(lastitem._text);
+                            _w.WriteLine(lastitem.Text);
                             _w.Flush();
                         }
                     }
@@ -251,16 +242,16 @@ namespace tcp_io
                     if (ping > 2000)
                     {
                         ping = 0;
-                        if (connection_remote)
+                        if (IsConnected)
                         {
-                            _w.WriteLine("PING :" + "irc.freenode.net");
+                            _w.WriteLine("PING :" + Server.network);
                             _w.Flush();
                         }
                     }
                 }
-                catch (Exception x)
+                catch (Exception fail)
                 { 
-                    
+					Console.Write(fail.ToString());
                 }
                 System.Threading.Thread.Sleep(10);
             }

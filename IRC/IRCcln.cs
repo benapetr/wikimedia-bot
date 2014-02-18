@@ -436,71 +436,72 @@ namespace wmib
         /// Connect this instance
         /// </summary>
         public void Connect()
-        {
-            Syslog.Log("Connecting instance " + NickName + " to irc server " + Server + "...");
-            if (!Configuration.IRC.UsingBouncer)
-            {
-                networkStream = new System.Net.Sockets.TcpClient(Server, 6667).GetStream();
-            } else
-            {
-                Syslog.Log(ParentInstance.Nick + " is using personal bouncer port " + BouncerPort.ToString());
-                networkStream = new System.Net.Sockets.TcpClient(Bouncer, BouncerPort).GetStream();
-            }
-            connected = true;
-            streamReader = new System.IO.StreamReader(networkStream, System.Text.Encoding.UTF8);
-            streamWriter = new System.IO.StreamWriter(networkStream);
+		{
+			Syslog.Log("Connecting instance " + NickName + " to irc server " + Server + "...");
+			if (!Configuration.IRC.UsingBouncer)
+			{
+				networkStream = new System.Net.Sockets.TcpClient(Server, 6667).GetStream();
+			} else
+			{
+				Syslog.Log(ParentInstance.Nick + " is using personal bouncer port " + BouncerPort.ToString());
+				networkStream = new System.Net.Sockets.TcpClient(Bouncer, BouncerPort).GetStream();
+			}
+			connected = true;
+			streamReader = new System.IO.StreamReader(networkStream, System.Text.Encoding.UTF8);
+			streamWriter = new System.IO.StreamWriter(networkStream);
 
-            bool Auth = true;
+			bool Auth = true;
 
-            if (Configuration.IRC.UsingBouncer)
-            {
-                SendData("CONTROL: STATUS");
-                Syslog.Log("CACHE: Waiting for buffer (network bouncer) of instance " + this.ParentInstance.Nick);
-                bool done = true;
-                while (done)
-                {
-                    string response = streamReader.ReadLine();
-                    if (response == "CONTROL: TRUE")
-                    {
-                        Syslog.DebugLog("Resumming previous session on " + this.ParentInstance.Nick);
-                        done = false;
-                        Auth = false;
-                        ChannelsJoined = true;
-                        IsWorking = true;
-                    } else if (response.StartsWith(":"))
-                    {
-                        Backlog.Add(response);
-                    } else if (response == "CONTROL: FALSE")
-                    {
-                        Syslog.DebugLog("Bouncer is not connected, starting new session on " + this.ParentInstance.Nick);
-                        done = false;
-                        SendData("CONTROL: CREATE");
-                        streamWriter.Flush();
-                    }
-                }
-            }
+			if (Configuration.IRC.UsingBouncer)
+			{
+				SendData("CONTROL: STATUS");
+				Syslog.Log("CACHE: Waiting for buffer (network bouncer) of instance " + this.ParentInstance.Nick);
+				bool done = true;
+				while (done)
+				{
+					string response = streamReader.ReadLine();
+					if (response == "CONTROL: TRUE")
+					{
+						Syslog.DebugLog("Resumming previous session on " + this.ParentInstance.Nick);
+						done = false;
+						Auth = false;
+						ChannelsJoined = true;
+						IsWorking = true;
+					} else if (response.StartsWith(":"))
+					{
+						Backlog.Add(response);
+					} else if (response == "CONTROL: FALSE")
+					{
+						Syslog.DebugLog("Bouncer is not connected, starting new session on " + this.ParentInstance.Nick);
+						done = false;
+						SendData("CONTROL: CREATE");
+						streamWriter.Flush();
+					}
+				}
+			}
 
-            _Queue = new System.Threading.Thread(Queue.Run);
+			if (Auth)
+			{
+				NetworkInit();
+			}
+
+			_Queue = new System.Threading.Thread(Queue.Run);
             _Queue.Name = "MessageQueue:" + NickName;
             Core.ThreadManager.RegisterThread(_Queue);
             PingerThread = new System.Threading.Thread(Ping);
             Core.ThreadManager.RegisterThread(PingerThread);
             PingerThread.Name = "Ping:" + NickName;
             PingerThread.Start();
-
-            if (Auth)
-            {
-                SendData("USER " + UserName + " 8 * :" + Ident);
-                SendData("NICK " + ParentInstance.Nick);
-            }
-
-            _Queue.Start();
-
-            if (Auth)
-            {
-                Authenticate();
-            }
+			_Queue.Start();
         }
+
+		private void NetworkInit()
+		{
+            SendData("USER " + UserName + " 8 * :" + Ident);
+            SendData("NICK " + ParentInstance.Nick);
+
+            Authenticate();
+		}
 
         /// <summary>
         /// Connection
@@ -536,19 +537,21 @@ namespace wmib
                             Syslog.Log("CACHE: Lost connection to remote on " + this.ParentInstance.Nick + 
                                 ", creating new session on remote"
                             );
-                            bool Connected = false;
-                            while (!Connected)
+                            IsWorking = false;
+                            while (!IsWorking)
                             {
-
                                 System.Threading.Thread.Sleep(800);
                                 SendData("CONTROL: STATUS");
                                 string response = streamReader.ReadLine();
                                 Core.TrafficLog(ParentInstance.Nick + "<<<<<<" + response);
                                 if (response == "CONTROL: OK")
                                 {
-                                    Reconnect();
-                                    Connected = true;
-                                }
+									Syslog.Log("Bouncer reconnected to network on: " + NickName);
+                                    NetworkInit();
+                                } else
+								{
+									Syslog.Log("Still waiting for bouncer on " + NickName);
+								}
                             }
                         }
                     }
