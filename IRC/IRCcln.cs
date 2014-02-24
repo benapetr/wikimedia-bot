@@ -540,12 +540,12 @@ namespace wmib
                             );
                             ChannelsJoined = false;
                             IsWorking = false;
+							int xx = 0;
                             while (!IsWorking)
                             {
                                 System.Threading.Thread.Sleep(2000);
                                 SendData("CONTROL: STATUS");
                                 string response = streamReader.ReadLine();
-								int xx = 0;
                                 Core.TrafficLog(ParentInstance.Nick + "<<<<<<" + response);
                                 if (response == "CONTROL: OK")
                                 {

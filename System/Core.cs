@@ -393,7 +393,7 @@ namespace wmib
                         break;
                     } else
                     {
-                        Syslog.DebugLog("Connected to " + instance.Nick);
+                        Syslog.DebugLog("Connected to " + instance.Nick, 6);
                         IsOk = true;
                     }
                 }
