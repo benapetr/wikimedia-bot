@@ -91,6 +91,7 @@ namespace tcp_io
                 NetworkStream temp = client.GetStream();
                 local_writer = new System.IO.StreamWriter(temp);
                 local_reader = new System.IO.StreamReader(temp, System.Text.Encoding.UTF8);
+				Syslog.Log("New client has connected to bouncer");
 
                 try
                 {
@@ -141,10 +142,11 @@ namespace tcp_io
                         }
                         System.Threading.Thread.Sleep(20);
                     }
+					Syslog.Log("Client has disconnect on EOF");
                 }
                 catch (System.IO.IOException)
                 {
-                    Syslog.Log("Remote server disconnected on IOEX term");
+                    Syslog.Log("Client has disconnected on IOEX term");
                 }
                 System.Threading.Thread.Sleep(20);
             }
