@@ -13,9 +13,9 @@ namespace wmib
         /// <summary>
         /// Data file
         /// </summary>
-        public string datafile_raw = "";
-        public string datafile_xml = "";
-        public string temporary_data = "";
+        private string datafile_raw = "";
+        private string datafile_xml = "";
+        private string temporary_data = "";
         public bool Sensitive = true;
         public bool stored = true;
         public static string DefaultPrefix = "!";
@@ -42,7 +42,7 @@ namespace wmib
         /// </summary>
         public List<InfobotAlias> Alias = new List<InfobotAlias>();
 
-        public Channel pChannel;
+        private Channel pChannel;
 
         private string search_key;
 
@@ -62,7 +62,7 @@ namespace wmib
             LoadData();
         }
 
-        public bool AliasExists(string name, bool sensitive = true)
+        private bool AliasExists(string name, bool sensitive = true)
         {
             if (sensitive)
             {
@@ -247,7 +247,7 @@ namespace wmib
             return Item;
         }
 
-        public static string ParseInfo(string key, string[] pars, string original, InfobotKey Key)
+        private static string ParseInfo(string key, string[] pars, string original, InfobotKey Key)
         {
             string keyv = key;
             bool raw = false;
@@ -311,7 +311,7 @@ namespace wmib
         /// </summary>
         /// <param name="key">Key</param>
         /// <returns></returns>
-        public string GetValue(string key)
+        private string GetValue(string key)
         {
             lock (this)
             {
@@ -353,7 +353,7 @@ namespace wmib
         /// <param name='name'>
         /// If set to <c>true</c> name.
         /// </param>
-        public bool IsIgnored(string name, Channel channel)
+        private bool IsIgnored(string name, Channel channel)
         {
             string ignore_test = name;
             if (ignore_test.Contains(" "))
@@ -386,7 +386,6 @@ namespace wmib
                 // handle prefix
                 name = name.Substring(1);
                 Infobot infobot = null;
-
                 if (Allowed)
                 {
                     infobot = (Infobot)data.RetrieveObject("Infobot");
@@ -400,6 +399,8 @@ namespace wmib
 
                 // split by parameters so we can easily get the arguments user provided
                 List<string> Parameters = new List<string>(name.Split(' '));
+                
+                string key = Parameters[0];
 
                 // check if key has some parameters or command
                 if (Parameters.Count > 1)
@@ -428,8 +429,6 @@ namespace wmib
                                 }
                                 return true;
                             }
-                            // get a key name
-                            string key = name.Substring(name.IndexOf(" is") + 4);
                             // check if there is pipe symbol in the key, which is not a valid symbol
                             if (Parameters[0].Contains("|"))
                             {
@@ -439,16 +438,15 @@ namespace wmib
                                 }
                                 return true;
                             }
-                            if (infobot != null)
-                            {
-                                infobot.SetKey(key, Parameters[0], user, chan);
-                                return true;
-                            }
+                            // store the key
+                            infobot.SetKey(key, Parameters[0], user, chan);
+                            return true;
                         }
                         else
                         {
                             if (!chan.SuppressWarnings)
                             {
+                                // user can't make the key
                                 Core.irc.Queue.DeliverMessage(messages.Localize("Authorization", chan.Language), chan);
                             }
                         }
@@ -558,14 +556,11 @@ namespace wmib
                 }
                 if (!Allowed)
                 {
+                    // there is no DB we could read data from
                     return true;
                 }
                 string User = "";
-                string original = name;
-                if (original.Contains(" "))
-                {
-                    original = original.Substring(original.IndexOf(" ") + 1);
-                }
+                key = Parameters[0];
                 if (name.Contains("|"))
                 {
                     User = name.Substring(name.IndexOf("|") + 1);
@@ -589,13 +584,13 @@ namespace wmib
                     if (_key.Raw)
                     {
                         raw = _key.Raw;
-                        name = original;
+                        name = key;
                         User = "";
                     }
                 }
                 if (keyv != "")
                 {
-                    keyv = ParseInfo(keyv, p, original, _key);
+                    keyv = ParseInfo(keyv, p, key, _key);
                     if (User == "")
                     {
                         Core.irc.Queue.DeliverMessage(keyv, chan);
@@ -619,7 +614,7 @@ namespace wmib
                                     keyv = infobot.GetValue(b.Key);
                                     if (keyv != "")
                                     {
-                                        keyv = ParseInfo(keyv, p, original, _key);
+                                        keyv = ParseInfo(keyv, p, key, _key);
                                         if (User == "")
                                         {
                                             Core.irc.Queue.DeliverMessage(keyv, chan);
@@ -639,7 +634,7 @@ namespace wmib
                                     keyv = infobot.GetValue(b.Key);
                                     if (keyv != "")
                                     {
-                                        keyv = ParseInfo(keyv, p, original, _key);
+                                        keyv = ParseInfo(keyv, p, key, _key);
                                         if (User == "")
                                         {
                                             Core.irc.Queue.DeliverMessage(keyv, chan);
@@ -683,7 +678,7 @@ namespace wmib
                             keyv = infobot.GetValue(results[0]);
                             if (keyv != "")
                             {
-                                keyv = ParseInfo(keyv, p, original, _key);
+                                keyv = ParseInfo(keyv, p, key, _key);
                                 if (User == "")
                                 {
                                     Core.irc.Queue.DeliverMessage(keyv, chan.Name);
@@ -703,7 +698,7 @@ namespace wmib
                                         keyv = infobot.GetValue(alias.Key);
                                         if (keyv != "")
                                         {
-                                            keyv = ParseInfo(keyv, p, original, _key);
+                                            keyv = ParseInfo(keyv, p, key, _key);
                                             if (User == "")
                                             {
                                                 Core.irc.Queue.DeliverMessage(keyv, chan.Name);
@@ -840,6 +835,7 @@ namespace wmib
             RegularModule.running = true;
             ReplyChan = Chan;
             tSearch = new Thread(infobot.StartSearch);
+            tSearch.Name = "Module:Infobot/Search";
             tSearch.Start();
             int check = 1;
             while (RegularModule.running)

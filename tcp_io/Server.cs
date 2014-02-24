@@ -91,7 +91,7 @@ namespace tcp_io
                 NetworkStream temp = client.GetStream();
                 local_writer = new System.IO.StreamWriter(temp);
                 local_reader = new System.IO.StreamReader(temp, System.Text.Encoding.UTF8);
-				Syslog.Log("New client has connected to bouncer");
+                Syslog.Log("New client has connected to bouncer");
 
                 try
                 {
@@ -131,7 +131,7 @@ namespace tcp_io
                                     break;
                                 case "CONNECT":
                                 case "CREATE":
-									Syslog.Log("Connecting to remote server: " + parameter);
+                                    Syslog.Log("Connecting to remote server: " + parameter);
                                     StartIRC(parameter);
                                     break;
                                 case "DISCONNECT":
@@ -142,7 +142,7 @@ namespace tcp_io
                         }
                         System.Threading.Thread.Sleep(20);
                     }
-					Syslog.Log("Client has disconnect on EOF");
+                    Syslog.Log("Client has disconnect on EOF");
                 }
                 catch (System.IO.IOException)
                 {

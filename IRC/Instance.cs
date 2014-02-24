@@ -224,10 +224,10 @@ namespace wmib
                     // it will just skip it
                     irc.Disconnect();
                     irc.Connect();
-					if (!irc.ChannelsJoined)
-					{
-						Join();
-					}
+                    if (!irc.ChannelsJoined)
+                    {
+                        Join();
+                    }
                     irc.ParserExec();
 
                 } catch (ThreadAbortException)

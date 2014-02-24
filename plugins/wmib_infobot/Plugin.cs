@@ -22,13 +22,12 @@ namespace wmib
 {
     public class RegularModule : Module
     {
-        public List<Infobot.InfoItem> jobs = new List<Infobot.InfoItem>();
+        private List<Infobot.InfoItem> jobs = new List<Infobot.InfoItem>();
         public static bool running;
-        public bool Unwritable;
-        public bool Disabled;
+        private bool Unwritable;
         public static bool Snapshots = true;
         public readonly static string SnapshotsDirectory = "snapshots";
-        public infobot_writer writer = null;
+        private infobot_writer writer = null;
 
         public override bool Hook_OnUnload()
         {
@@ -817,7 +816,7 @@ namespace wmib
             try
             {
                 Unwritable = false;
-                while (Disabled != true)
+                while (Core.IsRunning && IsWorking)
                 {
                     if (Unwritable)
                     {
