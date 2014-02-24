@@ -474,7 +474,7 @@ namespace wmib
                     {
                         Syslog.DebugLog("Bouncer is not connected, starting new session on " + this.ParentInstance.Nick);
                         done = false;
-                        SendData("CONTROL: CREATE");
+                        SendData("CONTROL: CREATE " + Server);
                         streamWriter.Flush();
                     }
                 }
@@ -532,7 +532,7 @@ namespace wmib
                     {
                         if (text == "CONTROL: DC")
                         {
-                            SendData("CONTROL: CREATE");
+                            SendData("CONTROL: CREATE " + Server);
                             streamWriter.Flush();
                             Syslog.Log("CACHE: Lost connection to remote on " + this.ParentInstance.Nick + 
                                 ", creating new session on remote"

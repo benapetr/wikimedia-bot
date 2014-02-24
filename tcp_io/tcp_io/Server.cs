@@ -31,8 +31,9 @@ namespace tcp_io
                 }
                 return true;
             }
-            catch (Exception)
+            catch (Exception fail)
             {
+                Console.WriteLine(fail.ToString());
                 return false;
             }
         }
@@ -63,17 +64,18 @@ namespace tcp_io
         public static string network = "irc.freenode.net";
         public static int port = 6667;
 
-        private static bool IsConnected = false;
+        private static bool IsConnectedOnRemote = false;
         private static System.IO.StreamReader local_reader;
         private static System.IO.StreamWriter local_writer;
 
-        private static System.IO.StreamWriter _w;
-        private static System.IO.StreamReader _r;
+        private static System.IO.StreamWriter remote_writer;
+        private static System.IO.StreamReader remote_reader;
         private static System.Net.Sockets.NetworkStream stream;
         private static TcpClient client;
 
         private static System.Threading.Thread listener;
         private static System.Threading.Thread irc;
+        private static DateTime Ping;
 
         public static void Listen()
         {
@@ -81,6 +83,7 @@ namespace tcp_io
 
             cache.Start();
             Console.WriteLine("Cache is up");
+            Ping = DateTime.Now;
             
             while (true)
             {
@@ -93,40 +96,49 @@ namespace tcp_io
                 {
                     while (!local_reader.EndOfStream)
                     {
-                        
                         //byte[] text = new byte[8000];
                         //int i = _socket.Receive(text);
                         //text = Encoding.Convert(Encoding.Unicode, Encoding.UTF8, text);
                         string data = local_reader.ReadLine();
-                       
-                            if (data == "")
+                        if (data == "")
+                        {
+                            continue;
+                        }
+                        if (!data.StartsWith("CONTROL: "))
+                        {
+                            Buffer.Out(data);
+                        }
+                        else
+                        {
+                            string code = data.Replace("\r", "").Substring("CONTROLxx".Length);
+                            string parameter = "";
+                            if (code.Contains(" "))
                             {
-                                continue;
+                                parameter = code.Substring(code.IndexOf(" ") + 1);
+                                code = code.Substring(0, code.IndexOf(" "));
                             }
-                            if (!data.StartsWith("CONTROL: "))
+                            switch (code)
                             {
-                                Buffer.Out(data);
+                                case "STATUS":
+                                    if (IsConnectedOnRemote)
+                                    {
+                                        Buffer.In("CONTROL: TRUE", true);
+                                    } else
+                                    {
+                                        Buffer.In("CONTROL: FALSE", true);
+                                    }
+                                    break;
+                                case "CONNECT":
+                                case "CREATE":
+                                    StartIRC(parameter);
+                                    Console.WriteLine("Connecting wait");
+                                    break;
+                                case "DISCONNECT":
+                                    Disconnect();
+                                    SendDisconnectOnRemote();
+                                    break;
                             }
-                            else
-                            {
-                                string code = data.Replace("\r", "").Substring("CONTROLxx".Length);
-                                switch (code)
-                                {
-                                    case "STATUS":
-                                        if (IsConnected)
-                                        {
-                                            Buffer.In("CONTROL: TRUE", true);
-                                        } else
-                                        {
-                                            Buffer.In("CONTROL: FALSE", true);
-                                        }
-                                        break;
-                                    case "CREATE":
-                                        StartIRC();
-                                        Console.WriteLine("Connecting wait");
-                                        break;
-                                }
-                            }
+                        }
                         System.Threading.Thread.Sleep(20);
                     }
                 }
@@ -139,23 +151,46 @@ namespace tcp_io
             }
         }
 
-        public static bool StartIRC()
+        private static void SendDisconnectOnRemote()
+        {
+            Buffer.In("CONTROL: DC");
+            IsConnectedOnRemote = false;
+        }
+
+        private static void Disconnect()
+        {
+            if (IsConnectedOnRemote)
+            {
+                Console.WriteLine("Disconnecting from remote");
+                stream.Close();
+                remote_writer.Close();
+                remote_reader.Close();
+                IsConnectedOnRemote = false;
+            }
+        }
+
+        private static bool StartIRC(string server)
         {
             try
             {
-                if (IsConnected)
+                if (IsConnectedOnRemote)
                 {
                     return false;
                 }
+                if (server != "")
+                {
+                    network = server;
+                }
                 stream = new System.Net.Sockets.TcpClient(network, 6667).GetStream();
-                _r = new System.IO.StreamReader(stream, System.Text.Encoding.UTF8);
-                _w = new System.IO.StreamWriter(stream);
-                IsConnected = true;
+                remote_reader = new System.IO.StreamReader(stream, System.Text.Encoding.UTF8);
+                remote_writer = new System.IO.StreamWriter(stream);
+                Ping = DateTime.Now;
+                IsConnectedOnRemote = true;
             }
             catch (Exception fail)
             {
                 Console.Write(fail.ToString() + "\n");
-                IsConnected = false;
+                IsConnectedOnRemote = false;
             }
             return false;
         }
@@ -166,22 +201,22 @@ namespace tcp_io
             {
                 try
                 {
-                    if (IsConnected)
+                    if (IsConnectedOnRemote)
                     {
-                        while (!_r.EndOfStream)
+                        while (!remote_reader.EndOfStream)
                         {
-                            string text = _r.ReadLine();
+                            string text = remote_reader.ReadLine();
+                            Ping = DateTime.Now;
                             Buffer.In(text);
                             System.Threading.Thread.Sleep(20);
                         }
-                        Buffer.In("CONTROL: DC");
-                        IsConnected = false;
+                        SendDisconnectOnRemote();
                     }
+                    System.Threading.Thread.Sleep(20);
                 }
                 catch (System.IO.IOException)
                 {
-                    IsConnected = false;
-                    Buffer.In("CONTROL: DC");
+                    SendDisconnectOnRemote();
                 }
                 System.Threading.Thread.Sleep(10);
             }
@@ -224,7 +259,7 @@ namespace tcp_io
                         }
                     }
 
-                    if (IsConnected)
+                    if (IsConnectedOnRemote)
                     {
                         if (Buffer.OutgoingData.Count > 0)
                         {
@@ -234,18 +269,23 @@ namespace tcp_io
                                 lastitem = Buffer.OutgoingData[0];
                                 Buffer.OutgoingData.Remove(lastitem);
                             }
-                            _w.WriteLine(lastitem.Text);
-                            _w.Flush();
+                            remote_writer.WriteLine(lastitem.Text);
+                            remote_writer.Flush();
                         }
-                    }
-                    ping++;
-                    if (ping > 2000)
-                    {
-                        ping = 0;
-                        if (IsConnected)
+                        ping++;
+                        if (ping > 2000)
                         {
-                            _w.WriteLine("PING :" + Server.network);
-                            _w.Flush();
+                            if ((DateTime.Now - Ping).Minutes > 2)
+                            {
+                                // no response from server within 2 minutes
+                                SendDisconnectOnRemote();
+                                Disconnect();
+                                ping = 0;
+                                continue;
+                            }
+                            ping = 0;
+                            remote_writer.WriteLine("PING :" + DateTime.Now.ToBinary().ToString());
+                            remote_writer.Flush();
                         }
                     }
                 }
@@ -255,7 +295,6 @@ namespace tcp_io
                 }
                 System.Threading.Thread.Sleep(10);
             }
-
         }
     }
 }
