@@ -474,6 +474,7 @@ namespace wmib
                     {
                         Syslog.DebugLog("Bouncer is not connected, starting new session on " + this.ParentInstance.Nick);
                         done = false;
+						ChannelsJoined = false;
                         SendData("CONTROL: CREATE " + Server);
                         streamWriter.Flush();
                     }
