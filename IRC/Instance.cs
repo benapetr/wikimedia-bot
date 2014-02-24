@@ -156,7 +156,7 @@ namespace wmib
             {
                 while (!irc.IsWorking)
                 {
-                    Syslog.DebugLog("Waiting for " + Nick + " to finish connection to IRC server", 6);
+                    Syslog.DebugLog("JOIN THREAD: Waiting for " + Nick + " to finish connection to IRC server", 6);
                     Thread.Sleep(1000);
                 }
                 if (Configuration.System.DebugChan != null)

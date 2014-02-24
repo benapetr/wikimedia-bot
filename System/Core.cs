@@ -387,7 +387,7 @@ namespace wmib
                 {
                     if (!instance.IsWorking)
                     {
-                        Syslog.DebugLog("Waiting for " + instance.Nick);
+                        Syslog.DebugLog("Waiting for " + instance.Nick, 2);
                         Thread.Sleep(1000);
                         IsOk = false;
                         break;
@@ -397,11 +397,6 @@ namespace wmib
                         IsOk = true;
                     }
                 }
-            }
-            // now we make all instances join their channels
-            foreach (Instance instance in Instances.Values)
-            {
-                instance.Join();
             }
 
             // wait for all instances to join their channels
