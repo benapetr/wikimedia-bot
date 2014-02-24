@@ -131,8 +131,8 @@ namespace tcp_io
                                     break;
                                 case "CONNECT":
                                 case "CREATE":
+									Syslog.Log("Connecting to remote server: " + parameter);
                                     StartIRC(parameter);
-                                    Syslog.Log("Connecting to remote server: " + network);
                                     break;
                                 case "DISCONNECT":
                                     Disconnect();
