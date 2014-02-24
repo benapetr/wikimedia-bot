@@ -154,7 +154,7 @@ namespace tcp_io
             }
             catch (Exception fail)
             {
-				Console.Write(fail.ToString() + "\n");
+                Console.Write(fail.ToString() + "\n");
                 IsConnected = false;
             }
             return false;
@@ -251,7 +251,7 @@ namespace tcp_io
                 }
                 catch (Exception fail)
                 { 
-					Console.Write(fail.ToString());
+                    Console.Write(fail.ToString());
                 }
                 System.Threading.Thread.Sleep(10);
             }

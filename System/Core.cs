@@ -119,14 +119,30 @@ namespace wmib
         {
             int lowest = 99999999;
             Instance instance = null;
+            // first try to get instance which is online
             lock(Instances)
             {
                 foreach (Instance xx in Instances.Values)
                 {
-                    if (xx.ChannelCount < lowest)
+                    if (xx.IsConnected && xx.IsWorking && xx.ChannelCount < lowest)
                     {
                         lowest = xx.ChannelCount;
                         instance = xx;
+                    }
+                }
+            }
+            // if there is no such return any instance with low channels
+            if (instance == null)
+            {
+                lock(Instances)
+                {
+                    foreach (Instance xx in Instances.Values)
+                    {
+                        if (xx.ChannelCount < lowest)
+                        {
+                            lowest = xx.ChannelCount;
+                            instance = xx;
+                        }
                     }
                 }
             }

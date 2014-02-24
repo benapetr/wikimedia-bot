@@ -188,7 +188,7 @@ namespace wmib
                         case "help":
                             Writer.WriteLine("Commands:\n"
                             + "exit - shutdown connection\n"
-							+ "verbosity++\nverbosity--\n"
+                            + "verbosity++\nverbosity--\n"
                             + "info - print information about system\n"
                             + "halt - shutdown bot\n"
                             + "traffic-on - turn on traffic logs\n"
@@ -207,12 +207,12 @@ namespace wmib
                             Writer.WriteLine("Dumping traffic into datafile");
                             Writer.Flush();
                             break;
-						case "verbosity++":
-							Configuration.System.SelectedVerbosity++;
-							break;
-						case "verbosity--":
-							Configuration.System.SelectedVerbosity--;
-							break;
+                        case "verbosity++":
+                            Configuration.System.SelectedVerbosity++;
+                            break;
+                        case "verbosity--":
+                            Configuration.System.SelectedVerbosity--;
+                            break;
                         case "traffic-off":
                             Configuration.Network.Logging = false;
                             Writer.WriteLine("Disabled traffic");
