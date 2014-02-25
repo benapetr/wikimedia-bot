@@ -61,17 +61,17 @@ namespace wmib
                 Channel channel = Core.GetChannel(code[3]);
                 if (channel != null)
                 {
-					if (channel.UserList.Count == 0)
-					{
-						Syslog.WarningLog("Parsed no data records for " + channel.Name + " which means I am likely not in a channel, trying to rejoin it");
-						channel.HasFreshUserList = false;
-						channel.PrimaryInstance.irc.Join(channel);
-						return false;
+                    if (channel.UserList.Count == 0)
+                    {
+                        Syslog.WarningLog("Parsed no data records for " + channel.Name + " which means I am likely not in a channel, trying to rejoin it");
+                        channel.HasFreshUserList = false;
+                        channel.PrimaryInstance.irc.Join(channel);
+                        return false;
 
-					} else
-					{
-                    	Syslog.Log("Finished parsing for " + channel.Name + " parsed totaly: " + channel.UserList.Count.ToString());
-					}
+                    } else
+                    {
+                        Syslog.Log("Finished parsing for " + channel.Name + " parsed totaly: " + channel.UserList.Count.ToString());
+                    }
                     if (Configuration.System.SelectedVerbosity > 8)
                     {
                         string list = "";

@@ -474,7 +474,7 @@ namespace wmib
                     {
                         Syslog.DebugLog("Bouncer is not connected, starting new session on " + this.ParentInstance.Nick);
                         done = false;
-						ChannelsJoined = false;
+                        ChannelsJoined = false;
                         SendData("CONTROL: CREATE " + Server);
                         streamWriter.Flush();
                     }
@@ -540,29 +540,29 @@ namespace wmib
                             );
                             ChannelsJoined = false;
                             IsWorking = false;
-							int xx = 0;
+                            int xx = 0;
                             while (!IsWorking)
                             {
                                 System.Threading.Thread.Sleep(2000);
                                 SendData("CONTROL: STATUS");
                                 string response = streamReader.ReadLine();
                                 Core.TrafficLog(ParentInstance.Nick + "<<<<<<" + response);
-                                if (response == "CONTROL: OK")
+                                if (response == "CONTROL: TRUE")
                                 {
                                     Syslog.Log("Bouncer reconnected to network on: " + NickName);
                                     NetworkInit();
                                     ParentInstance.Join();
                                 } else
                                 {
-									xx++;
-									if (xx > 6)
-									{
-										Syslog.WarningLog("Bouncer failed to connect to the network within 10 seconds, disconnecting it: " + NickName);
-										SendData("CONTROL: DISCONNECT");
-										return;
-									}
+                                    xx++;
+                                    if (xx > 6)
+                                    {
+                                        Syslog.WarningLog("Bouncer failed to connect to the network within 10 seconds, disconnecting it: " + NickName);
+                                        SendData("CONTROL: DISCONNECT");
+                                        return;
+                                    }
                                     Syslog.Log("Still waiting for bouncer (retrying for " + xx.ToString() 
-									           + ") on " + NickName + " " + response);
+                                               + ") on " + NickName + " " + response);
                                 }
                             }
                         }
