@@ -258,7 +258,7 @@ namespace wmib
             if (parameters.Count > 1)
             {
                 string keys = "";
-                int curr = 1;
+                int curr = 0;
                 while (parameters.Count > curr)
                 {
                     if (!raw)
