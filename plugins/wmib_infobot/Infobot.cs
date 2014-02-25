@@ -263,9 +263,9 @@ namespace wmib
                 {
                     if (!raw)
                     {
-                        text = text.Replace("$" + curr.ToString(), parameters[curr]);
-                        text = text.Replace("$url_encoded_" + curr.ToString(), System.Web.HttpUtility.UrlEncode(parameters[curr]));
-                        text = text.Replace("$wiki_encoded_" + curr.ToString(), System.Web.HttpUtility.UrlEncode(parameters[curr]).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")"));
+                        text = text.Replace("$" + (curr+1).ToString(), parameters[curr]);
+                        text = text.Replace("$url_encoded_" + (curr+1).ToString(), System.Web.HttpUtility.UrlEncode(parameters[curr]));
+                        text = text.Replace("$wiki_encoded_" + (curr+1).ToString(), System.Web.HttpUtility.UrlEncode(parameters[curr]).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")"));
                     }
                     if (keys == "")
                     {
