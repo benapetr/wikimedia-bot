@@ -379,17 +379,21 @@ namespace wmib
 			{
 				text = "";
 			}
-            if (text.Contains("|"))
-            {
-                Target_ = text.Substring(OriginalText.IndexOf("|") + 1);
-                if (Module.GetConfig(chan, "Infobot.Trim-white-space-in-name", true))
-                {
-                    Target_ = Target_.Trim();
-                }
-                text = text.Substring(0, text.IndexOf("|"));
-            }
-            List<string> Parameters = new List<string>(text.Split(' '));
-	        string value_ = ParseInfo(Parameters, text, Key);
+			if (text.Contains("|"))
+			{
+				Target_ = text.Substring(OriginalText.IndexOf("|") + 1);
+				if (Module.GetConfig(chan, "Infobot.Trim-white-space-in-name", true))
+				{
+					Target_ = Target_.Trim();
+				}
+				text = text.Substring(0, text.IndexOf("|"));
+			}
+			List<string> Parameters = new List<string>(text.Split(' '));
+			string value_ = Key.Text;
+			if (text != "")
+			{
+				value_ = ParseInfo(Parameters, text, Key);
+			}
 	        if (Target_ == "")
 	        {
 	            Core.irc.Queue.DeliverMessage(value_, chan);
