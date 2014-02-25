@@ -255,7 +255,7 @@ namespace wmib
                 raw = Key.Raw;
             }
 			string text = Key.Text;
-            if (parameters.Count > 1)
+            if (parameters.Count > 0)
             {
                 string keys = "";
                 int curr = 0;
