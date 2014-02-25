@@ -370,12 +370,15 @@ namespace wmib
 				return false;
 			}
 			string Target_ = "";
-            string text = OriginalText;
+			string text = OriginalText;
 			// we remove the key name from message so that only parameters remain
-            if (text.Contains(" "))
-            {
-                text = text.Substring(text.IndexOf(" ") + 1);
-            }
+			if (text.Contains(" "))
+			{
+				text = text.Substring(text.IndexOf(" ") + 1);
+			} else
+			{
+				text = "";
+			}
             if (text.Contains("|"))
             {
                 Target_ = text.Substring(OriginalText.IndexOf("|") + 1);
@@ -386,11 +389,6 @@ namespace wmib
                 text = text.Substring(0, text.IndexOf("|"));
             }
             List<string> Parameters = new List<string>(text.Split(' '));
-            if (Key.Raw)
-			{
-                OriginalText = text;
-                Target_ = "";
-            }
 	        string value_ = ParseInfo(Parameters, text, Key);
 	        if (Target_ == "")
 	        {
