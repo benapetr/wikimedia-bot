@@ -610,6 +610,7 @@ namespace wmib
 					return true;
 				}
                 
+				string lower = Parameters[0].ToLower();
 				// there is no key with this name, let's check if there is an alias for such a key
                 lock (infobot)
                 {
@@ -620,7 +621,7 @@ namespace wmib
                             if (alias.Name == Parameters[0])
                             {
                                 // let's try to get a target key
-								InfobotKey Key_ = GetKey(alias.Name);
+								InfobotKey Key_ = GetKey(alias.Key);
 								if (DeliverKey(Key_, message, chan))
 								{
 									return true;
@@ -629,10 +630,10 @@ namespace wmib
                         }
                         else
                         {
-                            if (alias.Name.ToLower() == Parameters[0].ToLower())
+                            if (alias.Name.ToLower() == lower)
                             {
                                 // let's try to get a target key
-								InfobotKey Key_ = GetKey(alias.Name);
+								InfobotKey Key_ = GetKey(alias.Key);
 								if (DeliverKey(Key_, message, chan))
 								{
 									return true;
