@@ -518,14 +518,17 @@ namespace wmib
             while ((!streamReader.EndOfStream || Backlog.Count > 0) && Core.IsRunning)
             {
                 string text;
-                if (Backlog.Count == 0)
-                {
-                    text = streamReader.ReadLine();
-                } else
-                {
-                    text = Backlog[0];
-                    Backlog.RemoveAt(0);
-                }
+				lock (Backlog)
+				{
+	                if (Backlog.Count == 0)
+	                {
+	                    text = streamReader.ReadLine();
+	                } else
+	                {
+	                    text = Backlog[0];
+	                    Backlog.RemoveAt(0);
+	                }
+				}
                 Core.TrafficLog(ParentInstance.Nick + "<<<<<<" + text);
                 if (Configuration.IRC.UsingBouncer)
                 {
@@ -541,18 +544,28 @@ namespace wmib
                             ChannelsJoined = false;
                             IsWorking = false;
                             int xx = 0;
-                            while (!IsWorking)
+							bool Connected_ = false;
+                            while (!Connected_)
                             {
                                 System.Threading.Thread.Sleep(2000);
                                 SendData("CONTROL: STATUS");
                                 string response = streamReader.ReadLine();
                                 Core.TrafficLog(ParentInstance.Nick + "<<<<<<" + response);
+								if (response.StartsWith(":"))
+								{
+									// we received network data here
+									lock(Backlog)
+									{
+										Backlog.Add(response);
+									}
+									continue;
+								}
                                 if (response == "CONTROL: TRUE")
                                 {
                                     Syslog.Log("Bouncer reconnected to network on: " + NickName);
                                     NetworkInit();
                                     ParentInstance.Join();
-									IsWorking = true;
+									Connected_ = true;
                                 } else
                                 {
                                     xx++;
