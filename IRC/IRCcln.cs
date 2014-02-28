@@ -552,6 +552,7 @@ namespace wmib
                                     Syslog.Log("Bouncer reconnected to network on: " + NickName);
                                     NetworkInit();
                                     ParentInstance.Join();
+									IsWorking = true;
                                 } else
                                 {
                                     xx++;
@@ -561,8 +562,8 @@ namespace wmib
                                         SendData("CONTROL: DISCONNECT");
                                         return;
                                     }
-                                    Syslog.Log("Still waiting for bouncer (retrying for " + xx.ToString() 
-                                               + ") on " + NickName + " " + response);
+                                    Syslog.Log("Still waiting for bouncer (trying " + xx.ToString() 
+                                               + "/6) on " + NickName + " " + response);
                                 }
                             }
                         }
