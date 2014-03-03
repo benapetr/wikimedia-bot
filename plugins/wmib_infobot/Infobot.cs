@@ -381,7 +381,7 @@ namespace wmib
 			}
 			if (text.Contains("|"))
 			{
-				Target_ = text.Substring(OriginalText.IndexOf("|") + 1);
+				Target_ = OriginalText.Substring(OriginalText.IndexOf("|") + 1);
 				if (Module.GetConfig(chan, "Infobot.Trim-white-space-in-name", true))
 				{
 					Target_ = Target_.Trim();
