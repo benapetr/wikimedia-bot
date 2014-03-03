@@ -603,7 +603,7 @@ namespace wmib
                     return true;
                 }
 
-				InfobotKey Key = GetKey(Parameters[0]);
+				InfobotKey Key = infobot.GetKey(Parameters[0]);
 				// let's try to deliver this as a key
 				if (DeliverKey(Key, message, chan))
 				{
@@ -621,7 +621,7 @@ namespace wmib
                             if (alias.Name == Parameters[0])
                             {
                                 // let's try to get a target key
-								InfobotKey Key_ = GetKey(alias.Key);
+								InfobotKey Key_ = infobot.GetKey(alias.Key);
 								if (DeliverKey(Key_, message, chan))
 								{
 									return true;
@@ -633,7 +633,7 @@ namespace wmib
                             if (alias.Name.ToLower() == lower)
                             {
                                 // let's try to get a target key
-								InfobotKey Key_ = GetKey(alias.Key);
+								InfobotKey Key_ = infobot.GetKey(alias.Key);
 								if (DeliverKey(Key_, message, chan))
 								{
 									return true;
@@ -642,6 +642,7 @@ namespace wmib
                         }
                     }
                 }
+
                 if (Module.GetConfig(chan, "Infobot.auto-complete", false))
                 {
                     if (infobot != null)
@@ -667,7 +668,7 @@ namespace wmib
 
                         if (results.Count == 1)
                         {
-                            InfobotKey Key_ = GetKey(results[0]);
+                            InfobotKey Key_ = infobot.GetKey(results[0]);
                             if (DeliverKey(Key_, message, chan))
                             {
                                 return true;
@@ -678,7 +679,7 @@ namespace wmib
                                 {
                                     if (alias.Name == results[0])
                                     {
-                                        Key_ = GetKey(alias.Name);
+                                        Key_ = infobot.GetKey(alias.Name);
 										if (DeliverKey(Key_, message, chan))
 										{
 											return true;
