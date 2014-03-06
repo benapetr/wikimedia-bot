@@ -428,7 +428,6 @@ o-sohwiki|http://sofwiki.orain.org/wiki/$1
 o-test|http://test.orain.org/wiki/$1
 o-ukrwiki1|http://ukrwiki1.orain.org/wiki/$1
 o-wikiteam|http://wikiteam.orain.org/wiki/$1
-o-yuewikivoyage|http://yuewikivoyage.orain.org/wiki/$1
 pa|https://pa.wikipedia.org/wiki/$1
 pag|https://pag.wikipedia.org/wiki/$1
 paganwiki|https://www.paganwiki.org/wiki/index.php?title=$1
