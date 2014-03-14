@@ -29,7 +29,26 @@ namespace wmib
         {
             get
             {
-                return Data.Count;
+                int count = Data.Count;
+                lock (ExtensionHandler.Extensions)
+                {
+                    foreach (Module curr in ExtensionHandler.Extensions)
+                    {
+                        try
+                        {
+                            if (curr.IsWorking)
+                            {
+                                count += (int)curr.Hook_GetWriterSize();
+                            }
+                        }
+                        catch (Exception fail)
+                        {
+                            Syslog.Log("MODULE: exception at Hook_GetWriterSize in " + curr.Name, true);
+                            Core.HandleException(fail, curr.Name);
+                        }
+                    }
+                }
+                return count;
             }
         }
 
@@ -47,7 +66,6 @@ namespace wmib
             }
             catch (Exception crashed)
             {
-                Syslog.Log("Unable to write data into " + item.file + " skipping this", true);
                 Console.WriteLine(crashed.ToString());
                 return false;
             }

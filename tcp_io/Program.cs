@@ -19,7 +19,7 @@ namespace tcp_io
             {
                 Server.port = int.Parse(args[0]);
             }
-			Syslog.Log("wm-bnc v. 1.0.0.0");
+            Syslog.Log("wm-bnc v. 1.0.0.0");
             
             Server.Connect();
         }

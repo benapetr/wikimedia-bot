@@ -254,7 +254,7 @@ namespace wmib
             {
                 raw = Key.Raw;
             }
-			string text = Key.Text;
+            string text = Key.Text;
             if (parameters.Count > 0)
             {
                 string keys = "";
@@ -363,47 +363,47 @@ namespace wmib
             return (channel.Infobot_IgnoredNames.Contains(ignore_test));
         }
 
-		private bool DeliverKey(InfobotKey Key, string OriginalText, Channel chan)
-		{
-			if (Key == null)
-			{
-				return false;
-			}
-			string Target_ = "";
-			string text = OriginalText;
-			// we remove the key name from message so that only parameters remain
-			if (text.Contains(" "))
-			{
-				text = text.Substring(text.IndexOf(" ") + 1);
-			} else
-			{
-				text = "";
-			}
-			if (text.Contains("|"))
-			{
-				Target_ = OriginalText.Substring(OriginalText.IndexOf("|") + 1);
-				if (Module.GetConfig(chan, "Infobot.Trim-white-space-in-name", true))
-				{
-					Target_ = Target_.Trim();
-				}
-				text = text.Substring(0, text.IndexOf("|"));
-			}
-			List<string> Parameters = new List<string>(text.Split(' '));
-			string value_ = Key.Text;
-			if (text != "")
-			{
-				value_ = ParseInfo(Parameters, text, Key);
-			}
-	        if (Target_ == "")
-	        {
-	            Core.irc.Queue.DeliverMessage(value_, chan);
-	        }
-	        else
-	        {
-	            Core.irc.Queue.DeliverMessage(Target_ + ": " + value_, chan);
-	        }
-			return true;
-		}
+        private bool DeliverKey(InfobotKey Key, string OriginalText, Channel chan)
+        {
+            if (Key == null)
+            {
+                return false;
+            }
+            string Target_ = "";
+            string text = OriginalText;
+            // we remove the key name from message so that only parameters remain
+            if (text.Contains(" "))
+            {
+                text = text.Substring(text.IndexOf(" ") + 1);
+            } else
+            {
+                text = "";
+            }
+            if (text.Contains("|"))
+            {
+                Target_ = OriginalText.Substring(OriginalText.IndexOf("|") + 1);
+                if (Module.GetConfig(chan, "Infobot.Trim-white-space-in-name", true))
+                {
+                    Target_ = Target_.Trim();
+                }
+                text = text.Substring(0, text.IndexOf("|"));
+            }
+            List<string> Parameters = new List<string>(text.Split(' '));
+            string value_ = Key.Text;
+            if (text != "")
+            {
+                value_ = ParseInfo(Parameters, text, Key);
+            }
+            if (Target_ == "")
+            {
+                Core.irc.Queue.DeliverMessage(value_, chan);
+            }
+            else
+            {
+                Core.irc.Queue.DeliverMessage(Target_ + ": " + value_, chan);
+            }
+            return true;
+        }
 
         /// <summary>
         /// Print a value to channel if found, this message doesn't need to be a valid command for it to work
@@ -603,15 +603,15 @@ namespace wmib
                     return true;
                 }
 
-				InfobotKey Key = infobot.GetKey(Parameters[0]);
-				// let's try to deliver this as a key
-				if (DeliverKey(Key, message, chan))
-				{
-					return true;
-				}
+                InfobotKey Key = infobot.GetKey(Parameters[0]);
+                // let's try to deliver this as a key
+                if (DeliverKey(Key, message, chan))
+                {
+                    return true;
+                }
                 
-				string lower = Parameters[0].ToLower();
-				// there is no key with this name, let's check if there is an alias for such a key
+                string lower = Parameters[0].ToLower();
+                // there is no key with this name, let's check if there is an alias for such a key
                 lock (infobot)
                 {
                     foreach (InfobotAlias alias in infobot.Alias)
@@ -621,11 +621,11 @@ namespace wmib
                             if (alias.Name == Parameters[0])
                             {
                                 // let's try to get a target key
-								InfobotKey Key_ = infobot.GetKey(alias.Key);
-								if (DeliverKey(Key_, message, chan))
-								{
-									return true;
-								}
+                                InfobotKey Key_ = infobot.GetKey(alias.Key);
+                                if (DeliverKey(Key_, message, chan))
+                                {
+                                    return true;
+                                }
                             }
                         }
                         else
@@ -633,11 +633,11 @@ namespace wmib
                             if (alias.Name.ToLower() == lower)
                             {
                                 // let's try to get a target key
-								InfobotKey Key_ = infobot.GetKey(alias.Key);
-								if (DeliverKey(Key_, message, chan))
-								{
-									return true;
-								}
+                                InfobotKey Key_ = infobot.GetKey(alias.Key);
+                                if (DeliverKey(Key_, message, chan))
+                                {
+                                    return true;
+                                }
                             }
                         }
                     }
@@ -680,10 +680,10 @@ namespace wmib
                                     if (alias.Name == results[0])
                                     {
                                         Key_ = infobot.GetKey(alias.Name);
-										if (DeliverKey(Key_, message, chan))
-										{
-											return true;
-										}
+                                        if (DeliverKey(Key_, message, chan))
+                                        {
+                                            return true;
+                                        }
                                     }
                                 }
                             }

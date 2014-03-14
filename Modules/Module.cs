@@ -288,6 +288,11 @@ namespace wmib
             return true;
         }
 
+        public virtual uint Hook_GetWriterSize()
+        {
+            return 0;
+        }
+
         /// <summary>
         /// User quit
         /// </summary>

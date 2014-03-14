@@ -163,7 +163,7 @@ namespace tcp_io
             if (IsConnectedOnRemote)
             {
                 Syslog.Log("Disconnecting from remote " + network);
-				IsConnectedOnRemote = false;
+                IsConnectedOnRemote = false;
                 stream.Close();
                 remote_writer.Close();
                 remote_reader.Close();
@@ -280,7 +280,7 @@ namespace tcp_io
                             {
                                 // no response from server within 2 minutes
                                 SendDisconnectOnRemote();
-								Syslog.Log("Remote didn't respond for long time, closing connection");
+                                Syslog.Log("Remote didn't respond for long time, closing connection");
                                 Disconnect();
                                 ping = 0;
                                 continue;
