@@ -295,6 +295,7 @@ km|https://km.wikipedia.org/wiki/$1
 kmwiki|https://kmwiki.wikispaces.com/$1
 kn|https://kn.wikipedia.org/wiki/$1
 ko|https://ko.wikipedia.org/wiki/$1
+ko_wikinews|https://ko.wikinews.org/wiki/$1
 kontuwiki|https://kontu.merri.net/wiki/$1
 koslarwiki|https://wiki.koslar.de/index.php/$1
 kpopwiki|https://www.kpopwiki.com/$1
@@ -424,6 +425,7 @@ o-meta|http://meta.orain.org/wiki/$1
 o-mlb|http://mlb.orain.org/wiki/$1
 o-nfl|http://nfl.orain.org/wiki/$1
 o-polymeta|http://polymeta.orain.org/wiki/$1
+o-revi|http://revi.orain.org/wiki/$1
 o-sohwiki|http://sofwiki.orain.org/wiki/$1
 o-test|http://test.orain.org/wiki/$1
 o-ukrwiki1|http://ukrwiki1.orain.org/wiki/$1
@@ -580,6 +582,7 @@ tvtropes|https://www.tvtropes.org/pmwiki/pmwiki.php/Main/$1
 tw|https://tw.wikipedia.org/wiki/$1
 twiki|https://twiki.org/cgi-bin/view/$1
 twistedwiki|https://purl.net/wiki/twisted/$1
+twitter|https://twitter.com/$1
 ty|https://ty.wikipedia.org/wiki/$1
 tyvawiki|https://www.tyvawiki.org/wiki/$1
 udm|https://udm.wikipedia.org/wiki/$1
@@ -662,6 +665,10 @@ wm2007|https://wikimania2007.wikimedia.org/wiki/$1
 wm2008|https://wikimania2008.wikimedia.org/wiki/$1
 wm2009|https://wikimania2009.wikimedia.org/wiki/$1
 wm2010|https://wikimania2010.wikimedia.org/wiki/$1
+wm2011|https://wikimania2011.wikimedia.org/wiki/$1
+wm2012|https://wikimania2012.wikimedia.org/wiki/$1
+wm2013|https://wikimania2013.wikimedia.org/wiki/$1
+wm2014|https://wikimania2014.wikimedia.org/wiki/$1
 wmania|https://wikimania.wikimedia.org/wiki/$1
 wmcz|https://meta.wikimedia.org/wiki/Wikimedia_Czech_Republic/$1
 wmf|https://wikimediafoundation.org/wiki/$1
