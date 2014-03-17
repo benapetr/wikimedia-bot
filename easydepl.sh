@@ -144,6 +144,7 @@ ok
 text "Updating the binary file"
 
 cp "$source/bin/Debug/wmib.exe" "$target/wmib.exe" || exit 1
+cp "$source/sites" "$target/sites" || exit 1
 cp "$source/plugins/seen/bin/Debug/plugin.dll" "$target/modules/seen.bin" || exit 1
 cp "$source/plugins/htmldump/bin/Debug/htmldump.dll" "$target/modules/htmldump.bin" || exit 1
 cp "$source/plugins/wmib_log/bin/Debug/wmib_log.dll" "$target/modules/wmib_logs.bin" || exit 1
