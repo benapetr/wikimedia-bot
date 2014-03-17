@@ -307,44 +307,6 @@ namespace wmib
         }
 
         /// <summary>
-        /// Get value of key
-        /// </summary>
-        /// <param name="key">Key</param>
-        /// <returns></returns>
-        public string GetValue(string key)
-        {
-            lock (this)
-            {
-                if (Sensitive)
-                {
-                    foreach (InfobotKey data in Keys)
-                    {
-                        if (data.Key == key)
-                        {
-                            data.LastTime = DateTime.Now;
-                            data.Displayed++;
-                            stored = false;
-                            return data.Text;
-                        }
-                    }
-                    return "";
-                }
-                string key2 = key.ToLower();
-                foreach (InfobotKey data in Keys)
-                {
-                    if (data.Key.ToLower() == key2)
-                    {
-                        data.LastTime = DateTime.Now;
-                        data.Displayed++;
-                        stored = false;
-                        return data.Text;
-                    }
-                }
-            }
-            return "";
-        }
-
-        /// <summary>
         /// Determines whether this key is ignored for channel
         /// </summary>
         /// <returns>
@@ -402,6 +364,9 @@ namespace wmib
             {
                 Core.irc.Queue.DeliverMessage(Target_ + ": " + value_, chan);
             }
+			Key.Displayed++;
+			Key.LastTime = DateTime.Now;
+			this.StoreDB();
             return true;
         }
 
@@ -559,7 +524,7 @@ namespace wmib
                                         {
                                             infobot.Alias.Remove(b);
                                             Core.irc.Queue.DeliverMessage(messages.Localize("AliasRemoved", chan.Language), chan);
-                                            infobot.stored = false;
+											this.StoreDB();
                                             return false;
                                         }
                                     }
@@ -929,7 +894,7 @@ namespace wmib
             }
             Key.Raw = true;
             Core.irc.Queue.DeliverMessage("This key will be displayed with no extra styling, variables and will ignore all symbols", chan.Name);
-            stored = false;
+			this.StoreDB();
         }
 
         public void UnsetRaw(string key, string user, Channel chan)
@@ -942,7 +907,7 @@ namespace wmib
             }
             Key.Raw = false;
             Core.irc.Queue.DeliverMessage("This key will be displayed normally", chan.Name);
-            stored = false;
+			this.StoreDB();
         }
 
         /// <summary>
@@ -973,7 +938,7 @@ namespace wmib
                         Syslog.Log("Unable to save the key because the Infobot doesn't exist in " + pChannel.Name, true);
                         return;
                     }
-                    infobot.stored = false;
+					infobot.StoreDB();
                 }
                 catch (Exception b)
                 {
@@ -1109,6 +1074,14 @@ namespace wmib
             }
         }
 
+		/// <summary>
+		/// Stores all data to database delayed using different thread
+		/// </summary>
+		public void StoreDB()
+		{
+			this.stored = false;
+		}
+
         public void CreateSnapshot(Channel chan, string name)
         {
             try
@@ -1180,7 +1153,7 @@ namespace wmib
                 Alias.Add(new InfobotAlias(al, key));
             }
             Core.irc.Queue.DeliverMessage(messages.Localize("infobot8", chan.Language), chan.Name);
-            stored = false;
+			this.StoreDB();
         }
 
         public void rmKey(string key, string user, Channel _ch)
@@ -1195,7 +1168,7 @@ namespace wmib
                         {
                             Keys.Remove(keys);
                             Core.irc.Queue.DeliverMessage(messages.Localize("infobot9", _ch.Language) + key, _ch.Name);
-                            stored = false;
+							this.StoreDB();
                             return;
                         }
                     }
@@ -1205,7 +1178,7 @@ namespace wmib
                         {
                             Keys.Remove(keys);
                             Core.irc.Queue.DeliverMessage(messages.Localize("infobot9", _ch.Language) + key, _ch.Name);
-                            stored = false;
+							this.StoreDB();
                             return;
                         }
                     }
