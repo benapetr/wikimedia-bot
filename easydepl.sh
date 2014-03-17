@@ -107,10 +107,6 @@ text "Building module thanks"
 cd ../Thanks || exit 1
 xbuild > /dev/null || exit 1
 ok
-text "Building module wmib_infobot"
-cd ../wmib_infobot || exit 1
-xbuild > /dev/null || exit 1
-ok
 text "Building module wmib_rafeed"
 cd ../wmib_rafeed || exit 1
 xbuild > /dev/null || exit 1
