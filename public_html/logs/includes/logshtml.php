@@ -255,21 +255,34 @@ class LogsHtml
 
     public static function Render()
     {
-        echo ("<!DOCTYPE html>\n<HTML>\n<head>\n  <title>" . Logs::$title ."</title>\n");
-        echo ("  <meta charset=\"ISO-8859-2\">\n");
-	echo ("  <link rel=\"stylesheet\" type=\"text/css\" href=\"./style/style.css\">\n");
-        echo ("  <link rel=\"stylesheet\" href=\"http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css\" />\n");
-        echo ("  <script src=\"http://code.jquery.com/jquery-1.9.1.js\">\n  </script>\n  <script src=\"http://code.jquery.com/ui/1.10.3/jquery-ui.js\">\n  </script>\n");
-        echo (" <script> \n\$(function() {\n\$( \"#datepicker\" ).datepicker();\n });\n </script>");
-        echo (" <script> \n\$(function() {\n\$( \"#datepicker2\" ).datepicker();\n });\n </script>");
-	echo ("  <meta name=\"viewport\" content=\"width=device-width; initial-scale=1.0\">\n");
-        echo ("</head>\n<body>\n<div class='bkg1'>\n");
-        echo ("<table>\n  <tr>\n    <td valign=\"top\" width=200>\n"); 
+        echo ("
+<!DOCTYPE html>\n
+<HTML>\n
+<head>\n
+  <title>" . Logs::$title ."</title>\n
+  <meta charset=\"ISO-8859-2\">\n
+  <link rel=\"stylesheet\" type=\"text/css\" href=\"./style/style.css\">\n
+  <link rel=\"stylesheet\" href=\"http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css\" />\n
+  <script src=\"http://code.jquery.com/jquery-1.9.1.js\">\n  </script>\n  <script src=\"http://code.jquery.com/ui/1.10.3/jquery-ui.js\">\n  </script>\n
+  <script> \n\$(function() {\n\$( \"#datepicker\" ).datepicker();\n });\n </script>
+  <script> \n\$(function() {\n\$( \"#datepicker2\" ).datepicker();\n });\n </script>
+  <meta name=\"viewport\" content=\"width=device-width; initial-scale=1.0\">\n
+</head>\n
+<body>\n
+  <div class='bkg1'>\n
+  <table>\n
+    <tr>\n
+      <td valign=\"top\" width=200>\n"); 
         self::RenderMenu();
         echo ("    </td>\n    <td " . 'valign="top">');
         self::RenderContent();
-        echo ("    </td>\n  </tr>\n</table>\n");
-        echo ("<p align=center>Licensed under BSD license. This site is courtesy of wm-bot.</p>");
-        echo ("</div>\n</body>\n</HTML>");
+        echo ("
+     </td>\n
+   </tr>\n
+  </table>\n
+  <p align=center>Licensed under BSD license. This site is courtesy of wm-bot.</p>
+  </div>\n
+</body>\n
+</HTML>");
     }
 }
