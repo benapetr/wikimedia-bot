@@ -2,9 +2,10 @@
 
 // This is interface for wm-bot's logs
 require ("includes/core.php");
-$exec=time();
+$exec=microtime();
 
 Logs::Init();
 Logs::Render();
 
-echo "<!-- finished in " . time() - $exec . " seconds -->";
+$et = microtime() - $exec;
+echo ("<!-- finished in $et seconds -->");
