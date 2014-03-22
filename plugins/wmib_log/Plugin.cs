@@ -108,6 +108,11 @@ namespace wmib
             }
         }
 
+        public override uint Hook_GetWriterSize()
+        {
+            return (uint)jobs.Count;
+        }
+
         private int WriteData()
         {
             if (jobs.Count > 0)

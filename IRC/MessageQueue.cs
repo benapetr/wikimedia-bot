@@ -211,7 +211,8 @@ namespace wmib
             public void Exit()
             {
                 running = false;
-                Syslog.Log("Turning off the message queue of instance " + Parent.ParentInstance.Nick + " with " + (newmessages.Count + Messages.Count).ToString() + " untransfered data");
+                Syslog.Log("Turning off the message queue of instance " + Parent.ParentInstance.Nick + " with " +
+                           (newmessages.Count + Messages.Count).ToString() + " untransfered data");
                 lock (Messages)
                 {
                     Messages.Clear();

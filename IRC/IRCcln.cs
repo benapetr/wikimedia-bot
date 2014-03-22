@@ -518,13 +518,16 @@ namespace wmib
             while ((!streamReader.EndOfStream || Backlog.Count > 0) && Core.IsRunning)
             {
                 string text;
-                if (Backlog.Count == 0)
+                lock (Backlog)
                 {
-                    text = streamReader.ReadLine();
-                } else
-                {
-                    text = Backlog[0];
-                    Backlog.RemoveAt(0);
+                    if (Backlog.Count == 0)
+                    {
+                        text = streamReader.ReadLine();
+                    } else
+                    {
+                        text = Backlog[0];
+                        Backlog.RemoveAt(0);
+                    }
                 }
                 Core.TrafficLog(ParentInstance.Nick + "<<<<<<" + text);
                 if (Configuration.IRC.UsingBouncer)
@@ -541,17 +544,28 @@ namespace wmib
                             ChannelsJoined = false;
                             IsWorking = false;
                             int xx = 0;
-                            while (!IsWorking)
+                            bool Connected_ = false;
+                            while (!Connected_)
                             {
                                 System.Threading.Thread.Sleep(2000);
                                 SendData("CONTROL: STATUS");
                                 string response = streamReader.ReadLine();
                                 Core.TrafficLog(ParentInstance.Nick + "<<<<<<" + response);
+                                if (response.StartsWith(":"))
+                                {
+                                    // we received network data here
+                                    lock(Backlog)
+                                    {
+                                        Backlog.Add(response);
+                                    }
+                                    continue;
+                                }
                                 if (response == "CONTROL: TRUE")
                                 {
                                     Syslog.Log("Bouncer reconnected to network on: " + NickName);
                                     NetworkInit();
                                     ParentInstance.Join();
+                                    Connected_ = true;
                                 } else
                                 {
                                     xx++;
@@ -561,8 +575,8 @@ namespace wmib
                                         SendData("CONTROL: DISCONNECT");
                                         return;
                                     }
-                                    Syslog.Log("Still waiting for bouncer (retrying for " + xx.ToString() 
-                                               + ") on " + NickName + " " + response);
+                                    Syslog.Log("Still waiting for bouncer (trying " + xx.ToString() 
+                                               + "/6) on " + NickName + " " + response);
                                 }
                             }
                         }
