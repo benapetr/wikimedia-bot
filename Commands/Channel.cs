@@ -29,7 +29,8 @@ namespace wmib
         {
             try
             {
-                if (message.StartsWith(Configuration.System.CommandPrefix + "add"))
+                if (message.StartsWith(Configuration.System.CommandPrefix + "add ") ||
+				    message.StartsWith(Configuration.System.CommandPrefix + "join "))
                 {
                     if (channel.SystemUsers.IsApproved(user, host, "admin"))
                     {
@@ -41,7 +42,7 @@ namespace wmib
                         if (message.Contains(" "))
                         {
                             string _channel = message.Substring(message.IndexOf(" ") + 1).Trim();
-                            if (!Core.ValidFile(_channel) || (_channel.Contains("#") == false))
+                            if (!Core.ValidFile(_channel) || !_channel.StartsWith("#"))
                             {
                                 Core.irc.Queue.DeliverMessage(messages.Localize("InvalidName", channel.Language), channel);
                                 return;
