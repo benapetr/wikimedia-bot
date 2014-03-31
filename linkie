@@ -547,6 +547,8 @@ technorati|https://www.technorati.com/search/$1
 tejo|https://www.tejo.org/vikio/$1
 tesoltaiwan|https://www.tesol-taiwan.org/wiki/index.php/$1
 testwiki|https://test.wikipedia.org/wiki/$1
+test2wiki|https://test2.wikipedia.org/wiki/$1
+testwikidata|https://test.wikidata.org/wiki/$1
 tet|https://tet.wikipedia.org/wiki/$1
 tg|https://tg.wikipedia.org/wiki/$1
 th|https://th.wikipedia.org/wiki/$1
