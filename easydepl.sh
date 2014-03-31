@@ -145,6 +145,7 @@ cp "$source/plugins/seen/bin/Debug/plugin.dll" "$target/modules/seen.bin" || exi
 cp "$source/plugins/htmldump/bin/Debug/htmldump.dll" "$target/modules/htmldump.bin" || exit 1
 cp "$source/plugins/wmib_log/bin/Debug/wmib_log.dll" "$target/modules/wmib_logs.bin" || exit 1
 cp "$source/plugins/labs/bin/Debug/labs.dll" "$target/modules/labs.bin" || exit 1
+cp "$source/configuration/linkie" "$target/configuration/linkie" || exit 1
 cp "$source/plugins/Linkie/bin/Debug/Linkie.dll" "$target/modules/linkie.bin" || exit 1
 cp "$source/plugins/op/bin/Debug/op.dll" "$target/modules/op.bin" || exit 1
 cp "$source/plugins/slap/bin/Debug/slap.dll" "$target/modules/slap.bin" || exit 1
