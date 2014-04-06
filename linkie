@@ -317,7 +317,7 @@ linguistlist|https://linguistlist.org/forms/langs/LLDescription.cfm?code=$1
 linuxwiki|https://www.linuxwiki.de/$1
 linuxwikide|https://www.linuxwiki.de/$1
 liswiki|https://liswiki.org/wiki/$1
-literateprograms|https://en.literateprograms.org/1$
+literateprograms|https://en.literateprograms.org/$1
 livepedia|https://www.livepedia.gr/index.php?title=$1
 lmo|https://lmo.wikipedia.org/wiki/$1
 ln|https://ln.wikipedia.org/wiki/$1
@@ -568,7 +568,6 @@ tn|https://tn.wikipedia.org/wiki/$1
 to|https://to.wikipedia.org/wiki/$1
 tokipona|https://tokipona.wikipedia.org/wiki/$1
 tokyonights|https://wiki.tokyo-nights.com/wiki/$1
-tools|https://toolserver.org/$1
 toollabs|https://tools.wmflabs.org/$1
 tp|https://tp.wikipedia.org/wiki/$1
 tpi|https://tpi.wikipedia.org/wiki/$1
