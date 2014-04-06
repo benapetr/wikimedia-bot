@@ -327,7 +327,7 @@ lostpedia|https://lostpedia.wikia.com/wiki/$1
 lqwiki|https://wiki.linuxquestions.org/wiki/$1
 lt|https://lt.wikipedia.org/wiki/$1
 lugkr|https://lug-kr.sourceforge.net/cgi-bin/lugwiki.pl?$1
-luxo|https://toolserver.org/~luxo/contributions/contributions.php?user=$1
+luxo|http://tools.wmflabs.org/guc/?user=$1
 lv|https://lv.wikipedia.org/wiki/$1
 lyricwiki|https://www.lyricwiki.org/$1
 m|https://meta.wikimedia.org/wiki/$1
@@ -568,7 +568,7 @@ tn|https://tn.wikipedia.org/wiki/$1
 to|https://to.wikipedia.org/wiki/$1
 tokipona|https://tokipona.wikipedia.org/wiki/$1
 tokyonights|https://wiki.tokyo-nights.com/wiki/$1
-tools|https://toolserver.org/$1
+toollabs|https://tools.wmflabs.org/$1
 tp|https://tp.wikipedia.org/wiki/$1
 tpi|https://tpi.wikipedia.org/wiki/$1
 tr|https://tr.wikipedia.org/wiki/$1
