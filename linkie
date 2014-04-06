@@ -317,7 +317,7 @@ linguistlist|https://linguistlist.org/forms/langs/LLDescription.cfm?code=$1
 linuxwiki|https://www.linuxwiki.de/$1
 linuxwikide|https://www.linuxwiki.de/$1
 liswiki|https://liswiki.org/wiki/$1
-literateprograms|https://en.literateprograms.org/$1
+literateprograms|https://en.literateprograms.org/1$
 livepedia|https://www.livepedia.gr/index.php?title=$1
 lmo|https://lmo.wikipedia.org/wiki/$1
 ln|https://ln.wikipedia.org/wiki/$1
@@ -327,7 +327,7 @@ lostpedia|https://lostpedia.wikia.com/wiki/$1
 lqwiki|https://wiki.linuxquestions.org/wiki/$1
 lt|https://lt.wikipedia.org/wiki/$1
 lugkr|https://lug-kr.sourceforge.net/cgi-bin/lugwiki.pl?$1
-luxo|https://toolserver.org/~luxo/contributions/contributions.php?user=$1
+luxo|http://tools.wmflabs.org/guc/?user=$1
 lv|https://lv.wikipedia.org/wiki/$1
 lyricwiki|https://www.lyricwiki.org/$1
 m|https://meta.wikimedia.org/wiki/$1
