@@ -527,7 +527,7 @@ stable|https://stable.toolserver.org/$1
 stq|https://stq.wikipedia.org/wiki/$1
 strategywiki|https://strategywiki.org/wiki/$1
 su|https://su.wikipedia.org/wiki/$1
-sulutil|https://tools.wmflabs.org/quentinv57-tools/tools/sulinfo.php?showinactivity=1&showblocks=1&showlocked=1&username=$1
+sulutil|https://tools.wmflabs.org/quentinv57-tools/tools/sulinfo.php?username=$1
 susning|https://www.susning.nu/$1
 sv|https://sv.wikipedia.org/wiki/$1
 svgwiki|https://www.protocol7.com/svg-wiki/default.asp?$1
