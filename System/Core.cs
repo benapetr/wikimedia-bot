@@ -270,7 +270,7 @@ namespace wmib
                         } catch (Exception fail)
                         {
                             Syslog.Log("Exception on Hook_ACTN in module: " + curr.Name);
-                            Core.HandleException(fail);
+                            Core.HandleException(fail, curr.Name);
                         }
                     }
                 }

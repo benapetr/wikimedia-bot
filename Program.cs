@@ -57,6 +57,12 @@ namespace wmib
         /// </param>
         protected static void SigInt(object sender, ConsoleCancelEventArgs args)
         {
+			if (!Core.IsRunning)
+			{
+				// in case that user hit ctrl + c multiple times, we don't want to
+				// call this, once is just enough
+				return;
+			}
             Syslog.WriteNow("SIGINT - Shutting down", true);
             try
             {
