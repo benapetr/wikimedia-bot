@@ -41,6 +41,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wmib_rc", "src\plugins\wmib
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wmib_statistics", "src\plugins\wmib_statistics\wmib_statistics.csproj", "{FEE95225-382D-421C-B096-F0AAC87E9F2A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tcp_io", "src\tcp_io\tcp_io.csproj", "{A222B6E0-A8C9-48F2-83A0-F3552CC5BC66}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -233,6 +235,16 @@ Global
 		{FEE95225-382D-421C-B096-F0AAC87E9F2A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{FEE95225-382D-421C-B096-F0AAC87E9F2A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{FEE95225-382D-421C-B096-F0AAC87E9F2A}.Release|x86.ActiveCfg = Release|Any CPU
+		{A222B6E0-A8C9-48F2-83A0-F3552CC5BC66}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{A222B6E0-A8C9-48F2-83A0-F3552CC5BC66}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{A222B6E0-A8C9-48F2-83A0-F3552CC5BC66}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{A222B6E0-A8C9-48F2-83A0-F3552CC5BC66}.Debug|x86.ActiveCfg = Debug|x86
+		{A222B6E0-A8C9-48F2-83A0-F3552CC5BC66}.Debug|x86.Build.0 = Debug|x86
+		{A222B6E0-A8C9-48F2-83A0-F3552CC5BC66}.Release|Any CPU.ActiveCfg = Release|x86
+		{A222B6E0-A8C9-48F2-83A0-F3552CC5BC66}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{A222B6E0-A8C9-48F2-83A0-F3552CC5BC66}.Release|Mixed Platforms.Build.0 = Release|x86
+		{A222B6E0-A8C9-48F2-83A0-F3552CC5BC66}.Release|x86.ActiveCfg = Release|x86
+		{A222B6E0-A8C9-48F2-83A0-F3552CC5BC66}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
