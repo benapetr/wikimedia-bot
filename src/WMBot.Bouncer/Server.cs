@@ -4,7 +4,7 @@ using System.Text;
 using System.Net;
 using System.Net.Sockets;
 
-namespace tcp_io
+namespace WMBot.Bouncer
 {
     public struct BufferItem
     {

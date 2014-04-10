@@ -1,10 +1,4 @@
-// Part of wmib
-
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace tcp_io
+namespace WMBot.Bouncer
 {
     class Program
     {

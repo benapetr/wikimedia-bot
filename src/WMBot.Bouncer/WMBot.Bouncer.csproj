@@ -8,8 +8,8 @@
     <ProjectGuid>{A222B6E0-A8C9-48F2-83A0-F3552CC5BC66}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>tcp_io</RootNamespace>
-    <AssemblyName>tcp_io</AssemblyName>
+    <RootNamespace>WMBot.Bouncer</RootNamespace>
+    <AssemblyName>WMBot.Bouncer</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

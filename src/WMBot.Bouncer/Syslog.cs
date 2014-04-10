@@ -1,6 +1,6 @@
 using System;
 
-namespace tcp_io
+namespace WMBot.Bouncer
 {
     public class Syslog
     {
