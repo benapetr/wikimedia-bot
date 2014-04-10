@@ -57,12 +57,12 @@ namespace wmib
         /// </param>
         protected static void SigInt(object sender, ConsoleCancelEventArgs args)
         {
-			if (!Core.IsRunning)
-			{
-				// in case that user hit ctrl + c multiple times, we don't want to
-				// call this, once is just enough
-				return;
-			}
+            if (!Core.IsRunning)
+            {
+                // in case that user hit ctrl + c multiple times, we don't want to
+                // call this, once is just enough
+                return;
+            }
             Syslog.WriteNow("SIGINT - Shutting down", true);
             try
             {
@@ -79,7 +79,7 @@ namespace wmib
         /// <summary>
         /// Processes the terminal parameters
         /// </summary>
-		/// <param name='args'>
+        /// <param name='args'>
         /// What user has provided in terminal
         /// </param>
         private static void ParseArgs(string[] args)

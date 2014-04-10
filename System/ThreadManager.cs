@@ -19,23 +19,23 @@ namespace wmib
 {
     public partial class Core : MarshalByRefObject
     {
-		/// <summary>
-		/// Used to keep track of all threads used by a bot, it's recommended to
-		/// register every single thread you create here so that we can keep
-		/// track of them.
-		/// 
-		/// You can also use this to list all current threads, kill them, etc
-		/// </summary>
+        /// <summary>
+        /// Used to keep track of all threads used by a bot, it's recommended to
+        /// register every single thread you create here so that we can keep
+        /// track of them.
+        /// 
+        /// You can also use this to list all current threads, kill them, etc
+        /// </summary>
         public class ThreadManager
         {
-			/// <summary>
-			/// thread pool
-			/// </summary>
+            /// <summary>
+            /// thread pool
+            /// </summary>
             private static List<Thread> threads = new List<Thread>();
-			/// <summary>
-			/// Gets the thread list.
-			/// </summary>
-			/// <value>The thread list.</value>
+            /// <summary>
+            /// Gets the thread list.
+            /// </summary>
+            /// <value>The thread list.</value>
             public static List<Thread> ThreadList
             {
                 get
