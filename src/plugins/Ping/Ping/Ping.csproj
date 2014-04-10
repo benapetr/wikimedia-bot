@@ -37,7 +37,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="wmib">
-      <HintPath>..\..\..\bin\Release\wmib.exe</HintPath>
+      <HintPath>..\..\..\WMIB\bin\Debug\wmib.exe</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

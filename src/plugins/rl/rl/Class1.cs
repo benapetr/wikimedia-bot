@@ -20,16 +20,16 @@ namespace wmib
         {
             try
             {
-                if (!core.DatabaseServerIsAvailable)
+                if (!Core.DatabaseServerIsAvailable)
                 {
                     return "There is no database server to retrieve data from";
                 }
-                core.DB.Connect();
-                string time = core.DB.Select("recentchanges", "rc_timestamp", "order by rc_timestamp desc limit 1", 1);
-                core.DB.Disconnect();
+                Core.DB.Connect();
+                string time = Core.DB.Select("recentchanges", "rc_timestamp", "order by rc_timestamp desc limit 1", 1);
+                Core.DB.Disconnect();
                 if (time == null)
                 {
-                    return "ERROR: unable to retrieve the data because " + core.DB.ErrorBuffer;
+                    return "ERROR: unable to retrieve the data because " + Core.DB.ErrorBuffer;
                 }
                 DateTime n = DateTime.Now;
                 DateTime replica = new DateTime(int.Parse(time.Substring(0, 4)), int.Parse(time.Substring(4, 2)), int.Parse(time.Substring(6, 2)), int.Parse(time.Substring(8, 2)), int.Parse(time.Substring(10, 2)), int.Parse(time.Substring(12, 2)));
@@ -42,11 +42,11 @@ namespace wmib
             }
         }
 
-        public override void Hook_PRIV(config.channel channel, User invoker, string message)
+        public override void Hook_PRIV(Channel channel, User invoker, string message)
         {
             if (message == "@replag")
             {
-                core.irc._SlowQueue.DeliverMessage("Replication lag is approximately " + GetReplag(), channel);
+                Core.irc.Queue.DeliverMessage("Replication lag is approximately " + GetReplag(), channel);
                 return;
             }
         }
@@ -56,7 +56,7 @@ namespace wmib
             Version = "1.0";
             HasSeparateThreadInstance = false;
             Name = "Replag";
-            start = true;
+            //start = true;
             return true;
         }
     }

@@ -39,7 +39,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="wmib">
-      <HintPath>..\..\bin\Debug\wmib.exe</HintPath>
+      <HintPath>..\..\WMIB\bin\Debug\wmib.exe</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
