@@ -253,6 +253,12 @@ namespace wmib
                         {
                             return;
                         }
+                        if (!Parent.IsConnected)
+                        {
+                            // there is no point in sending messages to network that isn't connected
+                            System.Threading.Thread.Sleep(200);
+                            continue;
+                        }
                         if (Messages.Count > 0)
                         {
                             lock (Messages)

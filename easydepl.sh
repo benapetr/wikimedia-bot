@@ -115,9 +115,7 @@ text "Building module wmib_statistics"
 cd ../wmib_statistics || exit 1
 xbuild > /dev/null || exit 1
 ok
-
 text "Stopping the bot"
-
 touch "$target/restart.lock" || exit 1
 if [ -f "$target/wmib.pid" ];then
   kill `cat "$target/wmib.pid"` || exit 1
@@ -133,12 +131,8 @@ do
         fi
         sleep 2
 done
-
-
 ok
-
 text "Updating the binary file"
-
 cp "$source/bin/Debug/wmib.exe" "$target/wmib.exe" || exit 1
 cp "$source/sites" "$target/sites" || exit 1
 cp "$source/plugins/seen/bin/Debug/plugin.dll" "$target/modules/seen.bin" || exit 1

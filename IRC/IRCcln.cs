@@ -18,9 +18,6 @@ using System.Threading;
 
 namespace wmib
 {
-    /// <summary>
-    /// IRC
-    /// </summary>
     public partial class IRC
     {
         /// <summary>
