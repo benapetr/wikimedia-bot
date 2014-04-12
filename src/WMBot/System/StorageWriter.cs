@@ -124,7 +124,6 @@ namespace wmib
         {
             try
             {
-                Core.ThreadManager.Writer = true;
                 Syslog.Log("KERNEL: loaded writer thread");
                 while (IsRunning)
                 {
@@ -151,13 +150,11 @@ namespace wmib
                     Syslog.Log("KERNEL: Writer thread was requested to stop, but there is still some data to write");
                     WriteData();
                     Syslog.Log("KERNEL: No remaining data, stopping writer thread");
-                    Core.ThreadManager.Writer = false;
                     return;
                 }
                 else
                 {
                     Syslog.Log("KERNEL: No remaining data, stopping writer thread");
-                    Core.ThreadManager.Writer = false;
                     return;
                 }
             }
@@ -165,7 +162,6 @@ namespace wmib
             {
                 Core.HandleException(fail);
                 Syslog.Log("KERNEL: The writer thread was terminated", true);
-                Core.ThreadManager.Writer = false;
                 return;
             }
         }

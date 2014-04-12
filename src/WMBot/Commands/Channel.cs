@@ -30,7 +30,7 @@ namespace wmib
             try
             {
                 if (message.StartsWith(Configuration.System.CommandPrefix + "add ") ||
-				    message.StartsWith(Configuration.System.CommandPrefix + "join "))
+                    message.StartsWith(Configuration.System.CommandPrefix + "join "))
                 {
                     if (channel.SystemUsers.IsApproved(user, host, "admin"))
                     {

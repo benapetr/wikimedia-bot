@@ -364,9 +364,9 @@ namespace wmib
             {
                 Core.irc.Queue.DeliverMessage(Target_ + ": " + value_, chan);
             }
-			Key.Displayed++;
-			Key.LastTime = DateTime.Now;
-			this.StoreDB();
+            Key.Displayed++;
+            Key.LastTime = DateTime.Now;
+            this.StoreDB();
             return true;
         }
 
@@ -524,7 +524,7 @@ namespace wmib
                                         {
                                             infobot.Alias.Remove(b);
                                             Core.irc.Queue.DeliverMessage(messages.Localize("AliasRemoved", chan.Language), chan);
-											this.StoreDB();
+                                            this.StoreDB();
                                             return false;
                                         }
                                     }
@@ -894,7 +894,7 @@ namespace wmib
             }
             Key.Raw = true;
             Core.irc.Queue.DeliverMessage("This key will be displayed with no extra styling, variables and will ignore all symbols", chan.Name);
-			this.StoreDB();
+            this.StoreDB();
         }
 
         public void UnsetRaw(string key, string user, Channel chan)
@@ -907,7 +907,7 @@ namespace wmib
             }
             Key.Raw = false;
             Core.irc.Queue.DeliverMessage("This key will be displayed normally", chan.Name);
-			this.StoreDB();
+            this.StoreDB();
         }
 
         /// <summary>
@@ -938,7 +938,7 @@ namespace wmib
                         Syslog.Log("Unable to save the key because the Infobot doesn't exist in " + pChannel.Name, true);
                         return;
                     }
-					infobot.StoreDB();
+                    infobot.StoreDB();
                 }
                 catch (Exception b)
                 {
@@ -1074,13 +1074,13 @@ namespace wmib
             }
         }
 
-		/// <summary>
-		/// Stores all data to database delayed using different thread
-		/// </summary>
-		public void StoreDB()
-		{
-			this.stored = false;
-		}
+        /// <summary>
+        /// Stores all data to database delayed using different thread
+        /// </summary>
+        public void StoreDB()
+        {
+            this.stored = false;
+        }
 
         public void CreateSnapshot(Channel chan, string name)
         {
@@ -1153,7 +1153,7 @@ namespace wmib
                 Alias.Add(new InfobotAlias(al, key));
             }
             Core.irc.Queue.DeliverMessage(messages.Localize("infobot8", chan.Language), chan.Name);
-			this.StoreDB();
+            this.StoreDB();
         }
 
         public void rmKey(string key, string user, Channel _ch)
@@ -1168,7 +1168,7 @@ namespace wmib
                         {
                             Keys.Remove(keys);
                             Core.irc.Queue.DeliverMessage(messages.Localize("infobot9", _ch.Language) + key, _ch.Name);
-							this.StoreDB();
+                            this.StoreDB();
                             return;
                         }
                     }
@@ -1178,7 +1178,7 @@ namespace wmib
                         {
                             Keys.Remove(keys);
                             Core.irc.Queue.DeliverMessage(messages.Localize("infobot9", _ch.Language) + key, _ch.Name);
-							this.StoreDB();
+                            this.StoreDB();
                             return;
                         }
                     }

@@ -18,7 +18,7 @@ using System.IO;
 namespace wmib
 {
     /// <summary>
-    /// System user
+    /// System user, that means a user who can control the bot, not an IRC user
     /// </summary>
     [Serializable]
     public class SystemUser

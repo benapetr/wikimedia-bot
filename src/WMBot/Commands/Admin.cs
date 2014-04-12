@@ -548,21 +548,21 @@ namespace wmib
                 }
             }
 
-			if (message.StartsWith(Configuration.System.CommandPrefix + "system-rm "))
-			{
-				if (chan.SystemUsers.IsApproved(invoker, "root"))
-				{
-					string module = message.Substring("@system-lm ".Length);
-					Module _m = ExtensionHandler.RetrieveModule(module);
-					if (_m == null)
-					{
-						Core.irc.Queue.DeliverMessage("This module is not currently loaded in core", chan, IRC.priority.high);
-						return;
-					}
-					_m.Exit();
-					Core.irc.Queue.DeliverMessage("Unloaded module " + module, chan, IRC.priority.high);
-				}
-			}
+            if (message.StartsWith(Configuration.System.CommandPrefix + "system-rm "))
+            {
+                if (chan.SystemUsers.IsApproved(invoker, "root"))
+                {
+                    string module = message.Substring("@system-lm ".Length);
+                    Module _m = ExtensionHandler.RetrieveModule(module);
+                    if (_m == null)
+                    {
+                        Core.irc.Queue.DeliverMessage("This module is not currently loaded in core", chan, IRC.priority.high);
+                        return;
+                    }
+                    _m.Exit();
+                    Core.irc.Queue.DeliverMessage("Unloaded module " + module, chan, IRC.priority.high);
+                }
+            }
 
             if (message == Configuration.System.CommandPrefix + "commands")
             {

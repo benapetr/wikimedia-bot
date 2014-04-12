@@ -17,6 +17,9 @@ using Mono.Unix.Native;
 using Mono.Unix;
 using System.Threading;
 
+/// <summary>
+/// WikiMedia-IrcBot
+/// </summary>
 namespace wmib
 {
     internal class Program
@@ -54,6 +57,12 @@ namespace wmib
         /// </param>
         protected static void SigInt(object sender, ConsoleCancelEventArgs args)
         {
+            if (!Core.IsRunning)
+            {
+                // in case that user hit ctrl + c multiple times, we don't want to
+                // call this, once is just enough
+                return;
+            }
             Syslog.WriteNow("SIGINT - Shutting down", true);
             try
             {
@@ -70,13 +79,13 @@ namespace wmib
         /// <summary>
         /// Processes the terminal parameters
         /// </summary>
-        /// <param name='gs'>
-        /// Gs.
+        /// <param name='args'>
+        /// What user has provided in terminal
         /// </param>
-        private static void ProcessVerbosity(string[] gs)
+        private static void ParseArgs(string[] args)
         {
             int i = 0;
-            List<string> parameters = new List<string>(gs);
+            List<string> parameters = new List<string>(args);
             foreach (string item in parameters)
             {
                 i++;
@@ -143,7 +152,7 @@ namespace wmib
                 Thread logger = new Thread(Logging.Exec);
                 logger.Name = "Logger";
                 Core.ThreadManager.RegisterThread(logger);
-                ProcessVerbosity(args);
+                ParseArgs(args);
                 Syslog.WriteNow(Configuration.System.Version);
                 Syslog.WriteNow("Loading...");
                 logger.Start();

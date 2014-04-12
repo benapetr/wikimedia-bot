@@ -122,7 +122,7 @@ namespace wmib
             /// <summary>
             /// Version
             /// </summary>
-            public static string Version = "wikimedia bot v. 2.0.0.4";
+            public static string Version = "wikimedia bot v. 2.0.0.5";
         }
 
         public class MySQL
