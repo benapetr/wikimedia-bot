@@ -63,16 +63,13 @@ namespace tcp_io
     {
         public static string network = "irc.freenode.net";
         public static int port = 6667;
-
         private static bool IsConnectedOnRemote = false;
         private static System.IO.StreamReader local_reader;
         private static System.IO.StreamWriter local_writer;
-
         private static System.IO.StreamWriter remote_writer;
         private static System.IO.StreamReader remote_reader;
         private static System.Net.Sockets.NetworkStream stream;
         private static TcpClient client;
-
         private static System.Threading.Thread listener;
         private static System.Threading.Thread irc;
         private static DateTime Ping;
@@ -80,11 +77,9 @@ namespace tcp_io
         public static void Listen()
         {
             TcpListener cache = new TcpListener(IPAddress.Parse("127.0.0.1"), port);
-
             cache.Start();
             Syslog.Log("Bouncer is listening on port " + port.ToString());
             Ping = DateTime.Now;
-            
             while (true)
             {
                 client = cache.AcceptTcpClient();
@@ -92,20 +87,16 @@ namespace tcp_io
                 local_writer = new System.IO.StreamWriter(temp);
                 local_reader = new System.IO.StreamReader(temp, System.Text.Encoding.UTF8);
                 Syslog.Log("New client has connected to bouncer");
-
                 try
                 {
                     while (!local_reader.EndOfStream)
                     {
-                        //byte[] text = new byte[8000];
-                        //int i = _socket.Receive(text);
-                        //text = Encoding.Convert(Encoding.Unicode, Encoding.UTF8, text);
                         string data = local_reader.ReadLine();
-                        if (data == "")
+                        if (string.IsNullOrEmpty(data))
                         {
                             continue;
                         }
-                        if (!data.StartsWith("CONTROL: "))
+                        if (data[0] != 'C' || !data.StartsWith("CONTROL: "))
                         {
                             Buffer.Out(data);
                         }
@@ -115,19 +106,17 @@ namespace tcp_io
                             string parameter = "";
                             if (code.Contains(" "))
                             {
-                                parameter = code.Substring(code.IndexOf(" ") + 1);
-                                code = code.Substring(0, code.IndexOf(" "));
+                                int sidx = code.IndexOf(" ");
+                                parameter = code.Substring(sidx + 1);
+                                code = code.Substring(0, sidx);
                             }
                             switch (code)
                             {
                                 case "STATUS":
                                     if (IsConnectedOnRemote)
-                                    {
                                         Buffer.In("CONTROL: TRUE", true);
-                                    } else
-                                    {
+                                    else
                                         Buffer.In("CONTROL: FALSE", true);
-                                    }
                                     break;
                                 case "CONNECT":
                                 case "CREATE":
@@ -175,13 +164,9 @@ namespace tcp_io
             try
             {
                 if (IsConnectedOnRemote)
-                {
                     return false;
-                }
                 if (server != "")
-                {
                     network = server;
-                }
                 stream = new System.Net.Sockets.TcpClient(network, 6667).GetStream();
                 remote_reader = new System.IO.StreamReader(stream, System.Text.Encoding.UTF8);
                 remote_writer = new System.IO.StreamWriter(stream);
@@ -234,30 +219,24 @@ namespace tcp_io
             {
                 try
                 {
-                    if (client != null)
+                    if (client != null && client.Connected && Buffer.IncomingData.Count > 0)
                     {
-                        if (client.Connected)
+                        BufferItem lastitem;
+                        lock (Buffer.IncomingData)
                         {
-                            if (Buffer.IncomingData.Count > 0)
+                            lastitem = Buffer.IncomingData[0];
+                            foreach (BufferItem Item in Buffer.IncomingData)
                             {
-                                BufferItem lastitem;
-                                lock (Buffer.IncomingData)
+                                if (Item.important)
                                 {
-                                    lastitem = Buffer.IncomingData[0];
-                                    foreach (BufferItem Item in Buffer.IncomingData)
-                                    {
-                                        if (Item.important)
-                                        {
-                                            lastitem = Item;
-                                            break;
-                                        }
-                                    }
-                                    Buffer.IncomingData.Remove(lastitem);
+                                    lastitem = Item;
+                                    break;
                                 }
-                                local_writer.WriteLine(lastitem.Text);
-                                local_writer.Flush();
                             }
+                            Buffer.IncomingData.Remove(lastitem);
                         }
+                        local_writer.WriteLine(lastitem.Text);
+                        local_writer.Flush();
                     }
 
                     if (IsConnectedOnRemote)
