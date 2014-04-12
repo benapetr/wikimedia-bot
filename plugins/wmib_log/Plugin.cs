@@ -18,7 +18,7 @@ using System.Text;
 
 namespace wmib
 {
-    public class RegularModule : Module
+    public class Module_Logs : Module
     {
         public struct Job
         {
@@ -389,7 +389,7 @@ namespace wmib
         {
             Name = "LOGS";
             RestartOnModuleCrash = true;
-            Version = "2.6.0";
+            Version = "2.6.1";
             return true;
         }
 
@@ -514,16 +514,9 @@ namespace wmib
 
         public override void Hook_OnSelf(Channel channel, User self, string message)
         {
-            if (channel == null)
-            {
-                Log("channel is NULL at Hook_OnSelf, message was: " + message, true);
+            if (channel == null || channel.PrimaryInstance == null)
                 return;
-            }
-            if (channel.PrimaryInstance == null)
-            {
-                Log("*PrimaryInstance is NULL at Hook_OnSelf, message was: " + message, true);
-                return;
-            }
+
             ChanLog(message, channel, channel.PrimaryInstance.Nick, "");
         }
 
