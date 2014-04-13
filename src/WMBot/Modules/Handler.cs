@@ -135,8 +135,7 @@ namespace wmib
             if (Directory.Exists(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
                 + Path.DirectorySeparatorChar + "modules"))
             {
-                foreach (string dll in Directory.GetFiles(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
-                    + Path.DirectorySeparatorChar + "modules", "*.bin"))
+                foreach (string dll in Directory.GetFiles(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "*.dll"))
                 {
                     LoadMod(dll);
                 }
