@@ -47,14 +47,11 @@ fi
 
 cd "$source" || exit 1
 text "Cleaning the source code"
-
 make forced-clean > /dev/null || exit 1
-
 ok
 text "Building the new code..."
 make > /dev/null || exit 1
 ok
-
 text "Stopping the bot"
 touch "$target/restart.lock" || exit 1
 if [ -f "$target/wmib.pid" ];then

@@ -1,0 +1,23 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="RaFeed/RssManager.cs">
+    <Files>
+      <File FileName="HtmlDump/AssemblyInfo.cs" Line="14" Column="32" />
+      <File FileName="HtmlDump/HtmlDump.cs" Line="180" Column="104" />
+      <File FileName="Infobot/Definitions.cs" Line="15" Column="26" />
+      <File FileName="Infobot/Infobot.cs" Line="267" Column="95" />
+      <File FileName="Labs/Labs.cs" Line="5" Column="23" />
+      <File FileName="Link/Link.cs" Line="105" Column="39" />
+      <File FileName="Statistics/Statistics.cs" Line="4" Column="14" />
+      <File FileName="Seen/Seen.cs" Line="4" Column="14" />
+      <File FileName="RaFeed/RssManager.cs" Line="108" Column="70" />
+      <File FileName="RaFeed/Feed.cs" Line="3" Column="18" />
+      <File FileName="RaFeed/Module.cs" Line="3" Column="18" />
+      <File FileName="Requests/Request.cs" Line="7" Column="14" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
