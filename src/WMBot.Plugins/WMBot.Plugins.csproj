@@ -48,12 +48,12 @@
     <Compile Include="Infobot\SaveLoad.cs" />
     <Compile Include="Labs.cs" />
     <Compile Include="Link.cs" />
-    <Compile Include="Log.cs" />
-    <Compile Include="NetCat.cs" />
+    <Compile Include="Logs\Log.cs" />
+    <Compile Include="NetCat\NetCat.cs" />
     <Compile Include="Notify\Notification.cs" />
     <Compile Include="Notify\NotifyUs.cs" />
     <Compile Include="Op.cs" />
-    <Compile Include="Ping.cs" />
+    <Compile Include="FSP\Ping.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RaFeed\Feed.cs" />
     <Compile Include="RaFeed\Module.cs" />
@@ -61,7 +61,7 @@
     <Compile Include="RC\RC.cs" />
     <Compile Include="RC\RegularModule.cs" />
     <Compile Include="Request.cs" />
-    <Compile Include="Rl.cs" />
+    <Compile Include="Replag\Rl.cs" />
     <Compile Include="Seen.cs" />
     <Compile Include="Slap.cs" />
     <Compile Include="Statistics.cs" />
