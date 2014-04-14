@@ -130,7 +130,7 @@ namespace wmib
             {
                 // TODO: Install CA certificate used by wikitech to
                 // Mono.
-                ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => { return true; };
+                ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => true;
 
                 pRequestsChannel = Core.GetChannel(RequestChannel);
                 if (pRequestsChannel == null)

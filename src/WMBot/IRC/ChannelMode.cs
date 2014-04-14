@@ -55,7 +55,7 @@ namespace wmib
         {
             get
             {
-                return !(_Parameter == null);
+                return _Parameter != null;
             }
         }
 

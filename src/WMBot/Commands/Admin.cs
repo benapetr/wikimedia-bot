@@ -230,16 +230,14 @@ namespace wmib
             {
                 if (chan.SystemUsers.IsApproved(invoker, "root"))
                 {
-                    string channel;
-                    string instance;
                     message = message.Substring(".instance ".Length);
                     if (!message.Contains(" "))
                     {
                         Core.irc.Queue.DeliverMessage("This command need 2 parameters", chan);
                         return;
                     }
-                    channel = message.Substring(message.IndexOf(" ") + 1);
-                    instance = message.Substring(0, message.IndexOf(" "));
+                    string channel = message.Substring(message.IndexOf(" ") + 1);
+                    string instance = message.Substring(0, message.IndexOf(" "));
                     Channel ch = Core.GetChannel(channel);
                     if (ch == null)
                     {

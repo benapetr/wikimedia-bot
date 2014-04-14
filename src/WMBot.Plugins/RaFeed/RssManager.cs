@@ -276,7 +276,7 @@ namespace wmib
             }
             catch (ThreadAbortException fail)
             {
-                throw fail;
+                throw;
             }
             catch (Exception fail)
             {

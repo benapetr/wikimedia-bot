@@ -13,7 +13,7 @@ namespace WMBot.Bouncer
         private static System.IO.StreamWriter local_writer;
         private static System.IO.StreamWriter remote_writer;
         private static System.IO.StreamReader remote_reader;
-        private static System.Net.Sockets.NetworkStream stream;
+        private static NetworkStream stream;
         private static TcpClient client;
         private static System.Threading.Thread listener;
         private static System.Threading.Thread irc;

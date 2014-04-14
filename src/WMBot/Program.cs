@@ -181,7 +181,7 @@ namespace wmib
                 Security.Global();
                 Syslog.Log("Connecting");
                 Core.Connect();
-                UnixSignal[] signals = new UnixSignal []
+                UnixSignal[] signals = 
                 {
                     new UnixSignal (Signum.SIGINT),
                     new UnixSignal (Signum.SIGTERM),
