@@ -31,7 +31,7 @@ namespace wmib
             bool success = true;
             if (writer != null)
             {
-                writer.Exit();
+                writer.thread.Abort();
                 writer = null;
             }
             lock (Configuration.Channels)
@@ -120,8 +120,7 @@ namespace wmib
                 Core.HandleException(fail, "infobot");
             }
             writer = new InfobotWriter();
-            writer.Construct();
-            ExtensionHandler.InitialiseMod(writer);
+            writer.Init();
             lock (Configuration.Channels)
             {
                 foreach (Channel channel in Configuration.Channels)
