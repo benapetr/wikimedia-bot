@@ -313,6 +313,7 @@ namespace wmib
             {
                 Console.WriteLine("Error: unable to find config file in configuration/" 
                     + Configuration.Paths.ConfigFile);
+				Console.WriteLine("You can get a configuration file here: https://github.com/benapetr/wikimedia-bot/blob/master/configuration/wmib.conf");
                 return 2;
             }
             ConfigurationData = File2Dict();
@@ -337,12 +338,12 @@ namespace wmib
                                 Configuration.Network.SystemPort.ToString()));
             if (string.IsNullOrEmpty(Configuration.IRC.LoginNick))
             {
-                Console.WriteLine("Error there is no login for bot");
+                Console.WriteLine("Error there is no login for bot (nick key is missing?)");
                 return 1;
             }
             if (string.IsNullOrEmpty(Configuration.IRC.NetworkHost))
             {
-                Console.WriteLine("Error irc server is wrong");
+                Console.WriteLine("Error irc server is wrong (network key is missing?)");
                 return 4;
             }
             if (string.IsNullOrEmpty(Configuration.IRC.NickName))
