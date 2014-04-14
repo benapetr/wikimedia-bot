@@ -413,7 +413,7 @@ namespace wmib
             string chan = parameters.Substring(0, parameters.IndexOf(" "));
             if (chan == Configuration.System.DebugChan && instance.Nick != Core.irc.NickName)
             {
-                return true; ;
+                return true;
             }
             Channel channel = Core.GetChannel(chan);
             if (channel != null)

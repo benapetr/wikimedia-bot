@@ -291,19 +291,11 @@ namespace wmib
 
         public static bool Linkable(Channel host, Channel guest)
         {
-            if (host == null)
+            if (host == null || guest == null)
             {
                 return false;
             }
-            if (guest == null)
-            {
-                return false;
-            }
-            if (host.SharedLinkedChan.Contains(guest))
-            {
-                return true;
-            }
-            return false;
+            return host.SharedLinkedChan.Contains(guest);
         }
 
         /// <summary>

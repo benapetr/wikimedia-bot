@@ -380,7 +380,7 @@ namespace wmib
             }
             return lv;
         }
-        
+
         /// <summary>
         /// Return user object from a name
         /// 
@@ -397,11 +397,7 @@ namespace wmib
         /// </returns>
         public SystemUser GetUser(string user)
         {
-            SystemUser lv = GetGlobalUser(user);
-            if (lv == null)
-            {
-                lv = new SystemUser("null", "");
-            }
+            SystemUser lv = GetGlobalUser(user) ?? new SystemUser("null", "");
             int current = GetLevelOfRole(lv.Role);
             lock (Users)
             {

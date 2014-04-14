@@ -1000,8 +1000,7 @@ namespace wmib
             Core.Help.Unregister("labs-project-instances");
             Core.Help.Unregister("labs-project-users");
             Core.Help.Unregister("labs-user");
-            bool ok = true;
-            return ok;
+            return true;
         }
 
         public override void Load()
