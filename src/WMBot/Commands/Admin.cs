@@ -504,7 +504,7 @@ namespace wmib
                             module = "modules" + Path.DirectorySeparatorChar + module;
                             if (File.Exists(module))
                             {
-                                if (ExtensionHandler.LoadMod(module))
+                                if (ExtensionHandler.LoadAllModulesInLibrary(module))
                                 {
                                     Core.irc.Queue.DeliverMessage("Loaded module " + module, chan, IRC.priority.high);
                                     return;
