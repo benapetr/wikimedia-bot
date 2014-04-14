@@ -12,8 +12,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Web;
+using ThreadState = System.Threading.ThreadState;
 
 namespace wmib
 {
@@ -87,7 +90,7 @@ namespace wmib
         {
             if (Configuration.Network.Logging)
             {
-                StorageWriter.InsertLine("trafficlog.dat", DateTime.Now.ToString() + ": " + text, false);
+                StorageWriter.InsertLine("trafficlog.dat", DateTime.Now + ": " + text, false);
             }
         }
 
@@ -99,7 +102,7 @@ namespace wmib
         /// <returns></returns>
         public static int CreateInstance(string name, int port = 0)
         {
-            Syslog.DebugLog("Creating instance " + name + " with port " + port.ToString());
+            Syslog.DebugLog("Creating instance " + name + " with port " + port);
             lock(Instances)
             {
                 if (Instances.ContainsKey(name))
@@ -210,7 +213,7 @@ namespace wmib
                 {
                     Syslog.ErrorLog("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace +
                                 "\n\nThread name: " + Thread.CurrentThread.Name + "\n\nInner: " +
-                                    ex.InnerException.ToString());
+                                    ex.InnerException);
                 } else
                 {
                     Syslog.ErrorLog("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace +
@@ -270,7 +273,7 @@ namespace wmib
                         } catch (Exception fail)
                         {
                             Syslog.Log("Exception on Hook_ACTN in module: " + curr.Name);
-                            Core.HandleException(fail, curr.Name);
+                            HandleException(fail, curr.Name);
                         }
                     }
                 }
@@ -298,7 +301,7 @@ namespace wmib
         {
             if (File.Exists(Configuration.TempName(FileName)))
             {
-                string temp = System.IO.Path.GetTempFileName();
+                string temp = Path.GetTempFileName();
                 File.Copy(Configuration.TempName(FileName), temp, true);
                 Syslog.Log("Unfinished transaction from " + FileName + "~ was stored as " + temp);
                 return true;
@@ -331,7 +334,7 @@ namespace wmib
                 File.Copy(name, Configuration.TempName(name), true);
             } catch (Exception b)
             {
-                Core.HandleException(b);
+                HandleException(b);
             }
             return true;
         }
@@ -360,7 +363,7 @@ namespace wmib
                 return false;
             } catch (Exception b)
             {
-                Core.HandleException(b);
+                HandleException(b);
                 Syslog.Log("Unfinished transaction could not be restored! DB of " + name + " is now broken");
                 return false;
             }
@@ -391,11 +394,9 @@ namespace wmib
                         Thread.Sleep(1000);
                         IsOk = false;
                         break;
-                    } else
-                    {
-                        Syslog.DebugLog("Connected to " + instance.Nick, 6);
-                        IsOk = true;
                     }
+                    Syslog.DebugLog("Connected to " + instance.Nick, 6);
+                    IsOk = true;
                 }
             }
 
@@ -416,7 +417,7 @@ namespace wmib
                 }
             }
             Syslog.Log("All instances joined their channels");
-            Core.FinishedJoining = true;
+            FinishedJoining = true;
         }
 
         private static void Terminate()
@@ -435,12 +436,12 @@ namespace wmib
                         d.Exit();
                     } catch (Exception fail)
                     {
-                        Core.HandleException(fail);
+                        HandleException(fail);
                     }
                 }
             } catch (Exception fail)
             {
-                Core.HandleException(fail);
+                HandleException(fail);
             }
         }
 
@@ -499,12 +500,12 @@ namespace wmib
                 }
             } catch (Exception fail)
             {
-                Core.HandleException(fail);
+                HandleException(fail);
 
             }
-            Syslog.WriteNow("There was problem shutting down " + ExtensionHandler.Extensions.Count.ToString() + " modules, terminating process");
+            Syslog.WriteNow("There was problem shutting down " + ExtensionHandler.Extensions.Count + " modules, terminating process");
             Syslog.WriteNow("KERNEL: Terminated (error)");
-            System.Diagnostics.Process.GetCurrentProcess().Kill();
+            Process.GetCurrentProcess().Kill();
         }
 
         /// <summary>
@@ -552,7 +553,7 @@ namespace wmib
                         } catch (Exception f)
                         {
                             Syslog.Log("MODULE: exception at Hook_PRIV in " + _Module.Name, true);
-                            Core.HandleException(f);
+                            HandleException(f);
                         }
                     }
                 }
@@ -560,11 +561,11 @@ namespace wmib
                 {
                     if (message.StartsWith(Configuration.IRC.NickName + ":"))
                     {
-                        System.DateTime time = curr.TimeOfLastMsg;
-                        if (System.DateTime.Now >= time.AddSeconds(curr.RespondWait))
+                        DateTime time = curr.TimeOfLastMsg;
+                        if (DateTime.Now >= time.AddSeconds(curr.RespondWait))
                         {
                             irc.Queue.DeliverMessage(messages.Localize("hi", curr.Language, new List<string> { nick }), curr.Name);
-                            curr.TimeOfLastMsg = System.DateTime.Now;
+                            curr.TimeOfLastMsg = DateTime.Now;
                         }
                     }
                 }
@@ -735,9 +736,9 @@ namespace wmib
         /// <returns></returns>
         public static string getUptime()
         {
-            System.TimeSpan uptime = System.DateTime.Now - Configuration.System.UpTime;
-            return uptime.Days.ToString() + " days  " + uptime.Hours.ToString() + " hours since " +
-                Configuration.System.UpTime.ToString();
+            TimeSpan uptime = DateTime.Now - Configuration.System.UpTime;
+            return uptime.Days + " days  " + uptime.Hours + " hours since " +
+                Configuration.System.UpTime;
         }
 
         /// <summary>
@@ -753,9 +754,9 @@ namespace wmib
             /// <returns></returns>
             public static string AddLink(string name, string value)
             {
-                return "<tr><td>" + System.Web.HttpUtility.HtmlEncode(name) + "</td><td><a href=\"#" +
-                        System.Web.HttpUtility.HtmlEncode(value) + "\">" + 
-                        System.Web.HttpUtility.HtmlEncode(value) + "</a></td></tr>\n";
+                return "<tr><td>" + HttpUtility.HtmlEncode(name) + "</td><td><a href=\"#" +
+                        HttpUtility.HtmlEncode(value) + "\">" + 
+                        HttpUtility.HtmlEncode(value) + "</a></td></tr>\n";
             }
 
             /// <summary>
@@ -766,8 +767,8 @@ namespace wmib
             /// <returns></returns>
             public static string AddKey(string name, string value)
             {
-                return "<tr id=\"" + System.Web.HttpUtility.HtmlEncode(name) + "\"><td>" + System.Web.HttpUtility.HtmlEncode(name) 
-                    + "</td><td>" + System.Web.HttpUtility.HtmlEncode(value) + "</td></tr>\n";
+                return "<tr id=\"" + HttpUtility.HtmlEncode(name) + "\"><td>" + HttpUtility.HtmlEncode(name) 
+                    + "</td><td>" + HttpUtility.HtmlEncode(value) + "</td></tr>\n";
             }
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 
@@ -29,10 +30,10 @@ namespace wmib
             {
                 // #channel token message goes here and needs a newline on end
                 DebugLog("Accepted connection");
-                System.Net.Sockets.TcpClient client = (System.Net.Sockets.TcpClient)data;
+                TcpClient client = (TcpClient)data;
                 string IP = client.Client.RemoteEndPoint.ToString();
                 DebugLog("Incoming connection from: " + IP);
-                System.Net.Sockets.NetworkStream ns = client.GetStream();
+                NetworkStream ns = client.GetStream();
                 StreamWriter _StreamWriter = new StreamWriter(ns);
                 StreamReader _StreamReader = new StreamReader(ns, Encoding.UTF8);
                 while (!_StreamReader.EndOfStream)
@@ -92,18 +93,18 @@ namespace wmib
         {
             try
             {
-                Log("NetCat listening on port " + Port.ToString());
-                System.Net.Sockets.TcpListener server = new System.Net.Sockets.TcpListener(IPAddress.Any, Port);
+                Log("NetCat listening on port " + Port);
+                TcpListener server = new TcpListener(IPAddress.Any, Port);
                 server.Start();
                 while (true)
                 {
                     try
                     {
-                        System.Net.Sockets.TcpClient connection = server.AcceptTcpClient();
+                        TcpClient connection = server.AcceptTcpClient();
                         Thread _client = new Thread(Client);
                         //threads.Add(_client);
                         _client.Start(connection);
-                        System.Threading.Thread.Sleep(200);
+                        Thread.Sleep(200);
                     }
                     catch (ThreadAbortException)
                     {
@@ -151,12 +152,9 @@ namespace wmib
                     Core.irc.Queue.DeliverMessage("Relay was disabled", channel.Name);
                     return;
                 }
-                else
+                if (!channel.SuppressWarnings)
                 {
-                    if (!channel.SuppressWarnings)
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
                 return;
             }
@@ -173,12 +171,9 @@ namespace wmib
                     Core.irc.Queue.DeliverMessage("Token for " + channel.Name + " is: " + token, invoker.Nick, IRC.priority.normal);
                     return;
                 }
-                else
+                if (!channel.SuppressWarnings)
                 {
-                    if (!channel.SuppressWarnings)
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
                 return;
             }
@@ -192,12 +187,9 @@ namespace wmib
                     Core.irc.Queue.DeliverMessage("This channel will no longer require a token in order to relay messages into it", channel.Name);
                     return;
                 }
-                else
+                if (!channel.SuppressWarnings)
                 {
-                    if (!channel.SuppressWarnings)
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
                 return;
             }
@@ -215,12 +207,9 @@ namespace wmib
                     Core.irc.Queue.DeliverMessage("Token for " + channel.Name + " is: " + token, invoker.Nick, IRC.priority.normal);
                     return;
                 }
-                else
+                if (!channel.SuppressWarnings)
                 {
-                    if (!channel.SuppressWarnings)
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
                 return;
             }
@@ -239,14 +228,10 @@ namespace wmib
                     Core.irc.Queue.DeliverMessage("Relay was enabled", channel.Name);
                     return;
                 }
-                else
+                if (!channel.SuppressWarnings)
                 {
-                    if (!channel.SuppressWarnings)
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
-                return;
             }
         }
     }

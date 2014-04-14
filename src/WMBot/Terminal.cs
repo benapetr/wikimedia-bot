@@ -12,6 +12,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 
 namespace wmib
@@ -23,10 +26,10 @@ namespace wmib
     {
         public class Session
         {
-            private System.Net.Sockets.TcpClient connection;
-            private System.Net.Sockets.NetworkStream networkStream;
-            private System.IO.StreamReader streamReader;
-            private System.IO.StreamWriter streamWriter;
+            private TcpClient connection;
+            private NetworkStream networkStream;
+            private StreamReader streamReader;
+            private StreamWriter streamWriter;
             
             private void Write(string text)
             {
@@ -36,10 +39,10 @@ namespace wmib
             
             private void Disconnect()
             {
-                lock (Terminal.SessionList)
+                lock (SessionList)
                 {
-                    if (Terminal.SessionList.Contains(this))
-                        Terminal.SessionList.Remove(this);
+                    if (SessionList.Contains(this))
+                        SessionList.Remove(this);
                 }
                 Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
             }
@@ -48,10 +51,10 @@ namespace wmib
             {
                 Write (text);
                 connection.Close();
-                lock (Terminal.SessionList)
+                lock (SessionList)
                 {
-                    if (Terminal.SessionList.Contains(this))
-                        Terminal.SessionList.Remove(this);
+                    if (SessionList.Contains(this))
+                        SessionList.Remove(this);
                 }
                 Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
             }
@@ -60,12 +63,12 @@ namespace wmib
             {
                 try
                 {
-                    this.connection = (System.Net.Sockets.TcpClient)data;
-                    Syslog.DebugLog("Incoming connection from: " + connection.Client.RemoteEndPoint.ToString());
+                    this.connection = (TcpClient)data;
+                    Syslog.DebugLog("Incoming connection from: " + connection.Client.RemoteEndPoint);
                     this.connection.NoDelay = true;
                     this.networkStream = connection.GetStream();
-                    this.streamReader = new System.IO.StreamReader(networkStream);
-                    this.streamWriter = new System.IO.StreamWriter(networkStream);
+                    this.streamReader = new StreamReader(networkStream);
+                    this.streamWriter = new StreamWriter(networkStream);
                     // login
                     Write("Enter username:");
                     string username = streamReader.ReadLine();
@@ -82,7 +85,7 @@ namespace wmib
                         Disconnect("No permissions, bye");
                         return;
                     }
-                    Write("Successfuly logged in to wm-bot, I have " + Terminal.SessionList.Count.ToString() + " users logged in");
+                    Write("Successfuly logged in to wm-bot, I have " + SessionList.Count + " users logged in");
                     while (connection.Connected && !streamReader.EndOfStream && Core.IsRunning)
                     {
                         string text = streamReader.ReadLine();
@@ -107,10 +110,10 @@ namespace wmib
                                 return;
                             case "info":
                                 string result = "Uptime: " + Core.getUptime() + " Version: " + Configuration.System.Version 
-                                    + "\n\nBuffer information:\nUnwritten lines (file storage): " + StorageWriter.Count.ToString() + "\n";
+                                    + "\n\nBuffer information:\nUnwritten lines (file storage): " + StorageWriter.Count + "\n";
                                 if (Core.DB != null)
                                 {
-                                    result += "Unwritten rows (MySQL): " + Core.DB.CacheSize().ToString() + "\n";
+                                    result += "Unwritten rows (MySQL): " + Core.DB.CacheSize() + "\n";
                                 }
                                 result += "\nThreads:\n";
                                 foreach (Thread thread in Core.ThreadManager.ThreadList)
@@ -128,9 +131,9 @@ namespace wmib
                                     foreach (Instance instance in Core.Instances.Values)
                                     {
                                         Syslog.DebugLog("Retrieving information for user " + username + " of instance " +  instance.Nick, 2);
-                                        result += instance.Nick + " channels: " + instance.ChannelCount.ToString() +
-                                            " connected: " + instance.IsConnected.ToString() + " working: " +
-                                            instance.IsWorking.ToString() + " queue: " + instance.QueueSize().ToString() + "\n";
+                                        result += instance.Nick + " channels: " + instance.ChannelCount +
+                                            " connected: " + instance.IsConnected + " working: " +
+                                            instance.IsWorking + " queue: " + instance.QueueSize() + "\n";
                                     }
                                 }
                                 Write(result);
@@ -268,14 +271,14 @@ namespace wmib
         /// <summary>
         /// Whether the console is online or not
         /// </summary>
-        private static bool Online = false;
+        private static bool Online;
 
         /// <summary>
         /// This will start the console
         /// </summary>
         public static void Init()
         {
-            listenerThread = new System.Threading.Thread(ExecuteThread);
+            listenerThread = new Thread(ExecuteThread);
             listenerThread.Name = "Telnet";
             Core.ThreadManager.RegisterThread(listenerThread);
             listenerThread.Start();
@@ -301,21 +304,21 @@ namespace wmib
         {
             try
             {
-                System.Net.Sockets.TcpListener server = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Any,
+                TcpListener server = new TcpListener(IPAddress.Any,
                                                                          Configuration.Network.SystemPort);
                 server.Start();
                 Online = true;
-                Syslog.WriteNow("Network console is online on port: " + Configuration.Network.SystemPort.ToString());
+                Syslog.WriteNow("Network console is online on port: " + Configuration.Network.SystemPort);
                 while (Core.IsRunning)
                 {
-                    System.Net.Sockets.TcpClient connection = server.AcceptTcpClient();
+                    TcpClient connection = server.AcceptTcpClient();
                     Session session = new Session();
                     lock (SessionList)
                     {
                         SessionList.Add(session);
                     }
                     Thread client = new Thread(session.ThreadExec);
-                    client.Name = "Telnet:" + connection.Client.RemoteEndPoint.ToString();
+                    client.Name = "Telnet:" + connection.Client.RemoteEndPoint;
                     Core.ThreadManager.RegisterThread(client);
                     client.Start(connection);
                     Thread.Sleep(100);

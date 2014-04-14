@@ -211,7 +211,7 @@ namespace wmib
             {
                 running = false;
                 Syslog.Log("Turning off the message queue of instance " + Parent.ParentInstance.Nick + " with " +
-                           (newmessages.Count + Messages.Count).ToString() + " untransfered data");
+                           (newmessages.Count + Messages.Count) + " untransfered data");
                 lock (Messages)
                 {
                     Messages.Clear();
@@ -255,7 +255,7 @@ namespace wmib
                         if (!Parent.IsConnected)
                         {
                             // there is no point in sending messages to network that isn't connected
-                            System.Threading.Thread.Sleep(200);
+                            Thread.Sleep(200);
                             continue;
                         }
                         if (Messages.Count > 0)
@@ -303,7 +303,7 @@ namespace wmib
                                         {
                                             Processed.Add(message);
                                             Transfer(message);
-                                            System.Threading.Thread.Sleep(Configuration.IRC.Interval);
+                                            Thread.Sleep(Configuration.IRC.Interval);
                                             if (highest != priority.high)
                                             {
                                                 break;
@@ -329,7 +329,7 @@ namespace wmib
                     {
                         return;
                     }
-                    System.Threading.Thread.Sleep(200);
+                    Thread.Sleep(200);
                 }
             }
         }

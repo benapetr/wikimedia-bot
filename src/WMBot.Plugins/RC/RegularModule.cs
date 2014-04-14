@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Web;
 
 namespace wmib
 {
@@ -104,11 +105,8 @@ namespace wmib
                         }
                         return;
                     }
-                    else
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Feed3", channel.Language), channel.Name);
-                        return;
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("Feed3", channel.Language), channel.Name);
+                    return;
                 }
                 if (!channel.SuppressWarnings)
                 {
@@ -138,11 +136,8 @@ namespace wmib
                         }
                         return;
                     }
-                    else
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Feed3", channel.Language), channel.Name);
-                        return;
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("Feed3", channel.Language), channel.Name);
+                    return;
                 }
                 if (!channel.SuppressWarnings)
                 {
@@ -172,11 +167,8 @@ namespace wmib
                         }
                         return;
                     }
-                    else
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Feed3", channel.Language), channel.Name);
-                        return;
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("Feed3", channel.Language), channel.Name);
+                    return;
                 }
                 if (!channel.SuppressWarnings)
                 {
@@ -194,13 +186,10 @@ namespace wmib
                         Core.irc.Queue.DeliverMessage(messages.Localize("Feed6", channel.Language), channel.Name);
                         return;
                     }
-                    else
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Feed7", channel.Language), channel.Name);
-                        SetConfig(channel, "RC.Enabled", false);
-                        channel.SaveConfig();
-                        return;
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("Feed7", channel.Language), channel.Name);
+                    SetConfig(channel, "RC.Enabled", false);
+                    channel.SaveConfig();
+                    return;
                 }
                 if (!channel.SuppressWarnings)
                 {
@@ -218,13 +207,10 @@ namespace wmib
                         Core.irc.Queue.DeliverMessage(messages.Localize("Feed1", channel.Language), channel.Name);
                         return;
                     }
-                    else
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Feed2", channel.Language), channel.Name);
-                        SetConfig(channel, "RC.Enabled", true);
-                        channel.SaveConfig();
-                        return;
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("Feed2", channel.Language), channel.Name);
+                    SetConfig(channel, "RC.Enabled", true);
+                    channel.SaveConfig();
+                    return;
                 }
                 if (!channel.SuppressWarnings)
                 {
@@ -254,17 +240,13 @@ namespace wmib
                         }
                         return;
                     }
-                    else
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Feed3", channel.Language), channel.Name);
-                        return;
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("Feed3", channel.Language), channel.Name);
+                    return;
                 }
                 if (!channel.SuppressWarnings)
                 {
                     Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
-                return;
             }
         }
 
@@ -286,7 +268,7 @@ namespace wmib
                 {
                     return messages.Localize("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "modified", "" + username + "", url + "?diff=" + link, summary });
                 }
-                return messages.Localize("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", url + "?title=" + System.Web.HttpUtility.UrlEncode(page), summary });
+                return messages.Localize("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", url + "?title=" + HttpUtility.UrlEncode(page), summary });
             }
 
             string action = "modified";
@@ -316,14 +298,14 @@ namespace wmib
             string fu = url + "?diff=" + link;
             if (New)
             {
-                fu = url + "?title=" + System.Web.HttpUtility.UrlEncode(page);
+                fu = url + "?title=" + HttpUtility.UrlEncode(page);
             }
 
             return GetConfig(chan, "RC.Template", "").Replace("$wiki", name_url)
-                   .Replace("$encoded_wiki_page", System.Web.HttpUtility.UrlEncode(page).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%23", "#").Replace("%28", "(").Replace("%29", ")"))
-                   .Replace("$encoded_wiki_username", System.Web.HttpUtility.UrlEncode(username).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%23", "#").Replace("%28", "(").Replace("%29", ")"))
-                   .Replace("$encoded_page", System.Web.HttpUtility.UrlEncode(page))
-                   .Replace("$encoded_username", System.Web.HttpUtility.UrlEncode(username))
+                   .Replace("$encoded_wiki_page", HttpUtility.UrlEncode(page).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%23", "#").Replace("%28", "(").Replace("%29", ")"))
+                   .Replace("$encoded_wiki_username", HttpUtility.UrlEncode(username).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%23", "#").Replace("%28", "(").Replace("%29", ")"))
+                   .Replace("$encoded_page", HttpUtility.UrlEncode(page))
+                   .Replace("$encoded_username", HttpUtility.UrlEncode(username))
                    .Replace("$url", url)
                    .Replace("$link", link)
                    .Replace("$fullurl", fu)
@@ -480,7 +462,7 @@ namespace wmib
                 string message = "";
                 try
                 {
-                    string[] list = System.IO.File.ReadAllLines(RecentChanges.WikiFile);
+                    string[] list = File.ReadAllLines(RecentChanges.WikiFile);
                     Log("Loading feed", false);
                     lock (RecentChanges.channels)
                     {
@@ -607,7 +589,6 @@ namespace wmib
                 }
                 catch (ThreadAbortException)
                 {
-                    return;
                 }
                 catch (Exception fail)
                 {
@@ -617,7 +598,6 @@ namespace wmib
             }
             catch (ThreadAbortException)
             {
-                return;
             }
             catch (Exception fail)
             {
@@ -643,18 +623,15 @@ namespace wmib
                 case "recent-changes-template":
                     if (value != "null")
                     {
-                        Module.SetConfig(chan, "RC.Template", value);
+                        SetConfig(chan, "RC.Template", value);
                         Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan);
                         chan.SaveConfig();
                         return true;
                     }
-                    else
-                    {
-                        Module.SetConfig(chan, "RC.Template", "");
-                        Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { "null", config }), chan);
-                        chan.SaveConfig();
-                        return true;
-                    }
+                    SetConfig(chan, "RC.Template", "");
+                    Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { "null", config }), chan);
+                    chan.SaveConfig();
+                    return true;
             }
             return false;
         }

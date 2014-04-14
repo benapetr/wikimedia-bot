@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
+using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using Newtonsoft.Json;
@@ -160,7 +162,7 @@ namespace wmib
         }
 
         public static bool Validator(object sender, X509Certificate certificate, X509Chain chain,
-                                      System.Net.Security.SslPolicyErrors sslPolicyErrors)
+                                      SslPolicyErrors sslPolicyErrors)
         {
             return true;
         }
@@ -172,7 +174,7 @@ namespace wmib
             try
             {
                 ServicePointManager.ServerCertificateValidationCallback = Validator;
-                System.Net.WebClient _b = new System.Net.WebClient();
+                WebClient _b = new WebClient();
                 _b.DownloadFile(file, where);
                 return true;
             }
@@ -218,7 +220,7 @@ namespace wmib
             try
             {
                 string URL = "https://labsconsole.wikimedia.org/wiki/Special:Ask/-5B-5BResource-20Type::instance-5D-5D/-3FInstance-20Name/-3FInstance-20Type/-3FProject/-3FImage-20Id/-3FFQDN/-3FLaunch-20Time/-3FPuppet-20Class/-3FModification-20date/-3FInstance-20Host/-3FNumber-20of-20CPUs/-3FRAM-20Size/-3FAmount-20of-20Storage/limit%3D500/format%3Djson";
-                string temp = System.IO.Path.GetTempFileName();
+                string temp = Path.GetTempFileName();
                 if (Download(URL, temp))
                 {
                     List<Instance> deleted = new List<Instance>();
@@ -226,7 +228,7 @@ namespace wmib
                     {
                         deleted.AddRange(Instances);
                     }
-                    System.IO.StreamReader a = System.IO.File.OpenText(temp);
+                    StreamReader a = File.OpenText(temp);
                     JsonTextReader b = new JsonTextReader(a);
                     string name = "{unknown}";
                     string host = "{unknown}";
@@ -352,7 +354,7 @@ namespace wmib
                             }
                         }
                     }
-                    System.IO.File.Delete(temp);
+                    File.Delete(temp);
                     foreach (Instance x in deleted)
                     {
                         deleteInstance(x);
@@ -363,10 +365,10 @@ namespace wmib
                     Syslog.Log("Labs: Failed to download db file", true);
                 }
                 URL = "https://labsconsole.wikimedia.org/wiki/Special:Ask/-5B-5BResource-20Type::project-5D-5D/-3F/-3FMember/-3FDescription/mainlabel%3D-2D/searchlabel%3Dprojects/offset%3D0/limit%3D500/format%3Djson";
-                temp = System.IO.Path.GetTempFileName();
+                temp = Path.GetTempFileName();
                 if (Download(URL, temp))
                 {
-                    System.IO.StreamReader a = System.IO.File.OpenText(temp);
+                    StreamReader a = File.OpenText(temp);
                     JsonTextReader b = new JsonTextReader(a);
                     string name = "{unknown}";
                     List<Nova> projectlist2 = new List<Nova>();
@@ -425,7 +427,7 @@ namespace wmib
                             description = getValue(ref b, true);
                         }
                     }
-                    System.IO.File.Delete(temp);
+                    File.Delete(temp);
                     lock (ProjectList)
                     {
                         ProjectList.Clear();
@@ -1017,7 +1019,7 @@ namespace wmib
                 while (IsWorking)
                 {
                     JSON();
-                    System.Threading.Thread.Sleep(200000);
+                    Thread.Sleep(200000);
                 }
             }
             catch (ThreadAbortException)

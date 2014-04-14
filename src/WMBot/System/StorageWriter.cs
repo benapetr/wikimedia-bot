@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 
 namespace wmib
@@ -61,7 +62,7 @@ namespace wmib
         {
             try
             {
-                System.IO.File.AppendAllText(item.file, item.line + "\n");
+                File.AppendAllText(item.file, item.line + "\n");
                 return true;
             }
             catch (Exception crashed)
@@ -150,19 +151,13 @@ namespace wmib
                     Syslog.Log("KERNEL: Writer thread was requested to stop, but there is still some data to write");
                     WriteData();
                     Syslog.Log("KERNEL: No remaining data, stopping writer thread");
-                    return;
                 }
-                else
-                {
-                    Syslog.Log("KERNEL: No remaining data, stopping writer thread");
-                    return;
-                }
+                Syslog.Log("KERNEL: No remaining data, stopping writer thread");
             }
             catch (Exception fail)
             {
                 Core.HandleException(fail);
                 Syslog.Log("KERNEL: The writer thread was terminated", true);
-                return;
             }
         }
     }

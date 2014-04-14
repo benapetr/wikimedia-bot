@@ -53,11 +53,11 @@ namespace wmib
             }
         }
 
-        private Thread JoinThread = null;
+        private Thread JoinThread;
         /// <summary>
         /// Each instance is running in its own thread, this is pointer to that thread
         /// </summary>
-        private Thread thread = null;
+        private Thread thread;
 
         /// <summary>
         /// List of channels this instance is in

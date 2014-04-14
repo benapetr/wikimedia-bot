@@ -14,7 +14,7 @@ namespace wmib
         /// the requests to if it exists
         /// </summary>
         public Channel pRequestsChannel = null;
-        private Thread PendingRequests = null;
+        private Thread PendingRequests;
         private readonly List<string> WaitingRequests = new List<string>();
         public static readonly string RequestChannel = "#wikimedia-labs-requests";
 
@@ -74,9 +74,9 @@ namespace wmib
             else if (usernames.Count == 1)
                 info = "There is one user waiting for " + requestedAccess + ": " + info + ".";
             else if (displayed == usernames.Count)
-                info = "There are " + usernames.Count.ToString() + " users waiting for " + requestedAccess + ": " + info + ".";
+                info = "There are " + usernames.Count + " users waiting for " + requestedAccess + ": " + info + ".";
             else
-                info = "There are " + usernames.Count.ToString() + " users waiting for " + requestedAccess + ", displaying last " + displayed.ToString() + ": " + info + ".";
+                info = "There are " + usernames.Count + " users waiting for " + requestedAccess + ", displaying last " + displayed + ": " + info + ".";
 
             return info;
         }
@@ -174,13 +174,10 @@ namespace wmib
                         Core.irc.Queue.DeliverMessage("Requests are already disabled", channel.Name);
                         return;
                     }
-                    else
-                    {
-                        Core.irc.Queue.DeliverMessage("Requests were disabled", channel.Name, IRC.priority.high);
-                        SetConfig(channel, "Requests.Enabled", false);
-                        channel.SaveConfig();
-                        return;
-                    }
+                    Core.irc.Queue.DeliverMessage("Requests were disabled", channel.Name, IRC.priority.high);
+                    SetConfig(channel, "Requests.Enabled", false);
+                    channel.SaveConfig();
+                    return;
                 }
                 if (!channel.SuppressWarnings)
                 {
@@ -223,14 +220,11 @@ namespace wmib
                     {
                         Core.irc.Queue.DeliverMessage("I am already fetching the list of waiting users for this channel", channel.Name);
                         return;
-                    } else
-                    {
-                        Core.irc.Queue.DeliverMessage("I am fetching the list of waiting users...", channel.Name);
                     }
+                    Core.irc.Queue.DeliverMessage("I am fetching the list of waiting users...", channel.Name);
 
                     this.WaitingRequests.Add(channel.Name);
                 }
-                return;
             }
         }
     }

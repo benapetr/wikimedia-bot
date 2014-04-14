@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 
 namespace wmib
 {
@@ -76,7 +77,7 @@ namespace wmib
         {
             while (IsWorking)
             {
-                System.Threading.Thread.Sleep(100);
+                Thread.Sleep(100);
             }
         }
 

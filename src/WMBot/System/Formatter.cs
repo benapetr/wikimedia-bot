@@ -29,7 +29,7 @@ namespace wmib
         /// This buffer contains modes that belong to channel and is only filled up when you rewrite this formatter with custom mode
         /// </summary>
         public string channelModes = "";
-        private string buffer = null;
+        private string buffer;
         /// <summary>
         /// If this is true the produced string will remove the modes
         /// </summary>
@@ -200,7 +200,6 @@ namespace wmib
                                         negative = negative.Replace(CurrentMode.ToString(), "");
                                         positive += CurrentMode.ToString();
                                     }
-                                    continue;
                                 }
                             }
                         }

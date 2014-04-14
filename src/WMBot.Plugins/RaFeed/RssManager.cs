@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
+using System.Web;
 using System.Xml;
 
 namespace wmib
@@ -45,7 +47,7 @@ namespace wmib
         }
 
         public static bool Validator(object sender, X509Certificate certificate, X509Chain chain,
-                                      System.Net.Security.SslPolicyErrors sslPolicyErrors)
+                                      SslPolicyErrors sslPolicyErrors)
         {
             return true;
         }
@@ -106,7 +108,7 @@ namespace wmib
                                             }
                                             break;
                                         case "summary":
-                                            string html = System.Web.HttpUtility.HtmlDecode(data.InnerText);
+                                            string html = HttpUtility.HtmlDecode(data.InnerText);
                                             if (html.Contains("<table>"))
                                             {
                                                 XmlDocument summary = new XmlDocument();
@@ -280,7 +282,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                RSS.m.Log("Unable to parse feed from " + url + " I will try to do that again " + item.retries.ToString() + " times", true);
+                RSS.m.Log("Unable to parse feed from " + url + " I will try to do that again " + item.retries + " times", true);
                 RSS.m.HandleException(fail, "Feed");
                 string dump = Path.GetTempFileName();
                 File.WriteAllText(dump, temp);

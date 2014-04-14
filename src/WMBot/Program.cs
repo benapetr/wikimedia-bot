@@ -12,6 +12,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Threading;
 
 namespace wmib
@@ -30,9 +32,9 @@ namespace wmib
         /// </param>
         public static bool Temp(string file)
         {
-            string path = System.IO.Path.GetTempFileName();
-            System.IO.File.Copy(file, path, true);
-            if (System.IO.File.Exists(path))
+            string path = Path.GetTempFileName();
+            File.Copy(file, path, true);
+            if (File.Exists(path))
             {
                 Syslog.Log("Unfinished transaction from " + file + " was stored as " + path);
                 return true;
@@ -67,7 +69,7 @@ namespace wmib
                 Core.HandleException(fail);
             }
             Syslog.WriteNow("Terminated (emergency)");
-            System.Diagnostics.Process.GetCurrentProcess().Kill();
+            Process.GetCurrentProcess().Kill();
         }
 
         /// <summary>
@@ -117,7 +119,7 @@ namespace wmib
                         Console.WriteLine("You didn't provide a name for pid file");
                         Environment.Exit(0);
                     }
-                    System.IO.File.WriteAllText(parameters[i], System.Diagnostics.Process.GetCurrentProcess().Id.ToString());
+                    File.WriteAllText(parameters[i], Process.GetCurrentProcess().Id.ToString());
                 }
                 if (item.StartsWith("-v"))
                 {
@@ -132,7 +134,7 @@ namespace wmib
             }
             if (Configuration.System.SelectedVerbosity >= 1)
             {
-                Syslog.DebugLog("System verbosity: " + Configuration.System.SelectedVerbosity.ToString());
+                Syslog.DebugLog("System verbosity: " + Configuration.System.SelectedVerbosity);
             }
         }
 
@@ -162,11 +164,10 @@ namespace wmib
                 {
                     Syslog.WriteNow("Error while loading the config file, exiting", true);
                     Environment.Exit(-2);
-                    return;
                 }
                 Terminal.Init();
                 Core.Help.CreateHelp();
-                Core.WriterThread = new System.Threading.Thread(StorageWriter.Exec);
+                Core.WriterThread = new Thread(StorageWriter.Exec);
                 Core.ThreadManager.RegisterThread(Core.WriterThread);
                 Core.WriterThread.Name = "Writer";
                 Core.WriterThread.Start();
@@ -186,7 +187,7 @@ namespace wmib
                     new UnixSignal (Signum.SIGINT),
                     new UnixSignal (Signum.SIGTERM),
                     new UnixSignal (Signum.SIGQUIT),
-                    new UnixSignal (Signum.SIGHUP),
+                    new UnixSignal (Signum.SIGHUP)
                 };
                 while(Core.IsRunning)
                 {

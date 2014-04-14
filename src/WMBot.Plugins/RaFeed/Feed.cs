@@ -85,7 +85,7 @@ namespace wmib
 
         private readonly string DB = "";
 
-        private readonly Channel owner = null;
+        private readonly Channel owner;
 
         public bool contains(string name)
         {
@@ -105,7 +105,7 @@ namespace wmib
             {
                 if (File.Exists(DB))
                 {
-                    XmlDocument data = new System.Xml.XmlDocument();
+                    XmlDocument data = new XmlDocument();
                     data.Load(DB);
                     lock (Content)
                     {
@@ -167,8 +167,8 @@ namespace wmib
                         Syslog.Log("Unable to create backup file for " + owner.Name);
                     }
                 }
-                System.Xml.XmlDocument data = new System.Xml.XmlDocument();
-                System.Xml.XmlNode xmlnode = data.CreateElement("database");
+                XmlDocument data = new XmlDocument();
+                XmlNode xmlnode = data.CreateElement("database");
 
                 lock (Content)
                 {
@@ -184,7 +184,7 @@ namespace wmib
                         template.Value = key.template;
                         XmlAttribute scan = data.CreateAttribute("so");
                         scan.Value = key.ScannerOnly.ToString();
-                        System.Xml.XmlNode db = data.CreateElement("data");
+                        XmlNode db = data.CreateElement("data");
                         db.Attributes.Append(name);
                         db.Attributes.Append(url);
                         db.Attributes.Append(disabled);
@@ -195,9 +195,9 @@ namespace wmib
                 }
                 data.AppendChild(xmlnode);
                 data.Save(DB);
-                if (System.IO.File.Exists(Configuration.TempName(DB)))
+                if (File.Exists(Configuration.TempName(DB)))
                 {
-                    System.IO.File.Delete(Configuration.TempName(DB));
+                    File.Delete(Configuration.TempName(DB));
                 }
             }
             catch (Exception fail)
@@ -248,7 +248,7 @@ namespace wmib
                                 Syslog.DebugLog("0 items for " + curr.name, 6);
                                 continue;
                             }
-                            Syslog.DebugLog("there are " + feed.Count.ToString() + "feed:" + curr.name, 6);
+                            Syslog.DebugLog("there are " + feed.Count + "feed:" + curr.name, 6);
                             if (!RssManager.CompareLists(curr.data, feed))
                             {
                                 List<RssFeedItem> diff = new List<RssFeedItem>();
@@ -343,7 +343,6 @@ namespace wmib
                     rm.template = temp;
                     Save();
                     Core.irc.Queue.DeliverMessage("Item now has a different style you can restore the default style by removing this value", owner.Name);
-                    return;
                 }
             }
         }
@@ -417,9 +416,9 @@ namespace wmib
 
         public bool Delete()
         {
-            if (System.IO.File.Exists(DB))
+            if (File.Exists(DB))
             {
-                System.IO.File.Delete(DB);
+                File.Delete(DB);
                 return true;
             }
             return false;

@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Xml;
 
@@ -101,7 +102,7 @@ namespace wmib
         /// <summary>
         /// Filesystem
         /// </summary>
-        private static readonly System.IO.FileSystemWatcher fs = new System.IO.FileSystemWatcher();
+        private static readonly FileSystemWatcher fs = new FileSystemWatcher();
         private static readonly List<SystemUser> globalUsers = new List<SystemUser>();
         /// <summary>
         /// List of all users in a channel
@@ -205,8 +206,8 @@ namespace wmib
         /// </summary>
         private static void GlobalLoad()
         {
-            string[] dba = System.IO.File.ReadAllLines(Variables.ConfigurationDirectory + 
-                           System.IO.Path.DirectorySeparatorChar + "admins");
+            string[] dba = File.ReadAllLines(Variables.ConfigurationDirectory + 
+                           Path.DirectorySeparatorChar + "admins");
             lock (globalUsers)
             {
                 globalUsers.Clear();
@@ -246,11 +247,11 @@ namespace wmib
         /// </summary>
         public static void Global()
         {
-            if (!System.IO.File.Exists(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "admins"))
+            if (!File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "admins"))
             {
                 // Create db
                 Syslog.Log("Creating user file for admins");
-                System.IO.File.WriteAllText(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "admins", "");
+                File.WriteAllText(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "admins", "");
             }
             GlobalLoad();
             Syslog.DebugLog("Registering fs watcher for global user list");

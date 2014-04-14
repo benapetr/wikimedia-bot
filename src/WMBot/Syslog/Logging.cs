@@ -71,7 +71,7 @@ namespace wmib
         /// </param>
         public static bool WarningLog(string Message)
         {
-            Syslog.Log(Message, true);
+            Log(Message, true);
             return true;
         }
 
@@ -101,7 +101,7 @@ namespace wmib
         /// </param>
         public static bool WriteNow(string Message, bool Warning = false)
         {
-            Syslog.Type _Type = Type.Normal;
+            Type _Type = Type.Normal;
             if (Warning)
             {
                 _Type = Type.Warning;
@@ -123,7 +123,7 @@ namespace wmib
         /// <param name='MessageType'>
         /// If set to <c>true</c> message type.
         /// </param>
-        public static bool WriteNow(string Message, Syslog.Type MessageType)
+        public static bool WriteNow(string Message, Type MessageType)
         {
             Logging.Display(DateTime.Now, Message, MessageType);
             SystemHooks.SystemLog(Message, MessageType);
@@ -139,7 +139,7 @@ namespace wmib
         {
             if (Configuration.System.SelectedVerbosity >= Verbosity)
             {
-                Syslog.Log("DEBUG <" + Verbosity.ToString() + ">: " + Message);
+                Log("DEBUG <" + Verbosity + ">: " + Message);
             }
         }
 
@@ -152,7 +152,7 @@ namespace wmib
         {
             if (Configuration.System.SelectedVerbosity >= Verbosity)
             {
-                Syslog.WriteNow("DEBUG <" + Verbosity.ToString() + ">: " + Message);
+                WriteNow("DEBUG <" + Verbosity + ">: " + Message);
             }
         }
     }
@@ -237,7 +237,7 @@ namespace wmib
             {
                 Console.ForegroundColor = ConsoleColor.Green;
             }
-            Console.Write("[{0}]", time.ToString());
+            Console.Write("[{0}]", time);
             if (MessageType == Syslog.Type.Warning)
             {
                 if (Configuration.System.Colors)

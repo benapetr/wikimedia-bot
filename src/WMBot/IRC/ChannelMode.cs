@@ -26,7 +26,7 @@ namespace wmib
         /// Character of this mode
         /// </summary>
         private readonly char _char;
-        private readonly string _Parameter = null;
+        private readonly string _Parameter;
         /// <summary>
         /// Character of this mode
         /// </summary>
@@ -78,9 +78,9 @@ namespace wmib
         {
             if (ContainsParameter)
             {
-                return "+" + _char.ToString() + " " + Parameter;
+                return "+" + _char + " " + Parameter;
             }
-            return "+" + _char.ToString();
+            return "+" + _char;
         }
     }
 
@@ -196,7 +196,7 @@ namespace wmib
                             this._Mode.Remove(_x.ToString());
                         }
                         continue;
-                } continue;
+                }
             }
             return false;
         }

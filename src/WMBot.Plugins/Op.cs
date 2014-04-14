@@ -10,12 +10,11 @@ namespace wmib
             {
                 while (IsWorking)
                 {
-                    System.Threading.Thread.Sleep(1000000);
+                    Thread.Sleep(1000000);
                 }
             }
             catch (ThreadAbortException)
             {
-                return;
             }
         }
 
@@ -65,13 +64,10 @@ namespace wmib
                         Core.irc.Queue.DeliverMessage(messages.Localize("OpE1", channel.Language), channel);
                         return;
                     }
-                    else
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("OpM1", channel.Language), channel.Name);
-                        SetConfig(channel, "OP.Enabled", true);
-                        channel.SaveConfig();
-                        return;
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("OpM1", channel.Language), channel.Name);
+                    SetConfig(channel, "OP.Enabled", true);
+                    channel.SaveConfig();
+                    return;
                 }
                 if (!channel.SuppressWarnings)
                 {
@@ -89,13 +85,10 @@ namespace wmib
                         Core.irc.Queue.DeliverMessage(messages.Localize("OpE2", channel.Language), channel);
                         return;
                     }
-                    else
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("OpM2", channel.Language), channel);
-                        SetConfig(channel, "OP.Permanent", false);
-                        channel.SaveConfig();
-                        return;
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("OpM2", channel.Language), channel);
+                    SetConfig(channel, "OP.Permanent", false);
+                    channel.SaveConfig();
+                    return;
                 }
                 if (!channel.SuppressWarnings)
                 {
@@ -113,13 +106,10 @@ namespace wmib
                         Core.irc.Queue.DeliverMessage(messages.Localize("OpE3", channel.Language), channel);
                         return;
                     }
-                    else
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("OpM3", channel.Language), channel);
-                        SetConfig(channel, "OP.Permanent", true);
-                        channel.SaveConfig();
-                        return;
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("OpM3", channel.Language), channel);
+                    SetConfig(channel, "OP.Permanent", true);
+                    channel.SaveConfig();
+                    return;
                 }
                 if (!channel.SuppressWarnings)
                 {
@@ -137,13 +127,10 @@ namespace wmib
                         Core.irc.Queue.DeliverMessage(messages.Localize("OpE4", channel.Language), channel);
                         return;
                     }
-                    else
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("OpM4", channel.Language), channel);
-                        SetConfig(channel, "OP.Enabled", false);
-                        channel.SaveConfig();
-                        return;
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("OpM4", channel.Language), channel);
+                    SetConfig(channel, "OP.Enabled", false);
+                    channel.SaveConfig();
+                    return;
                 }
                 if (!channel.SuppressWarnings)
                 {
@@ -404,7 +391,6 @@ namespace wmib
                 {
                     Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
-                return;
             }
         }
 

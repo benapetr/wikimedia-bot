@@ -27,7 +27,6 @@ namespace wmib
 
         private void Ping()
         {
-            return;
         }
 
         private bool Info(string command, string parameters, string value)
@@ -69,7 +68,7 @@ namespace wmib
                         return false;
 
                     }
-                    Syslog.Log("Finished parsing for " + channel.Name + " parsed totaly: " + channel.UserList.Count.ToString());
+                    Syslog.Log("Finished parsing for " + channel.Name + " parsed totaly: " + channel.UserList.Count);
                     if (Configuration.System.SelectedVerbosity > 8)
                     {
                         string list = "";
@@ -122,7 +121,7 @@ namespace wmib
                         User _user = null;
                         if (mode != '\0')
                         {
-                            _user = new User(mode.ToString() + nick, host, ident);
+                            _user = new User(mode + nick, host, ident);
                         }
                         else
                         {

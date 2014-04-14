@@ -71,7 +71,7 @@ namespace wmib
             public static void KillThread(Thread t)
             {
                 Syslog.DebugLog("Killing thread: " + t.Name);
-                if (t == Core.KernelThread)
+                if (t == KernelThread)
                 {
                     Syslog.DebugLog("Refusing to kill kernel thread");
                     return;
@@ -81,7 +81,7 @@ namespace wmib
                     t.Abort();
                 } else
                 {
-                    Syslog.DebugLog("Refusing to kill thread in status: " + t.ThreadState.ToString());
+                    Syslog.DebugLog("Refusing to kill thread in status: " + t.ThreadState);
                 }
                 UnregisterThread(t);
             }

@@ -13,8 +13,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Sockets;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Web;
 
 namespace wmib
 {
@@ -86,7 +89,7 @@ namespace wmib
         /// </summary>
         private static string Nick;
 
-        private static bool Loaded = false;
+        private static bool Loaded;
 
         /// <summary>
         /// Channels
@@ -107,7 +110,7 @@ namespace wmib
 
         public static string WikiFile = Variables.ConfigurationDirectory + "/feed";
         public static StreamWriter WD;
-        public static System.Net.Sockets.NetworkStream stream;
+        public static NetworkStream stream;
 
         public static Regex RegexIrc =
             new Regex(":rc-pmtpa!~rc-pmtpa@[^ ]* PRIVMSG #[^:]*:14\\[\\[07([^]*)14\\]\\]4 N?(M?)(B?)10 02.*di" +
@@ -139,7 +142,7 @@ namespace wmib
                 {
                     foreach (IWatch b in MonitoredPages)
                     {
-                        output = output + "<tr><td>" + b.Channel + "</td><td>" + System.Web.HttpUtility.HtmlEncode(b.Page) + "</td></tr>\n";
+                        output = output + "<tr><td>" + b.Channel + "</td><td>" + HttpUtility.HtmlEncode(b.Page) + "</td></tr>\n";
                     }
                     output = output + "</table>";
                 }
@@ -295,11 +298,11 @@ namespace wmib
             {
                 Random rand = new Random(DateTime.Now.Millisecond);
                 int random_number = rand.Next(10000);
-                Nick = "wm-bot" + random_number.ToString();
+                Nick = "wm-bot" + random_number;
                 ModuleRC.ptrModule.Log("Connecting to wikimedia recent changes feed as " + Nick + ", hold on");
-                stream = new System.Net.Sockets.TcpClient("irc.wikimedia.org", 6667).GetStream();
+                stream = new TcpClient("irc.wikimedia.org", 6667).GetStream();
                 WD = new StreamWriter(stream);
-                RD = new StreamReader(stream, System.Text.Encoding.UTF8);
+                RD = new StreamReader(stream, Encoding.UTF8);
                 Thread pinger = new Thread(Pong);
                 pinger.Name = "Module:RC/Pinger";
                 Core.ThreadManager.RegisterThread(pinger);
@@ -311,7 +314,7 @@ namespace wmib
                 {
                     foreach (string b in channels)
                     {
-                        System.Threading.Thread.Sleep(800);
+                        Thread.Sleep(800);
                         Send("JOIN " + b);
                         WD.Flush();
                     }
@@ -410,11 +413,9 @@ namespace wmib
             }
             catch (IOException)
             {
-                return;
             }
             catch (ThreadAbortException)
             {
-                return;
             }
             catch (Exception fail)
             {
@@ -477,7 +478,7 @@ namespace wmib
                         wikiinfo.Add(new wiki(values[0], values[1], values[2]));
                     }
                 }
-                ModuleRC.ptrModule.Log("Loaded wiki " + content.Length.ToString());
+                ModuleRC.ptrModule.Log("Loaded wiki " + content.Length);
             }
             else
             {

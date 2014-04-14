@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading;
 
 namespace wmib
@@ -36,13 +37,13 @@ namespace wmib
                 Info i = (Info)info;
                 Core.irc.Queue.DeliverMessage("Pinging all local filesystems, hold on", i.channel, IRC.priority.high);
                 DateTime blah = DateTime.Now;
-                System.IO.File.WriteAllText("/tmp/wm-bot-test", "test");
-                System.IO.File.Delete("/tmp/wm-bot-test");
-                Core.irc.Queue.DeliverMessage("Written and deleted 4 bytes on /tmp in " + (DateTime.Now - blah).ToString(), i.channel);
+                File.WriteAllText("/tmp/wm-bot-test", "test");
+                File.Delete("/tmp/wm-bot-test");
+                Core.irc.Queue.DeliverMessage("Written and deleted 4 bytes on /tmp in " + (DateTime.Now - blah), i.channel);
                 blah = DateTime.Now;
-                System.IO.File.WriteAllText("/data/project/wm-bot/wm-bot-test", "test");
-                System.IO.File.Delete("/data/project/wm-bot/wm-bot-test");
-                Core.irc.Queue.DeliverMessage("Written and deleted 4 bytes on /data/project in " + (DateTime.Now - blah).ToString(), i.channel);
+                File.WriteAllText("/data/project/wm-bot/wm-bot-test", "test");
+                File.Delete("/data/project/wm-bot/wm-bot-test");
+                Core.irc.Queue.DeliverMessage("Written and deleted 4 bytes on /data/project in " + (DateTime.Now - blah), i.channel);
             }
             catch (Exception fail)
             {

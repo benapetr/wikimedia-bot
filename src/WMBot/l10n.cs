@@ -11,6 +11,7 @@
 // Created by Petr Bena <benapetr@gmail.com>
 
 using System.Collections.Generic;
+using wmib.Properties;
 
 namespace wmib
 {
@@ -100,7 +101,7 @@ namespace wmib
             foreach (string part in va)
             {
                 position++;
-                Text = Text.Replace("$" + position.ToString(), part);
+                Text = Text.Replace("$" + position, part);
             }
             return Text;
         }
@@ -130,19 +131,19 @@ namespace wmib
             switch (language)
             {
                 case "en":
-                    text = Properties.Resources.english;
+                    text = Resources.english;
                     break;
                 case "cs":
-                    text = Properties.Resources.cs_czech;
+                    text = Resources.cs_czech;
                     break;
                 case "zh":
-                    text = Properties.Resources.zh_chinese;
+                    text = Resources.zh_chinese;
                     break;
                 case "de":
-                    text = Properties.Resources.de_german;
+                    text = Resources.de_german;
                     break;
                 case "ko":
-                    text = Properties.Resources.ko_korean;
+                    text = Resources.ko_korean;
                     break;
                 default:
                     return "invalid language: " + language;

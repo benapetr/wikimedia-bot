@@ -13,6 +13,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 
 namespace wmib
@@ -56,7 +58,7 @@ namespace wmib
         /// <summary>
         /// Socket
         /// </summary>
-        private static System.Net.Sockets.NetworkStream networkStream;
+        private static NetworkStream networkStream;
         /// <summary>
         /// Socket Reader
         /// </summary>
@@ -68,7 +70,7 @@ namespace wmib
         /// <summary>
         /// Pinger
         /// </summary>
-        private static Thread PingerThread = null;
+        private static Thread PingerThread;
         /// <summary>
         /// Queue thread
         /// </summary>
@@ -81,7 +83,7 @@ namespace wmib
         /// Queue of all messages that should be delivered to network
         /// </summary>
         public MessageQueue Queue = null;
-        private bool connected = false;
+        private bool connected;
         private readonly List<string> Backlog = new List<string>();
         /// <summary>
         /// If network is connected
@@ -258,7 +260,7 @@ namespace wmib
             {
                 this.Queue.newmessages.Clear();
             }
-            this._Queue = new System.Threading.Thread(new System.Threading.ThreadStart(Queue.Run));
+            this._Queue = new Thread(Queue.Run);
             Core.ThreadManager.RegisterThread(_Queue);
             this.Queue.Messages.Clear();
             this._Queue.Start();
@@ -318,7 +320,7 @@ namespace wmib
             {
                 try
                 {
-                    System.Threading.Thread.Sleep(20000);
+                    Thread.Sleep(20000);
                     if (!Configuration.IRC.UsingBouncer)
                     {
                         SendData("PING :" + Configuration.IRC.NetworkHost);
@@ -423,7 +425,7 @@ namespace wmib
             if (Configuration.IRC.LoginPw != "")
             {
                 SendData("PRIVMSG nickserv :identify " + Configuration.IRC.LoginNick + " " + Configuration.IRC.LoginPw);
-                System.Threading.Thread.Sleep(4000);
+                Thread.Sleep(4000);
             }
             return true;
         }
@@ -436,15 +438,15 @@ namespace wmib
             Syslog.Log("Connecting instance " + NickName + " to irc server " + Server + "...");
             if (!Configuration.IRC.UsingBouncer)
             {
-                networkStream = new System.Net.Sockets.TcpClient(Server, 6667).GetStream();
+                networkStream = new TcpClient(Server, 6667).GetStream();
             } else
             {
-                Syslog.Log(ParentInstance.Nick + " is using personal bouncer port " + BouncerPort.ToString());
-                networkStream = new System.Net.Sockets.TcpClient(Bouncer, BouncerPort).GetStream();
+                Syslog.Log(ParentInstance.Nick + " is using personal bouncer port " + BouncerPort);
+                networkStream = new TcpClient(Bouncer, BouncerPort).GetStream();
             }
             connected = true;
-            streamReader = new System.IO.StreamReader(networkStream, System.Text.Encoding.UTF8);
-            streamWriter = new System.IO.StreamWriter(networkStream);
+            streamReader = new StreamReader(networkStream, Encoding.UTF8);
+            streamWriter = new StreamWriter(networkStream);
 
             bool Auth = true;
 
@@ -482,10 +484,10 @@ namespace wmib
                 NetworkInit();
             }
 
-            _Queue = new System.Threading.Thread(Queue.Run);
+            _Queue = new Thread(Queue.Run);
             _Queue.Name = "MessageQueue:" + NickName;
             Core.ThreadManager.RegisterThread(_Queue);
-            PingerThread = new System.Threading.Thread(Ping);
+            PingerThread = new Thread(Ping);
             Core.ThreadManager.RegisterThread(PingerThread);
             PingerThread.Name = "Ping:" + NickName;
             PingerThread.Start();
@@ -543,7 +545,7 @@ namespace wmib
                             bool Connected_ = false;
                             while (!Connected_)
                             {
-                                System.Threading.Thread.Sleep(2000);
+                                Thread.Sleep(2000);
                                 SendData("CONTROL: STATUS");
                                 string response = streamReader.ReadLine();
                                 Core.TrafficLog(ParentInstance.Nick + "<<<<<<" + response);
@@ -571,7 +573,7 @@ namespace wmib
                                         SendData("CONTROL: DISCONNECT");
                                         return;
                                     }
-                                    Syslog.Log("Still waiting for bouncer (trying " + xx.ToString() 
+                                    Syslog.Log("Still waiting for bouncer (trying " + xx 
                                                + "/6) on " + NickName + " " + response);
                                 }
                             }
@@ -613,9 +615,9 @@ namespace wmib
                                 }
                                 message = text.Replace(info, "");
                                 message = message.Substring(message.IndexOf(" :") + 2);
-                                if (message.Contains(delimiter.ToString() + "ACTION"))
+                                if (message.Contains(delimiter + "ACTION"))
                                 {
-                                    Core.GetAction(message.Replace(delimiter.ToString() + "ACTION", ""), 
+                                    Core.GetAction(message.Replace(delimiter + "ACTION", ""), 
                                                                channel, host, nick);
                                     continue;
                                 }
@@ -625,30 +627,30 @@ namespace wmib
                             message = text.Substring(text.IndexOf("PRIVMSG"));
                             message = message.Substring(message.IndexOf(" :"));
                             // private message
-                            if (message.StartsWith(" :" + delimiter.ToString() + "FINGER"))
+                            if (message.StartsWith(" :" + delimiter + "FINGER"))
                             {
-                                SendData("NOTICE " + nick + " :" + delimiter.ToString() + "FINGER" + 
+                                SendData("NOTICE " + nick + " :" + delimiter + "FINGER" + 
                                     " I am a bot don't finger me"
                                 );
                                 continue;
                             }
-                            if (message.StartsWith(" :" + delimiter.ToString() + "TIME"))
+                            if (message.StartsWith(" :" + delimiter + "TIME"))
                             {
-                                SendData("NOTICE " + nick + " :" + delimiter.ToString() + "TIME " + 
-                                    System.DateTime.Now.ToString()
+                                SendData("NOTICE " + nick + " :" + delimiter + "TIME " + 
+                                    DateTime.Now
                                 );
                                 continue;
                             }
-                            if (message.StartsWith(" :" + delimiter.ToString() + "PING"))
+                            if (message.StartsWith(" :" + delimiter + "PING"))
                             {
-                                SendData("NOTICE " + nick + " :" + delimiter.ToString() + "PING" + message.Substring(
-                                                message.IndexOf(delimiter.ToString() + "PING") + 5)
+                                SendData("NOTICE " + nick + " :" + delimiter + "PING" + message.Substring(
+                                                message.IndexOf(delimiter + "PING") + 5)
                                 );
                                 continue;
                             }
-                            if (message.StartsWith(" :" + delimiter.ToString() + "VERSION"))
+                            if (message.StartsWith(" :" + delimiter + "VERSION"))
                             {
-                                SendData("NOTICE " + nick + " :" + delimiter.ToString() + "VERSION " 
+                                SendData("NOTICE " + nick + " :" + delimiter + "VERSION " 
                                     + Configuration.System.Version
                                 );
                                 continue;
@@ -741,7 +743,7 @@ namespace wmib
                         }
                     }
                 }
-                System.Threading.Thread.Sleep(50);
+                Thread.Sleep(50);
             }
             Syslog.Log("Lost connection to IRC on " + NickName);
             Disconnect();

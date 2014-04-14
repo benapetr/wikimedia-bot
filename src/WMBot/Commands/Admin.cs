@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Web;
 
 namespace wmib
 {
@@ -61,7 +62,7 @@ namespace wmib
             if (message == Configuration.System.CommandPrefix + "info")
             {
                 Core.irc.Queue.DeliverMessage(Configuration.WebPages.WebpageURL + Configuration.Paths.DumpDir
-                                              + "/" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm", chan);
+                                              + "/" + HttpUtility.UrlEncode(chan.Name) + ".htm", chan);
                 return;
             }
 
@@ -77,7 +78,7 @@ namespace wmib
                                                       IRC.priority.low);
                         return;
                     }
-                    Commands.PartChannel(_Channel, invoker.Nick, invoker.Host, Configuration.System.CommandPrefix
+                    PartChannel(_Channel, invoker.Nick, invoker.Host, Configuration.System.CommandPrefix
                                      + "part", chan.Name);
                     return;
                 }
@@ -98,7 +99,7 @@ namespace wmib
                                                       IRC.priority.low);
                         return;
                     }
-                    Commands.PartChannel(_Channel, invoker.Nick, invoker.Host, Configuration.System.CommandPrefix
+                    PartChannel(_Channel, invoker.Nick, invoker.Host, Configuration.System.CommandPrefix
                                      + "drop", chan.Name);
                     return;
                 }
@@ -532,7 +533,7 @@ namespace wmib
                     {
                         Configuration.System.SelectedVerbosity--;
                     }
-                    Core.irc.Queue.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity.ToString(), 
+                    Core.irc.Queue.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity, 
                                                   chan, IRC.priority.high);
                 }
             }
@@ -542,7 +543,7 @@ namespace wmib
                 if (chan.SystemUsers.IsApproved(invoker, "root"))
                 {
                     Configuration.System.SelectedVerbosity++;
-                    Core.irc.Queue.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity.ToString(),
+                    Core.irc.Queue.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity,
                                                   chan, IRC.priority.high);
                 }
             }

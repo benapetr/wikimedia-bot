@@ -12,8 +12,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Web;
 
 namespace wmib
 {
@@ -76,10 +78,10 @@ namespace wmib
         public HtmlDump(Channel channel)
         {
             dumpname = Configuration.Paths.DumpDir + "/" + channel.Name + ".htm";
-            if (!System.IO.Directory.Exists(Configuration.Paths.DumpDir))
+            if (!Directory.Exists(Configuration.Paths.DumpDir))
             {
                 Syslog.Log("Creating a directory for dump");
-                System.IO.Directory.CreateDirectory(Configuration.Paths.DumpDir);
+                Directory.CreateDirectory(Configuration.Paths.DumpDir);
             }
             _Channel = channel;
         }
@@ -181,19 +183,19 @@ namespace wmib
                 foreach (Channel chan in Configuration.ChannelList)
                 {
                     text = text + "<tr>";
-                    text = text + "<td><a href=\"" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm\">" + chan.Name + "</a></td><td>";
-                    text += "infobot: " + Module.GetConfig(chan, "Infobot.Enabled", true).ToString() 
-                        + ", Recent Changes: " + Module.GetConfig(chan, "RC.Enabled", false).ToString() 
-                        + ", Logs: " + Module.GetConfig(chan, "Logging.Enabled", false).ToString() 
-                        + ", Suppress: " + chan.Suppress.ToString() 
-                        + ", Seen: " + Module.GetConfig(chan, "Seen.Enabled", false).ToString() 
-                        + ", rss: " + Module.GetConfig(chan, "Rss.Enabled", false).ToString() 
-                        + ", statistics: " + Module.GetConfig(chan, "Statistics.Enabled", false).ToString() 
+                    text = text + "<td><a href=\"" + HttpUtility.UrlEncode(chan.Name) + ".htm\">" + chan.Name + "</a></td><td>";
+                    text += "infobot: " + Module.GetConfig(chan, "Infobot.Enabled", true) 
+                        + ", Recent Changes: " + Module.GetConfig(chan, "RC.Enabled", false) 
+                        + ", Logs: " + Module.GetConfig(chan, "Logging.Enabled", false) 
+                        + ", Suppress: " + chan.Suppress 
+                        + ", Seen: " + Module.GetConfig(chan, "Seen.Enabled", false) 
+                        + ", rss: " + Module.GetConfig(chan, "Rss.Enabled", false) 
+                        + ", statistics: " + Module.GetConfig(chan, "Statistics.Enabled", false) 
                         + " Instance: " + chan.PrimaryInstance.Nick + "</td></tr>\n";
                 }
 
 
-                text += "</table>Uptime: " + Core.getUptime() + " Memory usage: " + (System.Diagnostics.Process.GetCurrentProcess().PrivateMemorySize64 / 1024).ToString() + "kb Database size: " + getSize();
+                text += "</table>Uptime: " + Core.getUptime() + " Memory usage: " + (Process.GetCurrentProcess().PrivateMemorySize64 / 1024) + "kb Database size: " + getSize();
 
                 lock (ExtensionHandler.Extensions)
                 {
@@ -210,12 +212,12 @@ namespace wmib
                     {
                         foreach (Instance xx in Core.Instances.Values)
                         {
-                            string status = "Online in " + xx.ChannelCount.ToString() + " channels";
+                            string status = "Online in " + xx.ChannelCount + " channels";
                             if (!xx.IsWorking || !xx.irc.IsConnected)
                             {
                                 status = "Disconnected";
                             }
-                            text += "<tr><td>" + xx.Nick + "</td><td>" + status + "</td><td>" + xx.Port.ToString() + "</td></tr>";
+                            text += "<tr><td>" + xx.Nick + "</td><td>" + status + "</td><td>" + xx.Port + "</td></tr>";
                         }
                     }
 
@@ -234,7 +236,7 @@ namespace wmib
                                 status += " - RECOVERING";
                             }
                         }
-                        text = text + "<tr><td>" + module.Name + " (" + module.Version + ")</td><td>" + status + " (startup date: " + module.Date.ToString() + ")</td></tr>\n";
+                        text = text + "<tr><td>" + module.Name + " (" + module.Version + ")</td><td>" + status + " (startup date: " + module.Date + ")</td></tr>\n";
                     }
                 }
                 text += "</table>\n\n</body></html>";
@@ -288,7 +290,7 @@ namespace wmib
                             Channel temp = Core.GetChannel(_Channel.SharedDB);
                             if (temp != null)
                             {
-                                text += "Linked to <a href=" + System.Web.HttpUtility.UrlEncode(temp.Name) + ".htm>" + temp.Name + "</a>\n";
+                                text += "Linked to <a href=" + HttpUtility.UrlEncode(temp.Name) + ".htm>" + temp.Name + "</a>\n";
                             }
                             else
                             {

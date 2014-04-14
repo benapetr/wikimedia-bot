@@ -22,12 +22,9 @@ namespace wmib
                     }
                     return;
                 }
-                else
+                if (!channel.SuppressWarnings)
                 {
-                    if (!channel.SuppressWarnings)
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
             }
 
@@ -93,12 +90,9 @@ namespace wmib
                     Core.irc.Queue.DeliverMessage("Error, this channel doesn't have RC feed", channel);
                     return;
                 }
-                else
+                if (!channel.SuppressWarnings)
                 {
-                    if (!channel.SuppressWarnings)
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
                 }
             }
 
@@ -125,12 +119,9 @@ namespace wmib
                     Core.irc.Queue.DeliverMessage("Error, this channel doesn't have RC feed", channel);
                     return;
                 }
-                else
+                if (!channel.SuppressWarnings)
                 {
-                    if (!channel.SuppressWarnings)
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
                 }
             }
 
@@ -224,12 +215,9 @@ namespace wmib
                     }
                     return;
                 }
-                else
+                if (!channel.SuppressWarnings)
                 {
-                    if (!channel.SuppressWarnings)
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
             }
 
@@ -242,13 +230,10 @@ namespace wmib
                         Core.irc.Queue.DeliverMessage(messages.Localize("Rss1", channel.Language), channel.Name);
                         return;
                     }
-                    else
-                    {
-                        SetConfig(channel, "Rss.Enable", false);
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Rss2", channel.Language), channel.Name);
-                        channel.SaveConfig();
-                        return;
-                    }
+                    SetConfig(channel, "Rss.Enable", false);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("Rss2", channel.Language), channel.Name);
+                    channel.SaveConfig();
+                    return;
                 }
                 if (!channel.SuppressWarnings)
                 {
@@ -266,19 +251,15 @@ namespace wmib
                         Core.irc.Queue.DeliverMessage(messages.Localize("Rss3", channel.Language), channel.Name);
                         return;
                     }
-                    else
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Rss4", channel.Language), channel.Name);
-                        SetConfig(channel, "Rss.Enable", true);
-                        channel.SaveConfig();
-                        return;
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("Rss4", channel.Language), channel.Name);
+                    SetConfig(channel, "Rss.Enable", true);
+                    channel.SaveConfig();
+                    return;
                 }
                 if (!channel.SuppressWarnings)
                 {
                     Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
-                return;
             }
         }
 
@@ -303,7 +284,7 @@ namespace wmib
                 {
                     foreach (Feed.Item feed in list.Content)
                     {
-                        HTML += "\n<tr><td>" + feed.name + "</td><td><a href=\"" + feed.URL + "\">" + feed.URL + "</a></td><td>" + feed.template + "</td><td>" + (!feed.disabled).ToString() + "</td></tr>";
+                        HTML += "\n<tr><td>" + feed.name + "</td><td><a href=\"" + feed.URL + "\">" + feed.URL + "</a></td><td>" + feed.template + "</td><td>" + (!feed.disabled) + "</td></tr>";
                     }
                 }
                 HTML += "</table>\n";
@@ -313,7 +294,7 @@ namespace wmib
 
         public override void Hook_BeforeSysWeb(ref string html)
         {
-            html += "\n<br><br>Rss feeds: " + Feed.Item.Count.ToString() + "\n";
+            html += "\n<br><br>Rss feeds: " + Feed.Item.Count + "\n";
         }
 
         public override bool Hook_SetConfig(Channel chan, User invoker, string config, string value)
@@ -411,12 +392,11 @@ namespace wmib
                             }
                         }
                     }
-                    System.Threading.Thread.Sleep(10000);
+                    Thread.Sleep(10000);
                 }
             }
             catch (ThreadAbortException)
             {
-                return;
             }
             catch (Exception fail)
             {

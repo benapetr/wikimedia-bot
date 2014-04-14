@@ -71,7 +71,7 @@ namespace wmib
             if (Core.irc.UChars.Contains(symbol))
             {
                 char mode = Core.irc.CUModes[Core.irc.UChars.IndexOf(symbol)];
-                ChannelMode.ChangeMode("+" + mode.ToString());
+                ChannelMode.ChangeMode("+" + mode);
             }
         }
 

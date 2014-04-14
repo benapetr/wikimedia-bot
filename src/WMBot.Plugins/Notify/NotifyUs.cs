@@ -137,7 +137,6 @@ namespace wmib
                         Notification.NotificationList.Add(new Notification(parameter, invoker.Nick, invoker.Host));
                     }
                     Core.irc.Queue.DeliverMessage("I'll let you know when I see " + parameter + " around here", channel, IRC.priority.low);
-                    return;
                 }
             }
         }
@@ -212,7 +211,7 @@ namespace wmib
 
         public override void Hook_BeforeSysWeb(ref string html)
         {
-            html += "<br>\nNotifications: " + Notification.NotificationList.Count.ToString() + "\n";
+            html += "<br>\nNotifications: " + Notification.NotificationList.Count + "\n";
         }
 
         public static bool isValid(string name)
@@ -246,7 +245,6 @@ namespace wmib
             }
             catch (ThreadAbortException)
             {
-                return;
             }
             catch (Exception fail)
             {
