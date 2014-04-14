@@ -743,7 +743,7 @@ namespace wmib
                         XmlAttribute newn = null;
                         XmlAttribute quit = stat.CreateAttribute("reason");
                         quit.Value = curr.quit;
-                        if (curr.newnick != null && curr.newnick != "")
+                        if (!string.IsNullOrEmpty(curr.newnick))
                         {
                             newn = stat.CreateAttribute("newnick");
                             newn.Value = curr.newnick;

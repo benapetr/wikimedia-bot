@@ -264,7 +264,7 @@ namespace wmib
                             if (xx.IsWorking)
                             {
                                 string html = xx.Extension_DumpHtml(_Channel);
-                                if (html != null && html != "")
+                                if (!string.IsNullOrEmpty(html))
                                 {
                                     ModuleData.Add(xx.Name.ToLower(), xx.Extension_DumpHtml(_Channel));
                                 }
@@ -329,7 +329,7 @@ namespace wmib
                 }
                 foreach (KeyValuePair<string, string> item in ModuleData)
                 {
-                    if (item.Value != null && item.Value != "")
+                    if (!string.IsNullOrEmpty(item.Value))
                     {
                         text += item.Value;
                     }
