@@ -5,7 +5,7 @@ using System.Text;
 
 namespace wmib
 {
-    public class r : Module
+    public class Replag : Module
     {
         private static string Double(int n)
         {

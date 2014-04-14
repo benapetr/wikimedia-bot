@@ -6,7 +6,7 @@ using System.Text;
 
 namespace wmib
 {
-    public class StatisticsModule : Module
+    public class StatisticsMod : Module
     {
         public static readonly string NAME = "Statistics";
         public override bool Hook_OnRegister()

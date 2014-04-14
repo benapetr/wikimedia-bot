@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace wmib
 {
-    public class SeenModule : Module
+    public class Seen : Module
     {
         public class ChannelRequest
         {
@@ -409,11 +409,11 @@ namespace wmib
     
                                 if (xx.LastAc == item.Action.Exit)
                                 {
-                                    response = "Last time I saw " + xx.nick + " they were " + action + " at " + xx.LastSeen.ToString() + " (" + SeenModule.FormatTimeSpan(span2) + " ago)";
+                                    response = "Last time I saw " + xx.nick + " they were " + action + " at " + xx.LastSeen.ToString() + " (" + Seen.FormatTimeSpan(span2) + " ago)";
                                 }
                                 else
                                 {
-                                    response = "Last time I saw " + xx.nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString() + " (" + SeenModule.FormatTimeSpan(span2) + " ago)";
+                                    response = "Last time I saw " + xx.nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString() + " (" + Seen.FormatTimeSpan(span2) + " ago)";
                                 }
                             }
                         }
@@ -671,9 +671,9 @@ namespace wmib
                             TimeSpan span = DateTime.Now - xx.LastSeen;
                             if (xx.LastAc == item.Action.Exit)
                             {
-                                response = "Last time I saw " + nick + " they were " + action + " at " + xx.LastSeen.ToString() + " (" + SeenModule.FormatTimeSpan(span) + " ago)";
+                                response = "Last time I saw " + nick + " they were " + action + " at " + xx.LastSeen.ToString() + " (" + Seen.FormatTimeSpan(span) + " ago)";
                             }
-                            response = "Last time I saw " + nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString() + " (" + SeenModule.FormatTimeSpan(span) + " ago)";
+                            response = "Last time I saw " + nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString() + " (" + Seen.FormatTimeSpan(span) + " ago)";
                             break;
                         }
                     }

@@ -18,7 +18,7 @@ using System.Text;
 
 namespace wmib
 {
-    public class Module_Logs : Module
+    public class LogsModule : Module
     {
         public struct Job
         {

@@ -8,7 +8,7 @@ using System.Xml;
 
 namespace wmib
 {
-    public class RequestsPlugin : Module
+    public class Requests : Module
     {
         /// <summary>
         /// This is a reference / pointer to channel object where we want to report

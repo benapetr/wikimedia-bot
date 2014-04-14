@@ -17,7 +17,7 @@ using System.Text;
 
 namespace wmib
 {
-    public class NotifyUsModule : Module
+    public class Notify : Module
     {
         public override bool Construct()
         {

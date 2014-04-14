@@ -24,7 +24,7 @@ namespace wmib
         private bool Unwritable;
         public static bool Snapshots = true;
         public readonly static string SnapshotsDirectory = "snapshots";
-        private infobot_writer writer = null;
+        private InfobotWriter writer = null;
 
         public override bool Hook_OnUnload()
         {
@@ -119,7 +119,7 @@ namespace wmib
                 Snapshots = false;
                 Core.HandleException(fail, "infobot");
             }
-            writer = new infobot_writer();
+            writer = new InfobotWriter();
             writer.Construct();
             ExtensionHandler.InitialiseMod(writer);
             lock (Configuration.Channels)

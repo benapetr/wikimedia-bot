@@ -9,7 +9,7 @@ using System.Text;
 
 namespace wmib
 {
-    public class LabsModule : Module
+    public class Labs : Module
     {
         public static List<Nova> ProjectList = new List<Nova>();
         public static List<Instance> Instances = new List<Instance>();

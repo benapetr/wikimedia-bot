@@ -91,7 +91,10 @@ namespace wmib
                             if (ShouldCreateModuleOnStartup(type))
                             {
                                 CreateModule(type);
-                            }
+                            } else
+							{
+								Syslog.DebugLog("Not registering module (type " + type.Name + ") because it's not in a module list");
+							}
                         }
                     }
 
@@ -124,12 +127,8 @@ namespace wmib
                     foreach (Type type in types)
                     {
                         if (type.IsSubclassOf(typeof(Module)))
-                        {
-                            Module module = (Module) Activator.CreateInstance(type);
-							if (module.Construct())
-							{
-                            	list += module.Name + ",";
-							}
+						{
+                            list += type.Name + ",";
                         }
                     }
                     list = list.TrimEnd(',');

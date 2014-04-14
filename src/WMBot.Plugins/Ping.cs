@@ -5,7 +5,7 @@ using System.Text;
 
 namespace wmib
 {
-    public class Class : Module
+    public class FilesystemPing : Module
     {
         public class Info
         {

@@ -6,7 +6,7 @@ using System.Text;
 namespace wmib
 {
     [Serializable()]
-    public class infobot_writer : Module
+    public class InfobotWriter : Module
     {
         public override bool Construct()
         {
