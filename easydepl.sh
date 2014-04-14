@@ -81,8 +81,8 @@ text "Updating the binary file"
 cp "$source/bin/wmib.exe" "$target/wmib.exe" || exit 1
 cp "$source/configuration/sites" "$target/sites" || exit 1
 cp "$source/configuration/linkie" "$target/configuration/linkie" || exit 1
-cp `find "$source/bin/modules" -name "*.dll" | grep -v WMBot.Plugins.dll` "$target/" || exit 1
-cp `find "$source/bin/" -name "*.dll" | grep -v WMBot.Plugins.dll` "$target/" || exit 1
+cp `echo "$source"/bin/modules/*.dll | grep -v WMBot.Plugins.dll` "$target/" || exit 1
+cp "$source"/bin/*.dll "$target/" || exit 1
 cp "$source/bin/modules/WMBot.Plugins.dll" "$target/modules" || exit 1
 ok
 
