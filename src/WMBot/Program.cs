@@ -15,6 +15,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using Mono.Unix.Native;
+using Mono.Unix;
 
 namespace wmib
 {
