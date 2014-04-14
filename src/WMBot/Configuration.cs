@@ -131,7 +131,13 @@ namespace wmib
             private static string[] _modulesToLoadList;
             public static string[] ModulesToLoadArray
             {
-                get { return _modulesToLoadList ?? (_modulesToLoadList = ModulesToLoad.Split(',')); }
+                // we need to replace the newlines so that modules can be stored in config file like:
+                // modules=ModuleA,
+                //         ModuleB,
+                //         ModuleX,
+                //         ModuleC;
+                
+                get { return _modulesToLoadList ?? (_modulesToLoadList = ModulesToLoad.Replace("\n", "").Split(',')); }
             }
         }
 
@@ -245,11 +251,7 @@ namespace wmib
             foreach (string line in xx)
             {
                 string content = null;
-                if (line == "")
-                {
-                    continue;
-                }
-                if (line.StartsWith("//"))
+                if (String.IsNullOrEmpty(line) || line.TrimStart(' ').StartsWith("//"))
                 {
                     continue;
                 }
@@ -276,7 +278,8 @@ namespace wmib
                 }
                 if (LastName != null)
                 {
-                    content = line;
+                    // we remove extra space from beginning so that we can indent in config file
+                    content = line.TrimStart(' ');
                     if (!content.Contains(";"))
                     {
                         Syslog.DebugWrite("Append config value: " + LastName + ": " + content);

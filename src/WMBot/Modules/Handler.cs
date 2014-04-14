@@ -72,15 +72,15 @@ namespace wmib
                 if (File.Exists(path))
                 {
                     System.Reflection.Assembly library = System.Reflection.Assembly.LoadFrom(path);
-
+                    
                     if (library == null)
                     {
-                        Syslog.Log("Unable to load " + path + " because the file can't be read", true);
+                        Syslog.WarningLog("Unable to load " + path + " because the file can't be read");
                         return false;
                     }
-
-                    Type[] types = library.GetTypes();
                     
+                    Type[] types = library.GetTypes();
+
                     foreach (Type type in types)
                     {
                         if (type.IsSubclassOf(typeof(Module)))
