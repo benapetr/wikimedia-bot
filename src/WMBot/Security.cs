@@ -380,7 +380,7 @@ namespace wmib
             }
             return lv;
         }
-
+        
         /// <summary>
         /// Return user object from a name
         /// 
@@ -397,7 +397,11 @@ namespace wmib
         /// </returns>
         public SystemUser GetUser(string user)
         {
-            SystemUser lv = GetGlobalUser(user) ?? new SystemUser("null", "");
+            SystemUser lv = GetGlobalUser(user);
+            if (lv == null)
+            {
+                lv = new SystemUser("null", "");
+            }
             int current = GetLevelOfRole(lv.Role);
             lock (Users)
             {
@@ -451,7 +455,7 @@ namespace wmib
         /// </summary>
         /// <param name="User">Username</param>
         /// <param name="Host">Hostname</param>
-        /// <param name="command">Approved for specified object / request</param>
+        /// <param name="privilege">Approved for specified object / request</param>
         /// <returns></returns>
         public bool IsApproved(string User, string Host, string privilege)
         {

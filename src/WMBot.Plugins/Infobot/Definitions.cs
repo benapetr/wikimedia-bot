@@ -55,8 +55,8 @@ namespace wmib
             /// <summary>
             /// Constructor
             /// </summary>
-            /// <param name="Key">Key</param>
-            /// <param name="Text">Text of the key</param>
+            /// <param name="key">Key</param>
+            /// <param name="text">Text of the key</param>
             /// <param name="_User">User who created the key</param>
             /// <param name="Lock">If key is locked or not</param>
             public InfobotKey(string key, string text, string _User, string Lock = "false", string date = "", string time = "", int Number = 0, bool RAW = false)

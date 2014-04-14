@@ -17,9 +17,6 @@ using Mono.Unix.Native;
 using Mono.Unix;
 using System.Threading;
 
-/// <summary>
-/// WikiMedia-IrcBot
-/// </summary>
 namespace wmib
 {
     internal class Program

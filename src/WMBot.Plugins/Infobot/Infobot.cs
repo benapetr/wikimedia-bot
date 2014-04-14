@@ -365,7 +365,7 @@ namespace wmib
         /// <summary>
         /// Print a value to channel if found, this message doesn't need to be a valid command for it to work
         /// </summary>
-        /// <param name="name">Name</param>
+        /// <param name="message">Message</param>
         /// <param name="user">User</param>
         /// <param name="chan">Channel</param>
         /// <param name="host">Host name</param>
