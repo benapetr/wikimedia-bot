@@ -21,7 +21,7 @@ namespace wmib
 
         private Thread tSearch = null;
         public Thread SnapshotManager = null;
-        private Module Parent;
+        private readonly Module Parent;
 
         // if we need to update dump
         public bool update = true;

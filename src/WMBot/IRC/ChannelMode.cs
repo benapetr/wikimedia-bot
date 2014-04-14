@@ -25,8 +25,8 @@ namespace wmib
         /// <summary>
         /// Character of this mode
         /// </summary>
-        private char _char;
-        private string _Parameter = null;
+        private readonly char _char;
+        private readonly string _Parameter = null;
         /// <summary>
         /// Character of this mode
         /// </summary>

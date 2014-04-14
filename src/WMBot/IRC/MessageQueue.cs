@@ -57,7 +57,7 @@ namespace wmib
             /// </summary>
             public List<Message> newmessages = new List<Message>();
             [NonSerialized]
-            private IRC Parent;
+            private readonly IRC Parent;
 
             /// <summary>
             /// Creates new queue

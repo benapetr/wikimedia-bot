@@ -19,7 +19,7 @@ namespace wmib
 {
     public class InfobotModule : Module
     {
-        private List<Infobot.InfoItem> jobs = new List<Infobot.InfoItem>();
+        private readonly List<Infobot.InfoItem> jobs = new List<Infobot.InfoItem>();
         public static bool running;
         private bool Unwritable;
         public static bool Snapshots = true;

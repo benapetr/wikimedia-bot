@@ -52,7 +52,7 @@ namespace wmib
 
         private Thread reco = null;
         private bool Recovering = false;
-        private Unwritten unwritten = new Unwritten();
+        private readonly Unwritten unwritten = new Unwritten();
         
         private MySql.Data.MySqlClient.MySqlConnection Connection = null;
         /// <summary>

@@ -30,7 +30,7 @@ namespace wmib
             /// <summary>
             /// thread pool
             /// </summary>
-            private static List<Thread> threads = new List<Thread>();
+            private static readonly List<Thread> threads = new List<Thread>();
             /// <summary>
             /// Gets the thread list.
             /// </summary>

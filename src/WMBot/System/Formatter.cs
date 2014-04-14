@@ -19,8 +19,8 @@ namespace wmib
     /// </summary>
     public class Formatter
     {
-        private int ParametersPerOneLine = 2;
-        private int ModesPerOneLine = 20;
+        private readonly int ParametersPerOneLine = 2;
+        private readonly int ModesPerOneLine = 20;
         /// <summary>
         /// Prefix of mode
         /// </summary>
@@ -34,8 +34,8 @@ namespace wmib
         /// If this is true the produced string will remove the modes
         /// </summary>
         public bool Removing = false;
-        private List<SimpleMode> Mode = new List<SimpleMode>();
-        private List<SimpleMode> rMode = new List<SimpleMode>();
+        private readonly List<SimpleMode> Mode = new List<SimpleMode>();
+        private readonly List<SimpleMode> rMode = new List<SimpleMode>();
 
         /// <summary>
         /// Return a list of modes

@@ -15,7 +15,7 @@ namespace wmib
         /// </summary>
         public Channel pRequestsChannel = null;
         private Thread PendingRequests = null;
-        private List<string> WaitingRequests = new List<string>();
+        private readonly List<string> WaitingRequests = new List<string>();
         public static readonly string RequestChannel = "#wikimedia-labs-requests";
 
         public override bool Construct()

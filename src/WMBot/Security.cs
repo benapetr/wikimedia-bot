@@ -23,7 +23,7 @@ namespace wmib
     {
         public class Role
         {
-            private List<string> Permissions = new List<string>();
+            private readonly List<string> Permissions = new List<string>();
             /// <summary>
             /// Every role may contain other roles as well
             /// </summary>
@@ -110,7 +110,7 @@ namespace wmib
         /// <summary>
         /// Channel this class belong to
         /// </summary>
-        private Channel _Channel;
+        private readonly Channel _Channel;
 
         public Security(Channel channel)
         {

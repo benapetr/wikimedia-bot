@@ -47,8 +47,8 @@ namespace wmib
         public string TextPath = "log" + Path.DirectorySeparatorChar;
         //private List<char> Separator = new List<char> { ' ', ',', (char)3, '(', ')', '{', '}', (char)2, '<', '>' };
         private bool Unloading = false;
-        private List<Job> jobs = new List<Job>();
-        private List<Item> DJ = new List<Item>();
+        private readonly List<Job> jobs = new List<Job>();
+        private readonly List<Item> DJ = new List<Item>();
 
         public override void Hook_ACTN(Channel channel, User invoker, string message)
         {

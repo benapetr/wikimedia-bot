@@ -52,7 +52,7 @@ namespace wmib
         /// Objects created by extensions
         /// </summary>
         public Dictionary<string, object> ExtensionObjects = new Dictionary<string, object>();
-        private Dictionary<string, string> ExtensionData = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> ExtensionData = new Dictionary<string, string>();
 
         /// <summary>
         /// If this is true, no messages are sent to this channel

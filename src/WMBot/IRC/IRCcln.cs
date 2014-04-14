@@ -36,7 +36,7 @@ namespace wmib
         /// <summary>
         /// Server addr
         /// </summary>
-        private string Server;
+        private readonly string Server;
         /// <summary>
         /// Port to bouncer
         /// </summary>
@@ -48,11 +48,11 @@ namespace wmib
         /// <summary>
         /// ID
         /// </summary>
-        private string Ident;
+        private readonly string Ident;
         /// <summary>
         /// User
         /// </summary>
-        private string UserName;
+        private readonly string UserName;
         /// <summary>
         /// Socket
         /// </summary>
@@ -82,7 +82,7 @@ namespace wmib
         /// </summary>
         public MessageQueue Queue = null;
         private bool connected = false;
-        private List<string> Backlog = new List<string>();
+        private readonly List<string> Backlog = new List<string>();
         /// <summary>
         /// If network is connected
         /// </summary>

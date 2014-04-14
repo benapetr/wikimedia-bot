@@ -23,7 +23,7 @@ namespace wmib
         /// </summary>
         public static List<Module> Extensions = new List<Module>();
 
-        private static List<Type> _moduleTypes = new List<Type>(); 
+        private static readonly List<Type> _moduleTypes = new List<Type>(); 
 
         /// <summary>
         /// Intialise module

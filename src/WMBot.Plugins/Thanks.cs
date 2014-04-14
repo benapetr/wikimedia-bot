@@ -18,7 +18,7 @@ namespace wmib
                 }
             }
 
-            private List<Item> data = new List<Item>();
+            private readonly List<Item> data = new List<Item>();
 
             public const int Size = 8000;
 

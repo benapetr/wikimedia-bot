@@ -19,7 +19,7 @@ namespace wmib
     /// </summary>
     public class ProcessorIRC
     {
-        private string text;
+        private readonly string text;
         /// <summary>
         /// Instance this processor is attached to
         /// </summary>

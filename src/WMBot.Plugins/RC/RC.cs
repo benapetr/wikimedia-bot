@@ -69,7 +69,7 @@ namespace wmib
             }
         }
 
-        private static wiki all = new wiki("all", "all", "unknown");
+        private static readonly wiki all = new wiki("all", "all", "unknown");
 
         /// <summary>
         /// List of pages
@@ -79,7 +79,7 @@ namespace wmib
         /// <summary>
         /// Wiki
         /// </summary>
-        private static List<wiki> wikiinfo = new List<wiki>();
+        private static readonly List<wiki> wikiinfo = new List<wiki>();
 
         /// <summary>
         /// Nickname in feed

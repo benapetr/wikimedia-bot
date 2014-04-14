@@ -83,9 +83,9 @@ namespace wmib
         public List<string> ScannerMatches = new List<string>();
         public List<Item> Content = new List<Item>();
 
-        private string DB = "";
+        private readonly string DB = "";
 
-        private Channel owner = null;
+        private readonly Channel owner = null;
 
         public bool contains(string name)
         {
