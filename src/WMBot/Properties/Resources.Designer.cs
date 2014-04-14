@@ -83,6 +83,12 @@ namespace wmib.Properties {
                 return ResourceManager.GetString("cs_czech", resourceCulture);
             }
         }
+		
+		internal static string pt_portugese {
+            get {
+                return ResourceManager.GetString("pt_portugese", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to PermissionDenied=Zugriff verweigert;

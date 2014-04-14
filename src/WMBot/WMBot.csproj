@@ -91,6 +91,7 @@
     <EmbeddedResource Include="Translation\cs_czech.txt" />
     <EmbeddedResource Include="Translation\de_german.txt" />
     <EmbeddedResource Include="Translation\english.txt" />
+    <EmbeddedResource Include="Translation\pt_portugese.txt" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Translation\ko_korean.txt" />
