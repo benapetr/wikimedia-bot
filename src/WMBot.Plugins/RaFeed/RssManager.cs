@@ -54,6 +54,8 @@ namespace wmib
         /// Reads the relevant Rss feed and returns a list of RssFeedItems
         /// </summary>
         /// <param name="url"></param>
+        /// <param name="item"></param>
+        /// <param name="channel"></param>
         /// <returns></returns>
         public static List<RssFeedItem> ReadFeed(string url, Feed.Item item, string channel)
         {

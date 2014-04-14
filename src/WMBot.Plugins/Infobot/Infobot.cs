@@ -49,6 +49,8 @@ namespace wmib
         /// </summary>
         /// <param name="database"></param>
         /// <param name="channel"></param>
+        /// <param name="module"></param>
+        /// <param name="sensitive"></param>
         public Infobot(string database, Channel channel, Module module, bool sensitive = true)
         {
             Sensitive = sensitive;
@@ -305,6 +307,7 @@ namespace wmib
         /// <param name='name'>
         /// If set to <c>true</c> name.
         /// </param>
+        /// <param name="channel"></param>
         public bool IsIgnored(string name, Channel channel)
         {
             string ignore_test = name;
@@ -906,6 +909,7 @@ namespace wmib
         /// <param name="Text">Text</param>
         /// <param name="key">Key</param>
         /// <param name="user">User who created it</param>
+        /// <param name="chan"></param>
         public void SetKey(string Text, string key, string user, Channel chan)
         {
             lock (this)
@@ -1112,6 +1116,8 @@ namespace wmib
         /// <param name="key">Key</param>
         /// <param name="al">Alias</param>
         /// <param name="user">User</param>
+        /// <param name="chan"></param>
+        /// <param name="enforced"></param>
         public void aliasKey(string key, string al, string user, Channel chan, bool enforced = false)
         {
             lock (this)
