@@ -11,8 +11,8 @@
 // Created by Petr Bena
 
 using System;
-using System.Threading;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace wmib
 {

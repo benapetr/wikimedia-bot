@@ -10,9 +10,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Xml;
 using System.Text.RegularExpressions;
-using System.Text;
+using System.Xml;
 
 namespace wmib
 {

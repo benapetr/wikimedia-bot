@@ -9,11 +9,11 @@
 //GNU General Public License for more details.
 
 // Created by Petr Bena
+
 using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Text.RegularExpressions;
 using System.IO;
+using System.Threading;
 
 namespace wmib
 {

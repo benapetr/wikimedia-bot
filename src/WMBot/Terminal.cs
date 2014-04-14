@@ -1,4 +1,4 @@
-//This program is free software: you can redistribute it and/or modify
+﻿//This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
 //the Free Software Foundation, either version 3 of the License, or
 //(at your option) any later version.
@@ -10,12 +10,9 @@
 
 // Created by Petr Bena <benapetr@gmail.com>
 
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading;
-using System.IO;
-using System.Text;
 
 namespace wmib
 {

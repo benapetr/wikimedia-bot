@@ -12,9 +12,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Mono.Unix.Native;
-using Mono.Unix;
 using System.Threading;
 
 namespace wmib

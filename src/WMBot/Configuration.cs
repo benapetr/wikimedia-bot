@@ -10,10 +10,10 @@
 
 // Created by Petr Bena benapetr@gmail.com
 
-using System.Text;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace wmib
 {
