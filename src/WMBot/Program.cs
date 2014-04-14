@@ -177,6 +177,7 @@ namespace wmib
                 }
                 Syslog.Log("Loading modules");
                 ExtensionHandler.SearchMods();
+				Security.Init();
                 Security.Global();
                 Syslog.Log("Connecting");
                 Core.Connect();

@@ -107,28 +107,29 @@ namespace wmib
 
                 Writer.WriteLine("Enter username:");
                 Writer.Flush();
-
                 string username = Reader.ReadLine();
-
                 Writer.WriteLine("Enter password:");
                 Writer.Flush();
-
                 string password = Reader.ReadLine();
-
-                int permissions = (Security.Auth(username, password));
-
-                if (permissions == 0)
-                {
+                SystemUser user = Security.Auth(username, password);
+				if (user == null)
+				{
                     Writer.WriteLine("Invalid user or password, bye");
                     Writer.Flush();
                     connection.Close();
                     DecreaseConnections();
                     return;
                 }
-
+				if (!Security.IsGloballyApproved(user, "terminal"))
+				{
+					Writer.WriteLine("No permissions, bye");
+                    Writer.Flush();
+                    connection.Close();
+                    DecreaseConnections();
+                    return;
+				}
                 Writer.WriteLine("Successfuly logged in to wm-bot, I have " + Connections.ToString() + " users logged in");
                 Writer.Flush();
-
                 while (connection.Connected && !Reader.EndOfStream && Core.IsRunning)
                 {
                     text = Reader.ReadLine();

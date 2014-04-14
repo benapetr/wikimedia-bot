@@ -22,6 +22,83 @@ namespace wmib
     [Serializable]
     public class Security
     {
+		public class Role
+		{
+			private List<string> Permissions = new List<string>();
+			/// <summary>
+			/// Every role may contain other roles as well
+			/// </summary>
+			private List<Role> Roles = new List<Role>();
+			/// <summary>
+			/// The level of role used to compare which role is higher
+			/// </summary>
+			public int Level;
+			public Role(int level_)
+			{
+				this.Level = level_;
+			}
+			
+			public void Revoke(string permission)
+			{
+				lock (this.Permissions)
+				{
+					if (this.Permissions.Contains(permission))
+					{
+						this.Permissions.Remove(permission);
+					}
+				}
+			}
+			
+			public void Revoke(Role role)
+			{
+				lock (this.Roles)
+				{
+					if (this.Roles.Contains(role))
+					{
+						this.Roles.Remove(role);
+					}
+				}
+			}
+			
+			public void Grant(Role role)
+			{
+				lock (this.Roles)
+				{
+					if (!this.Roles.Contains(role))
+					{
+						this.Roles.Add(role);
+					}
+				}
+			}
+			
+			public void Grant(string permission)
+			{
+				lock (this.Permissions)
+				{
+					if (!this.Permissions.Contains(permission))
+						this.Permissions.Add(permission);
+				}
+			}
+			
+			public bool IsPermitted(string permission)
+			{
+				if (this.Permissions.Contains("root") || this.Permissions.Contains(permission))
+					return true;
+				lock (this.Roles)
+				{
+					foreach (Role role in Roles)
+					{
+						if (role.IsPermitted(permission))
+						{
+							return true;
+						}
+					}
+				}
+				return false;
+			}
+		}
+		
+		public static Dictionary<string, Role> Roles = new Dictionary<string, Role>();
         /// <summary>
         /// Filesystem
         /// </summary>
@@ -47,14 +124,50 @@ namespace wmib
         {
             this._Channel = channel;
         }
-
+		
+		public static bool IsGloballyApproved(SystemUser user, string permission)
+		{
+			return HasPrivilege(permission, user.Role);
+		}
+		
+		/// <summary>
+		/// Load all roles
+		/// 
+		/// TODO: this needs to load the role definitions from external resource if it exist
+		/// </summary>
+		public static void Init()
+		{
+			// let's assume there is no role definition file, so we create some initial, built-in roles
+			Roles.Add("null", new Role(0));
+			Roles.Add("trusted", new Role(1));
+			Roles.Add("admin", new Role(2));
+			Roles.Add("root", new Role(65535));
+			Roles["trusted"].Grant("trust");
+			// trusted users can add users to trust list
+			Roles["trusted"].Grant("trustadd");
+			Roles["trusted"].Grant("trustdel");
+			Roles["admin"].Grant("admin");
+			// admins have all privileges as trusted users
+			Roles["admin"].Grant(Roles["trusted"]);
+			Roles["root"].Grant("root");
+		}
+		
+		private static int GetLevelOfRole(string role)
+		{
+			if (Roles.ContainsKey(role))
+			{
+				return Roles[role].Level;
+			}
+			return 0;
+		}
+		
         /// <summary>
-        /// Login
+        /// Verify the users credentials and if they are correct, returns a user instance
         /// </summary>
         /// <param name="User">Username</param>
         /// <param name="Password">Password</param>
         /// <returns></returns>
-        public static int Auth(string User, string Password)
+        public static SystemUser Auth(string User, string Password)
         {
             lock (GlobalUsers)
             {
@@ -62,19 +175,11 @@ namespace wmib
                 {
                     if (user.Password == Password && user.UserName == User)
                     {
-                        switch (user.Role)
-                        {
-                            case "trusted":
-                                return 1;
-                            case "admin":
-                                return 2;
-                            case "root":
-                                return 10;
-                        }
+                        return user;
                     }
                 }
             }
-            return 0;
+            return null;
         }
 
         public void InsertUser(XmlNode node)
@@ -225,13 +330,16 @@ namespace wmib
             {
                 if (u.Name == user)
                 {
-                    if (GetLevel(u.Role) > GetLevel(origin.Role))
+                    if (GetLevelOfRole(u.Role) > GetLevelOfRole(origin.Role))
                     {
+						// users with role that has lower level than role of user who is to be removed aren't allowed to do that
+						// eg. trusted can't delete admin from channel
                         Core.irc.Queue.DeliverMessage(messages.Localize("Trust1", this._Channel.Language), this._Channel);
                         return true;
                     }
                     if (u.Name == origin.Name)
                     {
+						// users aren't permitted to delete themselve
                         Core.irc.Queue.DeliverMessage(messages.Localize("Trust2", this._Channel.Language), this._Channel);
                         return true;
                     }
@@ -244,36 +352,21 @@ namespace wmib
             Core.irc.Queue.DeliverMessage(messages.Localize("Trust4", this._Channel.Language), this._Channel);
             return true;
         }
-
-        /// <summary>
-        /// Return level
-        /// </summary>
-        /// <param name="level">User level</param>
-        /// <returns>0</returns>
-        private int GetLevel(string level)
-        {
-            switch (level)
-            {
-                // root is special only for global admins etc
-                case "root":
-                    return 65534;
-                case "admin":
-                    return 10;
-                case "trusted":
-                    return 2;
-            }
-            return 0;
-        }
-
-        /// <summary>
-        /// Return user object from a name
-        /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
-        public SystemUser GetUser(string user)
-        {
-            SystemUser lv = new SystemUser("null", "");
-            int current = 0;
+		
+		/// <summary>
+		/// Gets the global user. Work just as GetUser, but only for global records
+		/// </summary>
+		/// <returns>
+		/// The global user or null in case there is no match
+		/// </returns>
+		/// <param name='user'>
+		/// Identification string against which the user regexes are tested, this is usually a string
+        /// in format of 'nick!ident@hostname'
+		/// </param>
+		public static SystemUser GetGlobalUser(string user)
+		{
+			SystemUser lv = null;
+            int level = 0;
             lock (GlobalUsers)
             {
                 foreach (SystemUser b in GlobalUsers)
@@ -281,14 +374,42 @@ namespace wmib
                     Core.RegexCheck id = new Core.RegexCheck(b.Name, user);
                     if (id.IsMatch() == 1)
                     {
-                        if (GetLevel(b.Role) > current)
+						// if there is multiple records matching the regex, we need to pick that one
+						// with highest privileges
+						int rl = GetLevelOfRole(b.Role);
+                        if (rl > level)
                         {
-                            current = GetLevel(b.Role);
+                            level = rl;
                             lv = b;
                         }
                     }
                 }
             }
+            return lv;
+		}
+		
+        /// <summary>
+        /// Return user object from a name
+        /// 
+        /// Search all global and local records for matching regex, if multiple matches are existing the one with
+        /// highest privileges is returned.
+        /// </summary>
+        /// <param name="user">
+        /// Identification string against which the user regexes are tested, this is usually a string
+        /// in format of nick!ident@hostname (typical for IRC protocol)
+        /// </param>
+        /// <returns>
+        /// This function always return an instance of SystemUser even if no such a user exists, in that case user
+        /// with "null" role is returned, which has no privileges by default
+        /// </returns>
+        public SystemUser GetUser(string user)
+        {
+            SystemUser lv = GetGlobalUser(user);
+			if (lv == null)
+			{
+				lv = new SystemUser("null", "");
+			}
+            int current = GetLevelOfRole(lv.Role);
             lock (Users)
             {
                 foreach (SystemUser b in Users)
@@ -296,9 +417,10 @@ namespace wmib
                     Core.RegexCheck id = new Core.RegexCheck(b.Name, user);
                     if (id.IsMatch() == 1)
                     {
-                        if (GetLevel(b.Role) > current)
+						int level = GetLevelOfRole(b.Role);
+                        if (level > current)
                         {
-                            current = GetLevel(b.Role);
+                            current = level;
                             lv = b;
                         }
                     }
@@ -317,34 +439,24 @@ namespace wmib
             {
                 foreach (SystemUser b in Users)
                 {
-                    users_ok += " " + b.Name + " (2" + b.Role + ")" + ",";
+                    users_ok += " " + b.Name + " (" + Variables.ColorChar + "2" + b.Role + Variables.ColorChar +")" + ",";
                 }
             }
             Core.irc.Queue.DeliverMessage(messages.Localize("TrustedUserList", _Channel.Language) + users_ok, this._Channel);
         }
-
-        /// <summary>
-        /// Check if user match the necessary level
-        /// </summary>
-        /// <param name="level">Permission level</param>
-        /// <param name="role">Userrights</param>
-        /// <returns></returns>
-        public bool MatchesRole(int level, string role)
-        {
-            if (role == "root")
-            {
-                return true;
-            }
-            switch (level)
-            {
-                case 2:
-                    return (role == "admin");
-                case 1:
-                    return (role == "trusted" || role == "admin");
-            }
+		
+		private static bool HasPrivilege(string privilege, string role)
+		{
+			// this is just a performance hack
+			if (role == "root")
+				return true;
+			if (Roles.ContainsKey(role))
+			{
+				return Roles[role].IsPermitted(privilege);
+			}
             return false;
-        }
-
+		}
+		
         /// <summary>
         /// Check if user is approved to do operation requested
         /// </summary>
@@ -352,35 +464,15 @@ namespace wmib
         /// <param name="Host">Hostname</param>
         /// <param name="command">Approved for specified object / request</param>
         /// <returns></returns>
-        public bool IsApproved(string User, string Host, string command)
+        public bool IsApproved(string User, string Host, string privilege)
         {
             SystemUser current = GetUser(User + "!@" + Host);
             if (current.Role == "null")
             {
+				// not allowed to do anything infact
                 return false;
             }
-            switch (command)
-            {
-                case "alias_key":
-                case "delete_key":
-                case "trust":
-                case "info":
-                case "trustadd":
-                case "trustdel":
-                case "recentchanges":
-                    return MatchesRole(1, current.Role);
-                case "admin":
-                case "infobot-manage":
-                case "recentchanges-manage":
-                case "shutdown":
-                    return MatchesRole(2, current.Role);
-                case "flushcache":
-                case "reconnect":
-                    return MatchesRole(800, current.Role);
-                case "root":
-                    return MatchesRole(65535, current.Role);
-            }
-            return false;
+            return HasPrivilege(privilege, current.Role);
         }
 
         /// <summary>
