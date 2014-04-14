@@ -294,7 +294,7 @@ namespace wmib
 
         public override void Hook_BeforeSysWeb(ref string html)
         {
-            html += "\n<br><br>Rss feeds: " + Feed.Item.Count + "\n";
+            html += "\n<br><br>Rss feeds: " + Feed.Item.Count;
         }
 
         public override bool Hook_SetConfig(Channel chan, User invoker, string config, string value)

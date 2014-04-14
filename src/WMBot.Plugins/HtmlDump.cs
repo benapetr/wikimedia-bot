@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Web;
 
@@ -90,7 +91,7 @@ namespace wmib
         /// Html code
         /// </summary>
         /// <returns></returns>
-        private string CreateFooter()
+        private static string CreateFooter()
         {
             return "</body></html>\n";
         }
@@ -177,36 +178,42 @@ namespace wmib
             try
             {
                 Thread.Sleep(2000);
-                string text = CreateHeader("System info");
-                text += "<h1>System data</h1><p class=info>List of channels:</p>\n";
-                text += "<table class=\"channels\">\n<tr><th>Channel name</th><th>Options</th></tr>\n";
+                StringBuilder builder = new StringBuilder(CreateHeader("System info"));
+                builder.AppendLine("<h1>System data</h1><p class=info>List of channels:</p>");
+                builder.AppendLine("<table class=\"channels\">");
+                builder.AppendLine("<tr><th>Channel name</th><th>Options</th></tr>");
                 foreach (Channel chan in Configuration.ChannelList)
                 {
-                    text = text + "<tr>";
-                    text = text + "<td><a href=\"" + HttpUtility.UrlEncode(chan.Name) + ".htm\">" + chan.Name + "</a></td><td>";
-                    text += "infobot: " + Module.GetConfig(chan, "Infobot.Enabled", true) 
-                        + ", Recent Changes: " + Module.GetConfig(chan, "RC.Enabled", false) 
-                        + ", Logs: " + Module.GetConfig(chan, "Logging.Enabled", false) 
-                        + ", Suppress: " + chan.Suppress 
-                        + ", Seen: " + Module.GetConfig(chan, "Seen.Enabled", false) 
-                        + ", rss: " + Module.GetConfig(chan, "Rss.Enabled", false) 
-                        + ", statistics: " + Module.GetConfig(chan, "Statistics.Enabled", false) 
-                        + " Instance: " + chan.PrimaryInstance.Nick + "</td></tr>\n";
+                    builder.AppendLine("<tr>");
+                    builder.AppendFormat("<td><a href=\"{0}.htm\">{1}</a></td><td>\n", HttpUtility.UrlEncode(chan.Name),
+                        chan.Name);
+                    builder.AppendLine("infobot: " + Module.GetConfig(chan, "Infobot.Enabled", true)
+                                       + ", Recent Changes: " + Module.GetConfig(chan, "RC.Enabled", false)
+                                       + ", Logs: " + Module.GetConfig(chan, "Logging.Enabled", false)
+                                       + ", Suppress: " + chan.Suppress
+                                       + ", Seen: " + Module.GetConfig(chan, "Seen.Enabled", false)
+                                       + ", rss: " + Module.GetConfig(chan, "Rss.Enabled", false)
+                                       + ", statistics: " + Module.GetConfig(chan, "Statistics.Enabled", false)
+                                       + " Instance: " + chan.PrimaryInstance.Nick + "</td></tr>");
                 }
 
 
-                text += "</table>Uptime: " + Core.getUptime() + " Memory usage: " + (Process.GetCurrentProcess().PrivateMemorySize64 / 1024) + "kb Database size: " + getSize();
+                builder.AppendLine("</table>Uptime: " + Core.getUptime() + " Memory usage: " +
+                        (Process.GetCurrentProcess().PrivateMemorySize64/1024) + "kb Database size: " + getSize());
 
                 lock (ExtensionHandler.Extensions)
                 {
                     foreach (Module mm in ExtensionHandler.Extensions)
                     {
+                        string text = string.Empty;
                         mm.Hook_BeforeSysWeb(ref text);
+                        builder.AppendLine(text);
                     }
 
-                    text += "<br>Core version: " + Configuration.System.Version + "<br>\n";
+                    builder.AppendFormat("<br>Core version: {0}<br>\n", Configuration.System.Version);
 
-                    text += "<h2>Bots</h2><table class=\"text\"><th>Name</th><th>Status</th><th>Bouncer</th>";
+                    builder.AppendFormat("<h2>Bots</h2>");
+                    builder.AppendFormat("<table class=\"text\"><th>Name</th><th>Status</th><th>Bouncer</th>");
 
                     lock (Core.Instances)
                     {
@@ -217,13 +224,14 @@ namespace wmib
                             {
                                 status = "Disconnected";
                             }
-                            text += "<tr><td>" + xx.Nick + "</td><td>" + status + "</td><td>" + xx.Port + "</td></tr>";
+                            builder.AppendLine("<tr><td>" + xx.Nick + "</td><td>" + status + "</td><td>" + xx.Port + "</td></tr>");
                         }
                     }
 
-                    text += "</table>";
-                        
-                    text += "<h2>Plugins</h2><table class=\"modules\">";
+                    builder.AppendLine("</table>");
+
+                    builder.AppendLine("<h2>Plugins</h2>");
+                    builder.AppendLine("<table class=\"modules\">");
 
                     foreach (Module module in ExtensionHandler.Extensions)
                     {
@@ -236,12 +244,15 @@ namespace wmib
                                 status += " - RECOVERING";
                             }
                         }
-                        text = text + "<tr><td>" + module.Name + " (" + module.Version + ")</td><td>" + status + " (startup date: " + module.Date + ")</td></tr>\n";
+                        builder.AppendLine("<tr><td>" + module.Name + " (" + module.Version + ")</td><td>" + status +
+                                           " (startup date: " + module.Date + ")</td></tr>");
                     }
                 }
-                text += "</table>\n\n</body></html>";
-                File.WriteAllText(Configuration.Paths.DumpDir + "/systemdata.htm", text);
+                builder.AppendLine("</table>");
+                builder.AppendLine();
+                builder.AppendLine(CreateFooter());
 
+                File.WriteAllText(Configuration.Paths.DumpDir + "/systemdata.htm", builder.ToString());
             }
             catch (Exception b)
             {

@@ -209,7 +209,7 @@ namespace wmib
 
         public override void Hook_BeforeSysWeb(ref string html)
         {
-            html += "<br>\nNotifications: " + Notification.NotificationList.Count + "\n";
+            html += "<br>\nNotifications: " + Notification.NotificationList.Count;
         }
 
         public static bool isValid(string name)
