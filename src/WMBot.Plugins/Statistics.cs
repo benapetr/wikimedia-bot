@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Xml;
 
@@ -34,14 +35,19 @@ namespace wmib
 
         public override string Extension_DumpHtml(Channel channel)
         {
-            string HTML = "";
+            StringBuilder builder = new StringBuilder();
             if (GetConfig(channel, "Statistics.Enabled", false))
             {
-                Statistics list = (Statistics)channel.RetrieveObject(NAME);
+                Statistics list = (Statistics) channel.RetrieveObject(NAME);
                 if (list != null)
                 {
-                    HTML += "\n<br>\n<h4>Most active users :)</h4>\n<br>\n\n<table class=\"infobot\" width=100% border=1>";
-                    HTML += "<tr><td>N.</td><th>Nick</th><th>Messages (average / day)</th><th>Number of posted messages</th><th>Active since</th></tr>";
+                    builder.AppendLine("<br />");
+                    builder.AppendLine("<h4>Most active users :)</h4>");
+                    builder.AppendLine("<br />");
+                    builder.AppendLine();
+                    builder.AppendLine("<table class=\"infobot\" width=100% border=1>");
+                    builder.AppendLine(
+                        "<tr><td>N.</td><th>Nick</th><th>Messages (average / day)</th><th>Number of posted messages</th><th>Active since</th></tr>");
                     int id = 0;
                     int totalms = 0;
                     DateTime startime = DateTime.Now;
@@ -62,27 +68,31 @@ namespace wmib
                                 startime = user.logging_since;
                             }
                             TimeSpan uptime = DateTime.Now - user.logging_since;
-                            float average = (user.messages / (float)(uptime.Days + 1));
+                            float average = (user.messages/(float) (uptime.Days + 1));
                             if (user.URL != "")
                             {
-                                HTML += "<tr><td>" + id + ".</td><td><a target=\"_blank\" href=\"" + user.URL + "\">" + user.user + "</a></td><td>" + average + "</td><td>" + user.messages + "</td><td>" + user.logging_since + "</td></tr>";
+                                builder.AppendFormat(
+                                    "<tr><td>{0}.</td><td><a target=\"_blank\" href=\"{1}\">{2}</a></td><td>{3}</td><td>{4}</td><td>{5}</td></tr>\n",
+                                    id, user.URL, user.user, average, user.messages, user.logging_since
+                                    );
                             }
                             else
                             {
-                                HTML += "<tr><td>" + id + ".</td><td>" + user.user + "</td><td>" + average + "</td><td>" + user.messages + "</td><td>" + user.logging_since + "</td></tr>";
+                                builder.AppendFormat("<tr><td>{0}.</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td></tr>\n",
+                                                   id, user.user, average, user.messages, user.logging_since);
                             }
-                            HTML += "  \n";
+                            builder.AppendLine();
                         }
                     }
                     TimeSpan uptime_total = DateTime.Now - startime;
                     float average2 = totalms;
-                    average2 = (float)totalms / (1 + uptime_total.Days);
-                    HTML += "<tr><td>N/A</td><th>Total:</th><th>" + average2 + "</th><th>" + totalms + "</th><td>N/A</td></tr>";
-                    HTML += "  \n";
-                    HTML += "</table>";
+                    average2 = (float) totalms/(1 + uptime_total.Days);
+                    builder.AppendFormat("<tr><td>N/A</td><th>Total:</th><th>{0}</th><th>{1}</th><td>N/A</td></tr>\n", average2, totalms);
+                    builder.AppendLine();
+                    builder.AppendLine("</table>");
                 }
             }
-            return HTML;
+            return builder.ToString();
         }
 
         public override void Hook_Channel(Channel channel)
@@ -238,7 +248,7 @@ namespace wmib
             {
                 if (O is list)
                 {
-                    return this.messages.CompareTo((O as list).messages);
+                    return messages.CompareTo((O as list).messages);
                 }
                 return 0;
             }
@@ -271,9 +281,7 @@ namespace wmib
                 }
                 if (user == null)
                 {
-                    user = new list();
-                    user.user = nick;
-                    user.logging_since = DateTime.Now;
+                    user = new list {user = nick, logging_since = DateTime.Now};
                     lock (data)
                     {
                         data.Add(user);
