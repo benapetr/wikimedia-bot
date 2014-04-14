@@ -277,8 +277,8 @@ namespace wmib
                 {
                     return HTML;
                 }
-                HTML += "<h4>Rss feed</h4><br>";
-                HTML += "\n<br>\n<h4>Rss</h4>\n<br>\n\n<table class=\"infobot\" width=100% border=1>";
+                HTML += "<h4>Rss feed</h4><br />";
+                HTML += "\n<br />\n<h4>Rss</h4>\n<br />\n\n<table class=\"infobot\" width=100% border=1>";
                 HTML += "<tr><th>Name</th><th>URL</th><th>Text</th><th>Enabled</th></tr>";
                 lock (list.Content)
                 {
@@ -294,7 +294,7 @@ namespace wmib
 
         public override void Hook_BeforeSysWeb(ref string html)
         {
-            html += "\n<br><br>Rss feeds: " + Feed.Item.Count;
+            html += "\n<br /><br />Rss feeds: " + Feed.Item.Count;
         }
 
         public override bool Hook_SetConfig(Channel chan, User invoker, string config, string value)

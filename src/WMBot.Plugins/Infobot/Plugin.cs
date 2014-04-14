@@ -190,7 +190,7 @@ namespace wmib
                         HTML += Core.HTML.AddLink(data.Name, data.Key);
                     }
                 }
-                HTML += "</table><br>\n";
+                HTML += "</table><br />\n";
             }
             return HTML;
         }

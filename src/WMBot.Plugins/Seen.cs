@@ -562,7 +562,7 @@ namespace wmib
 
         public override void Hook_BeforeSysWeb(ref string html)
         {
-            html += "<br><p>Seen data: " + GlobalList.Count + "</p>";
+            html += "<br /><p>Seen data: " + GlobalList.Count + "</p>";
         }
 
         public void RetrieveStatus2(string nick, Channel channel, string source)

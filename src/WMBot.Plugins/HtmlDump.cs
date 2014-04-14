@@ -210,7 +210,7 @@ namespace wmib
                         builder.AppendLine(text);
                     }
 
-                    builder.AppendFormat("<br>Core version: {0}<br>\n", Configuration.System.Version);
+                    builder.AppendFormat("<br />Core version: {0}<br />\n", Configuration.System.Version);
 
                     builder.AppendFormat("<h2>Bots</h2>");
                     builder.AppendFormat("<table class=\"text\"><th>Name</th><th>Status</th><th>Bouncer</th>");
@@ -319,7 +319,7 @@ namespace wmib
                 {
                     if (Module.GetConfig(_Channel, "RC.Enabled", false))
                     {
-                        text += "\n<br><h4>Recent changes</h4>";
+                        text += "\n<br /><h4>Recent changes</h4>";
                         text += ModuleData["rc"];
                         ModuleData.Remove("rc");
                     }
