@@ -33,7 +33,7 @@ namespace wmib
             
             private void Write(string text)
             {
-                streamWriter.WriteLine();
+                streamWriter.WriteLine(text);
                 streamWriter.Flush();
             }
             
