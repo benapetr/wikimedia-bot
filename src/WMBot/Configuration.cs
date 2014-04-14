@@ -38,6 +38,13 @@ namespace wmib
             {
                 return Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + Configuration.Paths.ChannelFile;
             }
+            public static string ModulesPath
+            {
+                get
+                {
+                    return Path.GetDirectoryName(global::System.Reflection.Assembly.GetExecutingAssembly().Location) + Path.DirectorySeparatorChar + "modules";
+                }
+            }
         }
 
         public class WebPages
@@ -313,7 +320,7 @@ namespace wmib
             {
                 Console.WriteLine("Error: unable to find config file in configuration/" 
                     + Configuration.Paths.ConfigFile);
-				Console.WriteLine("You can get a configuration file here: https://github.com/benapetr/wikimedia-bot/blob/master/configuration/wmib.conf");
+                Console.WriteLine("You can get a configuration file here: https://github.com/benapetr/wikimedia-bot/blob/master/configuration/wmib.conf");
                 return 2;
             }
             ConfigurationData = File2Dict();

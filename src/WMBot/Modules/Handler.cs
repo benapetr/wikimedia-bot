@@ -92,9 +92,9 @@ namespace wmib
                             {
                                 CreateModule(type);
                             } else
-							{
-								Syslog.DebugLog("Not registering module (type " + type.Name + ") because it's not in a module list");
-							}
+                            {
+                                Syslog.DebugLog("Not registering module (type " + type.Name + ") because it's not in a module list");
+                            }
                         }
                     }
 
@@ -127,15 +127,15 @@ namespace wmib
                     foreach (Type type in types)
                     {
                         if (type.IsSubclassOf(typeof(Module)))
-						{
+                        {
                             list += type.Name + ",";
                         }
                     }
                     list = list.TrimEnd(',');
-					if (list == "")
-					{
-						list = "No modules found in this file";
-					}
+                    if (list == "")
+                    {
+                        list = "No modules found in this file";
+                    }
                     Console.WriteLine("In " + path + ": " + list);
                     return true;
                 }
@@ -176,7 +176,12 @@ namespace wmib
         /// </summary>
         public static void SearchMods()
         {
-            foreach (string dll in Directory.GetFiles(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "*.dll"))
+            if (!Directory.Exists(Configuration.Paths.ModulesPath))
+            {
+                Syslog.Log("There is no modules folder");
+                return;
+            }
+            foreach (string dll in Directory.GetFiles(Configuration.Paths.ModulesPath, "*.dll"))
             {
                 LoadAllModulesInLibrary(dll);
             }
@@ -185,7 +190,12 @@ namespace wmib
         
         public static void DumpMods()
         {
-            foreach (string dll in Directory.GetFiles(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "*.dll"))
+            if (!Directory.Exists(Configuration.Paths.ModulesPath))
+            {
+                Syslog.Log("There is no modules folder");
+                return;
+            }
+            foreach (string dll in Directory.GetFiles(Configuration.Paths.ModulesPath, "*.dll"))
             {
                 DumpAllModulesInLibrary(dll);
             }
