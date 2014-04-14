@@ -105,9 +105,15 @@ namespace wmib
                         "    --nocolors: Disable colors in system logs\n" +
                         "    -h [--help]: Display help\n" +
                         "    --pid file: Write a pid to a file\n" +
+                        "    --modules: Try to load all module files and list all modules that are available, separated by comma\n" +
                         "    --traffic: Enable traffic logs\n" +
                         "    -v: Increases verbosity\n\n" +
                         "This software is open source, licensed under GPLv3");
+                    Environment.Exit(0);
+                }
+                if (item == "--modules")
+                {
+                    ExtensionHandler.DumpMods();
                     Environment.Exit(0);
                 }
                 if (item == "--pid")

@@ -106,6 +106,49 @@ namespace wmib
             }
             return false;
         }
+        
+        public static bool DumpAllModulesInLibrary(string path)
+        {
+            try
+            {
+                if (File.Exists(path))
+                {
+                    System.Reflection.Assembly library = System.Reflection.Assembly.LoadFrom(path);
+                    if (library == null)
+                    {
+                        Syslog.WarningLog("Unable to load " + path + " because the file can't be read");
+                        return false;
+                    }
+                    Type[] types = library.GetTypes();
+                    string list = "";
+                    foreach (Type type in types)
+                    {
+                        if (type.IsSubclassOf(typeof(Module)))
+                        {
+                            Module module = (Module) Activator.CreateInstance(type);
+							if (module.Construct())
+							{
+                            	list += module.Name + ",";
+							}
+                        }
+                    }
+                    list = list.TrimEnd(',');
+					if (list == "")
+					{
+						list = "No modules found in this file";
+					}
+                    Console.WriteLine("In " + path + ": " + list);
+                    return true;
+                }
+
+                Syslog.Log("Unable to load " + path + " because the file can't be read", true);
+            }
+            catch (Exception fail)
+            {
+                Core.HandleException(fail);
+            }
+            return false;
+        }
 
         private static bool ShouldCreateModuleOnStartup(Type type)
         {
@@ -139,6 +182,14 @@ namespace wmib
                 LoadAllModulesInLibrary(dll);
             }
             Syslog.Log("Modules loaded");
+        }
+        
+        public static void DumpMods()
+        {
+            foreach (string dll in Directory.GetFiles(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "*.dll"))
+            {
+                DumpAllModulesInLibrary(dll);
+            }
         }
 
         /// <summary>
