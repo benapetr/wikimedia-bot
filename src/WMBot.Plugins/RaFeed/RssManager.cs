@@ -263,7 +263,6 @@ namespace wmib
                                 rssFeedItems.Add(curr);
                             }
                         }
-
                         return rssFeedItems;
                     }
                 }
@@ -278,7 +277,9 @@ namespace wmib
             }
             catch (ThreadAbortException)
             {
-                throw;
+                // if we receive this here it means someone wants to terminate this thread so let's quit it
+                Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
+                return null;
             }
             catch (Exception fail)
             {
