@@ -1,6 +1,9 @@
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
+using System.Threading;
 
 namespace WMBot.Bouncer
 {
@@ -8,29 +11,29 @@ namespace WMBot.Bouncer
     {
         public static string network = "irc.freenode.net";
         public static int port = 6667;
-        private static bool IsConnectedOnRemote = false;
-        private static System.IO.StreamReader local_reader;
-        private static System.IO.StreamWriter local_writer;
-        private static System.IO.StreamWriter remote_writer;
-        private static System.IO.StreamReader remote_reader;
-        private static System.Net.Sockets.NetworkStream stream;
+        private static bool IsConnectedOnRemote;
+        private static StreamReader local_reader;
+        private static StreamWriter local_writer;
+        private static StreamWriter remote_writer;
+        private static StreamReader remote_reader;
+        private static NetworkStream stream;
         private static TcpClient client;
-        private static System.Threading.Thread listener;
-        private static System.Threading.Thread irc;
+        private static Thread listener;
+        private static Thread irc;
         private static DateTime Ping;
 
         public static void Listen()
         {
             TcpListener cache = new TcpListener(IPAddress.Parse("127.0.0.1"), port);
             cache.Start();
-            Syslog.Log("Bouncer is listening on port " + port.ToString());
+            Syslog.Log("Bouncer is listening on port " + port);
             Ping = DateTime.Now;
             while (true)
             {
                 client = cache.AcceptTcpClient();
                 NetworkStream temp = client.GetStream();
-                local_writer = new System.IO.StreamWriter(temp);
-                local_reader = new System.IO.StreamReader(temp, System.Text.Encoding.UTF8);
+                local_writer = new StreamWriter(temp);
+                local_reader = new StreamReader(temp, Encoding.UTF8);
                 Syslog.Log("New client has connected to bouncer");
                 try
                 {
@@ -74,15 +77,15 @@ namespace WMBot.Bouncer
                                     break;
                             }
                         }
-                        System.Threading.Thread.Sleep(20);
+                        Thread.Sleep(20);
                     }
                     Syslog.Log("Client has disconnect on EOF");
                 }
-                catch (System.IO.IOException)
+                catch (IOException)
                 {
                     Syslog.Log("Client has disconnected on IOEX term");
                 }
-                System.Threading.Thread.Sleep(20);
+                Thread.Sleep(20);
             }
         }
 
@@ -112,15 +115,15 @@ namespace WMBot.Bouncer
                     return false;
                 if (server != "")
                     network = server;
-                stream = new System.Net.Sockets.TcpClient(network, 6667).GetStream();
-                remote_reader = new System.IO.StreamReader(stream, System.Text.Encoding.UTF8);
-                remote_writer = new System.IO.StreamWriter(stream);
+                stream = new TcpClient(network, 6667).GetStream();
+                remote_reader = new StreamReader(stream, Encoding.UTF8);
+                remote_writer = new StreamWriter(stream);
                 Ping = DateTime.Now;
                 IsConnectedOnRemote = true;
             }
             catch (Exception fail)
             {
-                Console.Write(fail.ToString() + "\n");
+                Console.Write(fail + "\n");
                 IsConnectedOnRemote = false;
             }
             return false;
@@ -139,25 +142,25 @@ namespace WMBot.Bouncer
                             string text = remote_reader.ReadLine();
                             Ping = DateTime.Now;
                             Buffer.In(text);
-                            System.Threading.Thread.Sleep(20);
+                            Thread.Sleep(20);
                         }
                         SendDisconnectOnRemote();
                     }
-                    System.Threading.Thread.Sleep(20);
+                    Thread.Sleep(20);
                 }
-                catch (System.IO.IOException)
+                catch (IOException)
                 {
                     SendDisconnectOnRemote();
                 }
-                System.Threading.Thread.Sleep(10);
+                Thread.Sleep(10);
             }
         }
 
         public static void Connect()
         {
-            listener = new System.Threading.Thread(Listen);
+            listener = new Thread(Listen);
             listener.Start();
-            irc = new System.Threading.Thread(Init);
+            irc = new Thread(Init);
             irc.Start();
             int ping = 0;
             while (true)
@@ -210,7 +213,7 @@ namespace WMBot.Bouncer
                                 continue;
                             }
                             ping = 0;
-                            remote_writer.WriteLine("PING :" + DateTime.Now.ToBinary().ToString());
+                            remote_writer.WriteLine("PING :" + DateTime.Now.ToBinary());
                             remote_writer.Flush();
                         }
                     }
@@ -219,7 +222,7 @@ namespace WMBot.Bouncer
                 { 
                     Console.Write(fail.ToString());
                 }
-                System.Threading.Thread.Sleep(10);
+                Thread.Sleep(10);
             }
         }
     }

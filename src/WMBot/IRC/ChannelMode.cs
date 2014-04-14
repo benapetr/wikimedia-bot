@@ -14,7 +14,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace wmib
 {
@@ -26,8 +25,8 @@ namespace wmib
         /// <summary>
         /// Character of this mode
         /// </summary>
-        private char _char;
-        private string _Parameter = null;
+        private readonly char _char;
+        private readonly string _Parameter;
         /// <summary>
         /// Character of this mode
         /// </summary>
@@ -56,7 +55,7 @@ namespace wmib
         {
             get
             {
-                return !(_Parameter == null);
+                return _Parameter != null;
             }
         }
 
@@ -79,9 +78,9 @@ namespace wmib
         {
             if (ContainsParameter)
             {
-                return "+" + _char.ToString() + " " + Parameter;
+                return "+" + _char + " " + Parameter;
             }
-            return "+" + _char.ToString();
+            return "+" + _char;
         }
     }
 
@@ -197,7 +196,7 @@ namespace wmib
                             this._Mode.Remove(_x.ToString());
                         }
                         continue;
-                } continue;
+                }
             }
             return false;
         }

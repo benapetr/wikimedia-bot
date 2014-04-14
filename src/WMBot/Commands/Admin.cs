@@ -12,7 +12,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Web;
 
 namespace wmib
 {
@@ -62,7 +62,7 @@ namespace wmib
             if (message == Configuration.System.CommandPrefix + "info")
             {
                 Core.irc.Queue.DeliverMessage(Configuration.WebPages.WebpageURL + Configuration.Paths.DumpDir
-                                              + "/" + System.Web.HttpUtility.UrlEncode(chan.Name) + ".htm", chan);
+                                              + "/" + HttpUtility.UrlEncode(chan.Name) + ".htm", chan);
                 return;
             }
 
@@ -78,7 +78,7 @@ namespace wmib
                                                       IRC.priority.low);
                         return;
                     }
-                    Commands.PartChannel(_Channel, invoker.Nick, invoker.Host, Configuration.System.CommandPrefix
+                    PartChannel(_Channel, invoker.Nick, invoker.Host, Configuration.System.CommandPrefix
                                      + "part", chan.Name);
                     return;
                 }
@@ -99,7 +99,7 @@ namespace wmib
                                                       IRC.priority.low);
                         return;
                     }
-                    Commands.PartChannel(_Channel, invoker.Nick, invoker.Host, Configuration.System.CommandPrefix
+                    PartChannel(_Channel, invoker.Nick, invoker.Host, Configuration.System.CommandPrefix
                                      + "drop", chan.Name);
                     return;
                 }
@@ -231,16 +231,14 @@ namespace wmib
             {
                 if (chan.SystemUsers.IsApproved(invoker, "root"))
                 {
-                    string channel;
-                    string instance;
                     message = message.Substring(".instance ".Length);
                     if (!message.Contains(" "))
                     {
                         Core.irc.Queue.DeliverMessage("This command need 2 parameters", chan);
                         return;
                     }
-                    channel = message.Substring(message.IndexOf(" ") + 1);
-                    instance = message.Substring(0, message.IndexOf(" "));
+                    string channel = message.Substring(message.IndexOf(" ") + 1);
+                    string instance = message.Substring(0, message.IndexOf(" "));
                     Channel ch = Core.GetChannel(channel);
                     if (ch == null)
                     {
@@ -535,7 +533,7 @@ namespace wmib
                     {
                         Configuration.System.SelectedVerbosity--;
                     }
-                    Core.irc.Queue.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity.ToString(), 
+                    Core.irc.Queue.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity, 
                                                   chan, IRC.priority.high);
                 }
             }
@@ -545,7 +543,7 @@ namespace wmib
                 if (chan.SystemUsers.IsApproved(invoker, "root"))
                 {
                     Configuration.System.SelectedVerbosity++;
-                    Core.irc.Queue.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity.ToString(),
+                    Core.irc.Queue.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity,
                                                   chan, IRC.priority.high);
                 }
             }

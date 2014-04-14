@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Xml;
-using System.Text;
+using System.Web;
 
 namespace wmib
 {
@@ -21,9 +20,9 @@ namespace wmib
         public static string DefaultPrefix = "!";
         public string prefix = "!";
 
-        private Thread tSearch = null;
+        private Thread tSearch;
         public Thread SnapshotManager = null;
-        private Module Parent;
+        private readonly Module Parent;
 
         // if we need to update dump
         public bool update = true;
@@ -51,6 +50,8 @@ namespace wmib
         /// </summary>
         /// <param name="database"></param>
         /// <param name="channel"></param>
+        /// <param name="module"></param>
+        /// <param name="sensitive"></param>
         public Infobot(string database, Channel channel, Module module, bool sensitive = true)
         {
             Sensitive = sensitive;
@@ -185,7 +186,7 @@ namespace wmib
                 if (CV.LastTime != NA)
                 {
                     TimeSpan span = DateTime.Now - CV.LastTime;
-                    last = CV.LastTime.ToString() + " (" + span.ToString() + " ago)";
+                    last = CV.LastTime + " (" + span + " ago)";
                 }
                 if (CV.CreationTime != NA)
                 {
@@ -202,7 +203,6 @@ namespace wmib
                 }
                 Core.irc.Queue.DeliverMessage(messages.Localize("infobot-data", chan.Language, new List<string> {key, name, created, CV.Displayed.ToString(),
                         last + type }), chan, IRC.priority.low);
-                return;
             }
         }
 
@@ -263,9 +263,9 @@ namespace wmib
                 {
                     if (!raw)
                     {
-                        text = text.Replace("$" + (curr+1).ToString(), parameters[curr]);
-                        text = text.Replace("$url_encoded_" + (curr+1).ToString(), System.Web.HttpUtility.UrlEncode(parameters[curr]));
-                        text = text.Replace("$wiki_encoded_" + (curr+1).ToString(), System.Web.HttpUtility.UrlEncode(parameters[curr]).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")"));
+                        text = text.Replace("$" + (curr+1), parameters[curr]);
+                        text = text.Replace("$url_encoded_" + (curr+1), HttpUtility.UrlEncode(parameters[curr]));
+                        text = text.Replace("$wiki_encoded_" + (curr+1), HttpUtility.UrlEncode(parameters[curr]).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")"));
                     }
                     if (keys == "")
                     {
@@ -283,27 +283,19 @@ namespace wmib
                     original = original.Trim ();
                 }
                 text = text.Replace("$*", original);
-                text = text.Replace("$url_encoded_*", System.Web.HttpUtility.UrlEncode(original));
-                text = text.Replace("$wiki_encoded_*", System.Web.HttpUtility.UrlEncode(original).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")"));
+                text = text.Replace("$url_encoded_*", HttpUtility.UrlEncode(original));
+                text = text.Replace("$wiki_encoded_*", HttpUtility.UrlEncode(original).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%28", "(").Replace("%29", ")"));
             }
             return text;
         }
 
         public static bool Linkable(Channel host, Channel guest)
         {
-            if (host == null)
+            if (host == null || guest == null)
             {
                 return false;
             }
-            if (guest == null)
-            {
-                return false;
-            }
-            if (host.SharedLinkedChan.Contains(guest))
-            {
-                return true;
-            }
-            return false;
+            return host.SharedLinkedChan.Contains(guest);
         }
 
         /// <summary>
@@ -315,6 +307,7 @@ namespace wmib
         /// <param name='name'>
         /// If set to <c>true</c> name.
         /// </param>
+        /// <param name="channel"></param>
         public bool IsIgnored(string name, Channel channel)
         {
             string ignore_test = name;
@@ -373,7 +366,7 @@ namespace wmib
         /// <summary>
         /// Print a value to channel if found, this message doesn't need to be a valid command for it to work
         /// </summary>
-        /// <param name="name">Name</param>
+        /// <param name="message">Message</param>
         /// <param name="user">User</param>
         /// <param name="chan">Channel</param>
         /// <param name="host">Host name</param>
@@ -665,7 +658,7 @@ namespace wmib
                             {
                                 x += ix + ", ";
                             }
-                            Core.irc.Queue.DeliverMessage(messages.Localize("infobot-c-e", chan.Language, new List<string>() { x }), chan);
+                            Core.irc.Queue.DeliverMessage(messages.Localize("infobot-c-e", chan.Language, new List<string> { x }), chan);
                             return true;
                         }
                     }
@@ -697,7 +690,7 @@ namespace wmib
                         {
                             x += "!" + a + ", ";
                         }
-                        Core.irc.Queue.DeliverMessage(messages.Localize("infobot-help", chan.Language, new List<string>() { x }), chan.Name);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("infobot-help", chan.Language, new List<string> { x }), chan.Name);
                         return true;
                     }
                 }
@@ -868,7 +861,7 @@ namespace wmib
             else
             {
                 Allowed = Linkable(Core.GetChannel(chan.SharedDB), chan);
-                if (Allowed != false)
+                if (Allowed)
                 {
                     data = Core.GetChannel(chan.SharedDB);
                 }
@@ -916,6 +909,7 @@ namespace wmib
         /// <param name="Text">Text</param>
         /// <param name="key">Key</param>
         /// <param name="user">User who created it</param>
+        /// <param name="chan"></param>
         public void SetKey(string Text, string key, string user, Channel chan)
         {
             lock (this)
@@ -960,7 +954,7 @@ namespace wmib
                     DateTime creationdate = DateTime.Now;
                     Syslog.Log("Creating snapshot " + temporary_data);
                     File.Copy(datafile_xml, temporary_data);
-                    Core.irc.Queue.DeliverMessage("Snapshot " + temporary_data + " was created for current database as of " + creationdate.ToString(), pChannel);
+                    Core.irc.Queue.DeliverMessage("Snapshot " + temporary_data + " was created for current database as of " + creationdate, pChannel);
                 }
             }
             catch (Exception fail)
@@ -1008,27 +1002,9 @@ namespace wmib
                 {
                     continue;
                 }
-                if (((int)i) < 48)
+                if (i < 48 || i > 122 || (i > 90 && i < 97) || (i > 57 && i < 65))
                 {
                     return false;
-                }
-                if (((int)i) > 122)
-                {
-                    return false;
-                }
-                if (((int)i) > 90)
-                {
-                    if (((int)i) < 97)
-                    {
-                        return false;
-                    }
-                }
-                if (((int)i) > 57)
-                {
-                    if (((int)i) < 65)
-                    {
-                        return false;
-                    }
                 }
             }
             return true;
@@ -1065,7 +1041,7 @@ namespace wmib
                     SnapshotManager.Name = "Module:Infobot/Snapshot";
                     Core.ThreadManager.RegisterThread(SnapshotManager);
                     SnapshotManager.Start();
-                    InfobotModule.SetConfig(chan, "HTML.Update", true);
+                    Module.SetConfig(chan, "HTML.Update", true);
                 }
             }
             catch (Exception fail)
@@ -1122,6 +1098,8 @@ namespace wmib
         /// <param name="key">Key</param>
         /// <param name="al">Alias</param>
         /// <param name="user">User</param>
+        /// <param name="chan"></param>
+        /// <param name="enforced"></param>
         public void aliasKey(string key, string al, string user, Channel chan, bool enforced = false)
         {
             lock (this)

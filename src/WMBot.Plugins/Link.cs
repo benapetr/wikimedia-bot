@@ -1,7 +1,7 @@
-using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
-using System.Text;
+using System.Web;
 
 namespace wmib
 {
@@ -34,7 +34,7 @@ namespace wmib
                     {
                         return Wiki[prefix].Replace("$1", link);
                     }
-                    else if (Wiki.ContainsKey(Default))
+                    if (Wiki.ContainsKey(Default))
                     {
                         return Wiki[Default].Replace("$1", prefix + ":" + link);
                     }
@@ -64,7 +64,7 @@ namespace wmib
                     {
                         return Wiki[prefix].Replace("$1", link);
                     }
-                    else if (Wiki.ContainsKey(Default))
+                    if (Wiki.ContainsKey(Default))
                     {
                         return Wiki[Default].Replace("$1", original);
                     }
@@ -102,7 +102,7 @@ namespace wmib
                     {
                         link = link.Substring(0, link.IndexOf("|"));
                     }
-                    link = System.Web.HttpUtility.UrlEncode(link).Replace("%2f", "/")
+                    link = HttpUtility.UrlEncode(link).Replace("%2f", "/")
                         .Replace("%3a", ":")
                         .Replace("+", "_");
                     if (second != null)
@@ -137,7 +137,7 @@ namespace wmib
                     {
                         link = link.Substring(0, link.IndexOf("|"));
                     }
-                    link = System.Web.HttpUtility.UrlEncode(link).Replace("%2f", "/")
+                    link = HttpUtility.UrlEncode(link).Replace("%2f", "/")
                         .Replace("%3a", ":")
                         .Replace("%23", "#")
                         .Replace("+", "_");
@@ -284,7 +284,7 @@ namespace wmib
         public override void Load()
         {
             Log("Loading db of links");
-            if (!System.IO.File.Exists(Variables.ConfigurationDirectory + "/linkie"))
+            if (!File.Exists(Variables.ConfigurationDirectory + "/linkie"))
             {
                 Log("Unable to load " + Variables.ConfigurationDirectory + "/linkie aborting module", true);
                 Exit();
@@ -292,7 +292,7 @@ namespace wmib
             }
             lock (Wiki)
             {
-                foreach (string line in System.IO.File.ReadAllLines(Variables.ConfigurationDirectory + "/linkie"))
+                foreach (string line in File.ReadAllLines(Variables.ConfigurationDirectory + "/linkie"))
                 {
                     if (line.Contains("|"))
                     {
@@ -314,7 +314,6 @@ namespace wmib
             }
             catch (ThreadAbortException)
             {
-                return;
             }
         }
     }

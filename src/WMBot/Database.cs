@@ -10,7 +10,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace wmib
 {
@@ -31,7 +30,7 @@ namespace wmib
                 /// <summary>
                 /// Type
                 /// </summary>
-                public Database.DataType Type;
+                public DataType Type;
                 /// <summary>
                 /// Data
                 /// </summary>
@@ -59,7 +58,7 @@ namespace wmib
                 /// <param name="date"></param>
                 public Value(DateTime date)
                 {
-                    Data = date.Year.ToString() + "-" + date.Month.ToString().PadLeft(2, '0') + "-" 
+                    Data = date.Year + "-" + date.Month.ToString().PadLeft(2, '0') + "-" 
                         + date.Day.ToString().PadLeft(2, '0') + " " + date.Hour.ToString().PadLeft(2, '0') + ":" 
                         + date.Minute.ToString().PadLeft(2, '0') + ":" + date.Second.ToString().PadLeft(2, '0');
                     Type = DataType.Date;
@@ -80,7 +79,7 @@ namespace wmib
                 /// </summary>
                 /// <param name="text"></param>
                 /// <param name="type"></param>
-                public Value(string text, Database.DataType type)
+                public Value(string text, DataType type)
                 {
                     Data = text;
                     Type = type;

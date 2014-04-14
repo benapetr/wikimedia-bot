@@ -12,14 +12,13 @@
 
 using System;
 using System.Threading;
-using System.Collections.Generic;
 
 namespace wmib
 {
     /// <summary>
     /// Module
     /// </summary>
-    [Serializable()]
+    [Serializable]
     public abstract class Module
     {
         /// <summary>
@@ -45,8 +44,8 @@ namespace wmib
         /// <summary>
         /// Thread associated to this module
         /// </summary>
-        [NonSerialized()]
-        public System.Threading.Thread thread;
+        [NonSerialized]
+        public Thread thread;
         /// <summary>
         /// Whether it is working
         /// </summary>
@@ -59,7 +58,7 @@ namespace wmib
         /// <summary>
         /// Creates a new instance of module
         /// </summary>
-        public Module()
+        protected Module()
         {
             thread = null;
         }
@@ -119,7 +118,6 @@ namespace wmib
         /// <param name="channel"></param>
         public virtual void Hook_AfterChannelWeb(ref string html, Channel channel)
         {
-            return;
         }
 
         /// <summary>
@@ -130,7 +128,6 @@ namespace wmib
         /// <param name="user"></param>
         public virtual void Hook_Kick(Channel channel, User source, User user)
         {
-            return;
         }
 
         /// <summary>
@@ -141,7 +138,6 @@ namespace wmib
         /// <param name="channel"></param>
         public virtual void Hook_ChannelWeb(ref string html, Channel channel)
         {
-            return;
         }
 
         /// <summary>
@@ -151,7 +147,6 @@ namespace wmib
         /// <param name="user"></param>
         public virtual void Hook_Join(Channel channel, User user)
         {
-            return;
         }
 
         /// <summary>
@@ -162,7 +157,6 @@ namespace wmib
         /// <param name="message">message</param>
         public virtual void Hook_PRIV(Channel channel, User invoker, string message)
         {
-            return;
         }
 
         /// <summary>
@@ -173,7 +167,6 @@ namespace wmib
         /// <param name="message"></param>
         public virtual void Hook_ACTN(Channel channel, User invoker, string message)
         {
-            return;
         }
 
         /// <summary>
@@ -207,7 +200,6 @@ namespace wmib
         /// <param name="chan"></param>
         public virtual void Hook_ReloadConfig(Channel chan)
         {
-            return;
         }
 
         /// <summary>
@@ -216,7 +208,6 @@ namespace wmib
         /// <param name="chan"></param>
         public virtual void Hook_ChannelDrop(Channel chan)
         {
-            return;
         }
 
         /// <summary>
@@ -227,7 +218,6 @@ namespace wmib
         /// <param name="mesg"></param>
         public virtual void Hook_ChannelQuit(Channel channel, User user, string mesg)
         {
-            return;
         }
 
         /// <summary>
@@ -237,7 +227,6 @@ namespace wmib
         /// <param name="user"></param>
         public virtual void Hook_Part(Channel channel, User user)
         {
-            return;
         }
 
         /// <summary>
@@ -248,7 +237,6 @@ namespace wmib
         /// <param name="message"></param>
         public virtual void Hook_OnSelf(Channel channel, User self, string message)
         {
-            return;
         }
 
         /// <summary>
@@ -267,7 +255,6 @@ namespace wmib
         /// <param name="channel"></param>
         public virtual void Hook_Channel(Channel channel)
         {
-            return;
         }
 
         /// <summary>
@@ -300,7 +287,6 @@ namespace wmib
         /// <param name="Message"></param>
         public virtual void Hook_Quit(User user, string Message)
         {
-            return;
         }
 
         /// <summary>
@@ -309,7 +295,6 @@ namespace wmib
         /// <param name="html">Container of html code</param>
         public virtual void Hook_BeforeSysWeb(ref string html)
         {
-            return;
         }
 
         /// <summary>
@@ -318,7 +303,6 @@ namespace wmib
         /// <param name="html"></param>
         public virtual void Hook_AfterSysWeb(ref string html)
         {
-            return;
         }
 
         /// <summary>
@@ -328,8 +312,7 @@ namespace wmib
         /// <param name="Target"></param>
         /// <param name="OldNick"></param>
         public virtual void Hook_Nick(Channel channel, User Target, string OldNick)
-        { 
-            return;
+        {
         }
 
         /// <summary>
@@ -566,7 +549,6 @@ namespace wmib
             Syslog.Log("Module " + Name + " is missing core thread, terminated", true);
             RestartOnModuleCrash = false;
             IsWorking = false;
-            return;
         }
 
         /// <summary>

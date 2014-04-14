@@ -11,8 +11,8 @@
 // Created by Petr Bena
 
 using System;
-using System.Threading;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace wmib
 {
@@ -26,11 +26,11 @@ namespace wmib
             /// <summary>
             /// Value which is this regex compared with
             /// </summary>
-            private string value;
+            private readonly string value;
             /// <summary>
             /// Regex
             /// </summary>
-            private string regex;
+            private readonly string regex;
             /// <summary>
             /// Whether it is currently searching
             /// </summary>

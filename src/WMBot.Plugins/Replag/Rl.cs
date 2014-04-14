@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Text;
 
 namespace wmib
 {
@@ -11,7 +8,7 @@ namespace wmib
         {
             if (n < 10)
             {
-                return "0" + n.ToString();
+                return "0" + n;
             }
             return n.ToString();
         }
@@ -38,7 +35,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                return "ERROR: unable to retrieve data because: " + fail.ToString();
+                return "ERROR: unable to retrieve data because: " + fail;
             }
         }
 
@@ -47,7 +44,6 @@ namespace wmib
             if (message == "@replag")
             {
                 Core.irc.Queue.DeliverMessage("Replication lag is approximately " + GetReplag(), channel);
-                return;
             }
         }
 

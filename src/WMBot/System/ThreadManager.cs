@@ -9,11 +9,10 @@
 //GNU General Public License for more details.
 
 // Created by Petr Bena
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Text.RegularExpressions;
-using System.IO;
 
 namespace wmib
 {
@@ -31,7 +30,7 @@ namespace wmib
             /// <summary>
             /// thread pool
             /// </summary>
-            private static List<Thread> threads = new List<Thread>();
+            private static readonly List<Thread> threads = new List<Thread>();
             /// <summary>
             /// Gets the thread list.
             /// </summary>
@@ -72,7 +71,7 @@ namespace wmib
             public static void KillThread(Thread t)
             {
                 Syslog.DebugLog("Killing thread: " + t.Name);
-                if (t == Core.KernelThread)
+                if (t == KernelThread)
                 {
                     Syslog.DebugLog("Refusing to kill kernel thread");
                     return;
@@ -82,7 +81,7 @@ namespace wmib
                     t.Abort();
                 } else
                 {
-                    Syslog.DebugLog("Refusing to kill thread in status: " + t.ThreadState.ToString());
+                    Syslog.DebugLog("Refusing to kill thread in status: " + t.ThreadState);
                 }
                 UnregisterThread(t);
             }

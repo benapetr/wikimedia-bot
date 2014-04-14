@@ -19,7 +19,7 @@ namespace wmib
     /// </summary>
     public class ProcessorIRC
     {
-        private string text;
+        private readonly string text;
         /// <summary>
         /// Instance this processor is attached to
         /// </summary>
@@ -27,7 +27,6 @@ namespace wmib
 
         private void Ping()
         {
-            return;
         }
 
         private bool Info(string command, string parameters, string value)
@@ -68,10 +67,8 @@ namespace wmib
                         channel.PrimaryInstance.irc.Join(channel);
                         return false;
 
-                    } else
-                    {
-                        Syslog.Log("Finished parsing for " + channel.Name + " parsed totaly: " + channel.UserList.Count.ToString());
                     }
+                    Syslog.Log("Finished parsing for " + channel.Name + " parsed totaly: " + channel.UserList.Count);
                     if (Configuration.System.SelectedVerbosity > 8)
                     {
                         string list = "";
@@ -124,7 +121,7 @@ namespace wmib
                         User _user = null;
                         if (mode != '\0')
                         {
-                            _user = new User(mode.ToString() + nick, host, ident);
+                            _user = new User(mode + nick, host, ident);
                         }
                         else
                         {
@@ -213,10 +210,8 @@ namespace wmib
         private bool ProcessNick(string source, string parameters, string value)
         {
             string nick = source.Substring(0, source.IndexOf("!"));
-            string _ident;
-            string _host;
-            _host = source.Substring(source.IndexOf("@") + 1);
-            _ident = source.Substring(source.IndexOf("!") + 1);
+            string _host = source.Substring(source.IndexOf("@") + 1);
+            string _ident = source.Substring(source.IndexOf("!") + 1);
             _ident = _ident.Substring(0, _ident.IndexOf("@"));
             string _new = value;
             foreach (Channel item in Configuration.ChannelList)
@@ -262,14 +257,12 @@ namespace wmib
             string chan = parameters;
             chan = chan.Replace(" ", "");
             string user = source.Substring(0, source.IndexOf("!"));
-            string _ident;
-            string _host;
             if (chan == Configuration.System.DebugChan && instance.Nick != Core.irc.NickName)
             {
                 return true;
             }
-            _host = source.Substring(source.IndexOf("@") + 1);
-            _ident = source.Substring(source.IndexOf("!") + 1);
+            string _host = source.Substring(source.IndexOf("@") + 1);
+            string _ident = source.Substring(source.IndexOf("!") + 1);
             _ident = _ident.Substring(0, _ident.IndexOf("@"));
             Channel channel = Core.GetChannel(chan);
             User us = new User(user, _host, _ident);
@@ -328,10 +321,8 @@ namespace wmib
         private bool Quit(string source, string parameters, string value)
         {
             string user = source.Substring(0, source.IndexOf("!"));
-            string _ident;
-            string _host;
-            _host = source.Substring(source.IndexOf("@") + 1);
-            _ident = source.Substring(source.IndexOf("!") + 1);
+            string _host = source.Substring(source.IndexOf("@") + 1);
+            string _ident = source.Substring(source.IndexOf("!") + 1);
             _ident = _ident.Substring(0, _ident.IndexOf("@"));
             User _user = new User(user, _host, _ident);
             //string _new = value;
@@ -402,10 +393,8 @@ namespace wmib
         {
             string user = parameters.Substring(parameters.IndexOf(" ") + 1);
             string user2 = source.Substring(0, source.IndexOf("!"));
-            string _ident;
-            string _host;
-            _host = source.Substring(source.IndexOf("@") + 1);
-            _ident = source.Substring(source.IndexOf("!") + 1);
+            string _host = source.Substring(source.IndexOf("@") + 1);
+            string _ident = source.Substring(source.IndexOf("!") + 1);
             _ident = _ident.Substring(0, _ident.IndexOf("@"));
             User Target = new User(user, "", "");
             User Source = new User(user2, _host, _ident);
@@ -413,7 +402,7 @@ namespace wmib
             string chan = parameters.Substring(0, parameters.IndexOf(" "));
             if (chan == Configuration.System.DebugChan && instance.Nick != Core.irc.NickName)
             {
-                return true; ;
+                return true;
             }
             Channel channel = Core.GetChannel(chan);
             if (channel != null)

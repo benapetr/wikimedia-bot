@@ -1,10 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Xml;
-using System.Text;
 
 namespace wmib
 {
@@ -30,19 +26,19 @@ namespace wmib
 
                 Parent.DebugLog("Generating xml document", 4);
 
-                System.Xml.XmlDocument data = new System.Xml.XmlDocument();
-                System.Xml.XmlNode xmlnode = data.CreateElement("database");
+                XmlDocument data = new XmlDocument();
+                XmlNode xmlnode = data.CreateElement("database");
                 lock (this)
                 {
                     foreach (InfobotAlias key in Alias)
                     {
-                        System.Xml.XmlAttribute name = data.CreateAttribute("alias_key_name");
+                        XmlAttribute name = data.CreateAttribute("alias_key_name");
                         name.Value = key.Name;
-                        System.Xml.XmlAttribute kk = data.CreateAttribute("alias_key_key");
+                        XmlAttribute kk = data.CreateAttribute("alias_key_key");
                         kk.Value = key.Key;
-                        System.Xml.XmlAttribute created = data.CreateAttribute("date");
+                        XmlAttribute created = data.CreateAttribute("date");
                         created.Value = "";
-                        System.Xml.XmlNode db = data.CreateElement("alias");
+                        XmlNode db = data.CreateElement("alias");
                         db.Attributes.Append(name);
                         db.Attributes.Append(kk);
                         db.Attributes.Append(created);
@@ -51,21 +47,21 @@ namespace wmib
 
                     foreach (InfobotKey key in Keys)
                     {
-                        System.Xml.XmlAttribute name = data.CreateAttribute("key_name");
+                        XmlAttribute name = data.CreateAttribute("key_name");
                         name.Value = key.Key;
-                        System.Xml.XmlAttribute kk = data.CreateAttribute("data");
+                        XmlAttribute kk = data.CreateAttribute("data");
                         kk.Value = key.Text;
-                        System.Xml.XmlAttribute created = data.CreateAttribute("created_date");
+                        XmlAttribute created = data.CreateAttribute("created_date");
                         created.Value = key.CreationTime.ToBinary().ToString();
-                        System.Xml.XmlAttribute nick = data.CreateAttribute("nickname");
+                        XmlAttribute nick = data.CreateAttribute("nickname");
                         nick.Value = key.User;
-                        System.Xml.XmlAttribute last = data.CreateAttribute("touched");
+                        XmlAttribute last = data.CreateAttribute("touched");
                         last.Value = key.LastTime.ToBinary().ToString();
-                        System.Xml.XmlAttribute triggered = data.CreateAttribute("triggered");
+                        XmlAttribute triggered = data.CreateAttribute("triggered");
                         triggered.Value = key.Displayed.ToString();
                         XmlAttribute k = data.CreateAttribute("raw");
                         k.Value = key.Raw.ToString();
-                        System.Xml.XmlNode db = data.CreateElement("key");
+                        XmlNode db = data.CreateElement("key");
                         db.Attributes.Append(name);
                         db.Attributes.Append(kk);
                         db.Attributes.Append(nick);

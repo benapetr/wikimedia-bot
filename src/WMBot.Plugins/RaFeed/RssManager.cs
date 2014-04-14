@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Data;
-using System.Threading;
-using System.Xml;
-using System.Security.Cryptography.X509Certificates;
 using System.IO;
-using System.Text;
+using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using System.Web;
+using System.Xml;
 
 namespace wmib
 {
@@ -47,7 +47,7 @@ namespace wmib
         }
 
         public static bool Validator(object sender, X509Certificate certificate, X509Chain chain,
-                                      System.Net.Security.SslPolicyErrors sslPolicyErrors)
+                                      SslPolicyErrors sslPolicyErrors)
         {
             return true;
         }
@@ -56,6 +56,8 @@ namespace wmib
         /// Reads the relevant Rss feed and returns a list of RssFeedItems
         /// </summary>
         /// <param name="url"></param>
+        /// <param name="item"></param>
+        /// <param name="channel"></param>
         /// <returns></returns>
         public static List<RssFeedItem> ReadFeed(string url, Feed.Item item, string channel)
         {
@@ -106,7 +108,7 @@ namespace wmib
                                             }
                                             break;
                                         case "summary":
-                                            string html = System.Web.HttpUtility.HtmlDecode(data.InnerText);
+                                            string html = HttpUtility.HtmlDecode(data.InnerText);
                                             if (html.Contains("<table>"))
                                             {
                                                 XmlDocument summary = new XmlDocument();
@@ -276,11 +278,11 @@ namespace wmib
             }
             catch (ThreadAbortException fail)
             {
-                throw fail;
+                throw;
             }
             catch (Exception fail)
             {
-                RSS.m.Log("Unable to parse feed from " + url + " I will try to do that again " + item.retries.ToString() + " times", true);
+                RSS.m.Log("Unable to parse feed from " + url + " I will try to do that again " + item.retries + " times", true);
                 RSS.m.HandleException(fail, "Feed");
                 string dump = Path.GetTempFileName();
                 File.WriteAllText(dump, temp);

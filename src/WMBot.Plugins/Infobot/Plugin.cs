@@ -12,19 +12,19 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.IO;
+using System.Threading;
 
 namespace wmib
 {
     public class InfobotModule : Module
     {
-        private List<Infobot.InfoItem> jobs = new List<Infobot.InfoItem>();
+        private readonly List<Infobot.InfoItem> jobs = new List<Infobot.InfoItem>();
         public static bool running;
         private bool Unwritable;
         public static bool Snapshots = true;
         public readonly static string SnapshotsDirectory = "snapshots";
-        private InfobotWriter writer = null;
+        private InfobotWriter writer;
 
         public override bool Hook_OnUnload()
         {
@@ -53,7 +53,7 @@ namespace wmib
 
         public string getDB(ref Channel chan)
         {
-            return Module.GetConfig(chan, "Infobot.Keydb", (string)Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + chan.Name + ".db");
+            return GetConfig(chan, "Infobot.Keydb", Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + chan.Name + ".db");
         }
 
         public override void Hook_ChannelDrop(Channel chan)
@@ -97,7 +97,7 @@ namespace wmib
             if (channel.RetrieveObject("Infobot") == null)
             {
                 // sensitivity
-                bool cs = Module.GetConfig(channel, "Infobot.Case", true);
+                bool cs = GetConfig(channel, "Infobot.Case", true);
                 channel.RegisterObject(new Infobot(getDB(ref channel), channel, this, cs), "Infobot");
             }
         }
@@ -126,7 +126,7 @@ namespace wmib
                 foreach (Channel channel in Configuration.Channels)
                 {
                     Channel curr = channel;
-                    bool cs = Module.GetConfig(curr, "Infobot.Case", true);
+                    bool cs = GetConfig(curr, "Infobot.Case", true);
                     if (!channel.RegisterObject(new Infobot(getDB(ref curr), channel, this, cs), "Infobot"))
                     {
                         success = false;
@@ -165,7 +165,7 @@ namespace wmib
                 List<Infobot.InfobotKey> list = new List<Infobot.InfobotKey>();
                 lock (info)
                 {
-                    if (Module.GetConfig(channel, "Infobot.Sorted", false) != false)
+                    if (GetConfig(channel, "Infobot.Sorted", false))
                     {
                         list = info.SortedItem();
                     }
@@ -377,11 +377,11 @@ namespace wmib
                     string response = "";
                     if (curr == displaying)
                     {
-                        response = "There are " + displaying.ToString() + " files: " + files;
+                        response = "There are " + displaying + " files: " + files;
                     }
                     else
                     {
-                        response = "There are " + curr.ToString() + " files, but displaying only " + displaying.ToString() + " of them: " + files;
+                        response = "There are " + curr + " files, but displaying only " + displaying + " of them: " + files;
                     }
                     if (curr == 0)
                     {
@@ -406,33 +406,30 @@ namespace wmib
                         Core.irc.Queue.DeliverMessage(messages.Localize("infobot15", channel.Language), channel);
                         return;
                     }
-                    else
+                    if (message.Length <= "@infobot-share-trust+ ".Length)
                     {
-                        if (message.Length <= "@infobot-share-trust+ ".Length)
-                        {
-                            Core.irc.Queue.DeliverMessage(messages.Localize("db6", channel.Language), channel.Name);
-                            return;
-                        }
-                        string name = message.Substring("@infobot-share-trust+ ".Length);
-                        Channel guest = Core.GetChannel(name);
-                        if (guest == null)
-                        {
-                            Core.irc.Queue.DeliverMessage(messages.Localize("db8", channel.Language), channel.Name);
-                            return;
-                        }
-                        if (channel.SharedLinkedChan.Contains(guest))
-                        {
-                            Core.irc.Queue.DeliverMessage(messages.Localize("db14", channel.Language), channel.Name);
-                            return;
-                        }
-                        Core.irc.Queue.DeliverMessage(messages.Localize("db1", channel.Language, new List<string> { name }), channel.Name);
-                        lock (channel.SharedLinkedChan)
-                        {
-                            channel.SharedLinkedChan.Add(guest);
-                        }
-                        channel.SaveConfig();
+                        Core.irc.Queue.DeliverMessage(messages.Localize("db6", channel.Language), channel.Name);
                         return;
                     }
+                    string name = message.Substring("@infobot-share-trust+ ".Length);
+                    Channel guest = Core.GetChannel(name);
+                    if (guest == null)
+                    {
+                        Core.irc.Queue.DeliverMessage(messages.Localize("db8", channel.Language), channel.Name);
+                        return;
+                    }
+                    if (channel.SharedLinkedChan.Contains(guest))
+                    {
+                        Core.irc.Queue.DeliverMessage(messages.Localize("db14", channel.Language), channel.Name);
+                        return;
+                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("db1", channel.Language, new List<string> { name }), channel.Name);
+                    lock (channel.SharedLinkedChan)
+                    {
+                        channel.SharedLinkedChan.Add(guest);
+                    }
+                    channel.SaveConfig();
+                    return;
                 }
                 if (!channel.SuppressWarnings)
                 {
@@ -504,13 +501,10 @@ namespace wmib
                         Core.irc.Queue.DeliverMessage(messages.Localize("infobot1", channel.Language), channel);
                         return;
                     }
-                    else
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("infobot2", channel.Language), channel, IRC.priority.high);
-                        SetConfig(channel, "Infobot.Enabled", false);
-                        channel.SaveConfig();
-                        return;
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("infobot2", channel.Language), channel, IRC.priority.high);
+                    SetConfig(channel, "Infobot.Enabled", false);
+                    channel.SaveConfig();
+                    return;
                 }
                 if (!channel.SuppressWarnings)
                 {
@@ -528,30 +522,27 @@ namespace wmib
                         Core.irc.Queue.DeliverMessage(messages.Localize("infobot16", channel.Language), channel);
                         return;
                     }
-                    else
+                    if (message.Length <= "@infobot-share-trust+ ".Length)
                     {
-                        if (message.Length <= "@infobot-share-trust+ ".Length)
-                        {
-                            Core.irc.Queue.DeliverMessage(messages.Localize("db6", channel.Language), channel);
-                            return;
-                        }
-                        string name = message.Substring("@infobot-share-trust- ".Length);
-                        Channel target = Core.GetChannel(name);
-                        if (target == null)
-                        {
-                            Core.irc.Queue.DeliverMessage(messages.Localize("db8", channel.Language), channel);
-                            return;
-                        }
-                        if (channel.SharedLinkedChan.Contains(target))
-                        {
-                            channel.SharedLinkedChan.Remove(target);
-                            Core.irc.Queue.DeliverMessage(messages.Localize("db2", channel.Language, new List<string> { name }), channel);
-                            channel.SaveConfig();
-                            return;
-                        }
-                        Core.irc.Queue.DeliverMessage(messages.Localize("db4", channel.Language), channel);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("db6", channel.Language), channel);
                         return;
                     }
+                    string name = message.Substring("@infobot-share-trust- ".Length);
+                    Channel target = Core.GetChannel(name);
+                    if (target == null)
+                    {
+                        Core.irc.Queue.DeliverMessage(messages.Localize("db8", channel.Language), channel);
+                        return;
+                    }
+                    if (channel.SharedLinkedChan.Contains(target))
+                    {
+                        channel.SharedLinkedChan.Remove(target);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("db2", channel.Language, new List<string> { name }), channel);
+                        channel.SaveConfig();
+                        return;
+                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("db4", channel.Language), channel);
+                    return;
                 }
                 if (!channel.SuppressWarnings)
                 {
@@ -649,25 +640,22 @@ namespace wmib
                         Core.irc.Queue.DeliverMessage(messages.Localize("infobot14", channel.Language), channel);
                         return;
                     }
-                    else
+                    Core.irc.Queue.DeliverMessage(messages.Localize("infobot13", channel.Language), channel);
+                    lock (Configuration.Channels)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("infobot13", channel.Language), channel);
-                        lock (Configuration.Channels)
+                        foreach (Channel curr in Configuration.Channels)
                         {
-                            foreach (Channel curr in Configuration.Channels)
+                            if (curr.SharedDB == channel.Name.ToLower())
                             {
-                                if (curr.SharedDB == channel.Name.ToLower())
-                                {
-                                    curr.SharedDB = "";
-                                    curr.SaveConfig();
-                                    Core.irc.Queue.DeliverMessage(messages.Localize("infobot19", curr.Language, new List<string> { invoker.Nick }), curr);
-                                }
+                                curr.SharedDB = "";
+                                curr.SaveConfig();
+                                Core.irc.Queue.DeliverMessage(messages.Localize("infobot19", curr.Language, new List<string> { invoker.Nick }), curr);
                             }
                         }
-                        channel.SharedDB = "";
-                        channel.SaveConfig();
-                        return;
                     }
+                    channel.SharedDB = "";
+                    channel.SaveConfig();
+                    return;
                 }
                 if (!channel.SuppressWarnings)
                 {
@@ -711,19 +699,15 @@ namespace wmib
                         Core.irc.Queue.DeliverMessage(messages.Localize("infobot15", channel.Language), channel, IRC.priority.high);
                         return;
                     }
-                    else
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("infobot12", channel.Language), channel);
-                        channel.SharedDB = "local";
-                        channel.SaveConfig();
-                        return;
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("infobot12", channel.Language), channel);
+                    channel.SharedDB = "local";
+                    channel.SaveConfig();
+                    return;
                 }
                 if (!channel.SuppressWarnings)
                 {
                     Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
                 }
-                return;
             }
         }
 
@@ -735,7 +719,7 @@ namespace wmib
                 case "infobot-trim-white-space-in-name":
                     if (bool.TryParse(value, out _temp_a))
                     {
-                        Module.SetConfig(chan, "Infobot.Trim-white-space-in-name", _temp_a);
+                        SetConfig(chan, "Infobot.Trim-white-space-in-name", _temp_a);
                         Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
                         chan.SaveConfig();
                         return true;
@@ -745,7 +729,7 @@ namespace wmib
                 case "infobot-auto-complete":
                     if (bool.TryParse(value, out _temp_a))
                     {
-                        Module.SetConfig(chan, "Infobot.auto-complete", _temp_a);
+                        SetConfig(chan, "Infobot.auto-complete", _temp_a);
                         Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
                         chan.SaveConfig();
                         return true;
@@ -755,7 +739,7 @@ namespace wmib
                 case "infobot-sorted":
                     if (bool.TryParse(value, out _temp_a))
                     {
-                        Module.SetConfig(chan, "Infobot.Sorted", _temp_a);
+                        SetConfig(chan, "Infobot.Sorted", _temp_a);
                         Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
                         chan.SaveConfig();
                         return true;
@@ -765,7 +749,7 @@ namespace wmib
                 case "infobot-help":
                     if (bool.TryParse(value, out _temp_a))
                     {
-                        Module.SetConfig(chan, "Infobot.Help", _temp_a);
+                        SetConfig(chan, "Infobot.Help", _temp_a);
                         Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
                         chan.SaveConfig();
                         return true;
@@ -775,7 +759,7 @@ namespace wmib
                 case "infobot-case":
                     if (bool.TryParse(value, out _temp_a))
                     {
-                        Module.SetConfig(chan, "Infobot.Case", _temp_a);
+                        SetConfig(chan, "Infobot.Case", _temp_a);
                         Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
                         chan.SaveConfig();
                         Infobot infobot = (Infobot)chan.RetrieveObject("Infobot");
@@ -842,7 +826,6 @@ namespace wmib
                 Unwritable = false;
                 Console.WriteLine(b.InnerException);
             }
-            return;
         }
     }
 }

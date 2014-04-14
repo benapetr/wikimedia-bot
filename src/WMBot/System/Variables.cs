@@ -11,9 +11,7 @@
 // Created by Petr Bena
 
 using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.IO;
 
 namespace wmib
 {

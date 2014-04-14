@@ -12,19 +12,19 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 
 namespace wmib
 {
-    public partial class ExtensionHandler
+    public class ExtensionHandler
     {
         /// <summary>
         /// List of all modules loaded in kernel
         /// </summary>
         public static List<Module> Extensions = new List<Module>();
 
-        private static List<Type> _moduleTypes = new List<Type>(); 
+        private static readonly List<Type> _moduleTypes = new List<Type>(); 
 
         /// <summary>
         /// Intialise module
@@ -48,7 +48,7 @@ namespace wmib
                 lock (module)
                 {
                     Syslog.Log("Loading module: " + module.Name + " v" + module.Version);
-                    ExtensionHandler.Extensions.Add(module);
+                    Extensions.Add(module);
                 }
                 module.Init();
             }
@@ -71,7 +71,7 @@ namespace wmib
             {
                 if (File.Exists(path))
                 {
-                    System.Reflection.Assembly library = System.Reflection.Assembly.LoadFrom(path);
+                    Assembly library = Assembly.LoadFrom(path);
                     
                     if (library == null)
                     {
@@ -116,7 +116,7 @@ namespace wmib
             {
                 if (File.Exists(path))
                 {
-                    System.Reflection.Assembly library = System.Reflection.Assembly.LoadFrom(path);
+                    Assembly library = Assembly.LoadFrom(path);
                     if (library == null)
                     {
                         Syslog.WarningLog("Unable to load " + path + " because the file can't be read");
@@ -208,9 +208,9 @@ namespace wmib
         /// <returns></returns>
         public static Module RetrieveModule(string name)
         {
-            lock (ExtensionHandler.Extensions)
+            lock (Extensions)
             {
-                foreach (Module module in ExtensionHandler.Extensions)
+                foreach (Module module in Extensions)
                 {
                     if (module.Name == name)
                     {

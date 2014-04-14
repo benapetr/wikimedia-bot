@@ -6,7 +6,7 @@ namespace WMBot.Bouncer
     {
         public static void Log(string message)
         {
-            Console.WriteLine(DateTime.Now.ToString() + ": " + message);
+            Console.WriteLine(DateTime.Now + ": " + message);
         }
     }
 }

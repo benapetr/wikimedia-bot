@@ -10,14 +10,13 @@
 
 // Created by Petr Bena <benapetr@gmail.com>
 
-using MySql.Data.MySqlClient;
-using System.Xml;
 using System;
-using System.Xml.Serialization;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using System.Collections.Generic;
-using System.Text;
+using System.Xml;
+using System.Xml.Serialization;
+using MySql.Data.MySqlClient;
 
 namespace wmib
 {
@@ -51,11 +50,11 @@ namespace wmib
             }
         }
 
-        private Thread reco = null;
-        private bool Recovering = false;
-        private Unwritten unwritten = new Unwritten();
+        private Thread reco;
+        private bool Recovering;
+        private readonly Unwritten unwritten = new Unwritten();
         
-        private MySql.Data.MySqlClient.MySqlConnection Connection = null;
+        private MySqlConnection Connection;
         /// <summary>
         /// Return true if mysql is connected to server
         /// </summary>
@@ -67,7 +66,7 @@ namespace wmib
             }
         }
 
-        private bool connected = false;
+        private bool connected;
 
         public WMIBMySQL()
         {
@@ -110,7 +109,7 @@ namespace wmib
                     if (unwritten.PendingRows.Count > 0)
                     {
                         int count = 0;
-                        Syslog.WarningLog("Performing recovery of " + unwritten.PendingRows.Count.ToString() + " MySQL rows");
+                        Syslog.WarningLog("Performing recovery of " + unwritten.PendingRows.Count + " MySQL rows");
                         Recovering = true;
                         List<SerializedRow> rows = new List<SerializedRow>();
                         lock (unwritten.PendingRows)
@@ -130,7 +129,7 @@ namespace wmib
                                 Syslog.DebugLog("Failed to recover 1 row", 2);
                             }
                         }
-                        Syslog.WarningLog("Recovery finished, recovered " + recovered.ToString() + " of total " + count.ToString());
+                        Syslog.WarningLog("Recovery finished, recovered " + recovered + " of total " + count);
                         Recovering = false;
                         FlushRows();
                         Thread.Sleep(200000);
@@ -175,7 +174,7 @@ namespace wmib
                         }
                         else
                         {
-                            result += separator.ToString() + r.GetString(i);
+                            result += separator + r.GetString(i);
                         }
                         i++;
                     }
@@ -210,7 +209,7 @@ namespace wmib
 
                     MySqlCommand xx = Connection.CreateCommand();
                     sql = "INSERT INTO " + table + " VALUES (";
-                    foreach (Database.Row.Value value in row.Values)
+                    foreach (Row.Value value in row.Values)
                     {
                         switch (value.Type)
                         {
@@ -221,7 +220,7 @@ namespace wmib
                             case DataType.Varchar:
                             case DataType.Text:
                             case DataType.Date:
-                                sql += "'" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(value.Data) + "', ";
+                                sql += "'" + MySqlHelper.EscapeString(value.Data) + "', ";
                                 break;
                         }
                     }
@@ -236,7 +235,7 @@ namespace wmib
                 } catch (MySqlException me)
                 {
                     ErrorBuffer = me.Message;
-                    Syslog.Log("Error while storing a row to DB " + me.ToString(), true);
+                    Syslog.Log("Error while storing a row to DB " + me, true);
                     Syslog.DebugLog("SQL: " + sql);
                     lock(unwritten.PendingRows)
                     {
@@ -323,7 +322,7 @@ namespace wmib
                 }
                 try
                 {
-                    Connection = new MySql.Data.MySqlClient.MySqlConnection("Server=" + Configuration.MySQL.MysqlHost + ";" +
+                    Connection = new MySqlConnection("Server=" + Configuration.MySQL.MysqlHost + ";" +
                                                                               "Database=" + Configuration.MySQL.Mysqldb + ";" +
                                                                               "User ID=" + Configuration.MySQL.MysqlUser + ";" +
                                                                               "Password=" + Configuration.MySQL.MysqlPw + ";" +
@@ -332,9 +331,9 @@ namespace wmib
                     Connection.Open();
                     connected = true;
                 }
-                catch (MySql.Data.MySqlClient.MySqlException ex)
+                catch (MySqlException ex)
                 {
-                    Syslog.Log("MySQL: Unable to connect to server: " + ex.ToString(), true);
+                    Syslog.Log("MySQL: Unable to connect to server: " + ex, true);
                     connected = false;
                 }
             }

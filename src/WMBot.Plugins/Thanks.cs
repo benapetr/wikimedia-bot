@@ -1,6 +1,5 @@
-using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading;
 
 namespace wmib
 {
@@ -20,7 +19,7 @@ namespace wmib
                 }
             }
 
-            private List<Item> data = new List<Item>();
+            private readonly List<Item> data = new List<Item>();
 
             public const int Size = 8000;
 
@@ -78,7 +77,7 @@ namespace wmib
         {
             while (IsWorking)
             {
-                System.Threading.Thread.Sleep(100);
+                Thread.Sleep(100);
             }
         }
 

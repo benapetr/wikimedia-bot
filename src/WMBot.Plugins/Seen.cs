@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Xml;
+using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading;
+using System.Xml;
 
 namespace wmib
 {
@@ -66,7 +67,7 @@ namespace wmib
         public Thread SearchHostThread;
         public bool Working = false;
         public List<item> GlobalList = new List<item>();
-        private bool save = false;
+        private bool save;
 
         public string temp_nick;
         public Channel chan;
@@ -162,13 +163,10 @@ namespace wmib
                         Core.irc.Queue.DeliverMessage(messages.Localize("seen-e2", channel.Language), channel.Name);
                         return;
                     }
-                    else
-                    {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("seen-off", channel.Language), channel.Name, IRC.priority.high);
-                        SetConfig(channel, "Seen.Enabled", false);
-                        channel.SaveConfig();
-                        return;
-                    }
+                    Core.irc.Queue.DeliverMessage(messages.Localize("seen-off", channel.Language), channel.Name, IRC.priority.high);
+                    SetConfig(channel, "Seen.Enabled", false);
+                    channel.SaveConfig();
+                    return;
                 }
                 if (!channel.SuppressWarnings)
                 {
@@ -195,7 +193,6 @@ namespace wmib
                 {
                     Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
                 }
-                return;
             }
         }
 
@@ -207,7 +204,6 @@ namespace wmib
         public override void Hook_Nick(Channel channel, User Target, string OldNick)
         {
             WriteStatus(OldNick, Target.Host, channel.Name, item.Action.Nick, Target.Nick);
-            return;
         }
 
         public override void Hook_Kick(Channel channel, User source, User user)
@@ -247,7 +243,6 @@ namespace wmib
                 {
                     SearchThread.Abort();
                 }
-                return;
             }
             catch (Exception fail)
             {
@@ -293,7 +288,7 @@ namespace wmib
             {
                 if (misc.IsValidRegex(temp_nick))
                 {
-                    System.Text.RegularExpressions.Regex ex = new System.Text.RegularExpressions.Regex(temp_nick);
+                    Regex ex = new Regex(temp_nick);
                     string response = "I have never seen " + temp_nick;
                     bool found = false;
                     bool multiple = false;
@@ -362,13 +357,13 @@ namespace wmib
                                                 switch (nick.LastAc)
                                                 {
                                                     case item.Action.Exit:
-                                                        action += " because he quitted the network " + span3.ToString() + " ago. The nick change was done in";
+                                                        action += " because he quitted the network " + span3 + " ago. The nick change was done in";
                                                         break;
                                                     case item.Action.Kick:
-                                                        action += " because he was kicked from the channel " + span3.ToString() + " ago. The nick change was done in";
+                                                        action += " because he was kicked from the channel " + span3 + " ago. The nick change was done in";
                                                         break;
                                                     case item.Action.Part:
-                                                        action += " because he left the channel " + span3.ToString() + " ago. The nick change was done in";
+                                                        action += " because he left the channel " + span3 + " ago. The nick change was done in";
                                                         break;
                                                 }
                                             }
@@ -409,11 +404,11 @@ namespace wmib
     
                                 if (xx.LastAc == item.Action.Exit)
                                 {
-                                    response = "Last time I saw " + xx.nick + " they were " + action + " at " + xx.LastSeen.ToString() + " (" + Seen.FormatTimeSpan(span2) + " ago)";
+                                    response = "Last time I saw " + xx.nick + " they were " + action + " at " + xx.LastSeen + " (" + FormatTimeSpan(span2) + " ago)";
                                 }
                                 else
                                 {
-                                    response = "Last time I saw " + xx.nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString() + " (" + Seen.FormatTimeSpan(span2) + " ago)";
+                                    response = "Last time I saw " + xx.nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen + " (" + FormatTimeSpan(span2) + " ago)";
                                 }
                             }
                         }
@@ -445,7 +440,7 @@ namespace wmib
                         }
                         if (cn > 5)
                         {
-                            results = results + " and " + (cn - 5).ToString() + " more results";
+                            results = results + " and " + (cn - 5) + " more results";
                         }
                         response += " (multiple results were found: " + results + ")";
                     }
@@ -458,7 +453,6 @@ namespace wmib
             }
             catch (ThreadAbortException)
             {
-                return;
             }
             catch (Exception fail)
             {
@@ -497,7 +491,6 @@ namespace wmib
             }
             catch (ThreadAbortException)
             {
-                return;
             }
             catch (Exception fail)
             {
@@ -569,7 +562,7 @@ namespace wmib
 
         public override void Hook_BeforeSysWeb(ref string html)
         {
-            html += "<br><p>Seen data: " + GlobalList.Count.ToString() + "</p>";
+            html += "<br><p>Seen data: " + GlobalList.Count + "</p>";
         }
 
         public void RetrieveStatus2(string nick, Channel channel, string source)
@@ -630,13 +623,13 @@ namespace wmib
                                         switch (nick2.LastAc)
                                         {
                                             case item.Action.Exit:
-                                                action += " because he quitted the network " + span3.ToString() + " ago. The nick change was done in";
+                                                action += " because he quitted the network " + span3 + " ago. The nick change was done in";
                                                 break;
                                             case item.Action.Kick:
-                                                action += " because he was kicked from the channel " + span3.ToString() + " ago. The nick change was done in";
+                                                action += " because he was kicked from the channel " + span3 + " ago. The nick change was done in";
                                                 break;
                                             case item.Action.Part:
-                                                action += " because he left the channel " + span3.ToString() + " ago. The nick change was done in";
+                                                action += " because he left the channel " + span3 + " ago. The nick change was done in";
                                                 break;
                                         }
                                     }
@@ -671,9 +664,9 @@ namespace wmib
                             TimeSpan span = DateTime.Now - xx.LastSeen;
                             if (xx.LastAc == item.Action.Exit)
                             {
-                                response = "Last time I saw " + nick + " they were " + action + " at " + xx.LastSeen.ToString() + " (" + Seen.FormatTimeSpan(span) + " ago)";
+                                response = "Last time I saw " + nick + " they were " + action + " at " + xx.LastSeen + " (" + FormatTimeSpan(span) + " ago)";
                             }
-                            response = "Last time I saw " + nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen.ToString() + " (" + Seen.FormatTimeSpan(span) + " ago)";
+                            response = "Last time I saw " + nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen + " (" + FormatTimeSpan(span) + " ago)";
                             break;
                         }
                     }
@@ -735,7 +728,7 @@ namespace wmib
                         XmlAttribute name = stat.CreateAttribute("nick");
                         name.Value = curr.nick;
                         XmlAttribute host = stat.CreateAttribute("hostname");
-                        host.Value = curr.hostname.ToString();
+                        host.Value = curr.hostname;
                         XmlAttribute last = stat.CreateAttribute("lastplace");
                         last.Value = curr.lastplace;
                         XmlAttribute action = stat.CreateAttribute("action");
@@ -743,7 +736,7 @@ namespace wmib
                         XmlAttribute newn = null;
                         XmlAttribute quit = stat.CreateAttribute("reason");
                         quit.Value = curr.quit;
-                        if (curr.newnick != null && curr.newnick != "")
+                        if (!string.IsNullOrEmpty(curr.newnick))
                         {
                             newn = stat.CreateAttribute("newnick");
                             newn.Value = curr.newnick;
@@ -783,14 +776,14 @@ namespace wmib
                     }
                 }
                 stat.AppendChild(xmlnode);
-                if (System.IO.File.Exists(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "seen.db"))
+                if (File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "seen.db"))
                 {
-                    Core.BackupData(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "seen.db");
+                    Core.BackupData(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "seen.db");
                 }
-                stat.Save(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "seen.db");
-                if (System.IO.File.Exists(Configuration.TempName(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "seen.db")))
+                stat.Save(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "seen.db");
+                if (File.Exists(Configuration.TempName(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "seen.db")))
                 {
-                    System.IO.File.Delete(Configuration.TempName(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "seen.db"));
+                    File.Delete(Configuration.TempName(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "seen.db"));
                 }
             }
             catch (Exception fail)
@@ -805,14 +798,14 @@ namespace wmib
             SearchHostThread.Start();
             try
             {
-                Core.RecoverFile(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "seen.db");
-                if (System.IO.File.Exists(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "seen.db"))
+                Core.RecoverFile(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "seen.db");
+                if (File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "seen.db"))
                 {
                     GlobalList = new List<item>();
                     lock (GlobalList)
                     {
                         XmlDocument stat = new XmlDocument();
-                        stat.Load(Variables.ConfigurationDirectory + System.IO.Path.DirectorySeparatorChar + "seen.db");
+                        stat.Load(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "seen.db");
                         if (stat.ChildNodes[0].ChildNodes.Count > 0)
                         {
                             foreach (XmlNode curr in stat.ChildNodes[0].ChildNodes)
@@ -881,18 +874,18 @@ namespace wmib
             string newTimeString = "";
 
             if (ts.Days != 0) {
-                newTimeString += ts.Days.ToString() + "d";
+                newTimeString += ts.Days + "d";
             }
 
             if (ts.Hours != 0) {
-                newTimeString += ts.Hours.ToString() + "h";
+                newTimeString += ts.Hours + "h";
             }
 
             if (ts.Minutes != 0) {
-                newTimeString += ts.Minutes.ToString() + "m";
+                newTimeString += ts.Minutes + "m";
             }
 
-            return newTimeString + ts.Seconds.ToString() + "s";
+            return newTimeString + ts.Seconds + "s";
         }
     }
 }

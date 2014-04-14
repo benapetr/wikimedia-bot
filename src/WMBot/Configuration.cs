@@ -10,17 +10,18 @@
 
 // Created by Petr Bena benapetr@gmail.com
 
-using System.Text;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
+using System.Text;
 
 namespace wmib
 {
     /// <summary>
     /// Configuration
     /// </summary>
-    public partial class Configuration
+    public class Configuration
     {
         public class Paths
         {
@@ -36,13 +37,13 @@ namespace wmib
             public static string ChannelFile = "channels.conf";
             public static string GetChannelFile()
             {
-                return Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + Configuration.Paths.ChannelFile;
+                return Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + ChannelFile;
             }
             public static string ModulesPath
             {
                 get
                 {
-                    return Path.GetDirectoryName(global::System.Reflection.Assembly.GetExecutingAssembly().Location) + Path.DirectorySeparatorChar + "modules";
+                    return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + Path.DirectorySeparatorChar + "modules";
                 }
             }
         }
@@ -211,7 +212,7 @@ namespace wmib
             }
         }
 
-        private static Dictionary<string, string> ConfigurationData = null;
+        private static Dictionary<string, string> ConfigurationData;
 
         /// <summary>
         /// Save a wm-bot channel list
@@ -226,7 +227,7 @@ namespace wmib
                     text.Append(channel.Name + "\n");
                 }
             }
-            File.WriteAllText(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + Configuration.Paths.ChannelFile, 
+            File.WriteAllText(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + Paths.ChannelFile, 
                               text.ToString());
         }
 
@@ -253,7 +254,7 @@ namespace wmib
         {
             Dictionary<string, string> Values = new Dictionary<string, string>();
             string[] xx = File.ReadAllLines(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar +
-                                            Configuration.Paths.ConfigFile);
+                                            Paths.ConfigFile);
             string LastName = null;
             foreach (string line in xx)
             {
@@ -316,70 +317,70 @@ namespace wmib
                 Directory.CreateDirectory(Variables.ConfigurationDirectory);
             }
             if (!File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar 
-                             + Configuration.Paths.ConfigFile))
+                             + Paths.ConfigFile))
             {
                 Console.WriteLine("Error: unable to find config file in configuration/" 
-                    + Configuration.Paths.ConfigFile);
+                    + Paths.ConfigFile);
                 Console.WriteLine("You can get a configuration file here: https://github.com/benapetr/wikimedia-bot/blob/master/configuration/wmib.conf");
                 return 2;
             }
             ConfigurationData = File2Dict();
-            Configuration.IRC.Username = RetrieveConfig("username");
-            Configuration.IRC.NetworkHost = RetrieveConfig("network");
-            Configuration.IRC.NickName = RetrieveConfig("nick");
-            Configuration.IRC.LoginNick = RetrieveConfig("nick");
-            Configuration.System.DebugChan = RetrieveConfig("debug");
-            Configuration.System.ModulesToLoad = RetrieveConfig("modules", "");
-            Configuration.Network.BouncerPort = int.Parse(RetrieveConfig("bouncerp", 
-                                                       Configuration.Network.BouncerPort.ToString()));
-            Configuration.WebPages.WebpageURL = RetrieveConfig("web", "");
-            Configuration.IRC.LoginPw = RetrieveConfig("password", "");
-            Configuration.MySQL.MysqlPw = RetrieveConfig("mysql_pw");
-            Configuration.MySQL.Mysqldb = RetrieveConfig("mysql_db", Configuration.MySQL.Mysqldb);
-            Configuration.MySQL.MysqlUser = RetrieveConfig("mysql_user");
-            Configuration.IRC.Interval = int.Parse(RetrieveConfig("interval", "800"));
-            Configuration.MySQL.MysqlPort = int.Parse(RetrieveConfig("mysql_port", Configuration.MySQL.MysqlPort.ToString()));
-            Configuration.MySQL.MysqlHost = RetrieveConfig("mysql_host");
-            Configuration.WebPages.Css = RetrieveConfig("style_html_file", "");
-            Configuration.Network.SystemPort = int.Parse(RetrieveConfig("system_port",
-                                Configuration.Network.SystemPort.ToString()));
-            if (string.IsNullOrEmpty(Configuration.IRC.LoginNick))
+            IRC.Username = RetrieveConfig("username");
+            IRC.NetworkHost = RetrieveConfig("network");
+            IRC.NickName = RetrieveConfig("nick");
+            IRC.LoginNick = RetrieveConfig("nick");
+            System.DebugChan = RetrieveConfig("debug");
+            System.ModulesToLoad = RetrieveConfig("modules", "");
+            Network.BouncerPort = int.Parse(RetrieveConfig("bouncerp", 
+                                                       Network.BouncerPort.ToString()));
+            WebPages.WebpageURL = RetrieveConfig("web", "");
+            IRC.LoginPw = RetrieveConfig("password", "");
+            MySQL.MysqlPw = RetrieveConfig("mysql_pw");
+            MySQL.Mysqldb = RetrieveConfig("mysql_db", MySQL.Mysqldb);
+            MySQL.MysqlUser = RetrieveConfig("mysql_user");
+            IRC.Interval = int.Parse(RetrieveConfig("interval", "800"));
+            MySQL.MysqlPort = int.Parse(RetrieveConfig("mysql_port", MySQL.MysqlPort.ToString()));
+            MySQL.MysqlHost = RetrieveConfig("mysql_host");
+            WebPages.Css = RetrieveConfig("style_html_file", "");
+            Network.SystemPort = int.Parse(RetrieveConfig("system_port",
+                                Network.SystemPort.ToString()));
+            if (string.IsNullOrEmpty(IRC.LoginNick))
             {
                 Console.WriteLine("Error there is no login for bot (nick key is missing?)");
                 return 1;
             }
-            if (string.IsNullOrEmpty(Configuration.IRC.NetworkHost))
+            if (string.IsNullOrEmpty(IRC.NetworkHost))
             {
                 Console.WriteLine("Error irc server is wrong (network key is missing?)");
                 return 4;
             }
-            if (string.IsNullOrEmpty(Configuration.IRC.NickName))
+            if (string.IsNullOrEmpty(IRC.NickName))
             {
                 Console.WriteLine("Error there is no username for bot");
                 return 6;
             }
-            Configuration.System.prefix = RetrieveConfig("system_prefix", Configuration.System.prefix);
-            Configuration.IRC.UsingBouncer = bool.Parse(RetrieveConfig("serverIO", "false"));
+            System.prefix = RetrieveConfig("system_prefix", System.prefix);
+            IRC.UsingBouncer = bool.Parse(RetrieveConfig("serverIO", "false"));
             Syslog.Log("Loading instances");
-            Core.CreateInstance(Configuration.IRC.NickName, Configuration.Network.BouncerPort); // primary instance
+            Core.CreateInstance(IRC.NickName, Network.BouncerPort); // primary instance
             int CurrentInstance = 0;
             while (CurrentInstance < 20)
             {
-                if (!ConfigurationData.ContainsKey("instancename" + CurrentInstance.ToString()))
+                if (!ConfigurationData.ContainsKey("instancename" + CurrentInstance))
                 {
                     break;
                 }
-                string InstanceName = ConfigurationData["instancename" + CurrentInstance.ToString()];
+                string InstanceName = ConfigurationData["instancename" + CurrentInstance];
                 Syslog.DebugLog("Instance found: " + InstanceName);
-                if (Configuration.IRC.UsingBouncer)
+                if (IRC.UsingBouncer)
                 {
                     Syslog.DebugLog("Using bouncer, looking for instance port");
-                    if (!ConfigurationData.ContainsKey("instanceport" + CurrentInstance.ToString()))
+                    if (!ConfigurationData.ContainsKey("instanceport" + CurrentInstance))
                     {
                         Syslog.WriteNow("Instance " + InstanceName + " has invalid port, not using", true);
                         continue;
                     }
-                    int port = int.Parse(ConfigurationData["instanceport" + CurrentInstance.ToString()]);
+                    int port = int.Parse(ConfigurationData["instanceport" + CurrentInstance]);
                     Core.CreateInstance(InstanceName, port);
                 } else
                 {
@@ -387,12 +388,12 @@ namespace wmib
                 }
                 CurrentInstance++;
             }
-            if (!File.Exists(Configuration.Paths.GetChannelFile()))
+            if (!File.Exists(Paths.GetChannelFile()))
             {
-                Console.WriteLine("Error there is no channel file (" + Configuration.Paths.GetChannelFile() + ") to load channels from");
+                Console.WriteLine("Error there is no channel file (" + Paths.GetChannelFile() + ") to load channels from");
                 return 20;
             }
-            foreach (string x in File.ReadAllLines(Configuration.Paths.GetChannelFile()))
+            foreach (string x in File.ReadAllLines(Paths.GetChannelFile()))
             {
                 string name = x.Replace(" ", "");
                 if (name != "")
@@ -416,9 +417,9 @@ namespace wmib
 
             Syslog.Log("Channel db's working");
 
-            if (!Directory.Exists(Configuration.Paths.DumpDir))
+            if (!Directory.Exists(Paths.DumpDir))
             {
-                Directory.CreateDirectory(Configuration.Paths.DumpDir);
+                Directory.CreateDirectory(Paths.DumpDir);
             }
             return 0;
         }
