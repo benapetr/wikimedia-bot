@@ -146,6 +146,9 @@ namespace wmib
                 case "ko":
                     text = Resources.ko_korean;
                     break;
+				case "pt":
+					text = Resources.pt_portugese;
+					break;
                 default:
                     return "invalid language: " + language;
             }
