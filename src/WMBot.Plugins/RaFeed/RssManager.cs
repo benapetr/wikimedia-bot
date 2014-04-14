@@ -276,7 +276,7 @@ namespace wmib
                 item.retries--;
                 return null;
             }
-            catch (ThreadAbortException fail)
+            catch (ThreadAbortException)
             {
                 throw;
             }

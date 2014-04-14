@@ -36,8 +36,7 @@ namespace wmib
                 }
                 if (ms.EndsWith(":ping") || ms.EndsWith(": ping"))
                 {
-                    string target = message.Trim();
-                    target = message.Substring(0, message.IndexOf(":"));
+                    string target = message.Substring(0, message.IndexOf(":"));
                     if (GetConfig(channel, "Slap.Ping." + target, false))
                     {
                         channel.PrimaryInstance.irc.Queue.DeliverMessage("Hi " + invoker.Nick + ", you just managed to say pointless nick: ping. Now please try again with some proper meaning of your request, something like nick: I need this and that. Or don't do that at all, it's very annoying. Thank you", channel);

@@ -91,19 +91,20 @@ namespace wmib
             WriteStatus(user.Nick, user.Host, "<private message>", item.Action.Talk);
             if (message.StartsWith(Configuration.System.CommandPrefix + "seen "))
             {
-                    string parameter = "";
-                        parameter = message.Substring(message.IndexOf(" ") + 1);
-                    if (parameter != "")
-                    {
-                        RetrieveStatus(parameter, null, user.Nick);
-                        return true;
-                    }
+                string parameter = message.Substring(message.IndexOf(" ") + 1);
+                if (parameter != "")
+                {
+                    RetrieveStatus(parameter, null, user.Nick);
+                    return true;
+                }
             }
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "seenrx "))
             {
-                    Core.irc.Queue.DeliverMessage("Sorry but this command can be used in channels only (it's cpu expensive so it can be used on public by trusted users only)", user.Nick, IRC.priority.low);
-                    return true;
+                Core.irc.Queue.DeliverMessage(
+                    "Sorry but this command can be used in channels only (it's cpu expensive so it can be used on public by trusted users only)",
+                    user.Nick, IRC.priority.low);
+                return true;
             }
             return false;
         }
@@ -312,7 +313,7 @@ namespace wmib
                                     continue;
                                 }
                                 found = true;
-                                Channel last = null;
+                                Channel last;
                                 switch (xx.LastAc)
                                 {
                                     case item.Action.Join:
@@ -430,7 +431,6 @@ namespace wmib
                     if (chan.ContainsUser(temp_nick))
                     {
                         response = temp_nick + " is in here, right now";
-                        found = true;
                     }
                     if (multiple)
                     {
@@ -662,10 +662,6 @@ namespace wmib
                                     break;
                             }
                             TimeSpan span = DateTime.Now - xx.LastSeen;
-                            if (xx.LastAc == item.Action.Exit)
-                            {
-                                response = "Last time I saw " + nick + " they were " + action + " at " + xx.LastSeen + " (" + FormatTimeSpan(span) + " ago)";
-                            }
                             response = "Last time I saw " + nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen + " (" + FormatTimeSpan(span) + " ago)";
                             break;
                         }

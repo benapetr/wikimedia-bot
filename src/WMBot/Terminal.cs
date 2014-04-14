@@ -278,8 +278,7 @@ namespace wmib
         /// </summary>
         public static void Init()
         {
-            listenerThread = new Thread(ExecuteThread);
-            listenerThread.Name = "Telnet";
+            listenerThread = new Thread(ExecuteThread) {Name = "Telnet"};
             Core.ThreadManager.RegisterThread(listenerThread);
             listenerThread.Start();
         }
@@ -317,8 +316,7 @@ namespace wmib
                     {
                         SessionList.Add(session);
                     }
-                    Thread client = new Thread(session.ThreadExec);
-                    client.Name = "Telnet:" + connection.Client.RemoteEndPoint;
+                    Thread client = new Thread(session.ThreadExec) {Name = "Telnet:" + connection.Client.RemoteEndPoint};
                     Core.ThreadManager.RegisterThread(client);
                     client.Start(connection);
                     Thread.Sleep(100);

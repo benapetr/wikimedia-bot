@@ -106,8 +106,7 @@ namespace wmib
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "notify "))
             {
-                string parameter = "";
-                parameter = message.Substring(message.IndexOf(" ") + 1).Trim();
+                string parameter = message.Substring(message.IndexOf(" ") + 1).Trim();
                 if (parameter != "")
                 {
                     if (!isValid(parameter))
@@ -172,8 +171,7 @@ namespace wmib
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "notify "))
             {
-                string parameter = "";
-                parameter = message.Substring(message.IndexOf(" ") + 1);
+                string parameter = message.Substring(message.IndexOf(" ") + 1);
                 if (parameter != "")
                 {
                     if (!isValid(parameter))

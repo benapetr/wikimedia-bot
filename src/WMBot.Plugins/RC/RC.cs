@@ -303,8 +303,7 @@ namespace wmib
                 stream = new TcpClient("irc.wikimedia.org", 6667).GetStream();
                 WD = new StreamWriter(stream);
                 RD = new StreamReader(stream, Encoding.UTF8);
-                Thread pinger = new Thread(Pong);
-                pinger.Name = "Module:RC/Pinger";
+                Thread pinger = new Thread(Pong) {Name = "Module:RC/Pinger"};
                 Core.ThreadManager.RegisterThread(pinger);
                 Send("USER " + "wm-bot" + " 8 * :" + "wm-bot");
                 Send("NICK " + Nick);
@@ -426,8 +425,7 @@ namespace wmib
         public bool removeString(string WS, string Page)
         {
             Page = Page.Replace("_", " ");
-            wiki site = null;
-            site = getWiki(WS);
+            wiki site = getWiki(WS);
             if (site != null)
             {
                 if (WS == "all" || channels.Contains(site.channel))

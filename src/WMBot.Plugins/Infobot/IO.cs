@@ -9,8 +9,7 @@ namespace wmib
         
         public void Init()
         {
-            thread = new Thread(Worker);
-            thread.Name = "Module:Infobot/Worker";
+            thread = new Thread(Worker) {Name = "Module:Infobot/Worker"};
             Core.ThreadManager.RegisterThread(thread);
             thread.Start();
         }

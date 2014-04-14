@@ -121,9 +121,11 @@ namespace wmib
         {
             Nick = name;
             Port = port;
-            irc = new IRC(Configuration.IRC.NetworkHost, Nick, Configuration.IRC.Username, Configuration.IRC.Username, this);
-            irc.Bouncer = Hostname;
-            irc.BouncerPort = Port;
+            irc = new IRC(Configuration.IRC.NetworkHost, Nick, Configuration.IRC.Username, Configuration.IRC.Username, this)
+            {
+                Bouncer = Hostname,
+                BouncerPort = Port
+            };
         }
 
         /// <summary>
@@ -131,8 +133,7 @@ namespace wmib
         /// </summary>
         public void Join()
         {
-            JoinThread = new Thread(JoinAll);
-            JoinThread.Name = "Jointhread:" + Nick;
+            JoinThread = new Thread(JoinAll) {Name = "Jointhread:" + Nick};
             Core.ThreadManager.RegisterThread(JoinThread);
             JoinThread.Start();
         }
@@ -174,8 +175,7 @@ namespace wmib
                 irc.ChannelsJoined = true;
             }
 
-            irc.ChannelThread = new Thread(irc.ChannelList);
-            irc.ChannelThread.Name = "ChannelList:" + Nick;
+            irc.ChannelThread = new Thread(irc.ChannelList) {Name = "ChannelList:" + Nick};
             Core.ThreadManager.RegisterThread(irc.ChannelThread);
             irc.ChannelThread.Start();
             Core.ThreadManager.UnregisterThread(Thread.CurrentThread);

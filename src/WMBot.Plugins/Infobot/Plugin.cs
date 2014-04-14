@@ -205,11 +205,13 @@ namespace wmib
                     Thread.Sleep(10);
                 }
                 Unwritable = true;
-                Infobot.InfoItem item = new Infobot.InfoItem();
-                item._Channel = channel;
-                item.Name = "!" + message.Substring(1); // Normalizing "!".
-                item.User = invoker.Nick;
-                item.Host = invoker.Host;
+                Infobot.InfoItem item = new Infobot.InfoItem
+                {
+                    _Channel = channel,
+                    Name = "!" + message.Substring(1),
+                    User = invoker.Nick,
+                    Host = invoker.Host
+                };
                 jobs.Add(item);
                 Unwritable = false;
             }
@@ -374,7 +376,7 @@ namespace wmib
                             displaying++;
                         }
                     }
-                    string response = "";
+                    string response;
                     if (curr == displaying)
                     {
                         response = "There are " + displaying + " files: " + files;

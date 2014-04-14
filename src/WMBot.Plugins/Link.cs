@@ -19,10 +19,9 @@ namespace wmib
         public static string URL2(string prefix, string Default)
         {
             string original = prefix;
-            string link = prefix;
             if (prefix.Contains(":"))
             {
-                link = prefix.Substring(prefix.IndexOf(":") + 1);
+                string link = prefix.Substring(prefix.IndexOf(":") + 1);
                 if (!link.StartsWith("User:"))
                 {
                     link = "Template:" + link;
@@ -52,11 +51,10 @@ namespace wmib
 
         public static string URL(string prefix, string Default)
         {
-            string link = prefix;
             string original = prefix;
             if (prefix.Contains(":"))
             {
-                link = prefix.Substring(prefix.IndexOf(":") + 1);
+                string link = prefix.Substring(prefix.IndexOf(":") + 1);
                 prefix = prefix.Substring(0, prefix.IndexOf(":"));
                 lock (Wiki)
                 {
@@ -82,10 +80,9 @@ namespace wmib
 
         private static string MakeTemplate(string text, string Default, bool Ignore)
         {
-            string link = "";
             if (text.Contains("{{"))
             {
-                link = text.Substring(text.IndexOf("{{") + 2);
+                string link = text.Substring(text.IndexOf("{{") + 2);
                 if (link.Contains("}}"))
                 {
                     string second = link.Substring(link.IndexOf("}}") + 2);
@@ -117,10 +114,9 @@ namespace wmib
 
         private static string MakeLink(string text, string Default, bool Ignore)
         {
-            string link = "";
             if (text.Contains("[["))
             {
-                link = text.Substring(text.IndexOf("[[") + 2);
+                string link = text.Substring(text.IndexOf("[[") + 2);
                 if (link.Contains("]]"))
                 {
                     string second = link.Substring(link.IndexOf("]]") + 2);

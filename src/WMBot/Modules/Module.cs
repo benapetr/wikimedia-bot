@@ -329,7 +329,7 @@ namespace wmib
                 if (chan != null)
                 {
                     string value = chan.Extension_GetConfig(name);
-                    int result = 0;
+                    int result;
                     if (int.TryParse(value, out result))
                     {
                         return result;
@@ -468,7 +468,7 @@ namespace wmib
                 if (chan != null)
                 {
                     string value = chan.Extension_GetConfig(name);
-                    bool result = false;
+                    bool result;
                     if (bool.TryParse(value, out result))
                     {
                         return result;

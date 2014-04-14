@@ -50,7 +50,6 @@ namespace wmib
             }
         }
 
-        private Thread reco;
         private bool Recovering;
         private readonly Unwritten unwritten = new Unwritten();
         
@@ -88,8 +87,7 @@ namespace wmib
                     unwritten.PendingRows.AddRange(un.PendingRows);
                 }
             }
-            reco = new Thread(Exec);
-            reco.Name = "Recovery";
+            Thread reco = new Thread(Exec) {Name = "Recovery"};
             Core.ThreadManager.RegisterThread(reco);
             reco.Start();
         }
@@ -108,7 +106,7 @@ namespace wmib
                 {
                     if (unwritten.PendingRows.Count > 0)
                     {
-                        int count = 0;
+                        int count;
                         Syslog.WarningLog("Performing recovery of " + unwritten.PendingRows.Count + " MySQL rows");
                         Recovering = true;
                         List<SerializedRow> rows = new List<SerializedRow>();
@@ -150,7 +148,6 @@ namespace wmib
 
         public override string Select(string table, string rows, string query, int columns, char separator = '|')
         {
-            string sql = "";
             string result = "";
             lock (DatabaseLock)
             {
@@ -159,7 +156,7 @@ namespace wmib
                     ErrorBuffer = "Not connected";
                     return null;
                 }
-                sql = "SELECT " + rows + " FROM " + table + " " + query;
+                string sql = "SELECT " + rows + " FROM " + table + " " + query;
                 MySqlCommand xx = Connection.CreateCommand();
                 xx.CommandText = sql;
                 MySqlDataReader r = xx.ExecuteReader();

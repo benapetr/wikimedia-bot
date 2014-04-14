@@ -15,8 +15,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using Mono.Unix.Native;
-using Mono.Unix;
 
 namespace wmib
 {
@@ -153,8 +151,7 @@ namespace wmib
                 Configuration.System.UpTime = DateTime.Now;
                 Core.KernelThread = Thread.CurrentThread;
                 Core.KernelThread.Name = "Kernel";
-                Thread logger = new Thread(Logging.Exec);
-                logger.Name = "Logger";
+                Thread logger = new Thread(Logging.Exec) {Name = "Logger"};
                 Core.ThreadManager.RegisterThread(logger);
                 ParseArgs(args);
                 Syslog.WriteNow(Configuration.System.Version);

@@ -258,7 +258,7 @@ namespace wmib
             string LastName = null;
             foreach (string line in xx)
             {
-                string content = null;
+                string content;
                 if (String.IsNullOrEmpty(line) || line.TrimStart(' ').StartsWith("//"))
                 {
                     continue;

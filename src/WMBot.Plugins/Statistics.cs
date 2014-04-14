@@ -85,8 +85,7 @@ namespace wmib
                         }
                     }
                     TimeSpan uptime_total = DateTime.Now - startime;
-                    float average2 = totalms;
-                    average2 = (float) totalms/(1 + uptime_total.Days);
+                    float average2 = (float) totalms/(1 + uptime_total.Days);
                     builder.AppendFormat("<tr><td>N/A</td><th>Total:</th><th>{0}</th><th>{1}</th><td>N/A</td></tr>\n", average2, totalms);
                     builder.AppendLine();
                     builder.AppendLine("</table>");
@@ -320,13 +319,13 @@ namespace wmib
                     logging_since.Value = curr.logging_since.ToBinary().ToString();
                     XmlAttribute link = stat.CreateAttribute("link");
                     link.Value = curr.URL;
-                    XmlNode db = stat.CreateElement("user");
-                    db.Attributes.Append(name);
-                    db.Attributes.Append(messages);
-                    db.Attributes.Append(longest_message);
-                    db.Attributes.Append(logging_since);
-                    db.Attributes.Append(link);
-                    xmlnode.AppendChild(db);
+                    XmlNode userNode = stat.CreateElement("user");
+                    userNode.Attributes.Append(name);
+                    userNode.Attributes.Append(messages);
+                    userNode.Attributes.Append(longest_message);
+                    userNode.Attributes.Append(logging_since);
+                    userNode.Attributes.Append(link);
+                    xmlnode.AppendChild(userNode);
                 }
             }
             stat.AppendChild(xmlnode);

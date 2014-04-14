@@ -12,9 +12,7 @@ namespace WMBot.Bouncer
         {
             try
             {
-                BufferItem item = new BufferItem();
-                item._datetime = DateTime.Now;
-                item.Text = message;
+                BufferItem item = new BufferItem {_datetime = DateTime.Now, Text = message};
                 lock (OutgoingData)
                 {
                     OutgoingData.Add(item);
@@ -32,10 +30,7 @@ namespace WMBot.Bouncer
         {
             try
             {
-                BufferItem item = new BufferItem();
-                item._datetime = DateTime.Now;
-                item.important = control;
-                item.Text = message;
+                BufferItem item = new BufferItem {_datetime = DateTime.Now, important = control, Text = message};
                 lock (IncomingData)
                 {
                     IncomingData.Add(item);

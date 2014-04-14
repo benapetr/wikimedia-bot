@@ -83,7 +83,7 @@ namespace wmib
         /// </param>
         public static bool ErrorLog(string Message)
         {
-            Syslog.Log(Message, Type.Error);
+            Log(Message, Type.Error);
             return true;
         }
 

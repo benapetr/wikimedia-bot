@@ -139,9 +139,8 @@ namespace wmib
                     return;
                 }
 
-                this.PendingRequests = new Thread(Run);
-                this.PendingRequests.Name = "Pending queries thread for requests extension";
-                this.PendingRequests.Start();
+                PendingRequests = new Thread(Run) {Name = "Pending queries thread for requests extension"};
+                PendingRequests.Start();
 
                 Thread.Sleep(60000);
                 while (this.IsWorking)

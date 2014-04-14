@@ -263,7 +263,6 @@ namespace wmib
                                 diff.Reverse();
                                 foreach (RssFeedItem di in diff)
                                 {
-                                    string message = "";
                                     string description = di.Description.Replace("\n", " ");
                                     if (description.Length > 200)
                                     {
@@ -285,7 +284,7 @@ namespace wmib
                                         temp = curr.template;
                                     }
 
-                                    message = temp.Replace("$link", di.Link)
+                                    string message = temp.Replace("$link", di.Link)
                                         .Replace("$title", di.Title)
                                         .Replace("$name", curr.name)
                                         .Replace("$author", di.Author)
@@ -398,14 +397,10 @@ namespace wmib
             }
             if (!contains(name))
             {
-                Item Item = new Item();
-                Item.name = name;
-                Item.ScannerOnly = scan;
-                Item.URL = url;
-                Item.template = "";
+                Item item = new Item {name = name, ScannerOnly = scan, URL = url, template = ""};
                 lock (Content)
                 {
-                    Content.Add(Item);
+                    Content.Add(item);
                 }
                 Save();
                 Core.irc.Queue.DeliverMessage("Item was inserted to feed", owner.Name);

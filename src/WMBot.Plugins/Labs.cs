@@ -281,16 +281,18 @@ namespace wmib
                                     {
                                         DebugLog("can't resolve" + resource, 8);
                                     }
-                                    instance = new Instance(resource, name, host, ip, type, true);
-                                    instance.fqdn = fqdn;
-                                    instance.FullUrl = FullUrl;
-                                    instance.ImageID = image;
-                                    instance.LaunchTime = LaunchTime;
-                                    instance.ModifyTime = ModifyTime;
-                                    instance.NumberOfCpu = NumberOfCpu;
-                                    instance.Project = project;
-                                    instance.Ram = Ram;
-                                    instance.Storage = Storage;
+                                    instance = new Instance(resource, name, host, ip, type, true)
+                                    {
+                                        fqdn = fqdn,
+                                        FullUrl = FullUrl,
+                                        ImageID = image,
+                                        LaunchTime = LaunchTime,
+                                        ModifyTime = ModifyTime,
+                                        NumberOfCpu = NumberOfCpu,
+                                        Project = project,
+                                        Ram = Ram,
+                                        Storage = Storage
+                                    };
                                     lock (Instances)
                                     {
                                         Instances.Add(instance);
@@ -1024,7 +1026,6 @@ namespace wmib
             }
             catch (ThreadAbortException)
             {
-                return;
             }
             catch (Exception f)
             {

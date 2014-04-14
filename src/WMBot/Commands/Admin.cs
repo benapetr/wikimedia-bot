@@ -246,7 +246,7 @@ namespace wmib
                         return;
                     }
 
-                    Instance _instance = null;
+                    Instance _instance;
 
                     lock (Core.Instances)
                     {

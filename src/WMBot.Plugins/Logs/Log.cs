@@ -338,12 +338,11 @@ namespace wmib
             Core.ThreadManager.RegisterThread(sql);
             sql.Start();
             Log("Writer thread started");
-            int timer = 0;
             while (!Unloading)
             {
                 try
                 {
-                    timer = 0;
+                    int timer = 0;
                     WriteData();
                     while (!Unloading)
                     {

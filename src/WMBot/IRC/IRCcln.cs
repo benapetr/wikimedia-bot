@@ -484,8 +484,7 @@ namespace wmib
                 NetworkInit();
             }
 
-            _Queue = new Thread(Queue.Run);
-            _Queue.Name = "MessageQueue:" + NickName;
+            _Queue = new Thread(Queue.Run) {Name = "MessageQueue:" + NickName};
             Core.ThreadManager.RegisterThread(_Queue);
             PingerThread = new Thread(Ping);
             Core.ThreadManager.RegisterThread(PingerThread);
@@ -510,7 +509,6 @@ namespace wmib
         {
             string nick = "";
             string host = "";
-            string channel = "";
             const char delimiter = (char)001;
 
             while ((!streamReader.EndOfStream || Backlog.Count > 0) && Core.IsRunning)
@@ -582,8 +580,7 @@ namespace wmib
                 }
                 if (text.StartsWith(":"))
                 {
-                    ProcessorIRC processor = new ProcessorIRC(text);
-                    processor.instance = ParentInstance;
+                    ProcessorIRC processor = new ProcessorIRC(text) {instance = ParentInstance};
                     processor.Result();
                     string check = text.Substring(text.IndexOf(" "));
                     if (!check.StartsWith(" 005"))
@@ -608,7 +605,7 @@ namespace wmib
                             string message;
                             if (info_host.Contains("#"))
                             {
-                                channel = info_host.Substring(info_host.IndexOf("#"));
+                                string channel = info_host.Substring(info_host.IndexOf("#"));
                                 if (channel == Configuration.System.DebugChan && ParentInstance.Nick != Core.irc.NickName)
                                 {
                                     continue;

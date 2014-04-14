@@ -269,7 +269,6 @@ namespace wmib
                         if (newmessages.Count > 0)
                         {
                             List<Message> Processed = new List<Message>();
-                            priority highest = priority.low;
                             lock (newmessages)
                             {
                                 while (newmessages.Count > 0)
@@ -283,7 +282,7 @@ namespace wmib
                                             Messages.Clear();
                                         }
                                     }
-                                    highest = priority.low;
+                                    priority highest = priority.low;
                                     // we need to check the priority we need to handle first
                                     foreach (Message message in newmessages)
                                     {

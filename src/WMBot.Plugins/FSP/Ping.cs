@@ -23,10 +23,9 @@ namespace wmib
         {
             if (message == Configuration.System.CommandPrefix + "ping")
             {
-                Info i = new Info();
-                i.channel = channel;
-                Thread thread = new Thread(Ping);
-                thread.Start(i);
+                Info i = new Info {channel = channel};
+                Thread thrd = new Thread(Ping);
+                thrd.Start(i);
             }
         }
 

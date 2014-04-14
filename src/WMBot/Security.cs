@@ -24,11 +24,11 @@ namespace wmib
     {
         public class Role
         {
-            private readonly List<string> Permissions = new List<string>();
+            private readonly List<string> _permissions = new List<string>();
             /// <summary>
             /// Every role may contain other roles as well
             /// </summary>
-            private List<Role> Roles = new List<Role>();
+            private readonly List<Role> _roles = new List<Role>();
             /// <summary>
             /// The level of role used to compare which role is higher
             /// </summary>
@@ -40,53 +40,53 @@ namespace wmib
             
             public void Revoke(string permission)
             {
-                lock (this.Permissions)
+                lock (this._permissions)
                 {
-                    if (this.Permissions.Contains(permission))
+                    if (this._permissions.Contains(permission))
                     {
-                        this.Permissions.Remove(permission);
+                        this._permissions.Remove(permission);
                     }
                 }
             }
             
             public void Revoke(Role role)
             {
-                lock (this.Roles)
+                lock (this._roles)
                 {
-                    if (this.Roles.Contains(role))
+                    if (this._roles.Contains(role))
                     {
-                        this.Roles.Remove(role);
+                        this._roles.Remove(role);
                     }
                 }
             }
             
             public void Grant(Role role)
             {
-                lock (this.Roles)
+                lock (this._roles)
                 {
-                    if (!this.Roles.Contains(role))
+                    if (!this._roles.Contains(role))
                     {
-                        this.Roles.Add(role);
+                        this._roles.Add(role);
                     }
                 }
             }
             
             public void Grant(string permission)
             {
-                lock (this.Permissions)
+                lock (this._permissions)
                 {
-                    if (!this.Permissions.Contains(permission))
-                        this.Permissions.Add(permission);
+                    if (!this._permissions.Contains(permission))
+                        this._permissions.Add(permission);
                 }
             }
             
             public bool IsPermitted(string permission)
             {
-                if (this.Permissions.Contains("root") || this.Permissions.Contains(permission))
+                if (this._permissions.Contains("root") || this._permissions.Contains(permission))
                     return true;
-                lock (this.Roles)
+                lock (this._roles)
                 {
-                    foreach (Role role in Roles)
+                    foreach (Role role in _roles)
                     {
                         if (role.IsPermitted(permission))
                         {

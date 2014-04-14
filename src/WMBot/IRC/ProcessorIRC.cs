@@ -118,7 +118,7 @@ namespace wmib
                 {
                     if (!channel.ContainsUser(nick))
                     {
-                        User _user = null;
+                        User _user;
                         if (mode != '\0')
                         {
                             _user = new User(mode + nick, host, ident);
