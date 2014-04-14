@@ -485,6 +485,7 @@ namespace wmib
                 return;
             }
 
+#if FALSE
             if (message.StartsWith(Configuration.System.CommandPrefix + "system-lm "))
             {
                 if (chan.SystemUsers.IsApproved(invoker, "root"))
@@ -504,7 +505,7 @@ namespace wmib
                             module = "modules" + Path.DirectorySeparatorChar + module;
                             if (File.Exists(module))
                             {
-                                if (ExtensionHandler.LoadMod(module))
+                                if (ExtensionHandler.LoadAllModulesInLibrary(module))
                                 {
                                     Core.irc.Queue.DeliverMessage("Loaded module " + module, chan, IRC.priority.high);
                                     return;
@@ -524,6 +525,7 @@ namespace wmib
 
                 }
             }
+#endif
 
             if (message == Configuration.System.CommandPrefix + "verbosity--")
             {

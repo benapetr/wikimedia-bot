@@ -123,6 +123,17 @@ namespace wmib
             /// Version
             /// </summary>
             public static string Version = "wikimedia bot v. 2.0.0.5";
+
+            /// <summary>
+            /// Comma seperated list of modules to load at startup
+            /// </summary>
+            public static string ModulesToLoad;
+
+            private static string[] _modulesToLoadList;
+            public static string[] ModulesToLoadArray
+            {
+                get { return _modulesToLoadList ?? (_modulesToLoadList = ModulesToLoad.Split(',')); }
+            }
         }
 
         public class MySQL
@@ -308,6 +319,7 @@ namespace wmib
             Configuration.IRC.NickName = RetrieveConfig("nick");
             Configuration.IRC.LoginNick = RetrieveConfig("nick");
             Configuration.System.DebugChan = RetrieveConfig("debug");
+            Configuration.System.ModulesToLoad = RetrieveConfig("modules", "");
             Configuration.Network.BouncerPort = int.Parse(RetrieveConfig("bouncerp", 
                                                        Configuration.Network.BouncerPort.ToString()));
             Configuration.WebPages.WebpageURL = RetrieveConfig("web", "");

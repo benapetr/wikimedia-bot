@@ -24,6 +24,8 @@ namespace wmib
         /// </summary>
         public static List<Module> Extensions = new List<Module>();
 
+        private static List<Type> _moduleTypes = new List<Type>(); 
+
         /// <summary>
         /// Intialise module
         /// </summary>
@@ -63,7 +65,7 @@ namespace wmib
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        public static bool LoadMod(string path)
+        public static bool LoadAllModulesInLibrary(string path)
         {
             try
             {
@@ -76,48 +78,26 @@ namespace wmib
                         Syslog.Log("Unable to load " + path + " because the file can't be read", true);
                         return false;
                     }
-                    Type[] types = library.GetTypes();
-                    Type type = library.GetType("wmib.RegularModule");
-                    Type pluginInfo = null;
-                    foreach (Type curr in types)
-                    {
-                        if (curr.IsAssignableFrom(type))
-                        {
-                            pluginInfo = curr;
-                            break;
-                        }
-                    }
 
-                    if (pluginInfo == null)
+                    Type[] types = library.GetTypes();
+                    
+                    foreach (Type type in types)
                     {
-                        foreach (Type curr in types)
+                        if (type.IsSubclassOf(typeof(Module)))
                         {
-                            if (curr.BaseType == typeof(Module))
+                            // For recall later
+                            _moduleTypes.Add(type);
+
+                            if (ShouldCreateModuleOnStartup(type))
                             {
-                                pluginInfo = curr;
-                                break;
+                                CreateModule(type);
                             }
                         }
                     }
 
-                    if (pluginInfo == null)
-                    {
-                        Syslog.Log("Unable to load " + path + " because the library contains no module", true);
-                        return false;
-                    }
-
-                    Module _plugin = (Module)Activator.CreateInstance(pluginInfo);
-
-                    if (!_plugin.Construct())
-                    {
-                        Syslog.Log("Invalid module", true);
-                        _plugin.Exit();
-                        return false;
-                    }
-
-                    InitialiseMod(_plugin);
                     return true;
                 }
+
                 Syslog.Log("Unable to load " + path + " because the file can't be read", true);
             }
             catch (Exception fail)
@@ -127,18 +107,36 @@ namespace wmib
             return false;
         }
 
+        private static bool ShouldCreateModuleOnStartup(Type type)
+        {
+            var loadArray = Configuration.System.ModulesToLoadArray;
+
+            // grrr.... .net 2.0 doesnt have LINQ
+            return Array.Exists(loadArray, s => s.Equals(type.Name, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        private static void CreateModule(Type moduleType)
+        {
+            var module = (Module) Activator.CreateInstance(moduleType);
+
+            if (!module.Construct())
+            {
+                Syslog.Log("Invalid module", true);
+                module.Exit();
+                return;
+            }
+
+            InitialiseMod(module);
+        }
+
         /// <summary>
         /// Search and load the modules in modules folder
         /// </summary>
         public static void SearchMods()
         {
-            if (Directory.Exists(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
-                + Path.DirectorySeparatorChar + "modules"))
+            foreach (string dll in Directory.GetFiles(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "*.dll"))
             {
-                foreach (string dll in Directory.GetFiles(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "*.dll"))
-                {
-                    LoadMod(dll);
-                }
+                LoadAllModulesInLibrary(dll);
             }
             Syslog.Log("Modules loaded");
         }
