@@ -81,8 +81,7 @@ text "Updating the binary file"
 cp "$source/bin/wmib.exe" "$target/wmib.exe" || exit 1
 cp "$source/sites" "$target/sites" || exit 1
 cp "$source/linkie" "$target/configuration/linkie" || exit 1
-
-find "$source/bin/" -name "*.dll" -exec cp {} "$target/" \; || exit 1
+cp `find "$source/bin/" -name "*.dll"` "$target/" || exit 1
 ok
 
 text "Restarting the bot"
