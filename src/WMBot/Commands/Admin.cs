@@ -485,6 +485,7 @@ namespace wmib
                 return;
             }
 
+#if FALSE
             if (message.StartsWith(Configuration.System.CommandPrefix + "system-lm "))
             {
                 if (chan.SystemUsers.IsApproved(invoker, "root"))
@@ -524,6 +525,7 @@ namespace wmib
 
                 }
             }
+#endif
 
             if (message == Configuration.System.CommandPrefix + "verbosity--")
             {
