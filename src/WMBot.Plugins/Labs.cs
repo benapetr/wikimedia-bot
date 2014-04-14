@@ -593,13 +593,12 @@ namespace wmib
                 if (names != "")
                 {
                     Core.irc.Queue.DeliverMessage("I don't know this instance - aren't you are looking for: " + names, user);
-                    return true;
                 }
                 else
                 {
-                    Core.irc.Queue.DeliverMessage("I don't know this instance, sorry, try browsing the list by hand, but I can guarantee there is no such instance matching this name, host or Nova ID unless it was created less than " + time().Seconds.ToString() + " seconds ago", user);
-                    return true;
+                    Core.irc.Queue.DeliverMessage("I don't know this instance, sorry, try browsing the list by hand, but I can guarantee there is no such instance matching this name, host or Nova ID unless it was created less than " + time().Seconds + " seconds ago", user);
                 }
+                return true;
             }
 
             if (message.StartsWith("@labs-project-users "))
