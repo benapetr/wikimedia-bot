@@ -103,7 +103,7 @@ namespace wmib
         /// Filesystem
         /// </summary>
         private static readonly System.IO.FileSystemWatcher fs = new System.IO.FileSystemWatcher();
-        private static readonly List<SystemUser> GlobalUsers = new List<SystemUser>();
+        private static readonly List<SystemUser> globalUsers = new List<SystemUser>();
         /// <summary>
         /// List of all users in a channel
         /// </summary>
@@ -112,14 +112,7 @@ namespace wmib
         /// Channel this class belong to
         /// </summary>
         private Channel _Channel;
-        /// <summary>
-        /// File where data are stored
-        /// </summary>
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="channel"></param>
         public Security(Channel channel)
         {
             this._Channel = channel;
@@ -169,9 +162,9 @@ namespace wmib
         /// <returns></returns>
         public static SystemUser Auth(string User, string Password)
         {
-            lock (GlobalUsers)
+            lock (globalUsers)
             {
-                foreach (SystemUser user in GlobalUsers)
+                foreach (SystemUser user in globalUsers)
                 {
                     if (user.Password == Password && user.UserName == User)
                     {
@@ -215,9 +208,9 @@ namespace wmib
         {
             string[] dba = System.IO.File.ReadAllLines(Variables.ConfigurationDirectory + 
                            System.IO.Path.DirectorySeparatorChar + "admins");
-            lock (GlobalUsers)
+            lock (globalUsers)
             {
-                GlobalUsers.Clear();
+                globalUsers.Clear();
                 foreach (string x in dba)
                 {
                     if (x.Contains(Configuration.System.Separator))
@@ -231,7 +224,7 @@ namespace wmib
                             user.UserName = info[3];
                             user.Password = info[2];
                         }
-                        GlobalUsers.Add(user);
+                        globalUsers.Add(user);
                         Syslog.DebugLog("Registered global user (" + level + "): " + name, 2);
                     }
                 }
@@ -367,9 +360,9 @@ namespace wmib
 		{
 			SystemUser lv = null;
             int level = 0;
-            lock (GlobalUsers)
+            lock (globalUsers)
             {
-                foreach (SystemUser b in GlobalUsers)
+                foreach (SystemUser b in globalUsers)
                 {
                     Core.RegexCheck id = new Core.RegexCheck(b.Name, user);
                     if (id.IsMatch() == 1)

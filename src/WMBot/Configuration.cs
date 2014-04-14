@@ -122,13 +122,12 @@ namespace wmib
             /// <summary>
             /// Version
             /// </summary>
-            public static string Version = "wikimedia bot v. 2.0.0.5";
+            public static string Version = "wikimedia bot v. 2.1.0.0";
 
             /// <summary>
             /// Comma seperated list of modules to load at startup
             /// </summary>
             public static string ModulesToLoad;
-
             private static string[] _modulesToLoadList;
             public static string[] ModulesToLoadArray
             {
