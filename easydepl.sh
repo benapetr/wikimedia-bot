@@ -83,7 +83,7 @@ cp "$source/configuration/sites" "$target/sites" || exit 1
 cp "$source/configuration/linkie" "$target/configuration/linkie" || exit 1
 cp `ls $source/bin/modules/*.dll | grep -v Plugins.dll` "$target/" || exit 1
 cp "$source"/bin/*.dll "$target/" || exit 1
-cp "$source"/bin/modules/*Plugins.dll" "$target/modules" || exit 1
+cp "$source"/bin/modules/*Plugins.dll "$target/modules" || exit 1
 ok
 
 text "Restarting the bot"
