@@ -19,6 +19,14 @@ namespace wmib
 {
     public class InfobotModule : Module
     {
+        public static readonly string PermissionAdd = "infobot_add";
+        public static readonly string PermissionDel = "infobot_del";
+        public static readonly string PermissionSnaphot = "infobot_create_snapshot";
+        public static readonly string PermissionRestoreSnapshot = "infobot_restore_snapshot";
+        public static readonly string PermissionDeleteSnapshot = "infobot_delete_snapshot";
+        public static readonly string PermissionShare = "infobot_share";
+        public static readonly string PermissionIgnore = "infobot_manage_ignore";
+        public static readonly string PermissionManage = "infobot_manage";
         private readonly List<Infobot.InfoItem> jobs = new List<Infobot.InfoItem>();
         public static bool running;
         private bool Unwritable;
@@ -49,6 +57,35 @@ namespace wmib
                 Syslog.Log("Failed to unregister infobot objects in some channels", true);
             }
             return success;
+        }
+
+        public override void RegisterPermissions()
+        {
+            if (!Security.Roles.ContainsKey("infobot") && !Security.Roles.ContainsKey("infobot_admin"))
+            {
+                Security.Roles.Add("infobot", new Security.Role(1));
+                Security.Roles["infobot"].Grant(PermissionAdd);
+                Security.Roles["infobot"].Grant(PermissionDel);
+                Security.Roles["infobot"].Grant(PermissionSnaphot);
+                Security.Roles.Add("infobot_admin", new Security.Role(1));
+                Security.Roles["infobot_admin"].Grant(Security.Roles["infobot"]);
+                Security.Roles["infobot_admin"].Grant(PermissionRestoreSnapshot);
+                Security.Roles["infobot_admin"].Grant(PermissionDeleteSnapshot);
+                Security.Roles["infobot_admin"].Grant(PermissionManage);
+                Security.Roles["infobot_admin"].Grant(PermissionShare);
+            }
+            if (Security.Roles.ContainsKey("operator"))
+            {
+                Security.Roles["operator"].Grant(Security.Roles["infobot_admin"]);
+            }
+            if (Security.Roles.ContainsKey("trusted"))
+            {
+                Security.Roles["trusted"].Grant(Security.Roles["infobot"]);
+            }
+            if (Security.Roles.ContainsKey("admin"))
+            {
+                Security.Roles["admin"].Grant(Security.Roles["infobot_admin"]);
+            }
         }
 
         public string getDB(ref Channel chan)
@@ -239,7 +276,7 @@ namespace wmib
             {
                 if (message.StartsWith(Configuration.System.CommandPrefix + "infobot-recovery "))
                 {
-                    if (channel.SystemUsers.IsApproved(invoker, "admin"))
+                    if (channel.SystemUsers.IsApproved(invoker, PermissionRestoreSnapshot))
                     {
                         string name = message.Substring("@infobot-recovery ".Length);
                         if (!GetConfig(channel, "Infobot.Enabled", true))
@@ -262,7 +299,7 @@ namespace wmib
 
                 if (message.StartsWith(Configuration.System.CommandPrefix + "infobot-snapshot "))
                 {
-                    if (channel.SystemUsers.IsApproved(invoker, "admin"))
+                    if (channel.SystemUsers.IsApproved(invoker, PermissionSnaphot))
                     {
                         string name = message.Substring("@infobot-snapshot ".Length);
                         if (!GetConfig(channel, "Infobot.Enabled", true))
@@ -285,7 +322,7 @@ namespace wmib
 
                 if (message.StartsWith(Configuration.System.CommandPrefix + "infobot-set-raw "))
                 {
-                    if (channel.SystemUsers.IsApproved(invoker, "trust"))
+                    if (channel.SystemUsers.IsApproved(invoker, PermissionAdd))
                     {
                         string name = message.Substring("@infobot-set-raw ".Length);
                         if (!GetConfig(channel, "Infobot.Enabled", true))
@@ -308,7 +345,7 @@ namespace wmib
 
                 if (message.StartsWith(Configuration.System.CommandPrefix + "infobot-unset-raw "))
                 {
-                    if (channel.SystemUsers.IsApproved(invoker, "trust"))
+                    if (channel.SystemUsers.IsApproved(invoker, PermissionAdd))
                     {
                         string name = message.Substring("@infobot-unset-raw ".Length);
                         if (!GetConfig(channel, "Infobot.Enabled", true))
@@ -331,7 +368,7 @@ namespace wmib
 
                 if (message.StartsWith(Configuration.System.CommandPrefix + "infobot-snapshot-rm "))
                 {
-                    if (channel.SystemUsers.IsApproved(invoker, "admin"))
+                    if (channel.SystemUsers.IsApproved(invoker, PermissionDeleteSnapshot))
                     {
                         string name = message.Substring("@infobot-snapshot-rm ".Length);
                         name.Replace(".", "");
@@ -396,7 +433,7 @@ namespace wmib
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "infobot-share-trust+ "))
             {
-                if (channel.SystemUsers.IsApproved(invoker, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker, PermissionShare))
                 {
                     if (channel.SharedDB != "local")
                     {
@@ -442,7 +479,7 @@ namespace wmib
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "infobot-ignore- "))
             {
-                if (channel.SystemUsers.IsApproved(invoker, "trust"))
+                if (channel.SystemUsers.IsApproved(invoker, PermissionIgnore))
                 {
                     string item = message.Substring("@infobot-ignore+ ".Length);
                     if (item != "")
@@ -469,7 +506,7 @@ namespace wmib
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "infobot-ignore+ "))
             {
-                if (channel.SystemUsers.IsApproved(invoker, "trust"))
+                if (channel.SystemUsers.IsApproved(invoker, PermissionIgnore))
                 {
                     string item = message.Substring("@infobot-ignore+ ".Length);
                     if (item != "")
@@ -496,7 +533,7 @@ namespace wmib
 
             if (message == Configuration.System.CommandPrefix + "infobot-off")
             {
-                if (channel.SystemUsers.IsApproved(invoker, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker, PermissionManage))
                 {
                     if (!GetConfig(channel, "Infobot.Enabled", true))
                     {
@@ -517,7 +554,7 @@ namespace wmib
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "infobot-share-trust- "))
             {
-                if (channel.SystemUsers.IsApproved(invoker, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker, PermissionShare))
                 {
                     if (channel.SharedDB != "local")
                     {
@@ -592,7 +629,7 @@ namespace wmib
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "infobot-link "))
             {
-                if (channel.SystemUsers.IsApproved(invoker, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker, PermissionShare))
                 {
                     if (channel.SharedDB == "local")
                     {
@@ -635,7 +672,7 @@ namespace wmib
 
             if (message == Configuration.System.CommandPrefix + "infobot-share-off")
             {
-                if (channel.SystemUsers.IsApproved(invoker, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker, PermissionShare))
                 {
                     if (channel.SharedDB == "")
                     {
@@ -668,7 +705,7 @@ namespace wmib
 
             if (message == Configuration.System.CommandPrefix + "infobot-on")
             {
-                if (channel.SystemUsers.IsApproved(invoker, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker, PermissionManage))
                 {
                     if (GetConfig(channel, "Infobot.Enabled", true))
                     {
@@ -689,7 +726,7 @@ namespace wmib
 
             if (message == Configuration.System.CommandPrefix + "infobot-share-on")
             {
-                if (channel.SystemUsers.IsApproved(invoker, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker, PermissionShare))
                 {
                     if (channel.SharedDB == "local")
                     {

@@ -143,6 +143,20 @@ namespace wmib
             // admins have all privileges as trusted users
             Roles["admin"].Grant(Roles["trusted"]);
             Roles["root"].Grant("root");
+            lock (ExtensionHandler.Extensions)
+            {
+                foreach (Module module in ExtensionHandler.Extensions)
+                {
+                    try
+                    {
+                        module.RegisterPermissions();
+                    }
+                    catch (Exception fail)
+                    {
+                        Core.HandleException(fail, module.Name);
+                    }
+                }
+            }
         }
         
         private static int GetLevelOfRole(string role)

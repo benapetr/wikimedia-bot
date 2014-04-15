@@ -110,6 +110,9 @@ namespace wmib
             }
         }
 
+        public virtual void RegisterPermissions() { }
+        public virtual void UnregisterPermissions() { }
+
         /// <summary>
         /// This is a private hook of html extension, each module can return a string that is a part of status page for each channel
         /// the content of the page is unsorted so this string will be randomly on end of html source

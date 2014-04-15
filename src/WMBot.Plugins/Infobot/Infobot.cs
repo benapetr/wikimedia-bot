@@ -408,7 +408,7 @@ namespace wmib
                     if (Parameters[1] == "is")
                     {
                         // check if they are approved to do that
-                        if (chan.SystemUsers.IsApproved(user, host, "info"))
+                        if (chan.SystemUsers.IsApproved(user, host, InfobotModule.PermissionAdd))
                         {
                             if (!Allowed)
                             {
@@ -462,7 +462,7 @@ namespace wmib
                         {
                             force = true;
                         }
-                        if (chan.SystemUsers.IsApproved(user, host, "info"))
+                        if (chan.SystemUsers.IsApproved(user, host, InfobotModule.PermissionAdd))
                         {
                             if (!Allowed)
                             {
@@ -497,7 +497,7 @@ namespace wmib
                     }
                     if (Parameters[1] == "unalias")
                     {
-                        if (chan.SystemUsers.IsApproved(user, host, "info"))
+                        if (chan.SystemUsers.IsApproved(user, host, InfobotModule.PermissionDel))
                         {
                             if (!Allowed)
                             {
@@ -534,7 +534,7 @@ namespace wmib
                     // remove key
                     if (Parameters[1] == "del")
                     {
-                        if (chan.SystemUsers.IsApproved(user, host, "info"))
+                        if (chan.SystemUsers.IsApproved(user, host, InfobotModule.PermissionDel))
                         {
                             if (!Allowed)
                             {

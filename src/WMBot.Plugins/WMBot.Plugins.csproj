@@ -40,7 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HtmlDump.cs" />
+    <Compile Include="HtmlDump\HtmlDump.cs" />
     <Compile Include="Infobot\Definitions.cs" />
     <Compile Include="Infobot\Infobot.cs" />
     <Compile Include="Infobot\IO.cs" />
