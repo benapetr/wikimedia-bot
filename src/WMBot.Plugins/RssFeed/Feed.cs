@@ -82,9 +82,7 @@ namespace wmib
 
         public List<string> ScannerMatches = new List<string>();
         public List<Item> Content = new List<Item>();
-
         private readonly string DB = "";
-
         private readonly Channel owner;
 
         public bool contains(string name)
@@ -119,22 +117,22 @@ namespace wmib
                                 {
                                     switch (property.Name)
                                     {
-                                    case "name":
-                                        i.name = property.Value;
-                                        break;
-                                    case "url":
-                                        i.URL = property.Value;
-                                        break;
-                                    case "disb":
-                                    case "disabled":
-                                        i.disabled = bool.Parse(property.Value);
-                                        break;
-                                    case "template":
-                                        i.template = property.Value;
-                                        break;
-                                    case "so":
-                                        i.ScannerOnly = bool.Parse(property.Value);
-                                        break;
+                                        case "name":
+                                            i.name = property.Value;
+                                            break;
+                                        case "url":
+                                            i.URL = property.Value;
+                                            break;
+                                        case "disb":
+                                        case "disabled":
+                                            i.disabled = bool.Parse(property.Value);
+                                            break;
+                                        case "template":
+                                            i.template = property.Value;
+                                            break;
+                                        case "so":
+                                            i.ScannerOnly = bool.Parse(property.Value);
+                                            break;
                                     }
                                 }
                             }
@@ -169,7 +167,6 @@ namespace wmib
                 }
                 XmlDocument data = new XmlDocument();
                 XmlNode xmlnode = data.CreateElement("database");
-
                 lock (Content)
                 {
                     foreach (Item key in Content)

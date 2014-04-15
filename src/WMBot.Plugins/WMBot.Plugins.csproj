@@ -48,9 +48,9 @@
     <Compile Include="Notify\NotifyUs.cs" />
     <Compile Include="OperatorTools\Op.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RaFeed\Feed.cs" />
-    <Compile Include="RaFeed\Module.cs" />
-    <Compile Include="RaFeed\RssManager.cs" />
+    <Compile Include="RssFeed\Feed.cs" />
+    <Compile Include="RssFeed\Module.cs" />
+    <Compile Include="RssFeed\RssManager.cs" />
     <Compile Include="Seen\Seen.cs" />
     <Compile Include="Slap\Slap.cs" />
     <Compile Include="Statistics\Statistics.cs" />

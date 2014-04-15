@@ -362,7 +362,7 @@ namespace wmib
         public override bool Construct()
         {
             m = this;
-            Name = "Feed";
+            Name = "RssFeed";
             Version = "1.0.12.26";
             return true;
         }
