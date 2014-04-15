@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.IO;
 using System.Threading;
 using System.Xml;
@@ -148,7 +149,7 @@ namespace wmib
 
         public override string Select(string table, string rows, string query, int columns, char separator = '|')
         {
-            string result = "";
+            StringBuilder result = new StringBuilder();
             lock (DatabaseLock)
             {
                 if (!IsConnected)
@@ -165,18 +166,19 @@ namespace wmib
                     int i = 0;
                     while (i < columns)
                     {
-                        if (result == "")
+                        if (result.Length == 0)
                         {
-                            result += r.GetString(i);
+                            result.Append(r.GetString(i));
                         }
                         else
                         {
-                            result += separator + r.GetString(i);
+                            result.Append(separator);
+                            result.Append(r.GetString(i));
                         }
                         i++;
                     }
                 }
-                return result;
+                return result.ToString();
             }
         }
 
@@ -188,7 +190,7 @@ namespace wmib
         /// <returns></returns>
         public override bool InsertRow(string table, Row row)
         {
-            string sql = "";
+            StringBuilder sql = new StringBuilder();
             lock(DatabaseLock)
             {
                 try
@@ -204,30 +206,35 @@ namespace wmib
                         return false;
                     }
 
-                    MySqlCommand xx = Connection.CreateCommand();
-                    sql = "INSERT INTO " + table + " VALUES (";
+                    MySqlCommand mySqlCommand = Connection.CreateCommand();
+                    sql.Append("INSERT INTO ");
+                    sql.Append(table);
+                    sql.Append(" VALUES (");
                     foreach (Row.Value value in row.Values)
                     {
                         switch (value.Type)
                         {
                             case DataType.Boolean:
                             case DataType.Integer:
-                                sql += value.Data + ", ";
+                                sql.Append(value.Data);
+                                sql.Append(", ");
                                 break;
                             case DataType.Varchar:
                             case DataType.Text:
                             case DataType.Date:
-                                sql += "'" + MySqlHelper.EscapeString(value.Data) + "', ";
+                                sql.Append("'");
+                                sql.Append(MySqlHelper.EscapeString(value.Data));
+                                sql.Append("', ");
                                 break;
                         }
                     }
-                    if (sql.EndsWith(", "))
+                    if (sql.ToString().EndsWith(", "))
                     {
-                        sql = sql.Substring(0, sql.Length - 2);
+                        sql.Remove(sql.Length - 2, 2);
                     }
-                    sql += ");";
-                    xx.CommandText = sql;
-                    xx.ExecuteNonQuery();
+                    sql.Append(");");
+                    mySqlCommand.CommandText = sql.ToString();
+                    mySqlCommand.ExecuteNonQuery();
                     return true;
                 } catch (MySqlException me)
                 {
@@ -324,6 +331,7 @@ namespace wmib
                                                                               "User ID=" + Configuration.MySQL.MysqlUser + ";" +
                                                                               "Password=" + Configuration.MySQL.MysqlPw + ";" +
                                                                               "port=" + Configuration.MySQL.MysqlPort + ";" +
+                                                                              "CharSet=utf8;" +
                                                                               "Pooling=false");
                     Connection.Open();
                     connected = true;
