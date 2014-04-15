@@ -189,6 +189,15 @@ namespace wmib
             return null;
         }
 
+        public static bool IsRole(string name)
+        {
+            if (name == "root" || name == "null")
+            {
+                return false;
+            }
+            return Roles.ContainsKey(name);
+        }
+
         public void InsertUser(XmlNode node)
         {
             string regex = null;

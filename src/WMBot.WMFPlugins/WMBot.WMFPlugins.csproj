@@ -1,22 +1,24 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{48F7BDF0-4CD8-477F-A083-3F7E1D035F36}</ProjectGuid>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{88297B7F-B4AD-48EA-B650-065E391B3C96}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WMBot.Plugins</RootNamespace>
-    <AssemblyName>WMBot.Plugins</AssemblyName>
+    <RootNamespace>WMBot.WMFPlugins</RootNamespace>
+    <AssemblyName>WMBot.WMFPlugins</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\bin\debug\modules\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -24,41 +26,31 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\bin\modules\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>.\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Web" />
-    <Reference Include="System.Xml" />
+    <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HtmlDump\HtmlDump.cs" />
-    <Compile Include="Infobot\Definitions.cs" />
-    <Compile Include="Infobot\Infobot.cs" />
-    <Compile Include="Infobot\IO.cs" />
-    <Compile Include="Infobot\Plugin.cs" />
-    <Compile Include="Infobot\SaveLoad.cs" />
-    <Compile Include="Logs\Log.cs" />
-    <Compile Include="NetCat\NetCat.cs" />
-    <Compile Include="Notify\Notification.cs" />
-    <Compile Include="Notify\NotifyUs.cs" />
-    <Compile Include="OperatorTools\Op.cs" />
+    <Compile Include="Labs\Labs.cs" />
+    <Compile Include="Link\Link.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RaFeed\Feed.cs" />
-    <Compile Include="RaFeed\Module.cs" />
-    <Compile Include="RaFeed\RssManager.cs" />
-    <Compile Include="Seen\Seen.cs" />
-    <Compile Include="Slap\Slap.cs" />
-    <Compile Include="Statistics\Statistics.cs" />
-    <Compile Include="Thanks\Thanks.cs" />
+    <Compile Include="RC\RC.cs" />
+    <Compile Include="RC\RegularModule.cs" />
+    <Compile Include="Replag\Rl.cs" />
+    <Compile Include="Requests\Request.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WMBot\WMBot.csproj">
-      <Project>{69ffe45e-1ca0-47e5-92d9-4c8e2edbe911}</Project>
+      <Project>{69FFE45E-1CA0-47E5-92D9-4C8E2EDBE911}</Project>
       <Name>WMBot</Name>
     </ProjectReference>
   </ItemGroup>
