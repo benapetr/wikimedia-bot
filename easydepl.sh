@@ -4,7 +4,7 @@ RED=$(tput setaf 1)
 WARN=$(tput setaf 3)
 GREEN=$(tput setaf 2)
 NORMAL=$(tput sgr0)
-target=/mnt/share/beta
+target=`pwd`
 parameters=/verbosity:quiet
 source=/mnt/share/wikimedia-bot
 
