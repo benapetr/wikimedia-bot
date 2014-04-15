@@ -260,7 +260,8 @@ class LogsHtml
 <HTML>\n
 <head>\n
   <title>" . Logs::$title ."</title>\n
-  <meta charset=\"ISO-8859-2\">\n
+  <meta charset=\"utf-8\">\n
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"> 
   <link rel=\"stylesheet\" type=\"text/css\" href=\"./style/style.css\">\n
   <link rel=\"stylesheet\" href=\"http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css\" />\n
   <script src=\"http://code.jquery.com/jquery-1.9.1.js\">\n  </script>\n  <script src=\"http://code.jquery.com/ui/1.10.3/jquery-ui.js\">\n  </script>\n
