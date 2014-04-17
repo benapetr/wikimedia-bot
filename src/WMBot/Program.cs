@@ -119,6 +119,13 @@ namespace wmib
                 }
                 if (item == "--security")
                 {
+                    Syslog.IsQuiet = true;
+                    if (Configuration.Load() != 0)
+                    {
+                        Syslog.IsQuiet = false;
+                        Syslog.WriteNow("Error while loading the config file, exiting", true);
+                        Environment.Exit(-2);
+                    }
                     ExtensionHandler.SearchMods();
                     Security.Init();
                     Console.WriteLine(Security.Dump());
