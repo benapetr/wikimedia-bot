@@ -79,7 +79,7 @@ namespace wmib
                         case "admin":
                         case "halt":
                             Core.irc.Queue.DeliverMessage("This permission can't be granted to anyone, sorry", channel);
-                            break;
+                            return;
                     }
                     string role = channel_name + "." + parameters[0];
                     lock(Security.Roles)
