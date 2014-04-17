@@ -21,8 +21,8 @@ namespace wmib
         {
             if (Security.Roles.ContainsKey("admin"))
             {
-                Security.Roles["admin"].Grant(Security.Roles["grant"]);
-                Security.Roles["admin"].Grant(Security.Roles["revoke"]);
+                Security.Roles["admin"].Grant("grant");
+                Security.Roles["admin"].Grant("revoke");
             }
         }
 
