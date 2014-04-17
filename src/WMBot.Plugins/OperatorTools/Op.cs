@@ -4,20 +4,6 @@ namespace wmib
 {
     class ChannelTools : Module
     {
-        public override void Load()
-        {
-            try
-            {
-                while (IsWorking)
-                {
-                    Thread.Sleep(1000000);
-                }
-            }
-            catch (ThreadAbortException)
-            {
-            }
-        }
-
         private static User getUser(string name, Channel c)
         {
             lock (c.UserList)
@@ -397,6 +383,7 @@ namespace wmib
         public override bool Construct()
         {
             Version = "1.0.20";
+            HasSeparateThreadInstance = false;
             Name = "Operator tools";
             return true;
         }

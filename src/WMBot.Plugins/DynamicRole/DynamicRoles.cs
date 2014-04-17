@@ -14,6 +14,7 @@ namespace wmib
         {
             Name = "DynamicRole";
             Version = "1.0.0.0";
+            HasSeparateThreadInstance = false;
             return true;
         }
 
