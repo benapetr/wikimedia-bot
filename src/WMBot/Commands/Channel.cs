@@ -32,7 +32,7 @@ namespace wmib
                 if (message.StartsWith(Configuration.System.CommandPrefix + "add ") ||
                     message.StartsWith(Configuration.System.CommandPrefix + "join "))
                 {
-                    if (channel.SystemUsers.IsApproved(user, host, "admin"))
+                    if (channel.SystemUsers.IsApproved(user, host, "join"))
                     {
                         while (!Core.FinishedJoining)
                         {
@@ -110,7 +110,7 @@ namespace wmib
                 }
                 if (message == Configuration.System.CommandPrefix + "drop")
                 {
-                    if (channel.SystemUsers.IsApproved(user, host, "admin"))
+                    if (channel.SystemUsers.IsApproved(user, host, "drop"))
                     {
                         while (!Core.FinishedJoining)
                         {
@@ -160,7 +160,7 @@ namespace wmib
 
                 if (message == Configuration.System.CommandPrefix + "part")
                 {
-                    if (channel.SystemUsers.IsApproved(user, host, "admin"))
+                    if (channel.SystemUsers.IsApproved(user, host, "part"))
                     {
                         while (!Core.FinishedJoining)
                         {

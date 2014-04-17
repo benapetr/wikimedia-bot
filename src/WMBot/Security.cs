@@ -178,13 +178,19 @@ namespace wmib
             // let's assume there is no role definition file, so we create some initial, built-in roles
             Roles.Add("null", new Role(0));
             Roles.Add("trusted", new Role(1));
-            Roles.Add("admin", new Role(2));
+            Roles.Add("operator", new Role(6));
+            Roles.Add("admin", new Role(20));
             Roles.Add("root", new Role(65535));
             Roles["trusted"].Grant("trust");
             // trusted users can add users to trust list
             Roles["trusted"].Grant("trustadd");
             Roles["trusted"].Grant("trustdel");
+            Roles["operator"].Grant(Roles["trusted"]);
+            Roles["operator"].Grant("join");
             Roles["admin"].Grant("admin");
+            Roles["admin"].Grant("drop");
+            Roles["admin"].Grant("part");
+            Roles["admin"].Grant(Roles["operator"]);
             // admins have all privileges as trusted users
             Roles["admin"].Grant(Roles["trusted"]);
             Roles["root"].Grant("root");
