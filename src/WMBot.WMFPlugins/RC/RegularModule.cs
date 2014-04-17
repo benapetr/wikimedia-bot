@@ -52,7 +52,7 @@ namespace wmib
             }
             if (Security.Roles.ContainsKey("operator"))
             {
-                Security.Roles["operator"].Grant(Security.Roles["recentchanges-manage"]);
+                Security.Roles["operator"].Grant("recentchanges-manage");
             }
         }
 
