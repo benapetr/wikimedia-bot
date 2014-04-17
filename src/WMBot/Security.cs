@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Xml;
+using System.Xml.Serialization;
 
 namespace wmib
 {
@@ -24,15 +25,18 @@ namespace wmib
     {
         public class Role
         {
-            private readonly List<string> _permissions = new List<string>();
+            public List<string> Permissions = new List<string>();
             /// <summary>
             /// Every role may contain other roles as well
             /// </summary>
-            private readonly List<Role> _roles = new List<Role>();
+            public List<Role> Roles = new List<Role>();
             /// <summary>
             /// The level of role used to compare which role is higher
             /// </summary>
             public int Level;
+            // For serialization only
+            public Role(){}
+
             public Role(int level_)
             {
                 this.Level = level_;
@@ -40,53 +44,53 @@ namespace wmib
             
             public void Revoke(string permission)
             {
-                lock (this._permissions)
+                lock (this.Permissions)
                 {
-                    if (this._permissions.Contains(permission))
+                    if (this.Permissions.Contains(permission))
                     {
-                        this._permissions.Remove(permission);
+                        this.Permissions.Remove(permission);
                     }
                 }
             }
             
             public void Revoke(Role role)
             {
-                lock (this._roles)
+                lock (this.Roles)
                 {
-                    if (this._roles.Contains(role))
+                    if (this.Roles.Contains(role))
                     {
-                        this._roles.Remove(role);
+                        this.Roles.Remove(role);
                     }
                 }
             }
             
             public void Grant(Role role)
             {
-                lock (this._roles)
+                lock (this.Roles)
                 {
-                    if (!this._roles.Contains(role))
+                    if (!this.Roles.Contains(role))
                     {
-                        this._roles.Add(role);
+                        this.Roles.Add(role);
                     }
                 }
             }
             
             public void Grant(string permission)
             {
-                lock (this._permissions)
+                lock (this.Permissions)
                 {
-                    if (!this._permissions.Contains(permission))
-                        this._permissions.Add(permission);
+                    if (!this.Permissions.Contains(permission))
+                        this.Permissions.Add(permission);
                 }
             }
             
             public bool IsPermitted(string permission)
             {
-                if (this._permissions.Contains("root") || this._permissions.Contains(permission))
+                if (this.Permissions.Contains("root") || this.Permissions.Contains(permission))
                     return true;
-                lock (this._roles)
+                lock (this.Roles)
                 {
-                    foreach (Role role in _roles)
+                    foreach (Role role in Roles)
                     {
                         if (role.IsPermitted(permission))
                         {
@@ -97,7 +101,36 @@ namespace wmib
                 return false;
             }
         }
-        
+
+        /// <summary>
+        /// IDictionary can't be serialized so we need to convert the dictionary to some other object with similar schema that
+        /// can be serialized before we do that, this class is used to serialize role information
+        /// </summary>
+        [Serializable]
+        public class DumpableDict
+        {
+            public class RoleInfo
+            {
+                public string Name;
+                public Role Role;
+            }
+
+            public List<RoleInfo> Roles = new List<RoleInfo>();
+
+            public DumpableDict() { }
+
+            public DumpableDict(Dictionary<string, Role> Roles)
+            {
+                foreach (KeyValuePair<string,Role> role in Roles)
+                {
+                    RoleInfo i = new RoleInfo();
+                    i.Name = role.Key;
+                    i.Role = role.Value;
+                    this.Roles.Add(i);
+                }
+            }
+        }
+
         public static Dictionary<string, Role> Roles = new Dictionary<string, Role>();
         /// <summary>
         /// Filesystem
@@ -130,6 +163,18 @@ namespace wmib
         /// </summary>
         public static void Init()
         {
+            if (File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "security.xml"))
+            {
+                DumpableDict dict = new DumpableDict();
+                XmlSerializer xmlSerializer = new XmlSerializer(dict.GetType());
+                StreamReader reader = new StreamReader(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "security.xml");
+                dict = (DumpableDict)xmlSerializer.Deserialize(reader);
+                foreach (DumpableDict.RoleInfo ri in dict.Roles)
+                {
+                    Roles.Add(ri.Name, ri.Role);
+                }
+                return;
+            }
             // let's assume there is no role definition file, so we create some initial, built-in roles
             Roles.Add("null", new Role(0));
             Roles.Add("trusted", new Role(1));
@@ -158,7 +203,17 @@ namespace wmib
                 }
             }
         }
-        
+
+        public static string Dump()
+        {
+            DumpableDict du = new DumpableDict(Roles);
+            XmlSerializer xmlSerializer = new XmlSerializer(du.GetType());
+            StringWriter textWriter = new StringWriter();
+
+            xmlSerializer.Serialize(textWriter, du);
+            return textWriter.ToString();
+        }
+
         private static int GetLevelOfRole(string role)
         {
             if (Roles.ContainsKey(role))

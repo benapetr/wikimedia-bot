@@ -100,11 +100,14 @@ namespace wmib
                 {
                     Console.WriteLine("This is a wikimedia bot binary\n\n" +
                         "Parameters:\n" +
-                        "    --nocolors: Disable colors in system logs\n" +
+                        "    --nocolors:  Disable colors in system logs\n" +
                         "    -h [--help]: Display help\n" +
-                        "    --pid file: Write a pid to a file\n" +
-                        "    --modules: Try to load all module files and list all modules that are available, separated by comma\n" +
-                        "    --traffic: Enable traffic logs\n" +
+                        "    --pid file:  Write a pid to a file\n" +
+                        "    --modules:   Try to load all module files and list all modules that are available, separated by comma\n" +
+                        "    --traffic:   Enable traffic logs\n" +
+                        "    --security:  Will load a security subsystem and serialize all roles and print them to standard output\n" +
+                        "                 this can be used to create a custom security configuration if you store the output\n" +
+                        "                 to configuration/security.xml and restart the bot\n" +
                         "    -v: Increases verbosity\n\n" +
                         "This software is open source, licensed under GPLv3");
                     Environment.Exit(0);
@@ -112,6 +115,13 @@ namespace wmib
                 if (item == "--modules")
                 {
                     ExtensionHandler.DumpMods();
+                    Environment.Exit(0);
+                }
+                if (item == "--security")
+                {
+                    ExtensionHandler.SearchMods();
+                    Security.Init();
+                    Console.WriteLine(Security.Dump());
                     Environment.Exit(0);
                 }
                 if (item == "--pid")

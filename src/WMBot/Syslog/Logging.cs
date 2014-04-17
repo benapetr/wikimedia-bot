@@ -26,6 +26,8 @@ namespace wmib
             Normal
         }
 
+        public static bool IsQuiet = false;
+
         /// <summary>
         /// Log the specified Message and MessageType.
         /// </summary>
@@ -37,6 +39,10 @@ namespace wmib
         /// </param>
         public static bool Log(string Message, Type MessageType)
         {
+            if (IsQuiet)
+            {
+                return false;
+            }
             Logging.Write(Message, MessageType);
             SystemHooks.SystemLog(Message, MessageType);
             return true;
@@ -53,6 +59,10 @@ namespace wmib
         /// </param>
         public static bool Log(string Message, bool Warning = false)
         {
+            if (IsQuiet)
+            {
+                return false;
+            }
             Type MessageType = Type.Normal;
             if (Warning)
             {
@@ -101,6 +111,10 @@ namespace wmib
         /// </param>
         public static bool WriteNow(string Message, bool Warning = false)
         {
+            if (IsQuiet)
+            {
+                return false;
+            }
             Type _Type = Type.Normal;
             if (Warning)
             {
@@ -125,6 +139,10 @@ namespace wmib
         /// </param>
         public static bool WriteNow(string Message, Type MessageType)
         {
+            if (IsQuiet)
+            {
+                return false;
+            }
             Logging.Display(DateTime.Now, Message, MessageType);
             SystemHooks.SystemLog(Message, MessageType);
             return true;
