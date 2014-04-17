@@ -75,9 +75,8 @@ namespace wmib
                     }
                     switch (parameters[1])
                     {
-                        case "trust":
                         case "root":
-                        case "admin":
+                        case "terminal":
                         case "halt":
                             Core.irc.Queue.DeliverMessage("This permission can't be granted to anyone, sorry", channel);
                             return;
