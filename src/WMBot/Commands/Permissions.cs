@@ -47,10 +47,19 @@ namespace wmib
                             Core.irc.Queue.DeliverMessage(messages.Localize("Unknown1", channel.Language), channel);
                             return 2;
                         }
+                        int level = Security.GetLevelOfRole(rights_info[2]);
+                        // This optional hack disallow to grant roles like "root" to anyone so that this role can be granted only to users
+                        // with shell access to server and hard-inserting it to admins file. If you wanted to allow granting of root, just
+                        // change System.MaxGrantableRoleLevel to 65535, this isn't very secure though
+                        if (level > Configuration.System.MaxGrantableRoleLevel)
+                        {
+                            Core.irc.Queue.DeliverMessage("You can't grant this role because it's over the maximum grantable role level, sorry", channel);
+                            return 2;
+                        }
                         // now we check if role that user is to grant doesn't have higher level than the role they have
                         // if we didn't do that, users with low roles could grant admin to someone and exploit this
                         // to grant admins to themselve
-                        if (Security.GetLevelOfRole(rights_info[2]) > channel.SystemUsers.GetLevel(invoker))
+                        if (level > channel.SystemUsers.GetLevel(invoker))
                         {
                             Core.irc.Queue.DeliverMessage(messages.Localize("RoleMismatch", channel.Language), channel);
                             return 2;
