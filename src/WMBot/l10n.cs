@@ -63,7 +63,7 @@ namespace wmib
             data.Add("zh", new container("zh"));
             data.Add("de", new container("de"));
             data.Add("ko", new container("ko"));
-			data.Add("pt", new container("pt"));
+            data.Add("pt", new container("pt"));
         }
 
         private static string Parse(string text, string name)
@@ -146,9 +146,9 @@ namespace wmib
                 case "ko":
                     text = Resources.ko_korean;
                     break;
-				case "pt":
-					text = Resources.pt_portugese;
-					break;
+                case "pt":
+                    text = Resources.pt_portugese;
+                    break;
                 default:
                     return "invalid language: " + language;
             }

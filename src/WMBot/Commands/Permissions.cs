@@ -19,28 +19,28 @@ namespace wmib
     /// </summary>
     public partial class Commands
     {
-		public static bool Trusted(string message, string user, string host)
-		{
-			try
-			{
-				if (message.StartsWith(Configuration.System.CommandPrefix + "trusted "))
-				{
-					Channel ch = Core.GetChannel(message.Substring("xtrusted ".Length));
-					if (ch != null)
-					{
-						Core.irc.Queue.DeliverMessage(messages.Localize("TrustedUserList", ch.Language) + ch.SystemUsers.ListAll(), user);
-                    	return true;
-					}
-					Core.irc.Queue.DeliverMessage("There is no such a channel I know of", user);
-					return true;
-				}
-			} catch (Exception fail)
-			{
-				Core.HandleException(fail);
-			}
-			return false;
-		}
-		
+        public static bool Trusted(string message, string user, string host)
+        {
+            try
+            {
+                if (message.StartsWith(Configuration.System.CommandPrefix + "trusted "))
+                {
+                    Channel ch = Core.GetChannel(message.Substring("xtrusted ".Length));
+                    if (ch != null)
+                    {
+                        Core.irc.Queue.DeliverMessage(messages.Localize("TrustedUserList", ch.Language) + ch.SystemUsers.ListAll(), user);
+                        return true;
+                    }
+                    Core.irc.Queue.DeliverMessage("There is no such a channel I know of", user);
+                    return true;
+                }
+            } catch (Exception fail)
+            {
+                Core.HandleException(fail);
+            }
+            return false;
+        }
+        
         /// <summary>
         /// Change rights of user
         /// </summary>
@@ -100,7 +100,7 @@ namespace wmib
                 }
                 if (message.StartsWith(Configuration.System.CommandPrefix + "trusted"))
                 {
-					Core.irc.Queue.DeliverMessage(messages.Localize("TrustedUserList", channel.Language) + channel.SystemUsers.ListAll(), channel);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("TrustedUserList", channel.Language) + channel.SystemUsers.ListAll(), channel);
                     return 0;
                 }
                 if (message.StartsWith(Configuration.System.CommandPrefix + "trustdel"))

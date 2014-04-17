@@ -83,8 +83,8 @@ namespace wmib.Properties {
                 return ResourceManager.GetString("cs_czech", resourceCulture);
             }
         }
-		
-		internal static string pt_portugese {
+        
+        internal static string pt_portugese {
             get {
                 return ResourceManager.GetString("pt_portugese", resourceCulture);
             }
