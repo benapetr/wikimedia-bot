@@ -31,28 +31,29 @@ namespace wmib
         {
             try
             {
+                User invoker = new User(user, host, "");
                 if (message.StartsWith(Configuration.System.CommandPrefix + "trustadd"))
                 {
                     string[] rights_info = message.Split(' ');
-                    if (channel.SystemUsers.IsApproved(user, host, "trustadd"))
+                    if (channel.SystemUsers.IsApproved(invoker, "trustadd"))
                     {
                         if (rights_info.Length < 3)
                         {
                             Core.irc.Queue.DeliverMessage(messages.Localize("Trust1", channel.Language), channel);
                             return 0;
                         }
-                        if (!(rights_info[2] == "admin" || rights_info[2] == "trusted"))
+                        if (!Security.Roles.ContainsKey(rights_info[2]))
                         {
                             Core.irc.Queue.DeliverMessage(messages.Localize("Unknown1", channel.Language), channel);
                             return 2;
                         }
-                        if (rights_info[2] == "admin")
+                        // now we check if role that user is to grant doesn't have higher level than the role they have
+                        // if we didn't do that, users with low roles could grant admin to someone and exploit this
+                        // to grant admins to themselve
+                        if (Security.GetLevelOfRole(rights_info[2]) > channel.SystemUsers.GetLevel(invoker))
                         {
-                            if (!channel.SystemUsers.IsApproved(user, host, "admin"))
-                            {
-                                Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
-                                return 2;
-                            }
+                            Core.irc.Queue.DeliverMessage(messages.Localize("RoleMismatch", channel.Language), channel);
+                            return 2;
                         }
                         if (channel.SystemUsers.AddUser(rights_info[2], rights_info[1]))
                         {

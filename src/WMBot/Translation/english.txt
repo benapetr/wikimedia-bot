@@ -1,4 +1,5 @@
 PermissionDenied=Permission denied;
+RoleMismatch=You can't grant or revoke role that is higher than your own role;
 Authorization=You are not authorized to perform this, sorry;
 ChannelIn=This channel is already in db;
 UserSc=Successfuly added ;

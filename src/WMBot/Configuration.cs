@@ -131,6 +131,11 @@ namespace wmib
             /// Version
             /// </summary>
             public static string Version = "wikimedia bot v. 2.1.0.1";
+            /// <summary>
+            /// This is a limit for role level that can be granted, this is used to
+            /// prevent users from granting roles like "root" by default
+            /// </summary>
+            public static int MaxGrantableRoleLevel = 65534;
 
             /// <summary>
             /// Comma seperated list of modules to load at startup
@@ -250,6 +255,15 @@ namespace wmib
             return default_;
         }
 
+        public static int RetrieveConfig(string key, int default_)
+        {
+            if (ConfigurationData.ContainsKey(key))
+            {
+                return int.Parse(ConfigurationData[key]);
+            }
+            return default_;
+        }
+
         private static Dictionary<string, string> File2Dict()
         {
             Dictionary<string, string> Values = new Dictionary<string, string>();
@@ -330,20 +344,19 @@ namespace wmib
             IRC.NickName = RetrieveConfig("nick");
             IRC.LoginNick = RetrieveConfig("nick");
             System.DebugChan = RetrieveConfig("debug");
+            System.MaxGrantableRoleLevel = RetrieveConfig("maximal_grantable_role_level", System.MaxGrantableRoleLevel);
             System.ModulesToLoad = RetrieveConfig("modules", "");
-            Network.BouncerPort = int.Parse(RetrieveConfig("bouncerp", 
-                                                       Network.BouncerPort.ToString()));
+            Network.BouncerPort = RetrieveConfig("bouncerp", Network.BouncerPort);
             WebPages.WebpageURL = RetrieveConfig("web", "");
             IRC.LoginPw = RetrieveConfig("password", "");
+            IRC.Interval = RetrieveConfig("interval", 800);
             MySQL.MysqlPw = RetrieveConfig("mysql_pw");
             MySQL.Mysqldb = RetrieveConfig("mysql_db", MySQL.Mysqldb);
             MySQL.MysqlUser = RetrieveConfig("mysql_user");
-            IRC.Interval = int.Parse(RetrieveConfig("interval", "800"));
-            MySQL.MysqlPort = int.Parse(RetrieveConfig("mysql_port", MySQL.MysqlPort.ToString()));
+            MySQL.MysqlPort = RetrieveConfig("mysql_port", MySQL.MysqlPort);
             MySQL.MysqlHost = RetrieveConfig("mysql_host");
             WebPages.Css = RetrieveConfig("style_html_file", "");
-            Network.SystemPort = int.Parse(RetrieveConfig("system_port",
-                                Network.SystemPort.ToString()));
+            Network.SystemPort = RetrieveConfig("system_port",  Network.SystemPort);
             if (string.IsNullOrEmpty(IRC.LoginNick))
             {
                 Console.WriteLine("Error there is no login for bot (nick key is missing?)");

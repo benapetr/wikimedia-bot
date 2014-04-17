@@ -214,7 +214,7 @@ namespace wmib
             return textWriter.ToString();
         }
 
-        private static int GetLevelOfRole(string role)
+        public static int GetLevelOfRole(string role)
         {
             if (Roles.ContainsKey(role))
             {
@@ -395,7 +395,7 @@ namespace wmib
         /// <param name="origin"></param>
         /// <param name="user">Regex</param>
         /// <returns></returns>
-        public bool DeleteUser(SystemUser origin, string user)
+        public void DeleteUser(SystemUser origin, string user)
         {
             foreach (SystemUser u in Users)
             {
@@ -405,23 +405,23 @@ namespace wmib
                     {
                         // users with role that has lower level than role of user who is to be removed aren't allowed to do that
                         // eg. trusted can't delete admin from channel
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Trust1", this._Channel.Language), this._Channel);
-                        return true;
+                        Core.irc.Queue.DeliverMessage(messages.Localize("RoleMismatch", this._Channel.Language), this._Channel);
+                        return;
                     }
                     if (u.Name == origin.Name)
                     {
                         // users aren't permitted to delete themselve
                         Core.irc.Queue.DeliverMessage(messages.Localize("Trust2", this._Channel.Language), this._Channel);
-                        return true;
+                        return;
                     }
                     Users.Remove(u);
                     Save();
                     Core.irc.Queue.DeliverMessage(messages.Localize("Trust3", this._Channel.Language), this._Channel);
-                    return true;
+                    return;
                 }
             }
             Core.irc.Queue.DeliverMessage(messages.Localize("Trust4", this._Channel.Language), this._Channel);
-            return true;
+            return;
         }
         
         /// <summary>
@@ -555,6 +555,17 @@ namespace wmib
         public bool IsApproved(User user, string command)
         {
             return IsApproved(user.Nick, user.Host, command);
+        }
+
+        /// <summary>
+        /// Return a level of role that this user posses
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public int GetLevel(User user)
+        {
+            SystemUser current = GetUser(user.Nick + "!@" + user.Host);
+            return GetLevelOfRole(current.Role);
         }
     }
 }
