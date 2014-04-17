@@ -42,6 +42,20 @@ namespace wmib
             return true;
         }
 
+        public override void RegisterPermissions()
+        {
+            if (Security.Roles.ContainsKey("admin") && Security.Roles.ContainsKey("trusted"))
+            {
+                Security.Roles["trusted"].Grant("recentchanges-remove");
+                Security.Roles["trusted"].Grant("recentchanges-add");
+                Security.Roles["admin"].Grant("recentchanges-manage");
+            }
+            if (Security.Roles.ContainsKey("operator"))
+            {
+                Security.Roles["operator"].Grant(Security.Roles["recentchanges-manage"]);
+            }
+        }
+
         public override string Extension_DumpHtml(Channel channel)
         {
             string HTML = "";
@@ -86,7 +100,7 @@ namespace wmib
         {
             if (message.StartsWith(Configuration.System.CommandPrefix + "RC-"))
             {
-                if (channel.SystemUsers.IsApproved(invoker, "trust"))
+                if (channel.SystemUsers.IsApproved(invoker, "recentchanges-remove"))
                 {
                     if (GetConfig(channel, "RC.Enabled", false))
                     {
@@ -148,7 +162,7 @@ namespace wmib
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "RC+ "))
             {
-                if (channel.SystemUsers.IsApproved(invoker, "trust"))
+                if (channel.SystemUsers.IsApproved(invoker, "recentchanges-add"))
                 {
                     if (GetConfig(channel, "RC.Enabled", false))
                     {
@@ -179,7 +193,7 @@ namespace wmib
 
             if (message == Configuration.System.CommandPrefix + "recentchanges-off")
             {
-                if (channel.SystemUsers.IsApproved(invoker, "admin"))
+                if (channel.SystemUsers.IsApproved(invoker, "recentchanges-manage"))
                 {
                     if (!GetConfig(channel, "RC.Enabled", false))
                     {
