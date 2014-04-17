@@ -663,7 +663,7 @@ namespace wmib
                                     Core.TargetBuffer[nick] = ParentInstance;
                                 }
                             }
-                            bool respond = true;
+                            bool respond = !Commands.Trusted(message.Substring(2), nick, host);
                             string modules = "";
                             lock(ExtensionHandler.Extensions)
                             {
@@ -673,9 +673,7 @@ namespace wmib
                                     {
                                         try
                                         {
-
-                                            if (module.Hook_OnPrivateFromUser(message.Substring(2), 
-                                                                                new User(nick, host, Ident)))
+                                            if (module.Hook_OnPrivateFromUser(message.Substring(2), new User(nick, host, Ident)))
                                             {
                                                 respond = false;
                                                 modules += module.Name + " ";

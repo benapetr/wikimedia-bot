@@ -19,6 +19,28 @@ namespace wmib
     /// </summary>
     public partial class Commands
     {
+		public static bool Trusted(string message, string user, string host)
+		{
+			try
+			{
+				if (message.StartsWith(Configuration.System.CommandPrefix + "trusted "))
+				{
+					Channel ch = Core.GetChannel(message.Substring("xtrusted ".Length));
+					if (ch != null)
+					{
+						Core.irc.Queue.DeliverMessage(messages.Localize("TrustedUserList", ch.Language) + ch.SystemUsers.ListAll(), user);
+                    	return true;
+					}
+					Core.irc.Queue.DeliverMessage("There is no such a channel I know of", user);
+					return true;
+				}
+			} catch (Exception fail)
+			{
+				Core.HandleException(fail);
+			}
+			return false;
+		}
+		
         /// <summary>
         /// Change rights of user
         /// </summary>
@@ -72,13 +94,13 @@ namespace wmib
                     }
                     else
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Authorization", channel.Language), channel.Name);
+                        Core.irc.Queue.DeliverMessage(messages.Localize("Authorization", channel.Language), channel);
                         return 0;
                     }
                 }
                 if (message.StartsWith(Configuration.System.CommandPrefix + "trusted"))
                 {
-                    channel.SystemUsers.ListAll();
+					Core.irc.Queue.DeliverMessage(messages.Localize("TrustedUserList", channel.Language) + channel.SystemUsers.ListAll(), channel);
                     return 0;
                 }
                 if (message.StartsWith(Configuration.System.CommandPrefix + "trustdel"))

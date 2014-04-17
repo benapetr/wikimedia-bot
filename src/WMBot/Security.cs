@@ -509,7 +509,7 @@ namespace wmib
         /// <summary>
         /// List all users to a channel
         /// </summary>
-        public void ListAll()
+        public string ListAll()
         {
             string users_ok = "";
             lock (Users)
@@ -519,7 +519,7 @@ namespace wmib
                     users_ok += " " + b.Name + " (" + Variables.ColorChar + "2" + b.Role + Variables.ColorChar +")" + ",";
                 }
             }
-            Core.irc.Queue.DeliverMessage(messages.Localize("TrustedUserList", _Channel.Language) + users_ok, this._Channel);
+            return users_ok;
         }
         
         private static bool HasPrivilege(string privilege, string role)
