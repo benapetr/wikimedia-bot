@@ -55,6 +55,7 @@
     <Compile Include="Slap\Slap.cs" />
     <Compile Include="Statistics\Statistics.cs" />
     <Compile Include="Thanks\Thanks.cs" />
+    <Compile Include="DynamicRole\DynamicRoles.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WMBot\WMBot.csproj">
