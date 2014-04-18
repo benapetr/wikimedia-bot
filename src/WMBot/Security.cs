@@ -112,8 +112,8 @@ namespace wmib
             public class RoleInfo
             {
                 public string Name;
-                public List<string> Roles;
-                public List<string> Permissions;
+                public List<string> Roles = new List<string>();
+                public List<string> Permissions = new List<string>();
                 public int Level;
                 public RoleInfo() {}
                 public RoleInfo(Role role)
