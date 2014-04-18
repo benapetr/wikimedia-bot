@@ -90,6 +90,7 @@ namespace wmib
                         Security.Roles[role].Revoke(parameters[1]);
                     }
                     Core.irc.Queue.DeliverMessage("Successfuly revoked " + parameters[1] + " from " + role, channel);
+                    IsUpdated = true;
                     return;
                 }
                 if (!channel.SuppressWarnings)
@@ -126,6 +127,7 @@ namespace wmib
                         }
                         Security.Roles[role].Grant(parameters[1]);
                     }
+                    IsUpdated = true;
                     Core.irc.Queue.DeliverMessage("Successfuly granted " + parameters[1] + " to " + role, channel);
                     return;
                 }
