@@ -316,9 +316,12 @@ namespace wmib
         /// there is a chance for program to crash during the write and this would left the
         /// file corrupted, this function will create a copy of a file using config.tempName()
         /// which later needs to be deleted (after you finish your write operation).
+        /// 
+        /// The file that is to be backed up doesn't need to exist, if it's not present the
+        /// function just return false
         /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
+        /// <param name="name">Full path of a file that you want to make a backup of</param>
+        /// <returns>True on success or false</returns>
         public static bool BackupData(string name)
         {
             try
@@ -335,6 +338,7 @@ namespace wmib
             } catch (Exception b)
             {
                 HandleException(b);
+                return false;
             }
             return true;
         }

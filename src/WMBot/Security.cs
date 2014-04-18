@@ -112,20 +112,36 @@ namespace wmib
             public class RoleInfo
             {
                 public string Name;
-                public Role Role;
+                public List<string> Roles;
+                public List<string> Permissions;
+                public int Level;
+                public RoleInfo() {}
+                public RoleInfo(Role role)
+                {
+                    lock (Security.Roles)
+                    {
+                        // This could eventually cause a deadlock better make sure it's not
+                        lock (role.Roles)
+                        {
+                            foreach (Role r in role.Roles)
+                                foreach (KeyValuePair<string, Role> kd in Security.Roles)
+                                    if (kd.Value == r)
+                                        this.Roles.Add(kd.Key);
+                        }
+                    }
+                    Level = role.Level;
+                    Permissions.AddRange(role.Permissions);
+                }
             }
 
             public List<RoleInfo> Roles = new List<RoleInfo>();
-
             public DumpableDict() { }
-
             public DumpableDict(Dictionary<string, Role> Roles)
             {
                 foreach (KeyValuePair<string,Role> role in Roles)
                 {
-                    RoleInfo i = new RoleInfo();
+                    RoleInfo i = new RoleInfo(role.Value);
                     i.Name = role.Key;
-                    i.Role = role.Value;
                     this.Roles.Add(i);
                 }
             }
@@ -163,15 +179,33 @@ namespace wmib
         /// </summary>
         public static void Init()
         {
+            Core.RecoverFile(Configuration.Paths.Security);
             if (File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "security.xml"))
             {
                 DumpableDict dict = new DumpableDict();
                 XmlSerializer xmlSerializer = new XmlSerializer(dict.GetType());
                 StreamReader reader = new StreamReader(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "security.xml");
                 dict = (DumpableDict)xmlSerializer.Deserialize(reader);
+                // first we need to create all roles in the file, that is important
                 foreach (DumpableDict.RoleInfo ri in dict.Roles)
                 {
-                    Roles.Add(ri.Name, ri.Role);
+                    Roles.Add(ri.Name, new Role(ri.Level));
+                }
+                foreach (DumpableDict.RoleInfo ri in dict.Roles)
+                {
+                    // now give this role all permissions and roles it had
+                    foreach (string permission in ri.Permissions)
+                    {
+                        Roles[ri.Name].Grant(permission);
+                    }
+                    foreach (string role in ri.Roles)
+                    {
+                        if (!Roles.ContainsKey(role))
+                        {
+                            Syslog.WarningLog("There is no role " + role + " that could be granted to " + ri.Name + " skipping it");
+                        }
+                        Roles[ri.Name].Grant(Roles[role]);
+                    }
                 }
                 return;
             }

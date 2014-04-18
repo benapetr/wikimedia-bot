@@ -10,11 +10,12 @@ namespace wmib
 {
     public class DynamicRoles : Module
     {
+        public bool IsUpdated = false;
+
         public override bool Construct()
         {
             Name = "DynamicRole";
             Version = "1.0.0.0";
-            HasSeparateThreadInstance = false;
             return true;
         }
 
@@ -24,6 +25,41 @@ namespace wmib
             {
                 Security.Roles["admin"].Grant("grant");
                 Security.Roles["admin"].Grant("revoke");
+            }
+        }
+
+        private void Save()
+        {
+            string file = Configuration.Paths.Security;
+            Core.BackupData(file);
+            File.WriteAllText(file, Security.Dump());
+            if (File.Exists(Configuration.TempName(file)))
+            {
+                File.Delete(Configuration.TempName(file));
+            }
+        }
+
+        public override void Load()
+        {
+            try
+            {
+                while (IsWorking)
+                {
+                    if (IsUpdated)
+                    {
+                        IsUpdated = false;
+                        Save();
+                    }
+                    Thread.Sleep(2000);
+                }
+            }
+            catch (ThreadAbortException)
+            {
+                Save();
+            }
+            catch (Exception fail)
+            {
+                HandleException(fail);
             }
         }
 

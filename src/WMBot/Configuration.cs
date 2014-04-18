@@ -46,6 +46,13 @@ namespace wmib
                     return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + Path.DirectorySeparatorChar + "modules";
                 }
             }
+            public static string Security
+            {
+                get
+                {
+                    return Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "security.xml";
+                }
+            }
         }
 
         public class WebPages
