@@ -382,7 +382,7 @@ namespace wmib
             System.prefix = RetrieveConfig("system_prefix", System.prefix);
             IRC.UsingBouncer = bool.Parse(RetrieveConfig("serverIO", "false"));
             Syslog.Log("Loading instances");
-            Core.CreateInstance(IRC.NickName, Network.BouncerPort); // primary instance
+            WmIrcProtocol.CreateInstance(IRC.NickName, Network.BouncerPort); // primary instance
             int CurrentInstance = 0;
             while (CurrentInstance < 20)
             {
@@ -401,10 +401,10 @@ namespace wmib
                         continue;
                     }
                     int port = int.Parse(ConfigurationData["instanceport" + CurrentInstance]);
-                    Core.CreateInstance(InstanceName, port);
+                    WmIrcProtocol.CreateInstance(InstanceName, port);
                 } else
                 {
-                    Core.CreateInstance(InstanceName);
+                    WmIrcProtocol.CreateInstance(InstanceName);
                 }
                 CurrentInstance++;
             }

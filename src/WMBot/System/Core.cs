@@ -62,14 +62,6 @@ namespace wmib
         public static Thread WriterThread = null;
         public static Thread KernelThread = null;
         private static readonly Dictionary<string, string> HelpData = new Dictionary<string, string>();
-        /// <summary>
-        /// List of instances
-        /// </summary>
-        public static Dictionary<string, Instance> Instances = new Dictionary<string, Instance>();
-        /// <summary>
-        /// Target's of each instance
-        /// </summary>
-        public static Dictionary<string, Instance> TargetBuffer = new Dictionary<string, Instance>();
         public static bool IsRunning
         {
             get
@@ -92,64 +84,6 @@ namespace wmib
             {
                 StorageWriter.InsertLine("trafficlog.dat", DateTime.Now + ": " + text, false);
             }
-        }
-
-        /// <summary>
-        /// Creates a new instance
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="port"></param>
-        /// <returns></returns>
-        public static int CreateInstance(string name, int port = 0)
-        {
-            Syslog.DebugLog("Creating instance " + name + " with port " + port);
-            lock(Instances)
-            {
-                if (Instances.ContainsKey(name))
-                {
-                    throw new Exception("Can't load instance " + name + " because this instance already is present");
-                }
-                Instances.Add(name, new Instance(name, port));
-            }
-            return 0;
-        }
-
-        /// <summary>
-        /// Return instance with lowest number of channels
-        /// </summary>
-        /// <returns></returns>
-        public static Instance GetInstance()
-        {
-            int lowest = 99999999;
-            Instance instance = null;
-            // first try to get instance which is online
-            lock(Instances)
-            {
-                foreach (Instance xx in Instances.Values)
-                {
-                    if (xx.IsConnected && xx.IsWorking && xx.ChannelCount < lowest)
-                    {
-                        lowest = xx.ChannelCount;
-                        instance = xx;
-                    }
-                }
-            }
-            // if there is no such return any instance with low channels
-            if (instance == null)
-            {
-                lock(Instances)
-                {
-                    foreach (Instance xx in Instances.Values)
-                    {
-                        if (xx.ChannelCount < lowest)
-                        {
-                            lowest = xx.ChannelCount;
-                            instance = xx;
-                        }
-                    }
-                }
-            }
-            return instance;
         }
 
         /// <summary>
@@ -269,7 +203,7 @@ namespace wmib
                         }
                         try
                         {
-                            curr.Hook_ACTN(channel, new User(nick, host, ""), message);
+                            curr.Hook_ACTN(channel, new libirc.UserInfo(nick, "", host), message);
                         } catch (Exception fail)
                         {
                             Syslog.Log("Exception on Hook_ACTN in module: " + curr.Name);
@@ -378,49 +312,9 @@ namespace wmib
         /// </summary>
         public static void Connect()
         {
-            irc = Instances[Configuration.IRC.NickName].irc;
+            irc = WmIrcProtocol.Instances[Configuration.IRC.NickName].irc;
             // now we load all instances
-            foreach (Instance instance in Instances.Values)
-            {
-                // connect it to irc
-                instance.Init();
-            }
-            // now we need to wait for all instances to connect
-            Syslog.Log("Waiting for all instances to connect to irc");
-            bool IsOk = false;
-            while (!IsOk)
-            {
-                foreach (Instance instance in Instances.Values)
-                {
-                    if (!instance.IsWorking)
-                    {
-                        Syslog.DebugLog("Waiting for " + instance.Nick, 2);
-                        Thread.Sleep(1000);
-                        IsOk = false;
-                        break;
-                    }
-                    Syslog.DebugLog("Connected to " + instance.Nick, 6);
-                    IsOk = true;
-                }
-            }
-
-            // wait for all instances to join their channels
-            Syslog.Log("Waiting for all instances to join channels");
-            IsOk = false;
-            while (!IsOk)
-            {
-                foreach (Instance instance in Instances.Values)
-                {
-                    if (!instance.irc.ChannelsJoined)
-                    {
-                        Thread.Sleep(100);
-                        IsOk = false;
-                        break;
-                    }
-                    IsOk = true;
-                }
-            }
-            Syslog.Log("All instances joined their channels");
+            WmIrcProtocol.ConnectAllIrcInstances();
             FinishedJoining = true;
         }
 
@@ -552,7 +446,7 @@ namespace wmib
                         {
                             if (_Module.IsWorking)
                             {
-                                _Module.Hook_PRIV(curr, new User(nick, host, ""), message);
+                                _Module.Hook_PRIV(curr, new libirc.UserInfo(nick, "", host), message);
                             }
                         } catch (Exception f)
                         {

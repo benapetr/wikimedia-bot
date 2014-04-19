@@ -129,7 +129,7 @@ namespace wmib
         /// <param name="channel"></param>
         /// <param name="source"></param>
         /// <param name="user"></param>
-        public virtual void Hook_Kick(Channel channel, User source, User user)
+        public virtual void Hook_Kick(Channel channel, libirc.User source, libirc.User user)
         {
         }
 
@@ -148,7 +148,7 @@ namespace wmib
         /// </summary>
         /// <param name="channel"></param>
         /// <param name="user"></param>
-        public virtual void Hook_Join(Channel channel, User user)
+        public virtual void Hook_Join(Channel channel, libirc.User user)
         {
         }
 
@@ -158,7 +158,7 @@ namespace wmib
         /// <param name="channel">channel</param>
         /// <param name="invoker">invoker</param>
         /// <param name="message">message</param>
-        public virtual void Hook_PRIV(Channel channel, User invoker, string message)
+        public virtual void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
         }
 
@@ -168,7 +168,7 @@ namespace wmib
         /// <param name="channel"></param>
         /// <param name="invoker"></param>
         /// <param name="message"></param>
-        public virtual void Hook_ACTN(Channel channel, User invoker, string message)
+        public virtual void Hook_ACTN(Channel channel, libirc.UserInfo invoker, string message)
         {
         }
 
@@ -179,7 +179,7 @@ namespace wmib
         /// <param name="invoker"></param>
         /// <param name="config"></param>
         /// <returns></returns>
-        public virtual bool Hook_GetConfig(Channel chan, User invoker, string config)
+        public virtual bool Hook_GetConfig(Channel chan, libirc.UserInfo invoker, string config)
         {
             return false;
         }
@@ -192,7 +192,7 @@ namespace wmib
         /// <param name="config"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public virtual bool Hook_SetConfig(Channel chan, User invoker, string config, string value)
+        public virtual bool Hook_SetConfig(Channel chan, libirc.UserInfo invoker, string config, string value)
         {
             return false;
         }
@@ -219,7 +219,7 @@ namespace wmib
         /// <param name="channel"></param>
         /// <param name="user"></param>
         /// <param name="mesg"></param>
-        public virtual void Hook_ChannelQuit(Channel channel, User user, string mesg)
+        public virtual void Hook_ChannelQuit(Channel channel, libirc.UserInfo user, string mesg)
         {
         }
 
@@ -228,7 +228,7 @@ namespace wmib
         /// </summary>
         /// <param name="channel"></param>
         /// <param name="user"></param>
-        public virtual void Hook_Part(Channel channel, User user)
+        public virtual void Hook_Part(Channel channel, libirc.UserInfo user)
         {
         }
 
@@ -238,9 +238,7 @@ namespace wmib
         /// <param name="channel"></param>
         /// <param name="self"></param>
         /// <param name="message"></param>
-        public virtual void Hook_OnSelf(Channel channel, User self, string message)
-        {
-        }
+        public virtual void Hook_OnSelf(Channel channel, libirc.UserInfo self, string message) {}
 
         /// <summary>
         /// This is a private hook of html extension, each module can have a block of text in system page
@@ -256,9 +254,7 @@ namespace wmib
         /// This hook is called when channel is constructed
         /// </summary>
         /// <param name="channel"></param>
-        public virtual void Hook_Channel(Channel channel)
-        {
-        }
+        public virtual void Hook_Channel(Channel channel) {}
 
         /// <summary>
         /// When the module is loaded
@@ -288,7 +284,7 @@ namespace wmib
         /// </summary>
         /// <param name="user"></param>
         /// <param name="Message"></param>
-        public virtual void Hook_Quit(User user, string Message)
+        public virtual void Hook_Quit(libirc.UserInfo user, string Message)
         {
         }
 
@@ -314,7 +310,7 @@ namespace wmib
         /// <param name="channel"></param>
         /// <param name="Target"></param>
         /// <param name="OldNick"></param>
-        public virtual void Hook_Nick(Channel channel, User Target, string OldNick)
+        public virtual void Hook_Nick(Channel channel, libirc.UserInfo Target, string OldNick)
         {
         }
 
@@ -539,7 +535,7 @@ namespace wmib
         /// <param name="message"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public virtual bool Hook_OnPrivateFromUser(string message, User user)
+        public virtual bool Hook_OnPrivateFromUser(string message, libirc.User user)
         {
             return false;
         }

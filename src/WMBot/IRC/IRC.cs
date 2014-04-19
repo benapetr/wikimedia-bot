@@ -80,6 +80,16 @@ namespace wmib
         /// </summary>
         public Thread ChannelThread;
         /// <summary>
+        /// The network used by this instance
+        /// </summary>
+        public Network Network
+        {
+            get
+            {
+                return WmIrcProtocol.Network;
+            }
+        }
+        /// <summary>
         /// Queue of all messages that should be delivered to network
         /// </summary>
         public MessageQueue Queue = null;
@@ -166,7 +176,7 @@ namespace wmib
                         {
                             if (module.IsWorking)
                             {
-                                module.Hook_OnSelf(channel, new User(Configuration.IRC.NickName, "wikimedia/bot/wm-bot", "wmib"), message);
+                                module.Hook_OnSelf(channel, new libirc.UserInfo(Configuration.IRC.NickName, "wmib", "wikimedia/bot/wm-bot"), message);
                             }
                         }
                         catch (Exception fail)
@@ -212,7 +222,8 @@ namespace wmib
                         {
                             if (module.IsWorking)
                             {
-                                module.Hook_OnSelf(curr, new User(Configuration.IRC.NickName, "wikimedia/bot/wm-bot", "wmib"), message);
+                                //! \todo This needs to be replaced with function that retrieve own hostname
+                                module.Hook_OnSelf(curr, new libirc.UserInfo(Configuration.IRC.NickName, "wmib", "wikimedia/bot/wm-bot"), message);
                             }
                         }
                         catch (Exception fail)
@@ -291,7 +302,7 @@ namespace wmib
                         {
                             Syslog.Log("requesting user list on " + ParentInstance.Nick + " for channel: " + xx);
                             // Send the request with low priority
-                            Queue.Send("WHO " + xx, priority.low);
+                            Queue.Send("WHO " + xx, libirc.Defs.Priority.Low);
                         }
                         // we give 10 seconds for each channel to send us a list
                         Thread.Sleep(10000 * channels.Count);
@@ -580,8 +591,9 @@ namespace wmib
                 }
                 if (text.StartsWith(":"))
                 {
-                    ProcessorIRC processor = new ProcessorIRC(text) {instance = ParentInstance};
-                    processor.Result();
+					DateTime pong;
+                    libirc.ProcessorIRC processor = new libirc.ProcessorIRC(WmIrcProtocol.Network, text, ref pong);
+                    processor.ProfiledResult();
                     string check = text.Substring(text.IndexOf(" "));
                     if (!check.StartsWith(" 005"))
                     {
@@ -591,121 +603,7 @@ namespace wmib
                             command = text.Substring(1);
                             command = command.Substring(0, command.IndexOf(" :"));
                         }
-                        if (command.Contains("PRIVMSG"))
-                        {
-                            string info = text.Substring(1, text.IndexOf(" :", 1) - 1);
-                            // we got a message here :)
-                            if (text.Contains("!") && text.Contains("@"))
-                            {
-                                nick = info.Substring(0, info.IndexOf("!"));
-                                host = info.Substring(info.IndexOf("@") + 1, info.IndexOf(" ", info.IndexOf("@")) - 1 - info.IndexOf("@"));
-                            }
-                            string info_host = info.Substring(info.IndexOf("PRIVMSG "));
-
-                            string message;
-                            if (info_host.Contains("#"))
-                            {
-                                string channel = info_host.Substring(info_host.IndexOf("#"));
-                                if (channel == Configuration.System.DebugChan && ParentInstance.Nick != Core.irc.NickName)
-                                {
-                                    continue;
-                                }
-                                message = text.Replace(info, "");
-                                message = message.Substring(message.IndexOf(" :") + 2);
-                                if (message.Contains(delimiter + "ACTION"))
-                                {
-                                    Core.GetAction(message.Replace(delimiter + "ACTION", ""), 
-                                                               channel, host, nick);
-                                    continue;
-                                }
-                                Core.GetMessage(channel, nick, host, message);
-                                continue;
-                            }
-                            message = text.Substring(text.IndexOf("PRIVMSG"));
-                            message = message.Substring(message.IndexOf(" :"));
-                            // private message
-                            if (message.StartsWith(" :" + delimiter + "FINGER"))
-                            {
-                                SendData("NOTICE " + nick + " :" + delimiter + "FINGER" + 
-                                    " I am a bot don't finger me"
-                                );
-                                continue;
-                            }
-                            if (message.StartsWith(" :" + delimiter + "TIME"))
-                            {
-                                SendData("NOTICE " + nick + " :" + delimiter + "TIME " + 
-                                    DateTime.Now
-                                );
-                                continue;
-                            }
-                            if (message.StartsWith(" :" + delimiter + "PING"))
-                            {
-                                SendData("NOTICE " + nick + " :" + delimiter + "PING" + message.Substring(
-                                                message.IndexOf(delimiter + "PING") + 5)
-                                );
-                                continue;
-                            }
-                            if (message.StartsWith(" :" + delimiter + "VERSION"))
-                            {
-                                SendData("NOTICE " + nick + " :" + delimiter + "VERSION " 
-                                    + Configuration.System.Version
-                                );
-                                continue;
-                            }
-                            // store which instance this message was from so that we can send it using same instance
-                            lock(Core.TargetBuffer)
-                            {
-                                if (!Core.TargetBuffer.ContainsKey(nick))
-                                {
-                                    Core.TargetBuffer.Add(nick, ParentInstance);
-                                } else
-                                {
-                                    Core.TargetBuffer[nick] = ParentInstance;
-                                }
-                            }
-                            bool respond = !Commands.Trusted(message.Substring(2), nick, host);
-                            string modules = "";
-                            lock(ExtensionHandler.Extensions)
-                            {
-                                foreach (Module module in ExtensionHandler.Extensions)
-                                {
-                                    if (module.IsWorking)
-                                    {
-                                        try
-                                        {
-                                            if (module.Hook_OnPrivateFromUser(message.Substring(2), new User(nick, host, Ident)))
-                                            {
-                                                respond = false;
-                                                modules += module.Name + " ";
-                                            }
-                                        } catch (Exception fail)
-                                        {
-                                            Core.HandleException(fail);
-                                        }
-                                    }
-                                }
-                            }
-                            if (respond)
-                            {
-                                Queue.DeliverMessage("Hi, I am robot, this command was not understood." +
-                                    " Please bear in mind that every message you send" +
-                                    " to me will be logged for debuging purposes. See" +
-                                    " documentation at http://meta.wikimedia.org/wiki" +
-                                    "/WM-Bot for explanation of commands", nick,
-                                                                      priority.low);
-                                Syslog.Log("Ignoring private message: (" + nick + ") " + message.Substring(2), false);
-                            } else
-                            {
-                                Syslog.Log("Private message: (handled by " + modules + " from " + nick + ") " + 
-                                    message.Substring(2), false);
-                            }
-                            continue;
-                        }
-                        if (command.Contains("PING "))
-                        {
-                            SendData("PONG " + text.Substring(text.IndexOf("PING ") + 5));
-                            Console.WriteLine(command);
-                        }
+                        
                         if (command.Contains("KICK"))
                         {
                             string temp = command.Substring(command.IndexOf("KICK"));
@@ -743,25 +641,6 @@ namespace wmib
             Syslog.Log("Lost connection to IRC on " + NickName);
             Disconnect();
             IsWorking = false;
-        }
-
-        /// <summary>
-        /// Priority of message
-        /// </summary>
-        public enum priority
-        {
-            /// <summary>
-            /// Low
-            /// </summary>
-            low = 1,
-            /// <summary>
-            /// Normal
-            /// </summary>
-            normal = 2,
-            /// <summary>
-            /// High
-            /// </summary>
-            high = 3,
         }
     }
 }

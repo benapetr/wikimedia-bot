@@ -592,7 +592,7 @@ namespace wmib
         /// <param name="user"></param>
         /// <param name="command"></param>
         /// <returns></returns>
-        public bool IsApproved(User user, string command)
+        public bool IsApproved(libirc.UserInfo user, string command)
         {
             return IsApproved(user.Nick, user.Host, command);
         }
@@ -602,7 +602,7 @@ namespace wmib
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public int GetLevel(User user)
+        public int GetLevel(libirc.UserInfo user)
         {
             SystemUser current = GetUser(user.Nick + "!@" + user.Host);
             return GetLevelOfRole(current.Role);

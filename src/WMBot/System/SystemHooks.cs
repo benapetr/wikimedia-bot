@@ -37,7 +37,7 @@ namespace wmib
             }
         }
 
-        public static void IrcKick(Channel Channel, User Source, User Target)
+        public static void IrcKick(Channel Channel, libirc.User Source, libirc.User Target)
         {
             lock(ExtensionHandler.Extensions)
             {

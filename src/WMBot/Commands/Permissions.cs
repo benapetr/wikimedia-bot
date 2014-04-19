@@ -53,7 +53,7 @@ namespace wmib
         {
             try
             {
-                User invoker = new User(user, host, "");
+                libirc.UserInfo invoker = new libirc.UserInfo(user, "", host);
                 if (message.StartsWith(Configuration.System.CommandPrefix + "trustadd"))
                 {
                     string[] rights_info = message.Split(' ');

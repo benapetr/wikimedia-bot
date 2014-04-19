@@ -27,7 +27,7 @@ namespace wmib
         /// <param name="message">Message</param>
         public static void ParseAdmin(Channel chan, string user, string host, string message)
         {
-            User invoker = new User(user, host, "");
+            libirc.UserInfo invoker = new libirc.UserInfo(user, "", host);
             if (message == Configuration.System.CommandPrefix + "reload")
             {
                 if (chan.SystemUsers.IsApproved(invoker, "admin"))
@@ -54,7 +54,7 @@ namespace wmib
                 if (!chan.SuppressWarnings)
                 {
                     Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan,
-                                                  IRC.priority.low);
+                                                  libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -75,7 +75,7 @@ namespace wmib
                     if (_Channel == null)
                     {
                         Core.irc.Queue.DeliverMessage(messages.Localize("UnknownChan", chan.Language), chan,
-                                                      IRC.priority.low);
+                                                      libirc.Defs.Priority.Low);
                         return;
                     }
                     PartChannel(_Channel, invoker.Nick, invoker.Host, Configuration.System.CommandPrefix
@@ -83,7 +83,7 @@ namespace wmib
                     return;
                 }
                 Core.irc.Queue.DeliverMessage(messages.Localize("Responses-PartFail", chan.Language), chan,
-                                              IRC.priority.low);
+                                              libirc.Defs.Priority.Low);
                 return;
             }
 
@@ -96,7 +96,7 @@ namespace wmib
                     if (_Channel == null)
                     {
                         Core.irc.Queue.DeliverMessage(messages.Localize("UnknownChan", chan.Language), chan,
-                                                      IRC.priority.low);
+                                                      libirc.Defs.Priority.Low);
                         return;
                     }
                     PartChannel(_Channel, invoker.Nick, invoker.Host, Configuration.System.CommandPrefix
@@ -104,7 +104,7 @@ namespace wmib
                     return;
                 }
                 Core.irc.Queue.DeliverMessage(messages.Localize("Responses-PartFail", chan.Language), chan,
-                                              IRC.priority.low);
+                                              libirc.Defs.Priority.Low);
                 return;
             }
 
@@ -138,7 +138,7 @@ namespace wmib
                 if (!chan.SuppressWarnings)
                 {
                     Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan,
-                                                  IRC.priority.low);
+                                                  libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -180,7 +180,7 @@ namespace wmib
                 }
                 if (!chan.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -201,7 +201,7 @@ namespace wmib
                 }
                 if (!chan.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -248,14 +248,14 @@ namespace wmib
 
                     Instance _instance;
 
-                    lock (Core.Instances)
+                    lock (WmIrcProtocol.Instances)
                     {
-                        if (!Core.Instances.ContainsKey(instance))
+                        if (!WmIrcProtocol.Instances.ContainsKey(instance))
                         {
                             Core.irc.Queue.DeliverMessage("This instance I never heard of :'(", chan);
                             return;
                         }
-                        _instance = Core.Instances[instance];
+                        _instance = WmIrcProtocol.Instances[instance];
                     }
 
                     if (_instance == ch.PrimaryInstance)
@@ -275,7 +275,7 @@ namespace wmib
                 }
                 if (!chan.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, libirc.Defs.Priority.Low);
                 }
             }
 
@@ -289,7 +289,7 @@ namespace wmib
                 }
                 if (!chan.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, libirc.Defs.Priority.Low);
                 }
             }
 
@@ -303,7 +303,7 @@ namespace wmib
                 }
                 if (!chan.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, libirc.Defs.Priority.Low);
                 }
             }
 
@@ -318,7 +318,7 @@ namespace wmib
                 }
                 if (!chan.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan.Name, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan.Name, libirc.Defs.Priority.Low);
                 }
             }
 
@@ -478,7 +478,7 @@ namespace wmib
                 }
                 if (!chan.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, IRC.priority.low);
+                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -534,7 +534,7 @@ namespace wmib
                         Configuration.System.SelectedVerbosity--;
                     }
                     Core.irc.Queue.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity, 
-                                                  chan, IRC.priority.high);
+                                                  chan, libirc.Defs.Priority.High);
                 }
             }
 
@@ -544,7 +544,7 @@ namespace wmib
                 {
                     Configuration.System.SelectedVerbosity++;
                     Core.irc.Queue.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity,
-                                                  chan, IRC.priority.high);
+                                                  chan, libirc.Defs.Priority.High);
                 }
             }
 
@@ -556,11 +556,11 @@ namespace wmib
                     Module _m = ExtensionHandler.RetrieveModule(module);
                     if (_m == null)
                     {
-                        Core.irc.Queue.DeliverMessage("This module is not currently loaded in core", chan, IRC.priority.high);
+                        Core.irc.Queue.DeliverMessage("This module is not currently loaded in core", chan, libirc.Defs.Priority.High);
                         return;
                     }
                     _m.Exit();
-                    Core.irc.Queue.DeliverMessage("Unloaded module " + module, chan, IRC.priority.high);
+                    Core.irc.Queue.DeliverMessage("Unloaded module " + module, chan, libirc.Defs.Priority.High);
                 }
             }
 

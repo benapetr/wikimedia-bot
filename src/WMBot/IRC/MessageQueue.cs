@@ -31,7 +31,7 @@ namespace wmib
                 /// <summary>
                 /// Priority
                 /// </summary>
-                public priority MessagePriority;
+                public libirc.Defs.Priority MessagePriority;
                 /// <summary>
                 /// Message itself
                 /// </summary>
@@ -79,7 +79,7 @@ namespace wmib
             /// <param name="Message">Text</param>
             /// <param name="Channel">Channel</param>
             /// <param name="Pr">Priority</param>
-            public void DeliverMessage(string Message, string Channel, priority Pr = priority.normal)
+            public void DeliverMessage(string Message, string Channel, libirc.Defs.Priority Pr = libirc.Defs.Priority.Normal)
             {
                 // first of all we check if we are in correct instance
                 if (Channel.StartsWith("#"))
@@ -99,13 +99,13 @@ namespace wmib
                 }
                 else
                 {
-                    lock (Core.TargetBuffer)
+                    lock (WmIrcProtocol.TargetBuffer)
                     {
-                        if (Core.TargetBuffer.ContainsKey(Channel))
+                        if (WmIrcProtocol.TargetBuffer.ContainsKey(Channel))
                         {
-                            if (Core.TargetBuffer[Channel] != Parent.ParentInstance)
+                            if (WmIrcProtocol.TargetBuffer[Channel] != Parent.ParentInstance)
                             {
-                                Core.TargetBuffer[Channel].irc.Queue.DeliverMessage(Message, Channel, Pr);
+                                WmIrcProtocol.TargetBuffer[Channel].irc.Queue.DeliverMessage(Message, Channel, Pr);
                                 return;
                             }
                         }
@@ -124,7 +124,7 @@ namespace wmib
             /// <param name="Message">Text</param>
             /// <param name="Channel">Channel</param>
             /// <param name="Pr">Priority</param>
-            public void DeliverAct(string Message, string Channel, priority Pr = priority.normal)
+            public void DeliverAct(string Message, string Channel, libirc.Defs.Priority Pr = libirc.Defs.Priority.Normal)
             {
                 // first of all we check if we are in correct instance
                 if (Channel.StartsWith("#"))
@@ -154,7 +154,7 @@ namespace wmib
             /// </summary>
             /// <param name="Data"></param>
             /// <param name="Priority"></param>
-            public void Send(string Data, priority Priority = priority.high)
+            public void Send(string Data, libirc.Defs.Priority Priority = libirc.Defs.Priority.High)
             {
                 Message text = new Message { MessagePriority = Priority, Channel = null, Text = Data, Command = true };
                 lock (Messages)
@@ -169,7 +169,7 @@ namespace wmib
             /// <param name="Message">Text</param>
             /// <param name="User">User</param>
             /// <param name="Pr">Priority</param>
-            public void DeliverMessage(string Message, User User, priority Pr = priority.low)
+            public void DeliverMessage(string Message, libirc.User User, libirc.Defs.Priority Pr = libirc.Defs.Priority.Low)
             {
                 Message text = new Message { MessagePriority = Pr, Text = Message, Channel = User.Nick };
                 lock (Messages)
@@ -184,7 +184,7 @@ namespace wmib
             /// <param name="Message">Text</param>
             /// <param name="Channel">Channel</param>
             /// <param name="Pr">Priority</param>
-            public void DeliverMessage(string Message, Channel Channel, priority Pr = priority.normal)
+            public void DeliverMessage(string Message, Channel Channel,  libirc.Defs.Priority Pr = libirc.Defs.Priority.Normal)
             {
                 if (Channel == null)
                 {
@@ -282,14 +282,14 @@ namespace wmib
                                             Messages.Clear();
                                         }
                                     }
-                                    priority highest = priority.low;
+                                    libirc.Defs.Priority highest = libirc.Defs.Priority.Low;
                                     // we need to check the priority we need to handle first
                                     foreach (Message message in newmessages)
                                     {
                                         if (message.MessagePriority > highest)
                                         {
                                             highest = message.MessagePriority;
-                                            if (message.MessagePriority == priority.high)
+                                            if (message.MessagePriority == libirc.Defs.Priority.High)
                                             {
                                                 break;
                                             }
@@ -303,7 +303,7 @@ namespace wmib
                                             Processed.Add(message);
                                             Transfer(message);
                                             Thread.Sleep(Configuration.IRC.Interval);
-                                            if (highest != priority.high)
+                                            if (highest != libirc.Defs.Priority.High)
                                             {
                                                 break;
                                             }

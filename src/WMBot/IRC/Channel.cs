@@ -33,10 +33,7 @@ namespace wmib
         /// </summary>
         public string Language = "en";
 
-        /// <summary>
-        /// List of users
-        /// </summary>
-        public List<User> UserList = new List<User>();
+        public libirc.Channel IrcChannel = null;
 
         /// <summary>
         /// Whether the channel contains a fresh user list (in case it doesn't bot will auto reparse it from ircd)
@@ -130,23 +127,23 @@ namespace wmib
             LoadConfig();
             if (DefaultInstance == "any")
             {
-                PrimaryInstance = Core.GetInstance();
+                PrimaryInstance = WmIrcProtocol.GetInstance();
                 // we need to save the instance so that next time bot reconnect to bouncer it uses the same instance
                 DefaultInstance = PrimaryInstance.Nick;
                 SaveConfig();
             } else
             {
-                lock(Core.Instances)
+                lock(WmIrcProtocol.Instances)
                 {
-                    if (!Core.Instances.ContainsKey(DefaultInstance))
+                    if (!WmIrcProtocol.Instances.ContainsKey(DefaultInstance))
                     {
                         Syslog.WarningLog("There is no instance " + DefaultInstance + " reassigning channel " + this.Name +
                                           " to a different instance");
-                        this.PrimaryInstance = Core.GetInstance();
+                        this.PrimaryInstance = WmIrcProtocol.GetInstance();
                         Syslog.Log("Reassigned to " + this.PrimaryInstance.Nick);
                     } else
                     {
-                        PrimaryInstance = Core.Instances[DefaultInstance];
+                        PrimaryInstance = WmIrcProtocol.Instances[DefaultInstance];
                     }
                 }
             }
@@ -248,22 +245,6 @@ namespace wmib
             } catch (Exception er)
             {
                 Core.HandleException(er);
-            }
-            return null;
-        }
-
-        public User RetrieveUser(string Nick)
-        {
-            Nick = Nick.ToUpper();
-            lock(UserList)
-            {
-                foreach (User xx in UserList)
-                {
-                    if (Nick == xx.Nick.ToUpper())
-                    {
-                        return xx;
-                    }
-                }
             }
             return null;
         }
@@ -511,14 +492,10 @@ namespace wmib
         /// <returns></returns>
         public bool ContainsUser(string name)
         {
-            name = name.ToUpper();
-            foreach (User us in UserList)
-            {
-                if (name == us.Nick.ToUpper())
-                {
-                    return true;
-                }
-            }
+            if (this.IrcChannel != null)
+			{
+				return this.IrcChannel.ContainsUser(name);
+			}
             return false;
         }
 
