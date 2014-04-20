@@ -18,7 +18,7 @@ using System.Text;
 using System.Threading;
 using System.Web;
 
-namespace wmib
+namespace wmib.Extensions
 {
     public class HtmlDumpModule : Module
     {

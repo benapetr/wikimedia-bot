@@ -13,7 +13,7 @@
 using System;
 using System.Threading;
 
-namespace wmib
+namespace wmib.Extensions
 {
     public class Notify : Module
     {
