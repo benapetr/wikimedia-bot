@@ -88,7 +88,7 @@ namespace wmib
                     unwritten.PendingRows.AddRange(un.PendingRows);
                 }
             }
-            Thread reco = new Thread(Exec) {Name = "Recovery"};
+            Thread reco = new Thread(Exec) {Name = "MySQL/Recovery"};
             Core.ThreadManager.RegisterThread(reco);
             reco.Start();
         }
