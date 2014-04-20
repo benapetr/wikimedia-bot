@@ -377,8 +377,7 @@ namespace wmib.Extensions
         public override bool Construct()
         {
             m = this;
-            Name = "RssFeed";
-            Version = "1.0.12.26";
+            Version = new Version(1, 0, 12, 26);
             return true;
         }
 

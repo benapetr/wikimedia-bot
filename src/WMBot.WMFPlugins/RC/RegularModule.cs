@@ -267,8 +267,7 @@ namespace wmib
         public override bool Construct()
         {
             ptrModule = this;
-            Name = "RC";
-            Version = "1.2.0.5";
+            Version = new Version(1, 2, 0, 6);
             return true;
         }
 

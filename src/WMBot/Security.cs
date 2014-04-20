@@ -174,8 +174,6 @@ namespace wmib
         
         /// <summary>
         /// Load all roles
-        /// 
-        /// TODO: this needs to load the role definitions from external resource if it exist
         /// </summary>
         public static void Init()
         {

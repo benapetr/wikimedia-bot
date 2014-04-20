@@ -43,8 +43,7 @@ namespace wmib.Extensions
 
         public override bool Construct()
         {
-            Name = NAME;
-            Version = "1.0.28";
+            Version = new Version(1, 0, 28, 0);
             return true;
         }
 

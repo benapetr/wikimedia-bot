@@ -19,8 +19,7 @@ namespace wmib.Extensions
     {
         public override bool Construct()
         {
-            Name = "Notifications";
-            Version = "1.0.12.0";
+            Version = new Version(1, 0, 16, 0);
             return true;
         }
 

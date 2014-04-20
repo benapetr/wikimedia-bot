@@ -28,8 +28,7 @@ namespace wmib.Extensions
 
         public override bool Construct()
         {
-            Name = "NetCat";
-            Version = "1.0.0.0";
+            Version = new Version(1, 0, 2, 0);
             return true;
         }
 

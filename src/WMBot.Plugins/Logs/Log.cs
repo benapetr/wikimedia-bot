@@ -378,9 +378,8 @@ namespace wmib.Extensions
         /// <returns></returns>
         public override bool Construct()
         {
-            Name = "LOGS";
             RestartOnModuleCrash = true;
-            Version = "2.6.1";
+            Version = new Version(2, 6, 1);
             return true;
         }
 

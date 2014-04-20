@@ -475,8 +475,7 @@ namespace wmib
 
         public override bool Construct()
         {
-            Name = "Labs";
-            Version = "1.2.8.0";
+            Version = new Version(1, 2, 8, 0);
             return true;
         }
 

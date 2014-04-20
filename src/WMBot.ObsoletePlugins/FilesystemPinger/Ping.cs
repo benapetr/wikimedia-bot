@@ -13,8 +13,6 @@ namespace wmib.Extensions
 
         public override bool Construct()
         {
-            Name = "Ping";
-            Version = "1.0";
             HasSeparateThreadInstance = false;
             return true;
         }

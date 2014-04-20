@@ -20,8 +20,7 @@ namespace wmib.Extensions
         public override bool Construct()
         {
             HasSeparateThreadInstance = false;
-            Name = "Slap";
-            Version = "1.0";
+			Version = new System.Version(1, 0);
             return true;
         }
 

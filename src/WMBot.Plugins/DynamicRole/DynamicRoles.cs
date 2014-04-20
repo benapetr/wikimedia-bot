@@ -29,8 +29,7 @@ namespace wmib.Extensions
 
         public override bool Construct()
         {
-            Name = "DynamicRole";
-            Version = "1.0.0.0";
+            Version = new Version(1, 0, 0, 2);
             return true;
         }
 

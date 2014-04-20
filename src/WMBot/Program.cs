@@ -47,12 +47,8 @@ namespace wmib
         /// <summary>
         /// This is used to handle UNIX signals
         /// </summary>
-        /// <param name='sender'>
-        /// Sender.
-        /// </param>
-        /// <param name='args'>
-        /// Arguments.
-        /// </param>
+        /// <param name='sender'>Sender</param>
+        /// <param name='args'>Arguments</param>
         protected static void SigInt(object sender, ConsoleCancelEventArgs args)
         {
             if (!Core.IsRunning)

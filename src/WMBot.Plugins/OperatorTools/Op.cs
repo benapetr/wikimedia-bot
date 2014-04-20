@@ -398,9 +398,8 @@ namespace wmib.Extensions
 
         public override bool Construct()
         {
-            Version = "1.0.20";
+            Version = new Version(1, 0, 20);
             HasSeparateThreadInstance = false;
-            Name = "Operator tools";
             return true;
         }
     }

@@ -24,11 +24,32 @@ namespace wmib
         /// <summary>
         /// Name of module
         /// </summary>
-        public string Name = "";
+		public string Name
+		{
+			get
+			{
+				if (name == null)
+				{
+					name = this.GetType().Name;
+				}
+				return name;
+			}
+		}
+		public virtual string Description
+		{
+			get
+			{
+				return "No description";
+			}
+		}
+		/// <summary>
+		/// This is just a cache for current module name that is used to prevent calls to expensive functions
+		/// </summary>
+		private string name = null;
         /// <summary>
         /// Version
         /// </summary>
-        public string Version = "unknown";
+        public Version Version = new Version(1, 0, 0);
         /// <summary>
         /// Time when it was loaded to system
         /// </summary>

@@ -11,8 +11,7 @@ namespace wmib
 
         public override bool Construct()
         {
-            Version = "1.0.0.1";
-            Name = "Linkie-Bottie";
+            Version = new System.Version(1, 0, 0, 2);
             return true;
         }
 
