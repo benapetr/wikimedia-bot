@@ -19,7 +19,7 @@ using System.IO;
 using System.Threading;
 using System.Xml;
 
-namespace wmib.Extensions
+namespace wmib.Extensions.RssFeed
 {
     public class RssFeedItem
     {
@@ -33,33 +33,26 @@ namespace wmib.Extensions
         public string bugzilla_severity = "";
         public string bugzilla_target = "";
         public string bugzilla_creation = "";
-
-
         /// <summary>
         /// Gets or sets the title
         /// </summary>
         public string Title = "";
-
         /// <summary>
         /// Gets or sets the description
         /// </summary>
         public string Description = "";
-
         /// <summary>
         /// Gets or sets the link
         /// </summary>
         public string Link = "";
-
         /// <summary>
         /// Gets or sets the item id
         /// </summary>
         public string ItemId = "";
-
         /// <summary>
         /// Gets or sets the publish date
         /// </summary>
         public string PublishDate = "";
-
         /// <summary>
         /// Gets or sets the channel id
         /// </summary>
@@ -69,42 +62,43 @@ namespace wmib.Extensions
 
     public class Feed
     {
-        public class Item
+        public class Subscription
         {
             public static int Count = 0;
-            public string name = "";
+            public string Name = "";
             public string URL = "";
             public List<RssFeedItem> data = null;
             public bool disabled = false;
             public string template = "";
             public bool ScannerOnly = false;
             public int retries = 0;
-            public void reset()
-            {
-                retries = 2;
-            }
-            public Item()
+
+            public Subscription()
             {
                 Count++;
-                reset();
-                disabled = false;
+                Reset();
             }
-            ~Item()
+            ~Subscription()
             {
-                Count = Count - 1;
+                Count--;
+            }
+            public void Reset()
+            {
+                retries = 2;
+                disabled = false;
             }
         }
 
         public List<string> ScannerMatches = new List<string>();
-        public List<Item> Content = new List<Item>();
+        public List<Subscription> RssProviders = new List<Subscription>();
         private readonly string DB = "";
         private readonly Channel owner;
 
-        public bool contains(string name)
+        private bool Contains(string name)
         {
-            foreach (Item Item in Content)
+            foreach (Subscription Item in RssProviders)
             {
-                if (Item.name == name)
+                if (Item.Name == name)
                 {
                     return true;
                 }
@@ -112,7 +106,10 @@ namespace wmib.Extensions
             return false;
         }
 
-        public void Load()
+        /// <summary>
+        /// Read a configuration file
+        /// </summary>
+        private void Load()
         {
             try
             {
@@ -120,12 +117,12 @@ namespace wmib.Extensions
                 {
                     XmlDocument data = new XmlDocument();
                     data.Load(DB);
-                    lock (Content)
+                    lock (RssProviders)
                     {
-                        Content.Clear();
+                        RssProviders.Clear();
                         foreach (XmlNode xx in data.ChildNodes[0].ChildNodes)
                         {
-                            Item i = new Item();
+                            Subscription i = new Subscription();
                             try
                             {
                                 foreach (XmlAttribute property in xx.Attributes)
@@ -133,7 +130,7 @@ namespace wmib.Extensions
                                     switch (property.Name)
                                     {
                                         case "name":
-                                            i.name = property.Value;
+                                            i.Name = property.Value;
                                             break;
                                         case "url":
                                             i.URL = property.Value;
@@ -154,10 +151,10 @@ namespace wmib.Extensions
                             catch (Exception fail)
                             {
                                 RSS.m.HandleException(fail);
-                                RSS.m.DebugLog("unable to load item for feed item name: " + i.name + " channel name " + owner.Name + " item was removed");
+                                RSS.m.DebugLog("unable to load item for feed item name: " + i.Name + " channel name " + owner.Name + " item was removed");
                                 i.disabled = false;
                             }
-                            Content.Add(i);
+                            RssProviders.Add(i);
                         }
                     }
                 }
@@ -168,7 +165,7 @@ namespace wmib.Extensions
             }
         }
 
-        public void Save()
+        private void Save()
         {
             try
             {
@@ -182,12 +179,12 @@ namespace wmib.Extensions
                 }
                 XmlDocument data = new XmlDocument();
                 XmlNode xmlnode = data.CreateElement("database");
-                lock (Content)
+                lock (RssProviders)
                 {
-                    foreach (Item key in Content)
+                    foreach (Subscription key in RssProviders)
                     {
                         XmlAttribute name = data.CreateAttribute("name");
-                        name.Value = key.name;
+                        name.Value = key.Name;
                         XmlAttribute url = data.CreateAttribute("url");
                         url.Value = key.URL;
                         XmlAttribute disabled = data.CreateAttribute("disabled");
@@ -236,114 +233,94 @@ namespace wmib.Extensions
 
         public bool Fetch()
         {
-            try
+            lock (RssProviders)
             {
-                lock (Content)
+                foreach (Subscription curr in RssProviders)
                 {
-                    foreach (Item curr in Content)
+                    if (curr.disabled)
+                        continue;
+                    if (curr.data == null)
                     {
-                        if (!curr.disabled && curr.data == null)
+                        // we didn't retrieve any list of items so far so let's get a first one and later compare it
+                        curr.data = RssManager.ReadFeed(curr.URL, curr, owner.Name);
+                        continue;
+                    }
+                    List<RssFeedItem> feed = RssManager.ReadFeed(curr.URL, curr, owner.Name);
+                    if (feed == null)
+                    {
+                        Syslog.DebugLog("NULL feed for " + curr.Name, 6);
+                        continue;
+                    }
+                    if (feed.Count == 0)
+                    {
+                        Syslog.DebugLog("0 items for " + curr.Name, 6);
+                        continue;
+                    }
+                    // now we retrieved a new list of items
+                    Syslog.DebugLog("there are " + feed.Count + "feed:" + curr.Name, 6);
+                    if (!RssManager.CompareLists(curr.data, feed))
+                    {
+                        List<RssFeedItem> diff = new List<RssFeedItem>();
+                        foreach (RssFeedItem item in feed)
+                            if (!RssManager.ContainsItem(curr.data, item))
+                                diff.Add(item);
+                        curr.data = feed;
+                        diff.Reverse();
+                        foreach (RssFeedItem di in diff)
                         {
-                            curr.data = RssManager.ReadFeed(curr.URL, curr, owner.Name);
-                            continue;
-                        }
-                        if (!curr.disabled)
-                        {
-                            List<RssFeedItem> feed = RssManager.ReadFeed(curr.URL, curr, owner.Name);
-                            if (feed == null)
+                            string description = di.Description.Replace("\n", " ");
+                            if (description.Length > 200)
                             {
-                                Syslog.DebugLog("NULL feed for " + curr.name, 6);
-                                continue;
+                                description = description.Substring(0, 200);
                             }
-                            if (feed.Count == 0)
+                            if (curr.ScannerOnly)
                             {
-                                Syslog.DebugLog("0 items for " + curr.name, 6);
-                                continue;
-                            }
-                            Syslog.DebugLog("there are " + feed.Count + "feed:" + curr.name, 6);
-                            if (!RssManager.CompareLists(curr.data, feed))
-                            {
-                                List<RssFeedItem> diff = new List<RssFeedItem>();
-                                foreach (RssFeedItem item in feed)
+                                if (!Matches(di.Title) && !Matches(di.Description))
                                 {
-                                    if (!RssManager.ContainsItem(curr.data, item))
-                                    {
-                                        diff.Add(item);
-                                    }
-                                }
-                                curr.data = feed;
-                                diff.Reverse();
-                                foreach (RssFeedItem di in diff)
-                                {
-                                    string description = di.Description.Replace("\n", " ");
-                                    if (description.Length > 200)
-                                    {
-                                        description = description.Substring(0, 200);
-                                    }
-
-                                    if (curr.ScannerOnly)
-                                    {
-                                        if (!Matches(di.Title) && !Matches(di.Description))
-                                        {
-                                            continue;
-                                        }
-                                    }
-
-                                    string temp = Module.GetConfig(owner, "Rss.Style", "[$name] $title: $description $link");
-
-                                    if (curr.template != "")
-                                    {
-                                        temp = curr.template;
-                                    }
-
-                                    string message = temp.Replace("$link", di.Link)
-                                        .Replace("$title", di.Title)
-                                        .Replace("$name", curr.name)
-                                        .Replace("$author", di.Author)
-                                        .Replace("$description", description)
-                                        .Replace("$bugzilla_assignee", di.bugzilla_assignee)
-                                        .Replace("$bugzilla_component", di.bugzilla_component)
-                                        .Replace("$bugzilla_creation", di.bugzilla_creation)
-                                        .Replace("$bugzilla_priority", di.bugzilla_priority)
-                                        .Replace("$bugzilla_product", di.bugzilla_product)
-                                        .Replace("$bugzilla_reporter", di.bugzilla_reporter)
-                                        .Replace("$bugzilla_resolution", di.bugzilla_reso)
-                                        .Replace("$bugzilla_severity", di.bugzilla_severity)
-                                        .Replace("$bugzilla_status", di.bugzilla_status)
-                                        .Replace("$bugzilla_target", di.bugzilla_target);
-                                    Core.irc.Queue.DeliverMessage(message, owner.Name, IRC.priority.low);
+                                    continue;
                                 }
                             }
+                            string temp = Module.GetConfig(owner, "Rss.Style", "[$name] $title: $description $link");
+                            if (curr.template != "")
+                            {
+                                temp = curr.template;
+                            }
+                            string message = temp.Replace("$link", di.Link)
+                                .Replace("$title", di.Title)
+                                .Replace("$name", curr.Name)
+                                .Replace("$author", di.Author)
+                                .Replace("$description", description)
+                                .Replace("$bugzilla_assignee", di.bugzilla_assignee)
+                                .Replace("$bugzilla_component", di.bugzilla_component)
+                                .Replace("$bugzilla_creation", di.bugzilla_creation)
+                                .Replace("$bugzilla_priority", di.bugzilla_priority)
+                                .Replace("$bugzilla_product", di.bugzilla_product)
+                                .Replace("$bugzilla_reporter", di.bugzilla_reporter)
+                                .Replace("$bugzilla_resolution", di.bugzilla_reso)
+                                .Replace("$bugzilla_severity", di.bugzilla_severity)
+                                .Replace("$bugzilla_status", di.bugzilla_status)
+                                .Replace("$bugzilla_target", di.bugzilla_target);
+                            Core.irc.Queue.DeliverMessage(message, owner.Name, IRC.priority.low);
                         }
                     }
                 }
-            }
-            catch (ThreadAbortException)
-            {
-                return false;
-            }
-            catch (Exception fail)
-            {
-                RSS.m.Log("Unable to handle rss in " + owner.Name, true);
-                RSS.m.HandleException(fail);
-                return false;
             }
             return true;
         }
 
         public void StyleItem(string Name, string temp)
         {
-            if (!contains(Name))
+            if (!Contains(Name))
             {
                 Core.irc.Queue.DeliverMessage("I don't have this item in a db", owner.Name);
                 return;
             }
-            Item rm = null;
-            lock (Content)
+            Subscription rm = null;
+            lock (RssProviders)
             {
-                foreach (Item Item in Content)
+                foreach (Subscription Item in RssProviders)
                 {
-                    if (Item.name == Name)
+                    if (Item.Name == Name)
                     {
                         rm = Item;
                         break;
@@ -360,17 +337,17 @@ namespace wmib.Extensions
 
         public void RemoveItem(string Name)
         {
-            if (!contains(Name))
+            if (!Contains(Name))
             {
                 Core.irc.Queue.DeliverMessage("I don't have this item in a db", owner.Name);
                 return;
             }
-            Item rm = null;
-            lock (Content)
+            Subscription rm = null;
+            lock (RssProviders)
             {
-                foreach (Item Item in Content)
+                foreach (Subscription Item in RssProviders)
                 {
-                    if (Item.name == Name)
+                    if (Item.Name == Name)
                     {
                         rm = Item;
                         break;
@@ -378,7 +355,7 @@ namespace wmib.Extensions
                 }
                 if (rm != null)
                 {
-                    Content.Remove(rm);
+                    RssProviders.Remove(rm);
                     Save();
                     Core.irc.Queue.DeliverMessage("Item was removed from db", owner.Name);
                     return;
@@ -391,15 +368,14 @@ namespace wmib.Extensions
         {
             if (url == "")
             {
-                if (contains(name))
+                if (Contains(name))
                 {
-                    foreach (Item curr in Content)
+                    foreach (Subscription curr in RssProviders)
                     {
-                        if (curr.name == name)
+                        if (curr.Name == name)
                         {
                             Core.irc.Queue.DeliverMessage("This item was enabled now", owner.Name);
-                            curr.reset();
-                            curr.disabled = false;
+                            curr.Reset();
                             return;
                         }
                     }
@@ -407,28 +383,18 @@ namespace wmib.Extensions
                 Core.irc.Queue.DeliverMessage("There is no such item, if you want to define new item, please use 2 parameters", owner.Name);
                 return;
             }
-            if (!contains(name))
+            if (!Contains(name))
             {
-                Item item = new Item {name = name, ScannerOnly = scan, URL = url, template = ""};
-                lock (Content)
+                Subscription item = new Subscription { Name = name, ScannerOnly = scan, URL = url, template = "" };
+                lock (RssProviders)
                 {
-                    Content.Add(item);
+                    RssProviders.Add(item);
                 }
                 Save();
                 Core.irc.Queue.DeliverMessage("Item was inserted to feed", owner.Name);
                 return;
             }
             Core.irc.Queue.DeliverMessage("This item already exist", owner.Name);
-        }
-
-        public bool Delete()
-        {
-            if (File.Exists(DB))
-            {
-                File.Delete(DB);
-                return true;
-            }
-            return false;
         }
 
         public Feed(Channel _owner)

@@ -23,7 +23,7 @@ using System.Threading;
 using System.Web;
 using System.Xml;
 
-namespace wmib.Extensions
+namespace wmib.Extensions.RssFeed
 {
     public static class RssManager
     {
@@ -74,7 +74,7 @@ namespace wmib.Extensions
         /// <param name="item"></param>
         /// <param name="channel"></param>
         /// <returns></returns>
-        public static List<RssFeedItem> ReadFeed(string url, Feed.Item item, string channel)
+        public static List<RssFeedItem> ReadFeed(string url, Feed.Subscription item, string channel)
         {
             string temp = "No data were sent by server";
             try
@@ -284,7 +284,7 @@ namespace wmib.Extensions
                 if (item.retries < 1)
                 {
                     item.disabled = true;
-                    Core.irc.Queue.DeliverMessage("Unable to parse the feed from " + url + " this url is probably not a valid rss, the feed will be disabled, until you re-enable it by typing @rss+ " + item.name, channel);
+                    Core.irc.Queue.DeliverMessage("Unable to parse the feed from " + url + " this url is probably not a valid rss, the feed will be disabled, until you re-enable it by typing @rss+ " + item.Name, channel);
                     return null;
                 }
                 item.retries--;
@@ -306,7 +306,7 @@ namespace wmib.Extensions
                 if (item.retries < 1)
                 {
                     item.disabled = true;
-                    Core.irc.Queue.DeliverMessage("Unable to parse the feed from " + url + " this url is probably not a valid rss, the feed will be disabled, until you re-enable it by typing @rss+ " + item.name, channel);
+                    Core.irc.Queue.DeliverMessage("Unable to parse the feed from " + url + " this url is probably not a valid rss, the feed will be disabled, until you re-enable it by typing @rss+ " + item.Name, channel);
                     return null;
                 }
                 item.retries--;

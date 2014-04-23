@@ -17,7 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace wmib.Extensions
+namespace wmib.Extensions.RssFeed
 {
     public class RSS : Module
     {
@@ -295,11 +295,11 @@ namespace wmib.Extensions
                 HTML += "<h4>Rss feed</h4><br />";
                 HTML += "\n<br />\n<h4>Rss</h4>\n<br />\n\n<table class=\"infobot\" width=100% border=1>";
                 HTML += "<tr><th>Name</th><th>URL</th><th>Text</th><th>Enabled</th></tr>";
-                lock (list.Content)
+                lock (list.RssProviders)
                 {
-                    foreach (Feed.Item feed in list.Content)
+                    foreach (Feed.Subscription feed in list.RssProviders)
                     {
-                        HTML += "\n<tr><td>" + feed.name + "</td><td><a href=\"" + feed.URL + "\">" + feed.URL + "</a></td><td>" + feed.template + "</td><td>" + (!feed.disabled) + "</td></tr>";
+                        HTML += "\n<tr><td>" + feed.Name + "</td><td><a href=\"" + feed.URL + "\">" + feed.URL + "</a></td><td>" + feed.template + "</td><td>" + (!feed.disabled) + "</td></tr>";
                     }
                 }
                 HTML += "</table>\n";
@@ -309,7 +309,7 @@ namespace wmib.Extensions
 
         public override void Hook_BeforeSysWeb(ref string html)
         {
-            html += "\n<br /><br />Rss feeds: " + Feed.Item.Count;
+            html += "\n<br /><br />Rss feeds: " + Feed.Subscription.Count;
         }
 
         public override bool Hook_SetConfig(Channel chan, User invoker, string config, string value)
@@ -377,7 +377,7 @@ namespace wmib.Extensions
         public override bool Construct()
         {
             m = this;
-            Version = new Version(1, 0, 12, 26);
+            Version = new Version(1, 0, 20, 0);
             return true;
         }
 
@@ -389,21 +389,32 @@ namespace wmib.Extensions
                 Core.Help.Register("rss-off", null);
                 Core.Help.Register("rss+", null);
                 Core.Help.Register("rss-", null);
-                while (true)
+                while (IsWorking)
                 {
                     foreach (Channel channel in Configuration.ChannelList)
                     {
-                        if (GetConfig(channel, "Rss.Enable", false))
+                        try
                         {
-                            Feed feed = (Feed)channel.RetrieveObject("rss");
-                            if (feed != null)
+                            if (GetConfig(channel, "Rss.Enable", false))
                             {
-                                feed.Fetch();
+                                Feed feed = (Feed)channel.RetrieveObject("rss");
+                                if (feed != null)
+                                {
+                                    feed.Fetch();
+                                }
+                                else
+                                {
+                                    Log("WARNING: Feed is enabled but object is not present in " + channel.Name, true);
+                                }
                             }
-                            else
-                            {
-                                Log("WARNING: Feed is enabled but object is not present in " + channel.Name, true);
-                            }
+                        }
+                        catch (ThreadAbortException)
+                        {
+                            return;
+                        }
+                        catch (Exception fail)
+                        {
+                            HandleException(fail);
                         }
                     }
                     Thread.Sleep(10000);
