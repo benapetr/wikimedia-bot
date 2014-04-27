@@ -512,7 +512,7 @@ namespace wmib
             return names;
         }
 
-        public override bool Hook_OnPrivateFromUser(string message, User user)
+        public override bool Hook_OnPrivateFromUser(string message, libirc.UserInfo user)
         {
             if (message.StartsWith("@labs-user "))
             {
@@ -702,7 +702,7 @@ namespace wmib
             return base.Hook_OnPrivateFromUser(message, user);
         }
 
-        public override void Hook_PRIV(Channel channel, User invoker, string message)
+        public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
             if (message.StartsWith("@labs-off"))
             {

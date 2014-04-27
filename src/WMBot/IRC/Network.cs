@@ -1,11 +1,25 @@
+//This program is free software: you can redistribute it and/or modify
+//it under the terms of the GNU General Public License as published by
+//the Free Software Foundation, either version 3 of the License, or
+//(at your option) any later version.
+
+//This program is distributed in the hope that it will be useful,
+//but WITHOUT ANY WARRANTY; without even the implied warranty of
+//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//GNU General Public License for more details.
+
+// Created by Petr Bena
+
 using System;
 
 namespace wmib
 {
     public class Network : libirc.Network
     {
-        public Network (string server) : base(server, WmIrcProtocol.Protocol)
+        private Instance instance;
+        public Network (string server, Instance Instance, WmIrcProtocol protocol) : base(server, (libirc.Protocols.ProtocolIrc)protocol)
         {
+            this.instance = Instance;
         }
 
 		public override void __evt_CTCP (NetworkCTCPEventArgs args)
@@ -20,7 +34,7 @@ namespace wmib
 					Transfer("NOTICE " + args.SourceInfo.Nick + " :" + _Protocol.Separator + "TIME " + DateTime.Now.ToString());
 					return;
                 case "PING":
-                    Transfer("NOTICE " + args.SourceInfo.Nick + " :" + _Protocol.Separator + "PING" + message.Substring(
+                    Transfer("NOTICE " + args.SourceInfo.Nick + " :" + _Protocol.Separator + "PING" + args.Message.Substring(
                         args.Message.IndexOf(_Protocol.Separator + "PING") + 5));
                     return;
                 case "VERSION":
@@ -31,11 +45,70 @@ namespace wmib
             Syslog.DebugLog("Ignoring uknown CTCP from " + args.Source + ": " + args.CTCP + args.Message);
 		}
 
+        public override bool __evt__IncomingData(IncomingDataEventArgs args)
+        {
+            switch(args.Command)
+            {
+                case "001":
+                case "002":
+                    this.instance.IsWorking = true;
+                    break;
+            }
+            return base.__evt__IncomingData(args);
+        }
+
 		public override void __evt_PRIVMSG (NetworkPRIVMSGEventArgs args)
 		{
 			if (args.ChannelName == null)
 			{
 				// private message
+                // store which instance this message was from so that we can send it using same instance
+                lock(Instance.TargetBuffer)
+                {
+                    if (!Instance.TargetBuffer.ContainsKey(args.SourceInfo.Nick))
+                    {
+                        Instance.TargetBuffer.Add(args.SourceInfo.Nick, this.instance);
+                    } else
+                    {
+                        Instance.TargetBuffer[args.SourceInfo.Nick] = this.instance;
+                    }
+                }
+                bool respond = !Commands.Trusted(args.Message, args.SourceInfo.Nick, args.SourceInfo.Host);
+                string modules = "";
+                lock(ExtensionHandler.Extensions)
+                {
+                    foreach (Module module in ExtensionHandler.Extensions)
+                    {
+                        if (module.IsWorking)
+                        {
+                            try
+                            {
+                                if (module.Hook_OnPrivateFromUser(args.Message, args.SourceInfo))
+                                {
+                                    respond = false;
+                                    modules += module.Name + " ";
+                                }
+                            } catch (Exception fail)
+                            {
+                                Core.HandleException(fail);
+                            }
+                        }
+                    }
+                }
+                if (respond)
+                {
+                    IRC.DeliverMessage("Hi, I am robot, this command was not understood." +
+                                         " Please bear in mind that every message you send" +
+                                         " to me will be logged for debuging purposes. See" +
+                                         " documentation at http://meta.wikimedia.org/wiki" +
+                                         "/WM-Bot for explanation of commands", args.SourceInfo,
+                                         libirc.Defs.Priority.Low);
+                    Syslog.Log("Ignoring private message: (" + args.SourceInfo.Nick + ") " + args.Message, false);
+                } else
+                {
+                    Syslog.Log("Private message: (handled by " + modules + " from " + args.SourceInfo.Nick + ") " + 
+                               args.Message, false);
+                }
 			} else
 			{
 				if (args.IsAct)
@@ -44,58 +117,6 @@ namespace wmib
 					return;
 				}
 				Core.GetMessage(args.ChannelName, args.SourceInfo.Nick, args.SourceInfo.Host, args.Message);
-				continue;
-			}
-		
-				
-				// store which instance this message was from so that we can send it using same instance
-				lock(WmIrcProtocol.TargetBuffer)
-				{
-					if (!Core.TargetBuffer.ContainsKey(nick))
-					{
-						Core.TargetBuffer.Add(nick, ParentInstance);
-					} else
-					{
-						Core.TargetBuffer[nick] = ParentInstance;
-					}
-				}
-				bool respond = !Commands.Trusted(message.Substring(2), nick, host);
-				string modules = "";
-				lock(ExtensionHandler.Extensions)
-				{
-					foreach (Module module in ExtensionHandler.Extensions)
-					{
-						if (module.IsWorking)
-						{
-							try
-							{
-								if (module.Hook_OnPrivateFromUser(message.Substring(2), new libirc.UserInfo(nick, Ident, host)))
-								{
-									respond = false;
-									modules += module.Name + " ";
-								}
-							} catch (Exception fail)
-							{
-								Core.HandleException(fail);
-							}
-						}
-					}
-				}
-				if (respond)
-				{
-					Queue.DeliverMessage("Hi, I am robot, this command was not understood." +
-					                     " Please bear in mind that every message you send" +
-					                     " to me will be logged for debuging purposes. See" +
-					                     " documentation at http://meta.wikimedia.org/wiki" +
-					                     "/WM-Bot for explanation of commands", nick,
-					                     priority.low);
-					Syslog.Log("Ignoring private message: (" + nick + ") " + message.Substring(2), false);
-				} else
-				{
-					Syslog.Log("Private message: (handled by " + modules + " from " + nick + ") " + 
-					           message.Substring(2), false);
-				}
-				continue;
 			}
 		}
     }

@@ -195,11 +195,8 @@ namespace wmib.Extensions
                                        + ", statistics: " + Module.GetConfig(chan, "Statistics.Enabled", false)
                                        + " Instance: " + chan.PrimaryInstance.Nick + "</td></tr>");
                 }
-
-
                 builder.AppendLine("</table>Uptime: " + Core.getUptime() + " Memory usage: " +
                         (Process.GetCurrentProcess().PrivateMemorySize64/1024) + "kb Database size: " + getSize());
-
                 lock (ExtensionHandler.Extensions)
                 {
                     foreach (Module mm in ExtensionHandler.Extensions)
@@ -208,30 +205,24 @@ namespace wmib.Extensions
                         mm.Hook_BeforeSysWeb(ref text);
                         builder.AppendLine(text);
                     }
-
                     builder.AppendFormat("<br />Core version: {0}<br />\n", Configuration.System.Version);
-
                     builder.AppendFormat("<h2>Bots</h2>");
                     builder.AppendFormat("<table class=\"text\"><th>Name</th><th>Status</th><th>Bouncer</th>");
-
-                    lock (Core.Instances)
+                    lock (Instance.Instances)
                     {
-                        foreach (Instance xx in Core.Instances.Values)
+                        foreach (Instance xx in Instance.Instances.Values)
                         {
                             string status = "Online in " + xx.ChannelCount + " channels";
-                            if (!xx.IsWorking || !xx.irc.IsConnected)
+                            if (!xx.IsWorking || !xx.IsConnected)
                             {
                                 status = "Disconnected";
                             }
                             builder.AppendLine("<tr><td>" + xx.Nick + "</td><td>" + status + "</td><td>" + xx.Port + "</td></tr>");
                         }
                     }
-
                     builder.AppendLine("</table>");
-
                     builder.AppendLine("<h2>Plugins</h2>");
                     builder.AppendLine("<table class=\"modules\">");
-
                     foreach (Module module in ExtensionHandler.Extensions)
                     {
                         string status = "Terminated";
@@ -250,7 +241,6 @@ namespace wmib.Extensions
                 builder.AppendLine("</table>");
                 builder.AppendLine();
                 builder.AppendLine(CreateFooter());
-
                 File.WriteAllText(Configuration.Paths.DumpDir + "/systemdata.htm", builder.ToString());
             }
             catch (Exception b)

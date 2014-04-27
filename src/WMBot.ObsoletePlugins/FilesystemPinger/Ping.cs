@@ -17,7 +17,7 @@ namespace wmib.Extensions
             return true;
         }
 
-        public override void Hook_PRIV(Channel channel, User invoker, string message)
+        public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
             if (message == Configuration.System.CommandPrefix + "ping")
             {

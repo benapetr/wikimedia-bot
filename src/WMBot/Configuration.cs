@@ -78,6 +78,7 @@ namespace wmib
             /// Nick name
             /// </summary>
             public static string NickName = "wm-bot";
+            public static string Ident = "wm-bot";
             /// <summary>
             /// Login name
             /// </summary>
@@ -382,7 +383,7 @@ namespace wmib
             System.prefix = RetrieveConfig("system_prefix", System.prefix);
             IRC.UsingBouncer = bool.Parse(RetrieveConfig("serverIO", "false"));
             Syslog.Log("Loading instances");
-            WmIrcProtocol.CreateInstance(IRC.NickName, Network.BouncerPort); // primary instance
+            Instance.PrimaryInstance = Instance.CreateInstance(IRC.NickName, Network.BouncerPort);
             int CurrentInstance = 0;
             while (CurrentInstance < 20)
             {
@@ -401,10 +402,10 @@ namespace wmib
                         continue;
                     }
                     int port = int.Parse(ConfigurationData["instanceport" + CurrentInstance]);
-                    WmIrcProtocol.CreateInstance(InstanceName, port);
+                    Instance.CreateInstance(InstanceName, port);
                 } else
                 {
-                    WmIrcProtocol.CreateInstance(InstanceName);
+                    Instance.CreateInstance(InstanceName);
                 }
                 CurrentInstance++;
             }

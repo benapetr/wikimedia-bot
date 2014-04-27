@@ -94,7 +94,7 @@ namespace wmib.Extensions
             }
         }
 
-        public override void Hook_PRIV(Channel channel, User invoker, string message)
+        public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
             if (message.StartsWith("!") && message.Contains("|"))
             {

@@ -156,7 +156,7 @@ namespace wmib
             }
         }
 
-        public override void Hook_PRIV(Channel channel, User invoker, string message)
+        public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
             if (channel.Name != RequestChannel)
             {

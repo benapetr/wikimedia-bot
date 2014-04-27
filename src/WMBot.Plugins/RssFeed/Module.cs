@@ -23,7 +23,7 @@ namespace wmib.Extensions.RssFeed
     {
         public static Module m = null;
 
-        public override void Hook_PRIV(Channel channel, User invoker, string message)
+        public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
             if (message.StartsWith(Configuration.System.CommandPrefix + "rss- "))
             {
@@ -312,7 +312,7 @@ namespace wmib.Extensions.RssFeed
             html += "\n<br /><br />Rss feeds: " + Feed.Subscription.Count;
         }
 
-        public override bool Hook_SetConfig(Channel chan, User invoker, string config, string value)
+        public override bool Hook_SetConfig(Channel chan, libirc.UserInfo invoker, string config, string value)
         {
             if (config == "style-rss")
             {

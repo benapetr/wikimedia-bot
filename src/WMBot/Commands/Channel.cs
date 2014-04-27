@@ -44,7 +44,7 @@ namespace wmib
                             string _channel = message.Substring(message.IndexOf(" ") + 1).Trim();
                             if (!Core.ValidFile(_channel) || !_channel.StartsWith("#"))
                             {
-                                Core.irc.Queue.DeliverMessage(messages.Localize("InvalidName", channel.Language), channel);
+                                IRC.DeliverMessage(messages.Localize("InvalidName", channel.Language), channel);
                                 return;
                             }
                             lock (Configuration.Channels)
@@ -53,7 +53,7 @@ namespace wmib
                                 {
                                     if (_channel == cu.Name)
                                     {
-                                        Core.irc.Queue.DeliverMessage(messages.Localize("ChannelIn", channel.Language), channel);
+                                        IRC.DeliverMessage(messages.Localize("ChannelIn", channel.Language), channel);
                                         return;
                                     }
                                 }
@@ -65,7 +65,7 @@ namespace wmib
                                 Configuration.Channels.Add(xx);
                             }
                             Configuration.Save();
-                            xx.PrimaryInstance.irc.SendData("JOIN " + _channel);
+                            xx.PrimaryInstance.Network.Join(_channel);
                             Thread.Sleep(100);
                             Channel Chan = Core.GetChannel(_channel);
                             if (!existing)
@@ -74,10 +74,10 @@ namespace wmib
                             }
                             return;
                         }
-                        channel.PrimaryInstance.irc.Message(messages.Localize("InvalidName", channel.Language), channel);
+                        IRC.DeliverMessage(messages.Localize("InvalidName", channel.Language), channel);
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
                 }
             }
             catch (Exception b)
@@ -105,7 +105,7 @@ namespace wmib
                 if (channel.Name == Configuration.System.DebugChan && (message == Configuration.System.CommandPrefix + "part" 
                                                           || message == Configuration.System.CommandPrefix + "drop"))
                 {
-                    channel.PrimaryInstance.irc.Queue.DeliverMessage("Cowardly refusing to part this channel, because I love it :3", channel);
+                    IRC.DeliverMessage("Cowardly refusing to part this channel, because I love it :3", channel);
                     return;
                 }
                 if (message == Configuration.System.CommandPrefix + "drop")
@@ -117,7 +117,7 @@ namespace wmib
                             Syslog.Log("Postponing request to part " + channel.Name + " because bot is still loading", true);
                             Thread.Sleep(2000);
                         }
-                        channel.PrimaryInstance.irc.SendData("PART " + channel.Name + " :" + "dropped by " + user + " from " + origin);
+                        channel.PrimaryInstance.Network.Transfer("PART " + channel.Name + " :" + "dropped by " + user + " from " + origin);
                         Syslog.Log("Dropped " + channel.Name + " dropped by " + user + " from " + origin);
                         Thread.Sleep(100);
                         try
@@ -154,7 +154,7 @@ namespace wmib
                         Configuration.Save();
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), origin);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), origin);
                     return;
                 }
 
@@ -167,7 +167,7 @@ namespace wmib
                             Syslog.Log("Postponing request to part " + channel.Name + " because bot is still loading", true);
                             Thread.Sleep(2000);
                         }
-                        channel.PrimaryInstance.irc.SendData("PART " + channel.Name + " :" + "removed by " + user + " from " + origin);
+                        channel.PrimaryInstance.Network.Transfer("PART " + channel.Name + " :" + "removed by " + user + " from " + origin);
                         Syslog.Log("Removed " + channel.Name + " removed by " + user + " from " + origin);
                         Thread.Sleep(100);
                         lock (Configuration.Channels)
@@ -178,7 +178,7 @@ namespace wmib
                         Configuration.Save();
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), origin);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), origin);
                 }
             }
             catch (Exception fail)

@@ -8,12 +8,10 @@
 //MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //GNU General Public License for more details.
 
-// Created by Petr Bena
+// Created by Petr Bena <benapetr@gmail.com>
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 
@@ -21,262 +19,64 @@ namespace wmib
 {
     public partial class IRC
     {
-        /// <summary>
-        /// Instance that owns this handler
-        /// </summary>
-        public Instance ParentInstance = null;
-        /// <summary>
-        /// If false is returned it means this handler is defunct - it may be connected, but it's still
-        /// logging in or server didn't finish loading up
-        /// </summary>
-        public bool IsWorking = false;
-        public string Bouncer = "127.0.0.1";
-        /// <summary>
-        /// Whether bot has already joined all channels after connection to irc
-        /// </summary>
-        public bool ChannelsJoined = false;
-        /// <summary>
-        /// Server addr
-        /// </summary>
-        private readonly string Server;
-        /// <summary>
-        /// Port to bouncer
-        /// </summary>
-        public int BouncerPort = 6667;
-        /// <summary>
-        /// Nick
-        /// </summary>
-        public string NickName;
-        /// <summary>
-        /// ID
-        /// </summary>
-        private readonly string Ident;
-        /// <summary>
-        /// User
-        /// </summary>
-        private readonly string UserName;
-        /// <summary>
-        /// Socket
-        /// </summary>
-        private static NetworkStream networkStream;
-        /// <summary>
-        /// Socket Reader
-        /// </summary>
-        private StreamReader streamReader;
-        /// <summary>
-        /// Writer
-        /// </summary>
-        private StreamWriter streamWriter;
-        /// <summary>
-        /// Pinger
-        /// </summary>
-        private static Thread PingerThread;
-        /// <summary>
-        /// Queue thread
-        /// </summary>
-        private Thread _Queue;
-        /// <summary>
-        /// This is a thread for channel list
-        /// </summary>
-        public Thread ChannelThread;
-        /// <summary>
-        /// The network used by this instance
-        /// </summary>
-        public Network Network
+        public static void DeliverMessage(string text, Channel target, libirc.Defs.Priority priority = libirc.Defs.Priority.Normal)
         {
-            get
-            {
-                return WmIrcProtocol.Network;
-            }
-        }
-        /// <summary>
-        /// Queue of all messages that should be delivered to network
-        /// </summary>
-        public MessageQueue Queue = null;
-        private bool connected;
-        private readonly List<string> Backlog = new List<string>();
-        /// <summary>
-        /// If network is connected
-        /// </summary>
-        public bool IsConnected
-        {
-            get
-            {
-                return connected;
+            if (!target.Suppress)
+            {            
+                target.PrimaryInstance.Network.Message(text, target.Name, priority);
             }
         }
 
-        /// <summary>
-        /// User modes, these are modes that are applied on network, not channel (invisible, oper)
-        /// </summary>
-        public List<char> UModes = new List<char> { 'i', 'w', 'o', 'Q', 'r', 'A' };
-        /// <summary>
-        /// Channel user symbols (oper and such)
-        /// </summary>
-        public List<char> UChars = new List<char> { '~', '&', '@', '%', '+' };
-        /// <summary>
-        /// Channel user modes (voiced, op)
-        /// </summary>
-        public List<char> CUModes = new List<char> { 'q', 'a', 'o', 'h', 'v' };
-        /// <summary>
-        /// Channel modes (moderated, topic)
-        /// </summary>
-        public List<char> CModes = new List<char> { 'n', 'r', 't', 'm' };
-        /// <summary>
-        /// Special channel modes with parameter as a string
-        /// </summary>
-        public List<char> SModes = new List<char> { 'k', 'L' };
-        /// <summary>
-        /// Special channel modes with parameter as a number
-        /// </summary>
-        public List<char> XModes = new List<char> { 'l' };
-        /// <summary>
-        /// Special channel user modes with parameters as a string
-        /// </summary>
-        public List<char> PModes = new List<char> { 'b', 'I', 'e' };
-
-        /// <summary>
-        /// Creates a new instance of IRC
-        /// </summary>
-        /// <param name="_server">Server to connect to</param>
-        /// <param name="_nick">Nickname to use</param>
-        /// <param name="_ident">Ident</param>
-        /// <param name="_username">Username</param>
-        /// <param name="_instance">Instance</param>
-        public IRC(string _server, string _nick, string _ident, string _username, Instance _instance)
+        public static void DeliverMessage(string text, libirc.UserInfo target, libirc.Defs.Priority priority = libirc.Defs.Priority.Normal)
         {
-            Server = _server;
-            Queue = new MessageQueue(this);
-            UserName = _username;
-            NickName = _nick;
-            Ident = _ident;
-            ParentInstance = _instance;
-        }
-
-        /// <summary>
-        /// Send a message to channel
-        /// </summary>
-        /// <param name="message">Message</param>
-        /// <param name="channel">Channel</param>
-        /// <returns></returns>
-        public bool Message(string message, Channel channel)
-        {
-            try
+            // this is a private message
+            lock (Instance.TargetBuffer)
             {
-                if (channel.Suppress)
+                if (Instance.TargetBuffer.ContainsKey(target.Nick))
                 {
-                    return true;
+                    Instance.TargetBuffer[target.Nick].Network.Message(text, target.Nick, priority);
+                    return;
                 }
-                SendData("PRIVMSG " + channel.Name + " :" + message.Replace("\n", " "));
-                lock (ExtensionHandler.Extensions)
+            }
+            Instance.PrimaryInstance.Network.Message(text, target.Nick, priority);
+        }
+
+        public static void DeliverMessage(string text, string target, libirc.Defs.Priority priority = libirc.Defs.Priority.Normal)
+        {
+            // get a target instance
+            if (target.StartsWith("#"))
+            {
+                // it's a channel
+                Channel ch = Core.GetChannel(target);
+                if (ch == null)
                 {
-                    foreach (Module module in ExtensionHandler.Extensions)
+                    Syslog.Log("Not sending message to unknown channel: " + target);
+                    return;
+                }
+                if (!ch.PrimaryInstance.IsConnected)
+                {
+                    Syslog.Log("Not sending message using disconnected instance: " + ch.PrimaryInstance.Nick + " target: " + target + " message: " + text);
+                    return;
+                }
+                if (!ch.Suppress)
+                {
+                    ch.PrimaryInstance.Network.Message(text, target, priority);
+                }
+            } else
+            {
+                lock (Instance.TargetBuffer)
+                {
+                    if (Instance.TargetBuffer.ContainsKey(target))
                     {
-                        try
-                        {
-                            if (module.IsWorking)
-                            {
-                                module.Hook_OnSelf(channel, new libirc.UserInfo(Configuration.IRC.NickName, "wmib", "wikimedia/bot/wm-bot"), message);
-                            }
-                        }
-                        catch (Exception fail)
-                        {
-                            Core.HandleException(fail, module.Name);
-                        }
+                        Instance.TargetBuffer[target].Network.Message(text, target, priority);
+                        return;
                     }
                 }
+                Instance.PrimaryInstance.Network.Message(text, target, priority);
             }
-            catch (Exception fail)
-            {
-                Core.HandleException(fail);
-            }
-            return true;
         }
 
-        /// <summary>
-        /// Send a message to channel
-        /// </summary>
-        /// <param name="message">Message</param>
-        /// <param name="channel">Channel</param>
-        /// <returns></returns>
-        public bool Message(string message, string channel)
-        {
-            try
-            {
-                Channel curr = Core.GetChannel(channel);
-                if (curr == null && channel.StartsWith("#"))
-                {
-                    Syslog.WarningLog("Attempt to send a message to non existing channel: " + channel + " " + message);
-                    return true;
-                }
-                if (curr != null && curr.Suppress)
-                {
-                    return true;
-                }
-                SendData("PRIVMSG " + channel + " :" + message.Replace("\n", " "));
-                lock (ExtensionHandler.Extensions)
-                {
-                    foreach (Module module in ExtensionHandler.Extensions)
-                    {
-                        try
-                        {
-                            if (module.IsWorking)
-                            {
-                                //! \todo This needs to be replaced with function that retrieve own hostname
-                                module.Hook_OnSelf(curr, new libirc.UserInfo(Configuration.IRC.NickName, "wmib", "wikimedia/bot/wm-bot"), message);
-                            }
-                        }
-                        catch (Exception fail)
-                        {
-                            Core.HandleException(fail, module.Name);
-                        }
-                    }
-                }
-            }
-            catch (Exception fail)
-            {
-                Core.HandleException(fail);
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// Join a channel
-        /// </summary>
-        /// <param name="Channel">Channel</param>
-        /// <returns></returns>
-        public bool Join(Channel Channel)
-        {
-            if (Channel != null)
-            {
-                if (Channel.PrimaryInstance != ParentInstance)
-                {
-                    Syslog.DebugLog("Fixing instance for " + Channel.Name);
-                    Channel.PrimaryInstance.irc.Join(Channel);
-                    return false;
-                }
-                SendData("JOIN " + Channel.Name);
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Restart a message delivery
-        /// </summary>
-        public void RestartIRCMessageDelivery()
-        {
-            Core.ThreadManager.KillThread(_Queue);
-            lock(this.Queue.newmessages)
-            {
-                this.Queue.newmessages.Clear();
-            }
-            this._Queue = new Thread(Queue.Run);
-            Core.ThreadManager.RegisterThread(_Queue);
-            this.Queue.Messages.Clear();
-            this._Queue.Start();
-        }
-
+        /*
         /// <summary>
         /// This function will retrieve a list of users in a channel for every channel that doesn't have it so far
         /// </summary>
@@ -320,125 +120,6 @@ namespace wmib
                 Core.HandleException(fail);
             }
             Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
-        }
-
-        /// <summary>
-        /// This is running in a separate thread
-        /// </summary>
-        private void Ping()
-        {
-            while (IsConnected && Core.IsRunning)
-            {
-                try
-                {
-                    Thread.Sleep(20000);
-                    if (!Configuration.IRC.UsingBouncer)
-                    {
-                        SendData("PING :" + Configuration.IRC.NetworkHost);
-                    }
-                }
-                catch (ThreadAbortException)
-                {
-                    Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
-                    return;
-                }
-                catch (Exception fail)
-                {
-                    Core.HandleException(fail);
-                }
-            }
-            Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
-        }
-
-        public void Disconnect()
-        {
-            if (!IsConnected)
-            {
-                return;
-            }
-            Syslog.DebugLog("Closing connection for " + NickName);
-            connected = false;
-            this.ChannelsJoined = false;
-            if (_Queue != null)
-            {
-                Core.ThreadManager.KillThread(_Queue);
-            }
-            if (networkStream != null)
-            {
-                networkStream.Close();
-            }
-            if (streamReader != null)
-            {
-                streamReader.Close();
-            }
-            if (streamWriter != null)
-            {
-                streamWriter.Close();
-            }
-            IsWorking = false;
-            if (ChannelThread != null)
-            {
-                Core.ThreadManager.KillThread(ChannelThread);
-            }
-            if (PingerThread != null)
-            {
-                Core.ThreadManager.KillThread(PingerThread);
-            }
-        }
-
-        /// <summary>
-        /// Connection
-        /// </summary>
-        /// <returns></returns>
-        public bool Reconnect()
-        {
-            if (!Core.IsRunning)
-            {
-                Syslog.Log("Ignoring request to reconnect because bot is shutting down");
-                return false;
-            }
-            Disconnect();
-            Connect();
-            return true;
-        }
-
-        /// <summary>
-        /// Send data to network
-        /// </summary>
-        /// <param name="text"></param>
-        public void SendData(string text)
-        {
-            if (!Core.IsRunning)
-            {
-                return;
-            }
-            if (IsConnected)
-            {
-                lock (this)
-                {
-                    streamWriter.WriteLine(text);
-                    streamWriter.Flush();
-                    Core.TrafficLog(ParentInstance.Nick + ">>>>>>" + text);
-                }
-            }
-            else
-            {
-                Syslog.Log("DEBUG: didn't send data to network, because it's not connected");
-            }
-        }
-
-        /// <summary>
-        /// Identify
-        /// </summary>
-        /// <returns></returns>
-        public bool Authenticate()
-        {
-            if (Configuration.IRC.LoginPw != "")
-            {
-                SendData("PRIVMSG nickserv :identify " + Configuration.IRC.LoginNick + " " + Configuration.IRC.LoginPw);
-                Thread.Sleep(4000);
-            }
-            return true;
         }
 
         /// <summary>
@@ -642,5 +323,6 @@ namespace wmib
             Disconnect();
             IsWorking = false;
         }
+        */
     }
 }

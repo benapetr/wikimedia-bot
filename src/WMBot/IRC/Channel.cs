@@ -32,81 +32,69 @@ namespace wmib
         /// Language used in this channel
         /// </summary>
         public string Language = "en";
-
+        /// <summary>
+        /// The irc channel as maintained by IRC library, this is the linked irc channel that is handled
+        /// by the instance which is servicing that
+        /// </summary>
         public libirc.Channel IrcChannel = null;
-
         /// <summary>
         /// Whether the channel contains a fresh user list (in case it doesn't bot will auto reparse it from ircd)
         /// </summary>
         public bool HasFreshUserList = false;
-
         /// <summary>
         /// List of channels that have shared infobot db
         /// </summary>
         public List<string> SharedChans = new List<string>();
-
         /// <summary>
         /// Objects created by extensions
         /// </summary>
         public Dictionary<string, object> ExtensionObjects = new Dictionary<string, object>();
         private readonly Dictionary<string, string> ExtensionData = new Dictionary<string, string>();
-
         /// <summary>
         /// If this is true, no messages are sent to this channel
         /// </summary>
         public bool Suppress = false;
-
         /// <summary>
         /// List of ignored names for infobot
         /// </summary>
         public List<string> Infobot_IgnoredNames = new List<string>();
-
         /// <summary>
         /// Wait time between responses to users who try to speak to the bot
         /// </summary>
         public int RespondWait = 120;
-
         /// <summary>
         /// Whether bot should respond to users who think that the bot is user and speak to him
         /// </summary>
         public bool RespondMessage = false;
-
         /// <summary>
         /// Time of last message received in channel
         /// </summary>
         public DateTime TimeOfLastMsg = DateTime.Now;
-
         /// <summary>
         /// Doesn't send any warnings on error
         /// </summary>
         public bool SuppressWarnings = false;
-
         /// <summary>
         /// Whether unknown users should be ignored or not
         /// </summary>
         public bool IgnoreUnknown = false;
-
         /// <summary>
         /// Target db of shared infobot
         /// </summary>
         public string SharedDB = "";
-
         /// <summary>
         /// List of channels we share db with
         /// </summary>
         public List<Channel> SharedLinkedChan = new List<Channel>();
-
         /// <summary>
         /// Default instance this channel belongs to
         /// </summary>
         public string DefaultInstance = "any";
-
         /// <summary>
         /// Current instance
         /// </summary>
         [NonSerialized]
         public Instance PrimaryInstance = null;
-
         /// <summary>
         /// Users
         /// </summary>
@@ -127,23 +115,23 @@ namespace wmib
             LoadConfig();
             if (DefaultInstance == "any")
             {
-                PrimaryInstance = WmIrcProtocol.GetInstance();
+                PrimaryInstance = Instance.GetInstance();
                 // we need to save the instance so that next time bot reconnect to bouncer it uses the same instance
                 DefaultInstance = PrimaryInstance.Nick;
                 SaveConfig();
             } else
             {
-                lock(WmIrcProtocol.Instances)
+                lock(Instance.Instances)
                 {
-                    if (!WmIrcProtocol.Instances.ContainsKey(DefaultInstance))
+                    if (!Instance.Instances.ContainsKey(DefaultInstance))
                     {
                         Syslog.WarningLog("There is no instance " + DefaultInstance + " reassigning channel " + this.Name +
                                           " to a different instance");
-                        this.PrimaryInstance = WmIrcProtocol.GetInstance();
+                        this.PrimaryInstance = Instance.GetInstance();
                         Syslog.Log("Reassigned to " + this.PrimaryInstance.Nick);
                     } else
                     {
-                        PrimaryInstance = WmIrcProtocol.Instances[DefaultInstance];
+                        PrimaryInstance = Instance.Instances[DefaultInstance];
                     }
                 }
             }
@@ -298,6 +286,15 @@ namespace wmib
                 Core.HandleException(er);
                 return false;
             }
+        }
+
+        public libirc.User RetrieveUser(string nick)
+        {
+            if (this.IrcChannel == null)
+            {
+                return null;
+            }
+            return this.IrcChannel.UserFromName(nick);
         }
 
         /// <summary>

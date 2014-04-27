@@ -28,10 +28,10 @@ namespace wmib
                     Channel ch = Core.GetChannel(message.Substring("xtrusted ".Length));
                     if (ch != null)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("TrustedUserList", ch.Language) + ch.SystemUsers.ListAll(), user);
+                        IRC.DeliverMessage(messages.Localize("TrustedUserList", ch.Language) + ch.SystemUsers.ListAll(), user);
                         return true;
                     }
-                    Core.irc.Queue.DeliverMessage("There is no such a channel I know of", user);
+                    IRC.DeliverMessage("There is no such a channel I know of", user);
                     return true;
                 }
             } catch (Exception fail)
@@ -61,12 +61,12 @@ namespace wmib
                     {
                         if (rights_info.Length < 3)
                         {
-                            Core.irc.Queue.DeliverMessage(messages.Localize("Trust1", channel.Language), channel);
+                            IRC.DeliverMessage(messages.Localize("Trust1", channel.Language), channel);
                             return 0;
                         }
                         if (!Security.Roles.ContainsKey(rights_info[2]))
                         {
-                            Core.irc.Queue.DeliverMessage(messages.Localize("Unknown1", channel.Language), channel);
+                            IRC.DeliverMessage(messages.Localize("Unknown1", channel.Language), channel);
                             return 2;
                         }
                         int level = Security.GetLevelOfRole(rights_info[2]);
@@ -75,7 +75,7 @@ namespace wmib
                         // change System.MaxGrantableRoleLevel to 65535, this isn't very secure though
                         if (level > Configuration.System.MaxGrantableRoleLevel)
                         {
-                            Core.irc.Queue.DeliverMessage("You can't grant this role because it's over the maximum grantable role level, sorry", channel);
+                            IRC.DeliverMessage("You can't grant this role because it's over the maximum grantable role level, sorry", channel);
                             return 2;
                         }
                         // now we check if role that user is to grant doesn't have higher level than the role they have
@@ -83,24 +83,24 @@ namespace wmib
                         // to grant admins to themselve
                         if (level > channel.SystemUsers.GetLevel(invoker))
                         {
-                            Core.irc.Queue.DeliverMessage(messages.Localize("RoleMismatch", channel.Language), channel);
+                            IRC.DeliverMessage(messages.Localize("RoleMismatch", channel.Language), channel);
                             return 2;
                         }
                         if (channel.SystemUsers.AddUser(rights_info[2], rights_info[1]))
                         {
-                            Core.irc.Queue.DeliverMessage(messages.Localize("UserSc", channel.Language) + rights_info[1], channel);
+                            IRC.DeliverMessage(messages.Localize("UserSc", channel.Language) + rights_info[1], channel);
                             return 0;
                         }
                     }
                     else
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Authorization", channel.Language), channel);
+                        IRC.DeliverMessage(messages.Localize("Authorization", channel.Language), channel);
                         return 0;
                     }
                 }
                 if (message.StartsWith(Configuration.System.CommandPrefix + "trusted"))
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("TrustedUserList", channel.Language) + channel.SystemUsers.ListAll(), channel);
+                    IRC.DeliverMessage(messages.Localize("TrustedUserList", channel.Language) + channel.SystemUsers.ListAll(), channel);
                     return 0;
                 }
                 if (message.StartsWith(Configuration.System.CommandPrefix + "trustdel"))
@@ -113,10 +113,10 @@ namespace wmib
                             channel.SystemUsers.DeleteUser(channel.SystemUsers.GetUser(user + "!@" + host), rights_info[1]);
                             return 0;
                         }
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Authorization", channel.Language), channel);
+                        IRC.DeliverMessage(messages.Localize("Authorization", channel.Language), channel);
                         return 0;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("InvalidUser", channel.Language), channel);
+                    IRC.DeliverMessage(messages.Localize("InvalidUser", channel.Language), channel);
                 }
             }
             catch (Exception b)

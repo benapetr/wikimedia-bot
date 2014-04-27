@@ -22,6 +22,17 @@ namespace wmib
     /// </summary>
     public class Instance
     {
+        public static Instance PrimaryInstance = null;
+        /// <summary>
+        /// List of instances
+        /// </summary>
+        public static Dictionary<string, Instance> Instances = new Dictionary<string, Instance>();
+        /// <summary>
+        /// Target's of each instance
+        /// </summary>
+        public static Dictionary<string, Instance> TargetBuffer = new Dictionary<string, Instance>();
+        public WmIrcProtocol Protocol = null;
+        public Network Network = null;
         /// <summary>
         /// Nickname of this instance
         /// </summary>
@@ -38,6 +49,7 @@ namespace wmib
         /// If you need to permanently disconnect this instance, change this to false
         /// </summary>
         public bool IsActive = true;
+        public bool ChannelsJoined = false;
         /// <summary>
         /// If this instance is connected
         /// </summary>
@@ -45,14 +57,14 @@ namespace wmib
         {
             get
             {
-                if (irc != null && irc.IsConnected)
+                if (this.Network != null && this.Network.IsConnected)
                 {
                     return true;
                 }
                 return false;
             }
         }
-
+        private Thread tProtocol = null;
         private Thread JoinThread;
         /// <summary>
         /// Each instance is running in its own thread, this is pointer to that thread
@@ -60,7 +72,7 @@ namespace wmib
         private Thread thread;
 
         /// <summary>
-        /// List of channels this instance is in
+        /// List of channels this instance is now used in
         /// </summary>
         public List<Channel> ChannelList
         {
@@ -79,15 +91,12 @@ namespace wmib
         }
 
         /// <summary>
-        /// Whether this instance is working
+        /// Whether this instance has finished connection to IRC server, this is used because of several
+        /// freenode issues, where some random commands sent during irc server connection get ignored
+        /// when connection didn't finish (basically after we receive MOTD it's all OK, so we flag this
+        /// to true after we receive motd).
         /// </summary>
-        public bool IsWorking
-        {
-            get
-            {
-                return irc.IsWorking;
-            }
-        }
+        public bool IsWorking = false;
         /// <summary>
         /// Number of channels that are being used by this instance
         /// </summary>
@@ -108,9 +117,113 @@ namespace wmib
         }
 
         /// <summary>
-        /// Pointer to IRC handler for this instance
+        /// Creates a new instance
         /// </summary>
-        public IRC irc = null;
+        /// <param name="name"></param>
+        /// <param name="port"></param>
+        /// <returns></returns>
+        public static Instance CreateInstance(string name, int port = 0)
+        {
+            Syslog.DebugLog("Creating instance " + name + " with port " + port);
+            Instance instance = new Instance(name, port);
+            lock(Instances)
+            {
+                if (Instances.ContainsKey(name))
+                {
+                    throw new Exception("Can't load instance " + name + " because this instance already is present");
+                }
+                Instances.Add(name, instance);
+            }
+            return instance;
+        }
+
+        /// <summary>
+        /// Return instance with lowest number of channels
+        /// </summary>
+        /// <returns></returns>
+        public static Instance GetInstance()
+        {
+            int lowest = 99999999;
+            Instance instance = null;
+            // first try to get instance which is online
+            lock(Instances)
+            {
+                foreach (Instance xx in Instances.Values)
+                {
+                    if (xx.IsConnected && xx.IsWorking && xx.ChannelCount < lowest)
+                    {
+                        lowest = xx.ChannelCount;
+                        instance = xx;
+                    }
+                }
+            }
+            // if there is no such return any instance with low channels
+            if (instance == null)
+            {
+                lock(Instances)
+                {
+                    foreach (Instance xx in Instances.Values)
+                    {
+                        if (xx.ChannelCount < lowest)
+                        {
+                            lowest = xx.ChannelCount;
+                            instance = xx;
+                        }
+                    }
+                }
+            }
+            return instance;
+        }
+
+        public static void Kill()
+        {
+
+        }
+
+        public static void ConnectAllIrcInstances()
+        {
+            foreach (Instance instance in Instances.Values)
+            {
+                // connect it to irc
+                instance.Init();
+            }
+            // now we need to wait for all instances to connect
+            Syslog.Log("Waiting for all instances to connect to irc");
+            bool IsOk = false;
+            while (!IsOk)
+            {
+                foreach (Instance instance in Instances.Values)
+                {
+                    if (!instance.IsWorking)
+                    {
+                        Syslog.DebugLog("Waiting for " + instance.Nick, 2);
+                        Thread.Sleep(1000);
+                        IsOk = false;
+                        break;
+                    }
+                    Syslog.DebugLog("Connected to " + instance.Nick, 6);
+                    IsOk = true;
+                }
+            }
+
+            // wait for all instances to join their channels
+            Syslog.Log("Waiting for all instances to join channels");
+            IsOk = false;
+            while (!IsOk)
+            {
+                foreach (Instance instance in Instances.Values)
+                {
+                    if (!instance.ChannelsJoined)
+                    {
+                        Thread.Sleep(100);
+                        IsOk = false;
+                        break;
+                    }
+                    IsOk = true;
+                }
+            }
+            Syslog.Log("All instances joined their channels");
+        }
 
         /// <summary>
         /// Creates a new bot instance but not connect it to IRC
@@ -121,11 +234,12 @@ namespace wmib
         {
             Nick = name;
             Port = port;
-            irc = new IRC(Configuration.IRC.NetworkHost, Nick, Configuration.IRC.Username, Configuration.IRC.Username, this)
-            {
-                Bouncer = Hostname,
-                BouncerPort = Port
-            };
+            this.Protocol = new WmIrcProtocol(Configuration.IRC.NetworkHost, Hostname, Port);
+            this.Network = new Network(Configuration.IRC.NetworkHost, this, this.Protocol);
+            this.Network.Nickname = Nick;
+            this.Network.UserName = Configuration.IRC.Username;
+            this.Network.Ident = Configuration.IRC.Ident;
+            this.Protocol.IRCNetwork = this.Network;
         }
 
         /// <summary>
@@ -138,13 +252,20 @@ namespace wmib
             JoinThread.Start();
         }
 
+        public void ShutDown()
+        {
+            this.IsActive = false;
+            this.Disconnect();
+            Core.ThreadManager.KillThread(thread);
+        }
+
         public int QueueSize()
         {
-            if (irc == null || irc.Queue == null)
-            {
+            //if (irc == null || irc.Queue == null)
+            //{
                 return 0;
-            }
-            return irc.Queue.Size();
+            //}
+            //return irc.Queue.Size();
         }
 
         /// <summary>
@@ -152,33 +273,32 @@ namespace wmib
         /// </summary>
         private void JoinAll()
         {
-            if (irc.ChannelsJoined == false)
+            if (this.ChannelsJoined == false)
             {
-                while (!irc.IsWorking)
+                while (!this.IsWorking)
                 {
                     Syslog.DebugLog("JOIN THREAD: Waiting for " + Nick + " to finish connection to IRC server", 6);
                     Thread.Sleep(1000);
                 }
                 if (Configuration.System.DebugChan != null)
                 {
-                    irc.SendData("JOIN " + Configuration.System.DebugChan);
+                    this.Network.Join(Configuration.System.DebugChan);
                 }
                 foreach (Channel channel in ChannelList)
                 {
-                    if (channel.Name != "" && channel.Name != Configuration.System.DebugChan)
+                    if (channel.Name.Length > 0 && channel.Name != Configuration.System.DebugChan)
                     {
                         Syslog.DebugLog("Joining " + channel.Name + " on " + Nick);
-                        irc.Join(channel);
-                        Thread.Sleep(2000);
+                        this.Network.Join(channel.Name);
+                        Thread.Sleep(1000);
                     }
                 }
-                irc.ChannelsJoined = true;
+                this.ChannelsJoined = true;
             }
-
-            irc.ChannelThread = new Thread(irc.ChannelList) {Name = "ChannelList:" + Nick};
-            Core.ThreadManager.RegisterThread(irc.ChannelThread);
-            irc.ChannelThread.Start();
-            Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
+            //irc.ChannelThread = new Thread(irc.ChannelList) {Name = "ChannelList:" + Nick};
+            //Core.ThreadManager.RegisterThread(irc.ChannelThread);
+            //irc.ChannelThread.Start();
+            //Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
         }
 
         /// <summary>
@@ -186,46 +306,49 @@ namespace wmib
         /// </summary>
         public void Init()
         {
-            thread = new Thread(Connect);
+            thread = new Thread(Exec);
             this.IsActive = true;
             thread.Name = "Instance:" + Nick;
             Core.ThreadManager.RegisterThread(thread);
             thread.Start();
         }
-
-        /// <summary>
-        /// Shut down
-        /// </summary>
-        public void ShutDown()
+        
+        public void Connect()
         {
-            this.IsActive = false;
-            if (thread != null)
-            {
-                Core.ThreadManager.KillThread(thread);
-            }
-            Thread.Sleep(200);
-            if (irc != null)
-            {
-                irc.Disconnect();
-            }
+            tProtocol = this.Protocol.Open();
+            tProtocol.Name = "Instance:" + Nick + "/IRC";
+            // we need to keep track of this
+            Core.ThreadManager.RegisterThread(tProtocol);
         }
 
-        /// <summary>
-        /// Connect the instance
-        /// </summary>
-        private void Connect()
+        public void Disconnect()
+        {
+            this.Protocol.Disconnect();
+            Core.ThreadManager.KillThread(tProtocol);
+        }
+
+        private void Exec()
         {
             while (this.IsActive && Core.IsRunning)
             {
                 try
                 {
-                    // we first attempt to disconnect this instance, if this is first loop
-                    // it will just skip it
-                    irc.Disconnect();
-                    irc.Connect();
+                    this.Disconnect();
+                    this.Connect();
+                    while (!this.IsWorking)
+                    {
+                        // we need to wait for the irc handler to connect to irc
+                        Thread.Sleep(100);
+                    }
+                    // now we can finally join all channels
                     Join();
-                    irc.ParserExec();
-
+                    // then we just sleep
+                    while (this.Network.IsConnected)
+                    {
+                        Thread.Sleep(2000);
+                    }
+                    // in case we got disconnected, we log it and restart the procedure
+                    Syslog.WarningLog("Disconnected from irc network on " + Nick);
                 } catch (ThreadAbortException)
                 {
                     Syslog.DebugLog("Terminated primary thread for instance " + Nick);

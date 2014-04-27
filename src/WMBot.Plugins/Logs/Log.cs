@@ -50,12 +50,12 @@ namespace wmib.Extensions
         private readonly List<Job> jobs = new List<Job>();
         private readonly List<Item> DJ = new List<Item>();
 
-        public override void Hook_ACTN(Channel channel, User invoker, string message)
+        public override void Hook_ACTN(Channel channel, libirc.UserInfo invoker, string message)
         {
             ChanLog(message, channel, invoker.Nick, invoker.Host, false);
         }
 
-        public override void Hook_PRIV(Channel channel, User invoker, string message)
+		public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
             ChanLog(message, channel, invoker.Nick, invoker.Host);
             if (message == Configuration.System.CommandPrefix + "logon")
@@ -64,17 +64,17 @@ namespace wmib.Extensions
                 {
                     if (GetConfig(channel, "Logging.Enabled", false))
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("ChannelLogged", channel.Language), channel.Name);
+                        IRC.DeliverMessage(messages.Localize("ChannelLogged", channel.Language), channel.Name);
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("LoggingOn", channel.Language), channel.Name);
+                    IRC.DeliverMessage(messages.Localize("LoggingOn", channel.Language), channel.Name);
                     SetConfig(channel, "Logging.Enabled", true);
                     channel.SaveConfig();
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -85,17 +85,17 @@ namespace wmib.Extensions
                 {
                     if (!GetConfig(channel, "Logging.Enabled", false))
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("LogsE1", channel.Language), channel.Name);
+                        IRC.DeliverMessage(messages.Localize("LogsE1", channel.Language), channel.Name);
                         return;
                     }
                     SetConfig(channel, "Logging.Enabled", false);
                     channel.SaveConfig();
-                    Core.irc.Queue.DeliverMessage(messages.Localize("NotLogged", channel.Language), channel.Name);
+                    IRC.DeliverMessage(messages.Localize("NotLogged", channel.Language), channel.Name);
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
             }
         }
@@ -133,7 +133,7 @@ namespace wmib.Extensions
             return 2;
         }
 
-        public override void Hook_Nick(Channel channel, User Target, string OldNick)
+        public override void Hook_Nick(Channel channel, libirc.UserInfo Target, string OldNick)
         {
             if (GetConfig(channel, "Logging.Enabled", false))
             {
@@ -152,7 +152,7 @@ namespace wmib.Extensions
             }
         }
 
-        public override void Hook_Part(Channel channel, User user)
+        public override void Hook_Part(Channel channel, libirc.UserInfo user)
         {
             if (GetConfig(channel, "Logging.Enabled", false))
             {
@@ -171,7 +171,7 @@ namespace wmib.Extensions
             }
         }
 
-        public override void Hook_ChannelQuit(Channel channel, User user, string mesg)
+        public override void Hook_ChannelQuit(Channel channel, libirc.UserInfo user, string mesg)
         {
             if (GetConfig(channel, "Logging.Enabled", false))
             {
@@ -188,9 +188,9 @@ namespace wmib.Extensions
                     DJ.Add(item);
                 }
             }
-        }
+		}
 
-        public override void Hook_Kick(Channel channel, User source, User user)
+        public override void Hook_Kick(wmib.Channel channel, libirc.UserInfo source, libirc.UserInfo user)
         {
             if (GetConfig(channel, "Logging.Enabled", false))
             {
@@ -209,7 +209,7 @@ namespace wmib.Extensions
             }
         }
 
-        public override void Hook_Join(Channel channel, User user)
+        public override void Hook_Join(Channel channel, libirc.UserInfo user)
         {
             if (GetConfig(channel, "Logging.Enabled", false))
             {
@@ -502,7 +502,7 @@ namespace wmib.Extensions
             }
         }
 
-        public override void Hook_OnSelf(Channel channel, User self, string message)
+        public override void Hook_OnSelf(Channel channel, libirc.UserInfo self, string message)
         {
             if (channel == null || channel.PrimaryInstance == null)
                 return;

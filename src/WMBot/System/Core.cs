@@ -49,10 +49,6 @@ namespace wmib
         /// </summary>
         private static Status _Status = Status.OK;
         /// <summary>
-        /// irc
-        /// </summary>
-        public static IRC irc = null;
-        /// <summary>
         /// If this is not true it means bot did not yet finish connecting or joining to all networks
         /// </summary>
         public static bool FinishedJoining = false;
@@ -115,12 +111,10 @@ namespace wmib
         {
             try
             {
-                if (!string.IsNullOrEmpty(Configuration.System.DebugChan) && irc != null && irc.Queue != null)
+                if (!string.IsNullOrEmpty(Configuration.System.DebugChan))
                 {
-                    irc.Queue.DeliverMessage("DEBUG Exception in module " + module + ": " 
-                                                  + ex.Message + " last input was "
-                                                  + LastText,
-                                                  Configuration.System.DebugChan);
+                    IRC.DeliverMessage("DEBUG Exception in module " + module + ": " + ex.Message + " last input was "
+                                                  + LastText, Configuration.System.DebugChan);
                 }
                 Syslog.Log("DEBUG Exception in module " + module + ": " + ex.Message + ex.Source + ex.StackTrace, true);
             } catch (Exception fail)
@@ -138,10 +132,9 @@ namespace wmib
         {
             try
             {
-                if (!string.IsNullOrEmpty(Configuration.System.DebugChan) && irc != null && irc.Queue != null)
+                if (!string.IsNullOrEmpty(Configuration.System.DebugChan))
                 {
-                    irc.Queue.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText,
-                                                  Configuration.System.DebugChan);
+                    IRC.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText, Configuration.System.DebugChan);
                 }
                 if (ex.InnerException != null)
                 {
@@ -312,9 +305,7 @@ namespace wmib
         /// </summary>
         public static void Connect()
         {
-            irc = WmIrcProtocol.Instances[Configuration.IRC.NickName].irc;
-            // now we load all instances
-            WmIrcProtocol.ConnectAllIrcInstances();
+            Instance.ConnectAllIrcInstances();
             FinishedJoining = true;
         }
 
@@ -356,8 +347,7 @@ namespace wmib
                     return;
                 }
                 _Status = Status.ShuttingDown;
-                irc.Disconnect();
-                irc.Queue.Exit();
+                Instance.Kill();
                 StorageWriter.IsRunning = false;
                 Thread modules = new Thread(Terminate) { Name = "KERNEL: Core helper shutdown thread" };
                 modules.Start();
@@ -462,7 +452,7 @@ namespace wmib
                         DateTime time = curr.TimeOfLastMsg;
                         if (DateTime.Now >= time.AddSeconds(curr.RespondWait))
                         {
-                            irc.Queue.DeliverMessage(messages.Localize("hi", curr.Language, new List<string> { nick }), curr.Name);
+                            IRC.DeliverMessage(messages.Localize("hi", curr.Language, new List<string> { nick }), curr.Name);
                             curr.TimeOfLastMsg = DateTime.Now;
                         }
                     }
@@ -602,7 +592,7 @@ namespace wmib
 
         private static void showInfo(string name, string info, string channel)
         {
-            irc.Queue.DeliverMessage("Info for " + name + ": " + info, channel);
+            IRC.DeliverMessage("Info for " + name + ": " + info, channel);
         }
 
         public static bool ShowHelp(string parameter, Channel channel)
@@ -624,7 +614,7 @@ namespace wmib
                     return true;
                 }
             }
-            irc.Queue.DeliverMessage("Unknown command type @commands for a list of all commands I know", channel.Name);
+            IRC.DeliverMessage("Unknown command type @commands for a list of all commands I know", channel.Name);
             return false;
         }
 

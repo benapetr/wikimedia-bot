@@ -95,12 +95,12 @@ namespace wmib.Extensions
             return true;
         }
 
-        public override void Hook_ACTN(Channel channel, User invoker, string message)
+        public override void Hook_ACTN(Channel channel, libirc.UserInfo invoker, string message)
         {
             WriteStatus(invoker.Nick, invoker.Host, channel.Name, item.Action.Talk);
         }
 
-        public override bool Hook_OnPrivateFromUser(string message, User user)
+        public override bool Hook_OnPrivateFromUser(string message, libirc.UserInfo user)
         {
             WriteStatus(user.Nick, user.Host, "<private message>", item.Action.Talk);
             if (message.StartsWith(Configuration.System.CommandPrefix + "seen "))
@@ -123,7 +123,7 @@ namespace wmib.Extensions
             return false;
         }
 
-        public override void Hook_PRIV(Channel channel, User invoker, string message)
+        public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
             WriteStatus(invoker.Nick, invoker.Host, channel.Name, item.Action.Talk);
             if (message.StartsWith(Configuration.System.CommandPrefix + "seen "))
@@ -211,27 +211,27 @@ namespace wmib.Extensions
             }
         }
 
-        public override void Hook_Join(Channel channel, User user)
+        public override void Hook_Join(Channel channel, libirc.UserInfo user)
         {
             WriteStatus(user.Nick, user.Host, channel.Name, item.Action.Join);
         }
 
-        public override void Hook_Nick(Channel channel, User Target, string OldNick)
+        public override void Hook_Nick(Channel channel, libirc.UserInfo Target, string OldNick)
         {
             WriteStatus(OldNick, Target.Host, channel.Name, item.Action.Nick, Target.Nick);
         }
 
-        public override void Hook_Kick(Channel channel, User source, User user)
+        public override void Hook_Kick(Channel channel, libirc.UserInfo source, libirc.UserInfo user)
         {
             WriteStatus(user.Nick, user.Host, channel.Name, item.Action.Kick);
         }
 
-        public override void Hook_Part(Channel channel, User user)
+        public override void Hook_Part(Channel channel, libirc.UserInfo user)
         {
             WriteStatus(user.Nick, user.Host, channel.Name, item.Action.Part);
         }
 
-        public override void Hook_Quit(User user, string Message)
+        public override void Hook_Quit(libirc.UserInfo user, string Message)
         {
             WriteStatus(user.Nick, user.Host, "N/A", item.Action.Exit, "", Message);
         }

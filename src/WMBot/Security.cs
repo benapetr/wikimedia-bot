@@ -411,14 +411,14 @@ namespace wmib
             if (!misc.IsValidRegex(user))
             {
                 Syslog.Log("Unable to create user " + user + " because the regex is invalid", true);
-                Core.irc.Queue.DeliverMessage("Unable to add user because this regex is not valid", this._Channel);
+                IRC.DeliverMessage("Unable to add user because this regex is not valid", this._Channel);
                 return false;
             }
             foreach (SystemUser u in Users)
             {
                 if (u.Name == user)
                 {
-                    Core.irc.Queue.DeliverMessage("Unable to add user because this user is already in a list", this._Channel);
+                    IRC.DeliverMessage("Unable to add user because this user is already in a list", this._Channel);
                     return false;
                 }
             }
@@ -443,22 +443,22 @@ namespace wmib
                     {
                         // users with role that has lower level than role of user who is to be removed aren't allowed to do that
                         // eg. trusted can't delete admin from channel
-                        Core.irc.Queue.DeliverMessage(messages.Localize("RoleMismatch", this._Channel.Language), this._Channel);
+                        IRC.DeliverMessage(messages.Localize("RoleMismatch", this._Channel.Language), this._Channel);
                         return;
                     }
                     if (u.Name == origin.Name)
                     {
                         // users aren't permitted to delete themselve
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Trust2", this._Channel.Language), this._Channel);
+                        IRC.DeliverMessage(messages.Localize("Trust2", this._Channel.Language), this._Channel);
                         return;
                     }
                     Users.Remove(u);
                     Save();
-                    Core.irc.Queue.DeliverMessage(messages.Localize("Trust3", this._Channel.Language), this._Channel);
+                    IRC.DeliverMessage(messages.Localize("Trust3", this._Channel.Language), this._Channel);
                     return;
                 }
             }
-            Core.irc.Queue.DeliverMessage(messages.Localize("Trust4", this._Channel.Language), this._Channel);
+            IRC.DeliverMessage(messages.Localize("Trust4", this._Channel.Language), this._Channel);
             return;
         }
         

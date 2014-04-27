@@ -96,7 +96,7 @@ namespace wmib
             return ok;
         }
 
-        public override void Hook_PRIV(Channel channel, User invoker, string message)
+        public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
             if (message.StartsWith(Configuration.System.CommandPrefix + "RC-"))
             {
@@ -618,7 +618,7 @@ namespace wmib
             }
         }
 
-        public override bool Hook_GetConfig(Channel chan, User invoker, string config)
+        public override bool Hook_GetConfig(Channel chan, libirc.UserInfo invoker, string config)
         {
             switch (config)
             {
@@ -629,7 +629,7 @@ namespace wmib
             return false;
         }
 
-        public override bool Hook_SetConfig(Channel chan, User invoker, string config, string value)
+        public override bool Hook_SetConfig(Channel chan, libirc.UserInfo invoker, string config, string value)
         {
             switch (config)
             {

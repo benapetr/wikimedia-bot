@@ -20,18 +20,9 @@ namespace wmib.Extensions
 {
     class ChannelTools : Module
     {
-        private static User getUser(string name, Channel c)
+        private static libirc.UserInfo getUser(string name, Channel c)
         {
-            lock (c.UserList)
-            {
-                foreach (User user in c.UserList)
-                {
-                    if (name.ToLower() == user.Nick.ToLower())
-                    {
-                        return user;
-                    }
-                }
-            }
+
             return null;
         }
 
@@ -39,23 +30,23 @@ namespace wmib.Extensions
         {
             if (!GetConfig(chan, "OP.Permanent", false))
             {
-                chan.PrimaryInstance.irc.Queue.Send("CS op " + chan.Name, IRC.priority.high);
+                chan.PrimaryInstance.Network.Transfer("CS op " + chan.Name, libirc.Defs.Priority.High);
                 return;
             }
             // get our user
-            User user = chan.RetrieveUser(chan.PrimaryInstance.Nick);
+            libirc.User user = chan.RetrieveUser(chan.PrimaryInstance.Nick);
             if (user == null)
             {
-                chan.PrimaryInstance.irc.Queue.Send("CS op " + chan.Name, IRC.priority.high);
+                chan.PrimaryInstance.Network.Transfer("CS op " + chan.Name, libirc.Defs.Priority.High);
                 return;
             }
-            if (!user.IsOperator)
+            if (!user.IsOp)
             {
-                chan.PrimaryInstance.irc.Queue.Send("CS op " + chan.Name, IRC.priority.high);
+                chan.PrimaryInstance.Network.Transfer("CS op " + chan.Name, libirc.Defs.Priority.High);
             }
         }
 
-        public override void Hook_PRIV(Channel channel, User invoker, string message)
+        public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
             if (message.StartsWith(Configuration.System.CommandPrefix + "optools-on"))
             {
@@ -63,17 +54,17 @@ namespace wmib.Extensions
                 {
                     if (GetConfig(channel, "OP.Enabled", false))
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("OpE1", channel.Language), channel);
+                        IRC.DeliverMessage(messages.Localize("OpE1", channel.Language), channel);
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("OpM1", channel.Language), channel.Name);
+                    IRC.DeliverMessage(messages.Localize("OpM1", channel.Language), channel.Name);
                     SetConfig(channel, "OP.Enabled", true);
                     channel.SaveConfig();
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -84,17 +75,17 @@ namespace wmib.Extensions
                 {
                     if (!GetConfig(channel, "OP.Permanent", false))
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("OpE2", channel.Language), channel);
+                        IRC.DeliverMessage(messages.Localize("OpE2", channel.Language), channel);
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("OpM2", channel.Language), channel);
+                    IRC.DeliverMessage(messages.Localize("OpM2", channel.Language), channel);
                     SetConfig(channel, "OP.Permanent", false);
                     channel.SaveConfig();
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -105,17 +96,17 @@ namespace wmib.Extensions
                 {
                     if (GetConfig(channel, "OP.Permanent", false))
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("OpE3", channel.Language), channel);
+                        IRC.DeliverMessage(messages.Localize("OpE3", channel.Language), channel);
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("OpM3", channel.Language), channel);
+                    IRC.DeliverMessage(messages.Localize("OpM3", channel.Language), channel);
                     SetConfig(channel, "OP.Permanent", true);
                     channel.SaveConfig();
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -126,17 +117,17 @@ namespace wmib.Extensions
                 {
                     if (!GetConfig(channel, "OP.Enabled", false))
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("OpE4", channel.Language), channel);
+                        IRC.DeliverMessage(messages.Localize("OpE4", channel.Language), channel);
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("OpM4", channel.Language), channel);
+                    IRC.DeliverMessage(messages.Localize("OpM4", channel.Language), channel);
                     SetConfig(channel, "OP.Enabled", false);
                     channel.SaveConfig();
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, libirc.Defs.Priority.Low);
                 }
                 return;
             }

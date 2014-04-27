@@ -94,7 +94,7 @@ namespace wmib.Extensions
                         }
                     }
                     DebugLog("Relaying message from " + IP + " to " + channel + ":" + value, 2);
-                    Core.irc.Queue.DeliverMessage(value, ch, IRC.priority.low);
+                    IRC.DeliverMessage(value, ch, libirc.Defs.Priority.Low);
                 }
             }
             catch (Exception fail)
@@ -149,7 +149,7 @@ namespace wmib.Extensions
             return builder.ToString();
         }
 
-        public override void Hook_PRIV(Channel channel, User invoker, string message)
+        public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
             if (message == Configuration.System.CommandPrefix + "relay-off")
             {
@@ -157,17 +157,17 @@ namespace wmib.Extensions
                 {
                     if (!GetConfig(channel, "NetCat.Enabled", false))
                     {
-                        Core.irc.Queue.DeliverMessage("Relay is already disabled", channel.Name);
+                        IRC.DeliverMessage("Relay is already disabled", channel.Name);
                         return;
                     }
                     SetConfig(channel, "NetCat.Enabled", false);
                     channel.SaveConfig();
-                    Core.irc.Queue.DeliverMessage("Relay was disabled", channel.Name);
+                    IRC.DeliverMessage("Relay was disabled", channel.Name);
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -180,13 +180,13 @@ namespace wmib.Extensions
                     SetConfig(channel, "NetCat.Token", true);
                     SetConfig(channel, "NetCat.TokenData", token);
                     channel.SaveConfig();
-                    Core.irc.Queue.DeliverMessage("New token was generated for this channel, and it was sent to you in a private message", channel.Name);
-                    Core.irc.Queue.DeliverMessage("Token for " + channel.Name + " is: " + token, invoker.Nick, IRC.priority.normal);
+                    IRC.DeliverMessage("New token was generated for this channel, and it was sent to you in a private message", channel.Name);
+                    IRC.DeliverMessage("Token for " + channel.Name + " is: " + token, invoker.Nick);
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -197,12 +197,12 @@ namespace wmib.Extensions
                 {
                     SetConfig(channel, "NetCat.Token", false);
                     channel.SaveConfig();
-                    Core.irc.Queue.DeliverMessage("This channel will no longer require a token in order to relay messages into it", channel.Name);
+                    IRC.DeliverMessage("This channel will no longer require a token in order to relay messages into it", channel.Name);
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -213,16 +213,16 @@ namespace wmib.Extensions
                 {
                     if (!GetConfig(channel, "NetCat.Token", false))
                     {
-                        Core.irc.Queue.DeliverMessage("This channel doesn't require a token", channel.Name);
+                        IRC.DeliverMessage("This channel doesn't require a token", channel.Name);
                         return;
                     }
                     string token = GetConfig(channel, "NetCat.TokenData", "<invalid>");
-                    Core.irc.Queue.DeliverMessage("Token for " + channel.Name + " is: " + token, invoker.Nick, IRC.priority.normal);
+                    IRC.DeliverMessage("Token for " + channel.Name + " is: " + token, invoker.Nick);
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -233,17 +233,17 @@ namespace wmib.Extensions
                 {
                     if (GetConfig(channel, "NetCat.Enabled", false))
                     {
-                        Core.irc.Queue.DeliverMessage("Relay is already enabled", channel.Name);
+                        IRC.DeliverMessage("Relay is already enabled", channel.Name);
                         return;
                     }
                     SetConfig(channel, "NetCat.Enabled", true);
                     channel.SaveConfig();
-                    Core.irc.Queue.DeliverMessage("Relay was enabled", channel.Name);
+                    IRC.DeliverMessage("Relay was enabled", channel.Name);
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
             }
         }

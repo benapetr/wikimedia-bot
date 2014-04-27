@@ -76,7 +76,6 @@
     <Compile Include="System\RegexCheck.cs" />
     <Compile Include="Modules\Handler.cs" />
     <Compile Include="Security.cs" />
-    <Compile Include="IRC\MessageQueue.cs" />
     <Compile Include="System\ThreadManager.cs" />
     <Compile Include="System\User.cs" />
     <Compile Include="IRC\Network.cs" />

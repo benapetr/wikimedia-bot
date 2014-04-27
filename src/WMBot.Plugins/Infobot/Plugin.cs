@@ -232,7 +232,7 @@ namespace wmib.Extensions
             return HTML;
         }
 
-        public override void Hook_PRIV(Channel channel, User invoker, string message)
+        public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
             // "\uff01" is the full-width version of "!".
             if ((message.StartsWith("!") || message.StartsWith("\uff01")) && GetConfig(channel, "Infobot.Enabled", true))
@@ -281,7 +281,7 @@ namespace wmib.Extensions
                         string name = message.Substring("@infobot-recovery ".Length);
                         if (!GetConfig(channel, "Infobot.Enabled", true))
                         {
-                            Core.irc.Queue.DeliverMessage("Infobot is not enabled in this channel", channel, IRC.priority.low);
+                            IRC.DeliverMessage("Infobot is not enabled in this channel", channel, libirc.Defs.Priority.Low);
                             return;
                         }
                         if (infobot != null)
@@ -292,7 +292,7 @@ namespace wmib.Extensions
                     }
                     if (!channel.SuppressWarnings)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                        IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, libirc.Defs.Priority.Low);
                     }
                     return;
                 }
@@ -304,7 +304,7 @@ namespace wmib.Extensions
                         string name = message.Substring("@infobot-snapshot ".Length);
                         if (!GetConfig(channel, "Infobot.Enabled", true))
                         {
-                            Core.irc.Queue.DeliverMessage("Infobot is not enabled in this channel", channel, IRC.priority.low);
+                            IRC.DeliverMessage("Infobot is not enabled in this channel", channel, libirc.Defs.Priority.Low);
                             return;
                         }
                         if (infobot != null)
@@ -315,7 +315,7 @@ namespace wmib.Extensions
                     }
                     if (!channel.SuppressWarnings)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                        IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, libirc.Defs.Priority.Low);
                     }
                     return;
                 }
@@ -327,7 +327,7 @@ namespace wmib.Extensions
                         string name = message.Substring("@infobot-set-raw ".Length);
                         if (!GetConfig(channel, "Infobot.Enabled", true))
                         {
-                            Core.irc.Queue.DeliverMessage("Infobot is not enabled in this channel", channel, IRC.priority.low);
+                            IRC.DeliverMessage("Infobot is not enabled in this channel", channel, libirc.Defs.Priority.Low);
                             return;
                         }
                         if (infobot != null)
@@ -338,7 +338,7 @@ namespace wmib.Extensions
                     }
                     if (!channel.SuppressWarnings)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                        IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, libirc.Defs.Priority.Low);
                     }
                     return;
                 }
@@ -350,7 +350,7 @@ namespace wmib.Extensions
                         string name = message.Substring("@infobot-unset-raw ".Length);
                         if (!GetConfig(channel, "Infobot.Enabled", true))
                         {
-                            Core.irc.Queue.DeliverMessage("Infobot is not enabled in this channel", channel, IRC.priority.low);
+                            IRC.DeliverMessage("Infobot is not enabled in this channel", channel, libirc.Defs.Priority.Low);
                             return;
                         }
                         if (infobot != null)
@@ -361,7 +361,7 @@ namespace wmib.Extensions
                     }
                     if (!channel.SuppressWarnings)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                        IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, libirc.Defs.Priority.Low);
                     }
                     return;
                 }
@@ -378,21 +378,21 @@ namespace wmib.Extensions
                         name.Replace("?", "");
                         if (name == "")
                         {
-                            Core.irc.Queue.DeliverMessage("You should specify a file name", channel, IRC.priority.normal);
+                            IRC.DeliverMessage("You should specify a file name", channel);
                             return;
                         }
                         if (!File.Exists(SnapshotsDirectory + Path.DirectorySeparatorChar + channel.Name + Path.DirectorySeparatorChar + name))
                         {
-                            Core.irc.Queue.DeliverMessage("File not found", channel, IRC.priority.normal);
+                            IRC.DeliverMessage("File not found", channel);
                             return;
                         }
                         File.Delete(SnapshotsDirectory + Path.DirectorySeparatorChar + channel.Name + Path.DirectorySeparatorChar + name);
-                        Core.irc.Queue.DeliverMessage("Requested file was removed", channel, IRC.priority.normal);
+                        IRC.DeliverMessage("Requested file was removed", channel);
                         return;
                     }
                     if (!channel.SuppressWarnings)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                        IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
                     }
                     return;
                 }
@@ -426,7 +426,7 @@ namespace wmib.Extensions
                     {
                         response = "There is no snapshot so far, create one!:)";
                     }
-                    Core.irc.Queue.DeliverMessage(response, channel.Name, IRC.priority.normal);
+                    IRC.DeliverMessage(response, channel.Name);
                     return;
                 }
             }
@@ -437,32 +437,32 @@ namespace wmib.Extensions
                 {
                     if (channel.SharedDB != "local")
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("infobot16", channel.Language), channel);
+                        IRC.DeliverMessage(messages.Localize("infobot16", channel.Language), channel);
                         return;
                     }
                     if (channel.SharedDB != "local" && channel.SharedDB != "")
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("infobot15", channel.Language), channel);
+                        IRC.DeliverMessage(messages.Localize("infobot15", channel.Language), channel);
                         return;
                     }
                     if (message.Length <= "@infobot-share-trust+ ".Length)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("db6", channel.Language), channel.Name);
+                        IRC.DeliverMessage(messages.Localize("db6", channel.Language), channel.Name);
                         return;
                     }
                     string name = message.Substring("@infobot-share-trust+ ".Length);
                     Channel guest = Core.GetChannel(name);
                     if (guest == null)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("db8", channel.Language), channel.Name);
+                        IRC.DeliverMessage(messages.Localize("db8", channel.Language), channel.Name);
                         return;
                     }
                     if (channel.SharedLinkedChan.Contains(guest))
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("db14", channel.Language), channel.Name);
+                        IRC.DeliverMessage(messages.Localize("db14", channel.Language), channel.Name);
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("db1", channel.Language, new List<string> { name }), channel.Name);
+                    IRC.DeliverMessage(messages.Localize("db1", channel.Language, new List<string> { name }), channel.Name);
                     lock (channel.SharedLinkedChan)
                     {
                         channel.SharedLinkedChan.Add(guest);
@@ -472,7 +472,7 @@ namespace wmib.Extensions
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -486,11 +486,11 @@ namespace wmib.Extensions
                     {
                         if (!channel.Infobot_IgnoredNames.Contains(item))
                         {
-                            Core.irc.Queue.DeliverMessage(messages.Localize("infobot-ignore-found", channel.Language, new List<string> { item }), channel);
+                            IRC.DeliverMessage(messages.Localize("infobot-ignore-found", channel.Language, new List<string> { item }), channel);
                             return;
                         }
                         channel.Infobot_IgnoredNames.Remove(item);
-                        Core.irc.Queue.DeliverMessage(messages.Localize("infobot-ignore-rm", channel.Language, new List<string> { item }), channel);
+                        IRC.DeliverMessage(messages.Localize("infobot-ignore-rm", channel.Language, new List<string> { item }), channel);
                         channel.SaveConfig();
                         return;
                     }
@@ -499,7 +499,7 @@ namespace wmib.Extensions
                 {
                     if (!channel.SuppressWarnings)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                        IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, libirc.Defs.Priority.Low);
                     }
                 }
             }
@@ -513,11 +513,11 @@ namespace wmib.Extensions
                     {
                         if (channel.Infobot_IgnoredNames.Contains(item))
                         {
-                            Core.irc.Queue.DeliverMessage(messages.Localize("infobot-ignore-exist", channel.Language, new List<string> { item }), channel);
+                            IRC.DeliverMessage(messages.Localize("infobot-ignore-exist", channel.Language, new List<string> { item }), channel);
                             return;
                         }
                         channel.Infobot_IgnoredNames.Add(item);
-                        Core.irc.Queue.DeliverMessage(messages.Localize("infobot-ignore-ok", channel.Language, new List<string> { item }), channel);
+                        IRC.DeliverMessage(messages.Localize("infobot-ignore-ok", channel.Language, new List<string> { item }), channel);
                         channel.SaveConfig();
                         return;
                     }
@@ -526,7 +526,7 @@ namespace wmib.Extensions
                 {
                     if (!channel.SuppressWarnings)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                        IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, libirc.Defs.Priority.Low);
                     }
                 }
             }
@@ -537,17 +537,17 @@ namespace wmib.Extensions
                 {
                     if (!GetConfig(channel, "Infobot.Enabled", true))
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("infobot1", channel.Language), channel);
+                        IRC.DeliverMessage(messages.Localize("infobot1", channel.Language), channel);
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("infobot2", channel.Language), channel, IRC.priority.high);
+                    IRC.DeliverMessage(messages.Localize("infobot2", channel.Language), channel, libirc.Defs.Priority.High);
                     SetConfig(channel, "Infobot.Enabled", false);
                     channel.SaveConfig();
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -558,34 +558,34 @@ namespace wmib.Extensions
                 {
                     if (channel.SharedDB != "local")
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("infobot16", channel.Language), channel);
+                        IRC.DeliverMessage(messages.Localize("infobot16", channel.Language), channel);
                         return;
                     }
                     if (message.Length <= "@infobot-share-trust+ ".Length)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("db6", channel.Language), channel);
+                        IRC.DeliverMessage(messages.Localize("db6", channel.Language), channel);
                         return;
                     }
                     string name = message.Substring("@infobot-share-trust- ".Length);
                     Channel target = Core.GetChannel(name);
                     if (target == null)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("db8", channel.Language), channel);
+                        IRC.DeliverMessage(messages.Localize("db8", channel.Language), channel);
                         return;
                     }
                     if (channel.SharedLinkedChan.Contains(target))
                     {
                         channel.SharedLinkedChan.Remove(target);
-                        Core.irc.Queue.DeliverMessage(messages.Localize("db2", channel.Language, new List<string> { name }), channel);
+                        IRC.DeliverMessage(messages.Localize("db2", channel.Language, new List<string> { name }), channel);
                         channel.SaveConfig();
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("db4", channel.Language), channel);
+                    IRC.DeliverMessage(messages.Localize("db4", channel.Language), channel);
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -594,7 +594,7 @@ namespace wmib.Extensions
             {
                 if ((message.Length) <= "@infobot-detail ".Length)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("db6", channel.Language), channel);
+                    IRC.DeliverMessage(messages.Localize("db6", channel.Language), channel);
                     return;
                 }
                 if (GetConfig(channel, "Infobot.Enabled", true))
@@ -612,7 +612,7 @@ namespace wmib.Extensions
                         Channel db = Core.GetChannel(channel.SharedDB);
                         if (db == null)
                         {
-                            Core.irc.Queue.DeliverMessage("Error, null pointer to shared channel", channel, IRC.priority.low);
+                            IRC.DeliverMessage("Error, null pointer to shared channel", channel, libirc.Defs.Priority.Low);
                             return;
                         }
                         if (infobot != null)
@@ -623,7 +623,7 @@ namespace wmib.Extensions
                     }
                     return;
                 }
-                Core.irc.Queue.DeliverMessage("Infobot is not enabled on this channel", channel, IRC.priority.low);
+                IRC.DeliverMessage("Infobot is not enabled on this channel", channel, libirc.Defs.Priority.Low);
                 return;
             }
 
@@ -633,39 +633,39 @@ namespace wmib.Extensions
                 {
                     if (channel.SharedDB == "local")
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("infobot17", channel.Language), channel);
+                        IRC.DeliverMessage(messages.Localize("infobot17", channel.Language), channel);
                         return;
                     }
                     if (channel.SharedDB != "")
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("infobot18", channel.Language, new List<string> { channel.SharedDB }), channel);
+                        IRC.DeliverMessage(messages.Localize("infobot18", channel.Language, new List<string> { channel.SharedDB }), channel);
                         return;
                     }
                     if ((message.Length - 1) < "@infobot-link ".Length)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("db6", channel.Language), channel);
+                        IRC.DeliverMessage(messages.Localize("db6", channel.Language), channel);
                         return;
                     }
                     string name = message.Substring("@infobot-link ".Length);
                     Channel db = Core.GetChannel(name);
                     if (db == null)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("db8", channel.Language), channel);
+                        IRC.DeliverMessage(messages.Localize("db8", channel.Language), channel);
                         return;
                     }
                     if (!Infobot.Linkable(db, channel))
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("db9", channel.Language), channel);
+                        IRC.DeliverMessage(messages.Localize("db9", channel.Language), channel);
                         return;
                     }
                     channel.SharedDB = name.ToLower();
-                    Core.irc.Queue.DeliverMessage(messages.Localize("db10", channel.Language), channel);
+                    IRC.DeliverMessage(messages.Localize("db10", channel.Language), channel);
                     channel.SaveConfig();
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -676,10 +676,10 @@ namespace wmib.Extensions
                 {
                     if (channel.SharedDB == "")
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("infobot14", channel.Language), channel);
+                        IRC.DeliverMessage(messages.Localize("infobot14", channel.Language), channel);
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("infobot13", channel.Language), channel);
+                    IRC.DeliverMessage(messages.Localize("infobot13", channel.Language), channel);
                     lock (Configuration.Channels)
                     {
                         foreach (Channel curr in Configuration.Channels)
@@ -688,7 +688,7 @@ namespace wmib.Extensions
                             {
                                 curr.SharedDB = "";
                                 curr.SaveConfig();
-                                Core.irc.Queue.DeliverMessage(messages.Localize("infobot19", curr.Language, new List<string> { invoker.Nick }), curr);
+                                IRC.DeliverMessage(messages.Localize("infobot19", curr.Language, new List<string> { invoker.Nick }), curr);
                             }
                         }
                     }
@@ -698,7 +698,7 @@ namespace wmib.Extensions
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -709,17 +709,17 @@ namespace wmib.Extensions
                 {
                     if (GetConfig(channel, "Infobot.Enabled", true))
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("infobot3", channel.Language), channel);
+                        IRC.DeliverMessage(messages.Localize("infobot3", channel.Language), channel);
                         return;
                     }
                     SetConfig(channel, "Infobot.Enabled", true);
                     channel.SaveConfig();
-                    Core.irc.Queue.DeliverMessage(messages.Localize("infobot4", channel.Language), channel, IRC.priority.high);
+                    IRC.DeliverMessage(messages.Localize("infobot4", channel.Language), channel, libirc.Defs.Priority.High);
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -730,27 +730,27 @@ namespace wmib.Extensions
                 {
                     if (channel.SharedDB == "local")
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("infobot11", channel.Language), channel, IRC.priority.high);
+                        IRC.DeliverMessage(messages.Localize("infobot11", channel.Language), channel, libirc.Defs.Priority.High);
                         return;
                     }
                     if (channel.SharedDB != "local" && channel.SharedDB != "")
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("infobot15", channel.Language), channel, IRC.priority.high);
+                        IRC.DeliverMessage(messages.Localize("infobot15", channel.Language), channel, libirc.Defs.Priority.High);
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("infobot12", channel.Language), channel);
+                    IRC.DeliverMessage(messages.Localize("infobot12", channel.Language), channel);
                     channel.SharedDB = "local";
                     channel.SaveConfig();
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, libirc.Defs.Priority.Low);
                 }
             }
         }
 
-        public override bool Hook_SetConfig(Channel chan, User invoker, string config, string value)
+        public override bool Hook_SetConfig(Channel chan, libirc.UserInfo invoker, string config, string value)
         {
             bool _temp_a;
             switch (config)
@@ -759,47 +759,47 @@ namespace wmib.Extensions
                     if (bool.TryParse(value, out _temp_a))
                     {
                         SetConfig(chan, "Infobot.Trim-white-space-in-name", _temp_a);
-                        Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
+                        IRC.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
                         chan.SaveConfig();
                         return true;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
+                    IRC.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
                     return true;
                 case "infobot-auto-complete":
                     if (bool.TryParse(value, out _temp_a))
                     {
                         SetConfig(chan, "Infobot.auto-complete", _temp_a);
-                        Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
+                        IRC.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
                         chan.SaveConfig();
                         return true;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
+                    IRC.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
                     return true;
                 case "infobot-sorted":
                     if (bool.TryParse(value, out _temp_a))
                     {
                         SetConfig(chan, "Infobot.Sorted", _temp_a);
-                        Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
+                        IRC.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
                         chan.SaveConfig();
                         return true;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
+                    IRC.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
                     return true;
                 case "infobot-help":
                     if (bool.TryParse(value, out _temp_a))
                     {
                         SetConfig(chan, "Infobot.Help", _temp_a);
-                        Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
+                        IRC.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
                         chan.SaveConfig();
                         return true;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
+                    IRC.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
                     return true;
                 case "infobot-case":
                     if (bool.TryParse(value, out _temp_a))
                     {
                         SetConfig(chan, "Infobot.Case", _temp_a);
-                        Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
+                        IRC.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
                         chan.SaveConfig();
                         Infobot infobot = (Infobot)chan.RetrieveObject("Infobot");
                         if (infobot != null)
@@ -808,7 +808,7 @@ namespace wmib.Extensions
                         }
                         return true;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
+                    IRC.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
                     return true;
             }
             return false;

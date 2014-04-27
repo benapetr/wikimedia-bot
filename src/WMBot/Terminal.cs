@@ -126,9 +126,9 @@ namespace wmib
                                 Write(result);
                                 result = "";
                                 Syslog.DebugLog("Retrieving information for user " + username + " in system");
-                                lock (WmIrcProtocol.Instances)
+                                lock (Instance.Instances)
                                 {
-                                    foreach (Instance instance in WmIrcProtocol.Instances.Values)
+                                    foreach (Instance instance in Instance.Instances.Values)
                                     {
                                         Syslog.DebugLog("Retrieving information for user " + username + " of instance " +  instance.Nick, 2);
                                         result += instance.Nick + " channels: " + instance.ChannelCount +
@@ -168,46 +168,46 @@ namespace wmib
                                 Write("Disabled traffic");
                                 break;
                             case "kill":
-                                if (WmIrcProtocol.Instances.ContainsKey(parameters))
+                                if (Instance.Instances.ContainsKey(parameters))
                                 {
-                                    WmIrcProtocol.Instances[parameters].IsActive = false;
-                                    WmIrcProtocol.Instances[parameters].ShutDown();
+                                    Instance.Instances[parameters].IsActive = false;
+                                    Instance.Instances[parameters].ShutDown();
                                     Write("Killed: " + parameters);
                                     break;
                                 }
                                 Write("Unknown instance: " + parameters);
                                 break;
                             case "conn":
-                                if (WmIrcProtocol.Instances.ContainsKey(parameters))
+                                if (Instance.Instances.ContainsKey(parameters))
                                 {
-                                    if (WmIrcProtocol.Instances[parameters].irc.IsConnected)
+                                    if (Instance.Instances[parameters].IsConnected)
                                     {
                                         Write("Refusing to connect instance which is already connected: " + parameters);
                                         break;
                                     }
-                                    WmIrcProtocol.Instances[parameters].Init();
+                                    Instance.Instances[parameters].Init();
                                     Write("Initializing: " + parameters);
                                     int curr = 0;
-                                    while (curr < 10 && !WmIrcProtocol.Instances[parameters].IsWorking)
+                                    while (curr < 10 && !Instance.Instances[parameters].IsWorking)
                                     {
                                         curr++;
                                         Thread.Sleep(1000);
                                     }
-                                    if (!WmIrcProtocol.Instances[parameters].IsWorking)
+                                    if (!Instance.Instances[parameters].IsWorking)
                                     {
                                         Write("Failed to initialize instance");
                                         break;
                                     }
                                     Write("Joining channels");
-                                    WmIrcProtocol.Instances[parameters].irc.ChannelsJoined = false;
-                                    WmIrcProtocol.Instances[parameters].Join();
+                                    Instance.Instances[parameters].ChannelsJoined = false;
+                                    Instance.Instances[parameters].Join();
                                     curr = 0;
-                                    while (curr < WmIrcProtocol.Instances[parameters].ChannelCount && !WmIrcProtocol.Instances[parameters].irc.ChannelsJoined)
+                                    while (curr < Instance.Instances[parameters].ChannelCount && !Instance.Instances[parameters].ChannelsJoined)
                                     {
                                         curr++;
                                         Thread.Sleep(6000);
                                     }
-                                    if (!WmIrcProtocol.Instances[parameters].irc.ChannelsJoined)
+                                    if (!Instance.Instances[parameters].ChannelsJoined)
                                     {
                                         Write("Failed to rejoin all channels in time");
                                         break;
@@ -224,14 +224,14 @@ namespace wmib
                                     break;
                                 }
                                 string to = parameters.Substring(0, parameters.IndexOf(" "));
-                                if (WmIrcProtocol.Instances.ContainsKey(to))
+                                if (Instance.Instances.ContainsKey(to))
                                 {
-                                    if (!WmIrcProtocol.Instances[to].irc.IsConnected)
+                                    if (!Instance.Instances[to].IsConnected)
                                     {
                                         Write("Refusing to send data using instance which is not connected: " + to);
                                         break;
                                     }
-                                    WmIrcProtocol.Instances[to].irc.SendData(parameters.Substring(parameters.IndexOf(" ") + 1));
+                                    Instance.Instances[to].Network.Transfer(parameters.Substring(parameters.IndexOf(" ") + 1));
                                     break;
                                 }
                                 Write("I have no such instance dude");

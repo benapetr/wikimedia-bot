@@ -150,7 +150,7 @@ namespace wmib
         /// <param name="channel"></param>
         /// <param name="source"></param>
         /// <param name="user"></param>
-        public virtual void Hook_Kick(Channel channel, libirc.User source, libirc.User user)
+        public virtual void Hook_Kick(wmib.Channel channel, libirc.UserInfo source, libirc.UserInfo user)
         {
         }
 
@@ -169,7 +169,7 @@ namespace wmib
         /// </summary>
         /// <param name="channel"></param>
         /// <param name="user"></param>
-        public virtual void Hook_Join(Channel channel, libirc.User user)
+        public virtual void Hook_Join(Channel channel, libirc.UserInfo user)
         {
         }
 
@@ -443,7 +443,7 @@ namespace wmib
             {
                 if (!string.IsNullOrEmpty(Configuration.System.DebugChan))
                 {
-                    Core.irc.Queue.DeliverMessage("DEBUG Exception in plugin " + Name + ": " + ex.Message +
+                    IRC.DeliverMessage("DEBUG Exception in plugin " + Name + ": " + ex.Message +
                                                        " last input was " + Core.LastText,
                                                        Configuration.System.DebugChan);
                 }
@@ -556,7 +556,7 @@ namespace wmib
         /// <param name="message"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public virtual bool Hook_OnPrivateFromUser(string message, libirc.User user)
+        public virtual bool Hook_OnPrivateFromUser(string message, libirc.UserInfo user)
         {
             return false;
         }

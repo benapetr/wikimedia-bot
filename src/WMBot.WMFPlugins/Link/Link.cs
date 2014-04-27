@@ -165,7 +165,7 @@ namespace wmib
             return false;
         }
 
-        public override void Hook_PRIV(Channel channel, User invoker, string message)
+        public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
             if (message == Configuration.System.CommandPrefix + "linkie-off")
             {
@@ -259,7 +259,7 @@ namespace wmib
             }
         }
 
-        public override bool Hook_SetConfig(Channel chan, User invoker, string config, string value)
+        public override bool Hook_SetConfig(Channel chan, libirc.UserInfo invoker, string config, string value)
         {
             if (config == "default-link-wiki")
             {
