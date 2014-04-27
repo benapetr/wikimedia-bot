@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 
-namespace wmib
+namespace wmib.Extensions
 {
     public class LogsModule : Module
     {
@@ -378,9 +378,8 @@ namespace wmib
         /// <returns></returns>
         public override bool Construct()
         {
-            Name = "LOGS";
             RestartOnModuleCrash = true;
-            Version = "2.6.1";
+            Version = new Version(2, 6, 1);
             return true;
         }
 

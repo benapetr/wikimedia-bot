@@ -20,8 +20,7 @@ namespace wmib
 
         public override bool Construct()
         {
-            Name = "Requests";
-            Version = "1.20.0";
+            Version = new Version(1, 20);
             return true;
         }
 

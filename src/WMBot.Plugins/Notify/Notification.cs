@@ -13,7 +13,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace wmib
+namespace wmib.Extensions
 {
     public class Notification
     {

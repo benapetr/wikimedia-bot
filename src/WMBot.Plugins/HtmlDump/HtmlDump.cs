@@ -18,14 +18,13 @@ using System.Text;
 using System.Threading;
 using System.Web;
 
-namespace wmib
+namespace wmib.Extensions
 {
-    public class HtmlDumpModule : Module
+    public class HtmlDump : Module
     {
         public override bool Construct()
         {
-            Name = "Html dump";
-            Version = "1.0.8.6";
+            Version = new Version(1, 0, 8, 6);
             return true;
         }
 
@@ -48,19 +47,19 @@ namespace wmib
                 {
                     if (GetConfig(chan, "HTML.Update", true))
                     {
-                        HtmlDump dump = new HtmlDump(chan);
+                        HtmlDumpObj dump = new HtmlDumpObj(chan);
                         dump.Make();
                         Syslog.DebugLog("Making dump for " + chan.Name);
                         SetConfig(chan, "HTML.Update", false);
                     }
                 }
-                HtmlDump.Stat();
+                HtmlDumpObj.Stat();
                 Thread.Sleep(320000);
             }
         }
     }
 
-    public class HtmlDump
+    public class HtmlDumpObj
     {
         /// <summary>
         /// Channel name
@@ -76,7 +75,7 @@ namespace wmib
         /// Constructor
         /// </summary>
         /// <param name="channel"></param>
-        public HtmlDump(Channel channel)
+        public HtmlDumpObj(Channel channel)
         {
             dumpname = Configuration.Paths.DumpDir + "/" + channel.Name + ".htm";
             if (!Directory.Exists(Configuration.Paths.DumpDir))

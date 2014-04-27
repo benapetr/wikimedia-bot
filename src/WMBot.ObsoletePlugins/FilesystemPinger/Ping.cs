@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Threading;
 
-namespace wmib
+namespace wmib.Extensions
 {
     public class FilesystemPing : Module
     {
@@ -13,8 +13,6 @@ namespace wmib
 
         public override bool Construct()
         {
-            Name = "Ping";
-            Version = "1.0";
             HasSeparateThreadInstance = false;
             return true;
         }

@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 
-namespace wmib
+namespace wmib.Extensions
 {
     public class InfobotModule : Module
     {
@@ -816,9 +816,8 @@ namespace wmib
 
         public override bool Construct()
         {
-            Name = "Infobot Core";
             RestartOnModuleCrash = true;
-            Version = "1.6.0";
+            Version = new Version(1, 8, 0, 0);
             return true;
         }
 

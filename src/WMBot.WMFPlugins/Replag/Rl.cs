@@ -49,10 +49,7 @@ namespace wmib
 
         public override bool Construct()
         {
-            Version = "1.0";
             HasSeparateThreadInstance = false;
-            Name = "Replag";
-            //start = true;
             return true;
         }
     }
