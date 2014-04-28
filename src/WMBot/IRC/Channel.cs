@@ -27,7 +27,6 @@ namespace wmib
         /// Channel name
         /// </summary>
         public string Name = null;
-
         /// <summary>
         /// Language used in this channel
         /// </summary>
@@ -179,6 +178,14 @@ namespace wmib
             return Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + this.Name + ".xml";
         }
 
+        public void RefetchChannel()
+        {
+            if (this.IrcChannel == null)
+            {
+                this.IrcChannel = this.PrimaryInstance.Network.GetChannel(this.Name);
+            }
+        }
+
         /// <summary>
         /// Change the config
         /// </summary>
@@ -290,6 +297,7 @@ namespace wmib
 
         public libirc.User RetrieveUser(string nick)
         {
+            this.RefetchChannel();
             if (this.IrcChannel == null)
             {
                 return null;
@@ -297,9 +305,6 @@ namespace wmib
             return this.IrcChannel.UserFromName(nick);
         }
 
-        /// <summary>
-        /// Load config of channel :)
-        /// </summary>
         public void LoadConfig()
         {
             string conf_file = GetConfigFilePath();
@@ -476,10 +481,13 @@ namespace wmib
             {
                 ExtensionObjects.Clear();
             }
-
             SharedDB = null;
             SharedChans.Clear();
             SharedLinkedChan.Clear();
+            if (Configuration.Channels.Contains(this))
+            {
+                Configuration.Channels.Remove(this);
+            }
         }
 
         /// <summary>
@@ -505,7 +513,7 @@ namespace wmib
             foreach (string x in SharedChans)
             {
                 string name = x.Replace(" ", "");
-                if (name != "")
+                if (!string.IsNullOrEmpty(name))
                 {
                     if (Core.GetChannel(name) != null)
                     {

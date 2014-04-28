@@ -49,7 +49,34 @@ namespace wmib
         /// If you need to permanently disconnect this instance, change this to false
         /// </summary>
         public bool IsActive = true;
-        public bool ChannelsJoined = false;
+        public bool ChannelsJoined
+        {
+            set
+            {
+                Protocol.ChannelsJoined = value;
+            }
+            get
+            {
+                return Protocol.ChannelsJoined;
+            }
+        }
+        /// <summary>
+        /// Whether this instance has finished connection to IRC server, this is used because of several
+        /// freenode issues, where some random commands sent during irc server connection get ignored
+        /// when connection didn't finish (basically after we receive MOTD it's all OK, so we flag this
+        /// to true after we receive motd).
+        /// </summary>
+        public bool IsWorking
+        {
+            get
+            {
+                return Protocol.IsWorking;
+            }
+            set
+            {
+                Protocol.IsWorking = value;
+            }
+        }
         /// <summary>
         /// If this instance is connected
         /// </summary>
@@ -64,7 +91,6 @@ namespace wmib
                 return false;
             }
         }
-        private Thread tProtocol = null;
         private Thread JoinThread;
         /// <summary>
         /// Each instance is running in its own thread, this is pointer to that thread
@@ -88,13 +114,7 @@ namespace wmib
                 return list;
             }
         }
-        /// <summary>
-        /// Whether this instance has finished connection to IRC server, this is used because of several
-        /// freenode issues, where some random commands sent during irc server connection get ignored
-        /// when connection didn't finish (basically after we receive MOTD it's all OK, so we flag this
-        /// to true after we receive motd).
-        /// </summary>
-        public bool IsWorking = false;
+
         /// <summary>
         /// Number of channels that are being used by this instance
         /// </summary>
@@ -313,16 +333,12 @@ namespace wmib
         
         public void Connect()
         {
-            tProtocol = this.Protocol.Open();
-            tProtocol.Name = "Instance:" + Nick + "/IRC";
-            // we need to keep track of this
-            Core.ThreadManager.RegisterThread(tProtocol);
+            this.Protocol.Open();
         }
 
         public void Disconnect()
         {
             this.Protocol.Disconnect();
-            Core.ThreadManager.KillThread(tProtocol);
         }
 
         private void Exec()

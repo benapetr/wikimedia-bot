@@ -149,7 +149,6 @@ namespace wmib
                         lock (Configuration.Channels)
                         {
                             channel.Remove();
-                            Configuration.Channels.Remove(channel);
                         }
                         Configuration.Save();
                         return;
@@ -173,7 +172,6 @@ namespace wmib
                         lock (Configuration.Channels)
                         {
                             channel.Remove();
-                            Configuration.Channels.Remove(channel);
                         }
                         Configuration.Save();
                         return;
