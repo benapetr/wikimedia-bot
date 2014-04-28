@@ -39,10 +39,9 @@ namespace wmib.Extensions.RssFeed
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
                 }
             }
-
             if (message.StartsWith(Configuration.System.CommandPrefix + "rss-setstyle "))
             {
                 if (channel.SystemUsers.IsApproved(invoker, "trust"))
@@ -70,18 +69,17 @@ namespace wmib.Extensions.RssFeed
                     }
                     if (!channel.SuppressWarnings)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Rss5", channel.Language), channel.Name, IRC.priority.low);
+                        IRC.DeliverMessage(messages.Localize("Rss5", channel.Language), channel.Name);
                     }
                 }
                 else
                 {
                     if (!channel.SuppressWarnings)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                        IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
                     }
                 }
             }
-
             if (message.StartsWith(Configuration.System.CommandPrefix + "rss-search+ "))
             {
                 if (channel.SystemUsers.IsApproved(invoker, "trust"))
@@ -94,23 +92,22 @@ namespace wmib.Extensions.RssFeed
                         {
                             if (feed.ScannerMatches.Contains(item))
                             {
-                                Core.irc.Queue.DeliverMessage("This item is already being searched", channel);
+                                IRC.DeliverMessage("This item is already being searched", channel);
                                 return;
                             }
-                            Core.irc.Queue.DeliverMessage("This item is now searched", channel);
+                            IRC.DeliverMessage("This item is now searched", channel);
                             feed.ScannerMatches.Add(item);
                             return;
                         }
                     }
-                    Core.irc.Queue.DeliverMessage("Error, this channel doesn't have RC feed", channel);
+                    IRC.DeliverMessage("Error, this channel doesn't have RC feed", channel);
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, libirc.Defs.Priority.Low);
                 }
             }
-
             if (message.StartsWith(Configuration.System.CommandPrefix + "rss-search- "))
             {
                 if (channel.SystemUsers.IsApproved(invoker, "trust"))
@@ -124,22 +121,21 @@ namespace wmib.Extensions.RssFeed
                             if (feed.ScannerMatches.Contains(item))
                             {
                                 feed.ScannerMatches.Remove(item);
-                                Core.irc.Queue.DeliverMessage("This item was removed", channel);
+                                IRC.DeliverMessage("This item was removed", channel);
                                 return;
                             }
-                            Core.irc.Queue.DeliverMessage("This item was not being searched", channel);
+                            IRC.DeliverMessage("This item was not being searched", channel);
                             return;
                         }
                     }
-                    Core.irc.Queue.DeliverMessage("Error, this channel doesn't have RC feed", channel);
+                    IRC.DeliverMessage("Error, this channel doesn't have RC feed", channel);
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
                 }
             }
-
             if (message.StartsWith(Configuration.System.CommandPrefix + "rss+ "))
             {
                 if (channel.SystemUsers.IsApproved(invoker, "trust"))
@@ -167,18 +163,17 @@ namespace wmib.Extensions.RssFeed
                     }
                     if (!channel.SuppressWarnings)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Rss5", channel.Language), channel.Name, IRC.priority.low);
+                        IRC.DeliverMessage(messages.Localize("Rss5", channel.Language), channel.Name);
                     }
                 }
                 else
                 {
                     if (!channel.SuppressWarnings)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                        IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
                     }
                 }
             }
-
             if (message.StartsWith("@rss-scanner+ "))
             {
                 if (channel.SystemUsers.IsApproved(invoker, "trust"))
@@ -206,18 +201,17 @@ namespace wmib.Extensions.RssFeed
                     }
                     if (!channel.SuppressWarnings)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Rss5", channel.Language), channel.Name, IRC.priority.low);
+                        IRC.DeliverMessage(messages.Localize("Rss5", channel.Language), channel.Name);
                     }
                 }
                 else
                 {
                     if (!channel.SuppressWarnings)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                        IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
                     }
                 }
             }
-
             if (message.StartsWith("@rss-scanner- "))
             {
                 if (channel.SystemUsers.IsApproved(invoker, "trust"))
@@ -232,48 +226,46 @@ namespace wmib.Extensions.RssFeed
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
                 }
             }
-
             if (message == "@rss-off")
             {
                 if (channel.SystemUsers.IsApproved(invoker, "admin"))
                 {
                     if (!GetConfig(channel, "Rss.Enable", false))
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Rss1", channel.Language), channel.Name);
+                        IRC.DeliverMessage(messages.Localize("Rss1", channel.Language), channel.Name);
                         return;
                     }
                     SetConfig(channel, "Rss.Enable", false);
-                    Core.irc.Queue.DeliverMessage(messages.Localize("Rss2", channel.Language), channel.Name);
+                    IRC.DeliverMessage(messages.Localize("Rss2", channel.Language), channel.Name);
                     channel.SaveConfig();
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
                 }
                 return;
             }
-
             if (message == "@rss-on")
             {
                 if (channel.SystemUsers.IsApproved(invoker, "admin"))
                 {
                     if (GetConfig(channel, "Rss.Enable", false))
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("Rss3", channel.Language), channel.Name);
+                        IRC.DeliverMessage(messages.Localize("Rss3", channel.Language), channel.Name);
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("Rss4", channel.Language), channel.Name);
+                    IRC.DeliverMessage(messages.Localize("Rss4", channel.Language), channel.Name);
                     SetConfig(channel, "Rss.Enable", true);
                     channel.SaveConfig();
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
                 }
             }
         }
@@ -320,10 +312,10 @@ namespace wmib.Extensions.RssFeed
                 {
                     SetConfig(chan, "Rss.Style", value);
                     chan.SaveConfig();
-                    Core.irc.Queue.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
+                    IRC.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
                     return true;
                 }
-                Core.irc.Queue.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
+                IRC.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
                 return true;
             }
             return false;
@@ -422,6 +414,7 @@ namespace wmib.Extensions.RssFeed
             }
             catch (ThreadAbortException)
             {
+				return;
             }
             catch (Exception fail)
             {

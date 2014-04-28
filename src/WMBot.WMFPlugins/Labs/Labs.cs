@@ -521,10 +521,10 @@ namespace wmib
                 int list = getNumbers(user2);
                 if (result != "")
                 {
-                    Core.irc.Queue.DeliverMessage(user2 + " is member of " + list.ToString() + " projects: " + result, user);
+                    IRC.DeliverMessage(user2 + " is member of " + list.ToString() + " projects: " + result, user);
                     return true;
                 }
-                Core.irc.Queue.DeliverMessage("That user is not a member of any project", user);
+                IRC.DeliverMessage("That user is not a member of any project", user);
                 return true;
             }
 
@@ -534,7 +534,7 @@ namespace wmib
                 string results = "";
                 if (!OK)
                 {
-                    Core.irc.Queue.DeliverMessage("Please wait, I still didn't retrieve the labs datafile containing the list of instances", user);
+                    IRC.DeliverMessage("Please wait, I still didn't retrieve the labs datafile containing the list of instances", user);
                     return true;
                 }
                 Instance instance = getInstance(host);
@@ -552,10 +552,10 @@ namespace wmib
                         + " of type: " + instance.Type + ", with number of CPUs: " + instance.NumberOfCpu + ", RAM of this size: " + instance.Ram
                         + "M, member of project: " + instance.Project + ", size of storage: " + instance.Storage + " and with image ID: " + instance.ImageID;
 
-                    Core.irc.Queue.DeliverMessage(results, user.Nick);
+                    IRC.DeliverMessage(results, user.Nick);
                     return true;
                 }
-                Core.irc.Queue.DeliverMessage("I don't know this instance, sorry, try browsing the list by hand, but I can guarantee there is no such instance matching this name, host or Nova ID unless it was created less than " + time().Seconds.ToString() + " seconds ago", user);
+                IRC.DeliverMessage("I don't know this instance, sorry, try browsing the list by hand, but I can guarantee there is no such instance matching this name, host or Nova ID unless it was created less than " + time().Seconds.ToString() + " seconds ago", user);
                 return true;
             }
 
@@ -564,14 +564,14 @@ namespace wmib
                 string host = message.Substring("@labs-resolve ".Length);
                 if (!OK)
                 {
-                    Core.irc.Queue.DeliverMessage("Please wait, I still didn't retrieve the labs datafile containing the list of instances", user);
+                    IRC.DeliverMessage("Please wait, I still didn't retrieve the labs datafile containing the list of instances", user);
                     return true;
                 }
                 Instance instance = resolve(host);
                 if (instance != null)
                 {
                     string d = "The " + host + " resolves to instance " + instance.OriginalName + " with a fancy name " + instance.Name + " and IP " + instance.IP;
-                    Core.irc.Queue.DeliverMessage(d, user);
+                    IRC.DeliverMessage(d, user);
                     return true;
                 }
                 string names = "";
@@ -591,11 +591,11 @@ namespace wmib
                 }
                 if (names != "")
                 {
-                    Core.irc.Queue.DeliverMessage("I don't know this instance - aren't you are looking for: " + names, user);
+                    IRC.DeliverMessage("I don't know this instance - aren't you are looking for: " + names, user);
                 }
                 else
                 {
-                    Core.irc.Queue.DeliverMessage("I don't know this instance, sorry, try browsing the list by hand, but I can guarantee there is no such instance matching this name, host or Nova ID unless it was created less than " + time().Seconds + " seconds ago", user);
+                    IRC.DeliverMessage("I don't know this instance, sorry, try browsing the list by hand, but I can guarantee there is no such instance matching this name, host or Nova ID unless it was created less than " + time().Seconds + " seconds ago", user);
                 }
                 return true;
             }
@@ -605,7 +605,7 @@ namespace wmib
                 string host = message.Substring("@labs-project-users ".Length);
                 if (!OK)
                 {
-                    Core.irc.Queue.DeliverMessage("Please wait, I still didn't retrieve the labs datafile containing the list of projects", user);
+                    IRC.DeliverMessage("Please wait, I still didn't retrieve the labs datafile containing the list of projects", user);
                     return true;
                 }
                 Nova project = getProject(host);
@@ -626,20 +626,20 @@ namespace wmib
                         }
                         if (trimmed == project.users.Count)
                         {
-                            Core.irc.Queue.DeliverMessage("Following users are in this project (showing all " + project.users.Count.ToString() + " members): " + instances, user);
+                            IRC.DeliverMessage("Following users are in this project (showing all " + project.users.Count.ToString() + " members): " + instances, user);
                             return true;
                         }
-                        Core.irc.Queue.DeliverMessage("Following users are in this project (displaying " + trimmed.ToString() + " of " + project.users.Count.ToString() + " total): " + instances, user);
+                        IRC.DeliverMessage("Following users are in this project (displaying " + trimmed.ToString() + " of " + project.users.Count.ToString() + " total): " + instances, user);
                         return true;
                     }
                 }
                 string names = getProjectsList(host);
                 if (names != "")
                 {
-                    Core.irc.Queue.DeliverMessage("I don't know this project, did you mean: " + names + "? I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", user);
+                    IRC.DeliverMessage("I don't know this project, did you mean: " + names + "? I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", user);
                     return true;
                 }
-                Core.irc.Queue.DeliverMessage("I don't know this project, sorry, try browsing the list by hand, but I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", user);
+                IRC.DeliverMessage("I don't know this project, sorry, try browsing the list by hand, but I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", user);
                 return true;
             }
 
@@ -648,7 +648,7 @@ namespace wmib
                 string host = message.Substring("@labs-project-instances ".Length);
                 if (!OK)
                 {
-                    Core.irc.Queue.DeliverMessage("Please wait, I still didn't retrieve the labs datafile containing the list of projects", user);
+                    IRC.DeliverMessage("Please wait, I still didn't retrieve the labs datafile containing the list of projects", user);
                     return true;
                 }
                 Nova project = getProject(host);
@@ -661,17 +661,17 @@ namespace wmib
                         {
                             instances = instances + x.Name + ", ";
                         }
-                        Core.irc.Queue.DeliverMessage("Following instances are in this project: " + instances, user);
+                        IRC.DeliverMessage("Following instances are in this project: " + instances, user);
                         return true;
                     }
                 }
                 string names = getProjectsList(host);
                 if (names != "")
                 {
-                    Core.irc.Queue.DeliverMessage("I don't know this project, did you mean: " + names + "? I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", user);
+                    IRC.DeliverMessage("I don't know this project, did you mean: " + names + "? I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", user);
                     return true;
                 }
-                Core.irc.Queue.DeliverMessage("I don't know this project, sorry, try browsing the list by hand, but I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", user);
+                IRC.DeliverMessage("I don't know this project, sorry, try browsing the list by hand, but I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", user);
                 return true;
             }
 
@@ -680,23 +680,23 @@ namespace wmib
                 string host = message.Substring("@labs-project-info ".Length);
                 if (!OK)
                 {
-                    Core.irc.Queue.DeliverMessage("Please wait, I still didn't retrieve the labs datafile containing the list of projects", user);
+                    IRC.DeliverMessage("Please wait, I still didn't retrieve the labs datafile containing the list of projects", user);
                     return true;
                 }
                 Nova project = getProject(host);
                 if (project != null)
                 {
                     string d = "The project " + project.Name + " has " + project.instances.Count.ToString() + " instances and " + project.users.Count.ToString() + " members, description: " + project.Description;
-                    Core.irc.Queue.DeliverMessage(d, user);
+                    IRC.DeliverMessage(d, user);
                     return true;
                 }
                 string names = getProjectsList(host);
                 if (names != "")
                 {
-                    Core.irc.Queue.DeliverMessage("I don't know this project, did you mean: " + names + "? I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", user);
+                    IRC.DeliverMessage("I don't know this project, did you mean: " + names + "? I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", user);
                     return true;
                 }
-                Core.irc.Queue.DeliverMessage("I don't know this project, sorry, try browsing the list by hand, but I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", user);
+                IRC.DeliverMessage("I don't know this project, sorry, try browsing the list by hand, but I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", user);
                 return true;
             }
             return base.Hook_OnPrivateFromUser(message, user);
@@ -710,19 +710,19 @@ namespace wmib
                 {
                     if (!GetConfig(channel, "LABS.Enabled", false))
                     {
-                        Core.irc.Queue.DeliverMessage("Labs utilities are already disabled", channel.Name);
+                        IRC.DeliverMessage("Labs utilities are already disabled", channel.Name);
                         return;
                     }
                     SetConfig(channel, "LABS.Enabled", false);
                     channel.SaveConfig();
-                    Core.irc.Queue.DeliverMessage("Labs utilities were disabled", channel.Name);
+                    IRC.DeliverMessage("Labs utilities were disabled", channel.Name);
                     return;
                 }
                 else
                 {
                     if (!channel.SuppressWarnings)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                        IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
                     }
                 }
                 return;
@@ -735,19 +735,19 @@ namespace wmib
                 {
                     if (GetConfig(channel, "LABS.Enabled", false))
                     {
-                        Core.irc.Queue.DeliverMessage("Labs utilities are already enabled", channel.Name);
+                        IRC.DeliverMessage("Labs utilities are already enabled", channel.Name);
                         return;
                     }
                     SetConfig(channel, "LABS.Enabled", true);
                     channel.SaveConfig();
-                    Core.irc.Queue.DeliverMessage("Labs utilities were enabled", channel.Name);
+                    IRC.DeliverMessage("Labs utilities were enabled", channel.Name);
                     return;
                 }
                 else
                 {
                     if (!channel.SuppressWarnings)
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                        IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
                     }
                 }
                 return;
@@ -762,10 +762,10 @@ namespace wmib
                     int list = getNumbers(user);
                     if (result != "")
                     {
-                        Core.irc.Queue.DeliverMessage(user + " is member of " + list.ToString() + " projects: " + result, channel.Name);
+                        IRC.DeliverMessage(user + " is member of " + list.ToString() + " projects: " + result, channel.Name);
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage("That user is not a member of any project", channel.Name);
+                    IRC.DeliverMessage("That user is not a member of any project", channel.Name);
                     return;
                 }
             }
@@ -778,7 +778,7 @@ namespace wmib
                     string results = "";
                     if (!OK)
                     {
-                        Core.irc.Queue.DeliverMessage("Please wait, I still didn't retrieve the labs datafile containing the list of instances", channel.Name);
+                        IRC.DeliverMessage("Please wait, I still didn't retrieve the labs datafile containing the list of instances", channel.Name);
                         return;
                     }
                     Instance instance = getInstance(host);
@@ -796,10 +796,10 @@ namespace wmib
                             + " of type: " + instance.Type + ", with number of CPUs: " + instance.NumberOfCpu + ", RAM of this size: " + instance.Ram
                             + "M, member of project: " + instance.Project + ", size of storage: " + instance.Storage + " and with image ID: " + instance.ImageID;
 
-                        Core.irc.Queue.DeliverMessage(results, channel.Name);
+                        IRC.DeliverMessage(results, channel.Name);
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage("I don't know this instance, sorry, try browsing the list by hand, but I can guarantee there is no such instance matching this name, host or Nova ID unless it was created less than " + time().Seconds.ToString() + " seconds ago", channel.Name);
+                    IRC.DeliverMessage("I don't know this instance, sorry, try browsing the list by hand, but I can guarantee there is no such instance matching this name, host or Nova ID unless it was created less than " + time().Seconds.ToString() + " seconds ago", channel.Name);
                 }
             }
 
@@ -810,14 +810,14 @@ namespace wmib
                     string host = message.Substring("@labs-resolve ".Length);
                     if (!OK)
                     {
-                        Core.irc.Queue.DeliverMessage("Please wait, I still didn't retrieve the labs datafile containing the list of instances", channel.Name);
+                        IRC.DeliverMessage("Please wait, I still didn't retrieve the labs datafile containing the list of instances", channel);
                         return;
                     }
                     Instance instance = resolve(host);
                     if (instance != null)
                     {
                         string d = "The " + host + " resolves to instance " + instance.OriginalName + " with a fancy name " + instance.Name + " and IP " + instance.IP;
-                        Core.irc.Queue.DeliverMessage(d, channel.Name);
+                        IRC.DeliverMessage(d, channel);
                         return;
                     }
                     string names = "";
@@ -837,11 +837,11 @@ namespace wmib
                     }
                     if (names != "")
                     {
-                        Core.irc.Queue.DeliverMessage("I don't know this instance - aren't you are looking for: " + names, channel.Name);
+                        IRC.DeliverMessage("I don't know this instance - aren't you are looking for: " + names, channel);
                     }
                     else
                     {
-                        Core.irc.Queue.DeliverMessage("I don't know this instance, sorry, try browsing the list by hand, but I can guarantee there is no such instance matching this name, host or Nova ID unless it was created less than " + time().Seconds.ToString() + " seconds ago", channel.Name);
+                        IRC.DeliverMessage("I don't know this instance, sorry, try browsing the list by hand, but I can guarantee there is no such instance matching this name, host or Nova ID unless it was created less than " + time().Seconds.ToString() + " seconds ago", channel);
                     }
                 }
             }
@@ -853,7 +853,7 @@ namespace wmib
                     string host = message.Substring("@labs-project-users ".Length);
                     if (!OK)
                     {
-                        Core.irc.Queue.DeliverMessage("Please wait, I still didn't retrieve the labs datafile containing the list of projects", channel.Name);
+                        IRC.DeliverMessage("Please wait, I still didn't retrieve the labs datafile containing the list of projects", channel);
                         return;
                     }
                     Nova project = getProject(host);
@@ -874,20 +874,20 @@ namespace wmib
                             }
                             if (trimmed == project.users.Count)
                             {
-                                Core.irc.Queue.DeliverMessage("Following users are in this project (showing all " + project.users.Count.ToString() + " members): " + instances, channel.Name);
+                                IRC.DeliverMessage("Following users are in this project (showing all " + project.users.Count.ToString() + " members): " + instances, channel);
                                 return;
                             }
-                            Core.irc.Queue.DeliverMessage("Following users are in this project (displaying " + trimmed.ToString() + " of " + project.users.Count.ToString() + " total): " + instances, channel.Name);
+                            IRC.DeliverMessage("Following users are in this project (displaying " + trimmed.ToString() + " of " + project.users.Count.ToString() + " total): " + instances, channel);
                             return;
                         }
                     }
                     string names = getProjectsList(host);
                     if (names != "")
                     {
-                        Core.irc.Queue.DeliverMessage("I don't know this project, did you mean: " + names + "? I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", channel.Name);
+                        IRC.DeliverMessage("I don't know this project, did you mean: " + names + "? I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", channel.Name);
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage("I don't know this project, sorry, try browsing the list by hand, but I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", channel.Name);
+                    IRC.DeliverMessage("I don't know this project, sorry, try browsing the list by hand, but I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", channel.Name);
                 }
             }
 
@@ -898,7 +898,7 @@ namespace wmib
                     string host = message.Substring("@labs-project-instances ".Length);
                     if (!OK)
                     {
-                        Core.irc.Queue.DeliverMessage("Please wait, I still didn't retrieve the labs datafile containing the list of projects", channel.Name);
+                        IRC.DeliverMessage("Please wait, I still didn't retrieve the labs datafile containing the list of projects", channel.Name);
                         return;
                     }
                     Nova project = getProject(host);
@@ -911,17 +911,17 @@ namespace wmib
                             {
                                 instances = instances + x.Name + ", ";
                             }
-                            Core.irc.Queue.DeliverMessage("Following instances are in this project: " + instances, channel.Name);
+                            IRC.DeliverMessage("Following instances are in this project: " + instances, channel.Name);
                             return;
                         }
                     }
                     string names = getProjectsList(host);
                     if (names != "")
                     {
-                        Core.irc.Queue.DeliverMessage("I don't know this project, did you mean: " + names + "? I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", channel.Name);
+                        IRC.DeliverMessage("I don't know this project, did you mean: " + names + "? I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", channel.Name);
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage("I don't know this project, sorry, try browsing the list by hand, but I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", channel.Name);
+                    IRC.DeliverMessage("I don't know this project, sorry, try browsing the list by hand, but I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", channel.Name);
                 }
             }
 
@@ -932,23 +932,23 @@ namespace wmib
                     string host = message.Substring("@labs-project-info ".Length);
                     if (!OK)
                     {
-                        Core.irc.Queue.DeliverMessage("Please wait, I still didn't retrieve the labs datafile containing the list of projects", channel.Name);
+                        IRC.DeliverMessage("Please wait, I still didn't retrieve the labs datafile containing the list of projects", channel.Name);
                         return;
                     }
                     Nova project = getProject(host);
                     if (project != null)
                     {
                         string d = "The project " + project.Name + " has " + project.instances.Count.ToString() + " instances and " + project.users.Count.ToString() + " members, description: " + project.Description;
-                        Core.irc.Queue.DeliverMessage(d, channel.Name);
+                        IRC.DeliverMessage(d, channel.Name);
                         return;
                     }
                     string names = getProjectsList(host);
                     if (names != "")
                     {
-                        Core.irc.Queue.DeliverMessage("I don't know this project, did you mean: " + names + "? I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", channel.Name);
+                        IRC.DeliverMessage("I don't know this project, did you mean: " + names + "? I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", channel.Name);
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage("I don't know this project, sorry, try browsing the list by hand, but I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", channel.Name);
+                    IRC.DeliverMessage("I don't know this project, sorry, try browsing the list by hand, but I can guarantee there is no such project matching this name unless it has been created less than " + time().Seconds.ToString() + " seconds ago", channel.Name);
                 }
             }
         }

@@ -90,7 +90,7 @@ namespace wmib.Extensions
                     List<string> parameters = new List<string>(name.Split(' '));
                     if (parameters.Count != 2)
                     {
-                        Core.irc.Queue.DeliverMessage("Invalid number of parameters", channel);
+                        IRC.DeliverMessage("Invalid number of parameters", channel);
                         return;
                     }
                     string role = channel_name + "." + parameters[0];
@@ -98,18 +98,18 @@ namespace wmib.Extensions
                     {
                         if (!Security.Roles.ContainsKey(role))
                         {
-                            Core.irc.Queue.DeliverMessage("There is no role of that name", channel);
+                            IRC.DeliverMessage("There is no role of that name", channel);
                             return;
                         }
                         Security.Roles[role].Revoke(parameters[1]);
                     }
-                    Core.irc.Queue.DeliverMessage("Successfuly revoked " + parameters[1] + " from " + role, channel);
+                    IRC.DeliverMessage("Successfuly revoked " + parameters[1] + " from " + role, channel);
                     IsUpdated = true;
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
                 }
                 return;
             }
@@ -121,7 +121,7 @@ namespace wmib.Extensions
                     List<string> parameters = new List<string>(name.Split(' '));
                     if (parameters.Count != 2)
                     {
-                        Core.irc.Queue.DeliverMessage("Invalid number of parameters", channel);
+                        IRC.DeliverMessage("Invalid number of parameters", channel);
                         return;
                     }
                     switch (parameters[1])
@@ -129,7 +129,7 @@ namespace wmib.Extensions
                         case "root":
                         case "terminal":
                         case "halt":
-                            Core.irc.Queue.DeliverMessage("This permission can't be granted to anyone, sorry", channel);
+                            IRC.DeliverMessage("This permission can't be granted to anyone, sorry", channel);
                             return;
                     }
                     string role = channel_name + "." + parameters[0];
@@ -142,12 +142,12 @@ namespace wmib.Extensions
                         Security.Roles[role].Grant(parameters[1]);
                     }
                     IsUpdated = true;
-                    Core.irc.Queue.DeliverMessage("Successfuly granted " + parameters[1] + " to " + role, channel);
+                    IRC.DeliverMessage("Successfuly granted " + parameters[1] + " to " + role, channel);
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
                 }
                 return;
             }

@@ -20,10 +20,9 @@ namespace wmib.Extensions
 {
     class ChannelTools : Module
     {
-        private static libirc.UserInfo getUser(string name, Channel c)
+        private static libirc.User getUser(string name, Channel c)
         {
-
-            return null;
+            return c.RetrieveUser(name);
         }
 
         public void GetOp(Channel chan)
@@ -145,18 +144,18 @@ namespace wmib.Extensions
                             reason = nick.Substring(nick.IndexOf(" ") + 1);
                             nick = nick.Substring(0, nick.IndexOf(" "));
                         }
-                        User user = getUser(nick, channel);
+                        libirc.User user = getUser(nick, channel);
                         if (user == null)
                         {
-                            Core.irc.Queue.DeliverMessage(messages.Localize("OpE5", channel.Language), channel, IRC.priority.high);
+                            IRC.DeliverMessage(messages.Localize("OpE5", channel.Language), channel, libirc.Defs.Priority.High);
                             return;
                         }
                         // op self
                         GetOp(channel);
-                        channel.PrimaryInstance.irc.Queue.Send("KICK " + channel.Name + " " + user.Nick + " :" + reason, IRC.priority.high);
+                        channel.PrimaryInstance.Network.Transfer("KICK " + channel.Name + " " + user.Nick + " :" + reason, libirc.Defs.Priority.High);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            channel.PrimaryInstance.irc.Queue.Send("MODE " + channel.Name + " -o " + channel.PrimaryInstance.Nick, IRC.priority.low);
+                            channel.PrimaryInstance.Network.Transfer("MODE " + channel.Name + " -o " + channel.PrimaryInstance.Nick);
                         }
                         return;
                     }
@@ -164,7 +163,7 @@ namespace wmib.Extensions
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
                 }
                 return;
             }
@@ -182,26 +181,26 @@ namespace wmib.Extensions
                             reason = nick.Substring(nick.IndexOf(" ") + 1);
                             nick = nick.Substring(0, nick.IndexOf(" "));
                         }
-                        User user = getUser(nick, channel);
+                        libirc.User user = getUser(nick, channel);
                         if (user == null)
                         {
-                            Core.irc.Queue.DeliverMessage(messages.Localize("OpE5", channel.Language), channel, IRC.priority.high);
+                            IRC.DeliverMessage(messages.Localize("OpE5", channel.Language), channel);
                             return;
                         }
                         // op self
                         GetOp(channel);
                         if (string.IsNullOrEmpty(user.Host))
                         {
-                            Core.irc.Queue.DeliverMessage(messages.Localize("OpE6", channel.Language), channel, IRC.priority.high);
+                            IRC.DeliverMessage(messages.Localize("OpE6", channel.Language), channel, libirc.Defs.Priority.High);
                         }
                         else
                         {
-                            channel.PrimaryInstance.irc.Queue.Send("MODE " + channel.Name + " +b *!*@" + user.Host, IRC.priority.high);
+                            channel.PrimaryInstance.Network.Transfer("MODE " + channel.Name + " +b *!*@" + user.Host, libirc.Defs.Priority.High);
                         }
-                        channel.PrimaryInstance.irc.Queue.Send("KICK " + channel.Name + " " + user.Nick + " :" + reason, IRC.priority.high);
+                        channel.PrimaryInstance.Network.Transfer("KICK " + channel.Name + " " + user.Nick + " :" + reason, libirc.Defs.Priority.High);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            channel.PrimaryInstance.irc.Queue.Send("MODE " + channel.Name + " -o " + channel.PrimaryInstance.Nick, IRC.priority.low);
+                            channel.PrimaryInstance.Network.Transfer("MODE " + channel.Name + " -o " + channel.PrimaryInstance.Nick, libirc.Defs.Priority.Low);
                         }
                         return;
                     }
@@ -209,7 +208,7 @@ namespace wmib.Extensions
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -222,10 +221,10 @@ namespace wmib.Extensions
                     {
                         string nick = message.Substring(6);
                         GetOp(channel);
-                        channel.PrimaryInstance.irc.Queue.Send("MODE " + channel.Name + " -b *!*@" + nick, IRC.priority.high);
+                        channel.PrimaryInstance.Network.Transfer("MODE " + channel.Name + " -b *!*@" + nick, libirc.Defs.Priority.High);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            channel.PrimaryInstance.irc.Queue.Send("MODE " + channel.Name + " -o " + channel.PrimaryInstance.Nick, IRC.priority.low);
+                            channel.PrimaryInstance.Network.Transfer("MODE " + channel.Name + " -o " + channel.PrimaryInstance.Nick, libirc.Defs.Priority.Low);
                         }
                         return;
                     }
@@ -233,7 +232,7 @@ namespace wmib.Extensions
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -249,24 +248,24 @@ namespace wmib.Extensions
                         {
                             nick = nick.Substring(0, nick.IndexOf(" "));
                         }
-                        User user = getUser(nick, channel);
+                        libirc.User user = getUser(nick, channel);
                         if (user == null)
                         {
-                            Core.irc.Queue.DeliverMessage(messages.Localize("OpE5", channel.Language), channel, IRC.priority.high);
+                            IRC.DeliverMessage(messages.Localize("OpE5", channel.Language), channel, libirc.Defs.Priority.High);
                             return;
                         }
 
                         if (string.IsNullOrEmpty(user.Host))
                         {
-                            Core.irc.Queue.DeliverMessage(messages.Localize("OpE6", channel.Language), channel, IRC.priority.high);
+                            IRC.DeliverMessage(messages.Localize("OpE6", channel.Language), channel, libirc.Defs.Priority.High);
                             return;
                         }
                         // op self
                         GetOp(channel);
-                        channel.PrimaryInstance.irc.Queue.Send("MODE " + channel.Name + " -q *!*@" + user.Host, IRC.priority.high);
+                        channel.PrimaryInstance.Network.Transfer("MODE " + channel.Name + " -q *!*@" + user.Host, libirc.Defs.Priority.High);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            channel.PrimaryInstance.irc.Queue.Send("MODE " + channel.Name + " -o " + channel.PrimaryInstance.Nick, IRC.priority.low);
+                            channel.PrimaryInstance.Network.Transfer("MODE " + channel.Name + " -o " + channel.PrimaryInstance.Nick);
                         }
                         return;
                     }
@@ -274,7 +273,7 @@ namespace wmib.Extensions
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -290,23 +289,23 @@ namespace wmib.Extensions
                         {
                             nick = nick.Substring(0, nick.IndexOf(" "));
                         }
-                        User user = getUser(nick, channel);
+                        libirc.User user = getUser(nick, channel);
                         if (user == null)
                         {
-                            Core.irc.Queue.DeliverMessage(messages.Localize("OpE5", channel.Language), channel, IRC.priority.high);
+                            IRC.DeliverMessage(messages.Localize("OpE5", channel.Language), channel, libirc.Defs.Priority.High);
                             return;
                         }
                         
                         if (string.IsNullOrEmpty(user.Host))
                         {
-                            Core.irc.Queue.DeliverMessage(messages.Localize("OpE6", channel.Language), channel, IRC.priority.high);
+                            IRC.DeliverMessage(messages.Localize("OpE6", channel.Language), channel, libirc.Defs.Priority.High);
                             return;
                         }
                         GetOp(channel);
-                        channel.PrimaryInstance.irc.Queue.Send("MODE " + channel.Name + " +q *!*@" + user.Host, IRC.priority.high);
+                        channel.PrimaryInstance.Network.Transfer("MODE " + channel.Name + " +q *!*@" + user.Host, libirc.Defs.Priority.High);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            channel.PrimaryInstance.irc.Queue.Send("MODE " + channel.Name + " -o " + channel.PrimaryInstance.Nick, IRC.priority.low);
+                            channel.PrimaryInstance.Network.Transfer("MODE " + channel.Name + " -o " + channel.PrimaryInstance.Nick, libirc.Defs.Priority.Low);
                         }
                         return;
                     }
@@ -314,7 +313,7 @@ namespace wmib.Extensions
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -330,17 +329,17 @@ namespace wmib.Extensions
                         {
                             nick = nick.Substring(0, nick.IndexOf(" "));
                         }
-                        User user = getUser(nick, channel);
+                        libirc.User user = getUser(nick, channel);
                         if (user != null)
                         {
                             nick = user.Nick;
                         }
                         // op self
                         GetOp(channel);
-                        channel.PrimaryInstance.irc.Queue.Send("MODE " + channel.Name + " +b " + nick + "!*@*$##fix_your_connection", IRC.priority.high);
+                        channel.PrimaryInstance.Network.Transfer("MODE " + channel.Name + " +b " + nick + "!*@*$##fix_your_connection", libirc.Defs.Priority.High);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            channel.PrimaryInstance.irc.Queue.Send("MODE " + channel.Name + " -o " + channel.PrimaryInstance.Nick, IRC.priority.low);
+                            channel.PrimaryInstance.Network.Transfer("MODE " + channel.Name + " -o " + channel.PrimaryInstance.Nick, libirc.Defs.Priority.Low);
                         }
                         return;
                     }
@@ -348,7 +347,7 @@ namespace wmib.Extensions
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -364,17 +363,17 @@ namespace wmib.Extensions
                         {
                             nick = nick.Substring(0, nick.IndexOf(" "));
                         }
-                        User user = getUser(nick, channel);
+                        libirc.User user = getUser(nick, channel);
                         if (user != null)
                         {
                             nick = user.Nick;
                         }
                         // op self
                         GetOp(channel);
-                        channel.PrimaryInstance.irc.Queue.Send("MODE " + channel.Name + " -b " + nick + "!*@*$##fix_your_connection", IRC.priority.high);
+                        channel.PrimaryInstance.Network.Transfer("MODE " + channel.Name + " -b " + nick + "!*@*$##fix_your_connection", libirc.Defs.Priority.High);
                         if (!GetConfig(channel, "OP.Permanent", false))
                         {
-                            channel.PrimaryInstance.irc.Queue.Send("MODE " + channel.Name + " -o " + channel.PrimaryInstance.Nick, IRC.priority.low);
+                            channel.PrimaryInstance.Network.Transfer("MODE " + channel.Name + " -o " + channel.PrimaryInstance.Nick, libirc.Defs.Priority.Low);
                         }
                         return;
                     }
@@ -382,7 +381,7 @@ namespace wmib.Extensions
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
             }
         }

@@ -86,9 +86,9 @@ namespace wmib
             ArrayList toolsRequests = getWaitingUsernames("Tools Access Requests", "Tools Request User Name");
 
             if (shellRequests.Count != 0 || reportNoUsersWaiting)
-                Core.irc.Queue.DeliverMessage(formatReportLine(shellRequests, "shell access"), RequestChannel);
+                IRC.DeliverMessage(formatReportLine(shellRequests, "shell access"), RequestChannel);
             if (toolsRequests.Count != 0 || reportNoUsersWaiting)
-                Core.irc.Queue.DeliverMessage(formatReportLine(toolsRequests, "Tools access"), RequestChannel);
+                IRC.DeliverMessage(formatReportLine(toolsRequests, "Tools access"), RequestChannel);
 
             return shellRequests.Count != 0 || toolsRequests.Count != 0;
         }
@@ -163,64 +163,63 @@ namespace wmib
                 return;
             }
 
-            if (message == "@requests-off")
+			if (message == Configuration.System.CommandPrefix + "requests-off")
             {
                 if (channel.SystemUsers.IsApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (!GetConfig(channel, "Requests.Enabled", false))
                     {
-                        Core.irc.Queue.DeliverMessage("Requests are already disabled", channel.Name);
+                        IRC.DeliverMessage("Requests are already disabled", channel.Name);
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage("Requests were disabled", channel.Name, IRC.priority.high);
+                    IRC.DeliverMessage("Requests were disabled", channel.Name);
                     SetConfig(channel, "Requests.Enabled", false);
                     channel.SaveConfig();
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
                 }
                 return;
             }
 
-            if (message == "@requests-on")
+			if (message == Configuration.System.CommandPrefix + "requests-on")
             {
                 if (channel.SystemUsers.IsApproved(invoker.Nick, invoker.Host, "admin"))
                 {
                     if (GetConfig(channel, "Requests.Enabled", false))
                     {
-                        Core.irc.Queue.DeliverMessage("Requests system is already enabled", channel.Name);
+                        IRC.DeliverMessage("Requests system is already enabled", channel);
                         return;
                     }
                     SetConfig(channel, "Requests.Enabled", true);
                     channel.SaveConfig();
-                    Core.irc.Queue.DeliverMessage("Requests were enabled", channel.Name, IRC.priority.high);
+                    IRC.DeliverMessage("Requests were enabled", channel);
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
                 }
                 return;
             }
 
-            if (message == "@requests")
+            if (message == Configuration.System.CommandPrefix + "requests")
             {
                 if (!GetConfig(channel, "Requests.Enabled", false))
                 {
-                    Core.irc.Queue.DeliverMessage("You need to enable requests in this channel for this command to work", channel.Name);
+                    IRC.DeliverMessage("You need to enable requests in this channel for this command to work", channel);
                     return;
                 }
                 lock (this.WaitingRequests)
                 {
                     if (this.WaitingRequests.Contains(channel.Name))
                     {
-                        Core.irc.Queue.DeliverMessage("I am already fetching the list of waiting users for this channel", channel.Name);
+                        IRC.DeliverMessage("I am already fetching the list of waiting users for this channel", channel);
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage("I am fetching the list of waiting users...", channel.Name);
-
+                    IRC.DeliverMessage("I am fetching the list of waiting users...", channel);
                     this.WaitingRequests.Add(channel.Name);
                 }
             }

@@ -125,7 +125,7 @@ namespace wmib.Extensions
                         response = "Hey " + invoker.Nick + ", you are welcome, but keep in mind I am just a stupid bot, it was actually " + x.User + " who helped you :-)";
                         Ring.Delete(x);
                     }
-                    Core.irc.Queue.DeliverMessage(response, channel);
+                    IRC.DeliverMessage(response, channel);
                 }
             }
         }

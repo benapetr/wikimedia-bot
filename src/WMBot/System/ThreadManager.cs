@@ -70,6 +70,8 @@ namespace wmib
 
             public static void KillThread(Thread t)
             {
+                if (t == null)
+                    return;
                 Syslog.DebugLog("Killing thread: " + t.Name);
                 if (t == KernelThread)
                 {

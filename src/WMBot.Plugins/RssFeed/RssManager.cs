@@ -284,7 +284,7 @@ namespace wmib.Extensions.RssFeed
                 if (item.retries < 1)
                 {
                     item.disabled = true;
-                    Core.irc.Queue.DeliverMessage("Unable to parse the feed from " + url + " this url is probably not a valid rss, the feed will be disabled, until you re-enable it by typing @rss+ " + item.Name, channel);
+                    IRC.DeliverMessage("Unable to parse the feed from " + url + " this url is probably not a valid rss, the feed will be disabled, until you re-enable it by typing @rss+ " + item.Name, channel);
                     return null;
                 }
                 item.retries--;
@@ -306,7 +306,7 @@ namespace wmib.Extensions.RssFeed
                 if (item.retries < 1)
                 {
                     item.disabled = true;
-                    Core.irc.Queue.DeliverMessage("Unable to parse the feed from " + url + " this url is probably not a valid rss, the feed will be disabled, until you re-enable it by typing @rss+ " + item.Name, channel);
+                    IRC.DeliverMessage("Unable to parse the feed from " + url + " this url is probably not a valid rss, the feed will be disabled, until you re-enable it by typing @rss+ " + item.Name, channel);
                     return null;
                 }
                 item.retries--;

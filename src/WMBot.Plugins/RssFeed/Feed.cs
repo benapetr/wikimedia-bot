@@ -300,7 +300,7 @@ namespace wmib.Extensions.RssFeed
                                 .Replace("$bugzilla_severity", di.bugzilla_severity)
                                 .Replace("$bugzilla_status", di.bugzilla_status)
                                 .Replace("$bugzilla_target", di.bugzilla_target);
-                            Core.irc.Queue.DeliverMessage(message, owner.Name, IRC.priority.low);
+                            IRC.DeliverMessage(message, owner.Name, libirc.Defs.Priority.Low);
                         }
                     }
                 }
@@ -312,7 +312,7 @@ namespace wmib.Extensions.RssFeed
         {
             if (!Contains(Name))
             {
-                Core.irc.Queue.DeliverMessage("I don't have this item in a db", owner.Name);
+                IRC.DeliverMessage("I don't have this item in a db", owner.Name);
                 return;
             }
             Subscription rm = null;
@@ -330,7 +330,7 @@ namespace wmib.Extensions.RssFeed
                 {
                     rm.template = temp;
                     Save();
-                    Core.irc.Queue.DeliverMessage("Item now has a different style you can restore the default style by removing this value", owner.Name);
+                    IRC.DeliverMessage("Item now has a different style you can restore the default style by removing this value", owner.Name);
                 }
             }
         }
@@ -339,7 +339,7 @@ namespace wmib.Extensions.RssFeed
         {
             if (!Contains(Name))
             {
-                Core.irc.Queue.DeliverMessage("I don't have this item in a db", owner.Name);
+                IRC.DeliverMessage("I don't have this item in a db", owner.Name);
                 return;
             }
             Subscription rm = null;
@@ -357,11 +357,11 @@ namespace wmib.Extensions.RssFeed
                 {
                     RssProviders.Remove(rm);
                     Save();
-                    Core.irc.Queue.DeliverMessage("Item was removed from db", owner.Name);
+                    IRC.DeliverMessage("Item was removed from db", owner.Name);
                     return;
                 }
             }
-            Core.irc.Queue.DeliverMessage("Unable to remove this item from db", owner.Name);
+            IRC.DeliverMessage("Unable to remove this item from db", owner.Name);
         }
 
         public void InsertItem(string name, string url, bool scan = false)
@@ -374,13 +374,13 @@ namespace wmib.Extensions.RssFeed
                     {
                         if (curr.Name == name)
                         {
-                            Core.irc.Queue.DeliverMessage("This item was enabled now", owner.Name);
+                            IRC.DeliverMessage("This item was enabled now", owner.Name);
                             curr.Reset();
                             return;
                         }
                     }
                 }
-                Core.irc.Queue.DeliverMessage("There is no such item, if you want to define new item, please use 2 parameters", owner.Name);
+                IRC.DeliverMessage("There is no such item, if you want to define new item, please use 2 parameters", owner.Name);
                 return;
             }
             if (!Contains(name))
@@ -391,10 +391,10 @@ namespace wmib.Extensions.RssFeed
                     RssProviders.Add(item);
                 }
                 Save();
-                Core.irc.Queue.DeliverMessage("Item was inserted to feed", owner.Name);
+                IRC.DeliverMessage("Item was inserted to feed", owner.Name);
                 return;
             }
-            Core.irc.Queue.DeliverMessage("This item already exist", owner.Name);
+            IRC.DeliverMessage("This item already exist", owner.Name);
         }
 
         public Feed(Channel _owner)

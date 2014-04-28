@@ -200,10 +200,9 @@ namespace wmib
                 wiki web = null;
                 if (Loaded == false)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed13", target.Language), target.Name);
+                    IRC.DeliverMessage(messages.Localize("rcfeed13", target.Language), target.Name);
                     return false;
                 }
-
                 foreach (wiki site in wikiinfo)
                 {
                     if (name == site.name)
@@ -212,15 +211,14 @@ namespace wmib
                         break;
                     }
                 }
-
                 if (web == null)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed1", target.Language), target.Name);
+                    IRC.DeliverMessage(messages.Localize("rcfeed1", target.Language), target.Name);
                     return false;
                 }
                 if (channels.Contains(web.channel))
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed2", target.Language), target.Name);
+                    IRC.DeliverMessage(messages.Localize("rcfeed2", target.Language), target.Name);
                     return false;
                 }
                 channels.Add(web.channel);
@@ -250,7 +248,7 @@ namespace wmib
             wiki W = null;
             if (Loaded == false)
             {
-                Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed13", target.Language), target.Name);
+                IRC.DeliverMessage(messages.Localize("rcfeed13", target.Language), target);
                 return false;
             }
             try
@@ -265,12 +263,12 @@ namespace wmib
                 }
                 if (W == null)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed1", target.Language), target.Name);
+                    IRC.DeliverMessage(messages.Localize("rcfeed1", target.Language), target);
                     return false;
                 }
                 if (!channels.Contains(W.channel))
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed3", target.Language), target.Name);
+                    IRC.DeliverMessage(messages.Localize("rcfeed3", target.Language), target);
                     return false;
                 }
                 channels.Remove(W.channel);
@@ -446,20 +444,17 @@ namespace wmib
                             MonitoredPages.Remove(currpage);
                             Module.SetConfig(channel, "HTML.Update", true);
                             Save();
-                            Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed4", channel.Language), channel.Name);
+                            IRC.DeliverMessage(messages.Localize("rcfeed4", channel.Language), channel);
                             return true;
                         }
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed5", channel.Language), channel.Name);
+                    IRC.DeliverMessage(messages.Localize("rcfeed5", channel.Language), channel);
                     return true;
                 }
-                Core.irc.Queue.DeliverMessage(
-                    messages.Localize("rcfeed6", channel.Language), channel.Name);
+                IRC.DeliverMessage(messages.Localize("rcfeed6", channel.Language), channel);
                 return false;
             }
-            Core.irc.Queue.DeliverMessage(
-                messages.Localize("rcfeed7", channel.Language),
-                channel.Name);
+            IRC.DeliverMessage(messages.Localize("rcfeed7", channel.Language), channel);
             return false;
         }
 
@@ -511,29 +506,28 @@ namespace wmib
                     {
                         if (!Page.EndsWith("*") || Page.Replace("*", "") == "")
                         {
-                            Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed8", channel.Language), channel.Name);
+                            IRC.DeliverMessage(messages.Localize("rcfeed8", channel.Language), channel);
                             return true;
                         }
                     }
                     if (MonitoredPages.Contains(currpage))
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed9", channel.Language),
-                                                     channel.Name);
+                        IRC.DeliverMessage(messages.Localize("rcfeed9", channel.Language), channel);
                         return true;
                     }
                     lock (MonitoredPages)
                     {
                         MonitoredPages.Add(new IWatch(site, Page, site.channel));
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed10", channel.Language), channel.Name);
+                    IRC.DeliverMessage(messages.Localize("rcfeed10", channel.Language), channel);
                     Module.SetConfig(channel, "HTML.Update", true);
                     Save();
                     return true;
                 }
-                Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed11", channel.Language), channel.Name);
+                IRC.DeliverMessage(messages.Localize("rcfeed11", channel.Language), channel);
                 return false;
             }
-            Core.irc.Queue.DeliverMessage(messages.Localize("rcfeed12", channel.Language), channel.Name);
+            IRC.DeliverMessage(messages.Localize("rcfeed12", channel.Language), channel);
             return false;
         }
     }

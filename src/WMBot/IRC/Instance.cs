@@ -70,7 +70,6 @@ namespace wmib
         /// Each instance is running in its own thread, this is pointer to that thread
         /// </summary>
         private Thread thread;
-
         /// <summary>
         /// List of channels this instance is now used in
         /// </summary>
@@ -89,7 +88,6 @@ namespace wmib
                 return list;
             }
         }
-
         /// <summary>
         /// Whether this instance has finished connection to IRC server, this is used because of several
         /// freenode issues, where some random commands sent during irc server connection get ignored

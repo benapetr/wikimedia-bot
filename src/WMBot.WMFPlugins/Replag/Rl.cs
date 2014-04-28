@@ -43,7 +43,7 @@ namespace wmib
         {
             if (message == "@replag")
             {
-                Core.irc.Queue.DeliverMessage("Replication lag is approximately " + GetReplag(), channel);
+                IRC.DeliverMessage("Replication lag is approximately " + GetReplag(), channel);
             }
         }
 

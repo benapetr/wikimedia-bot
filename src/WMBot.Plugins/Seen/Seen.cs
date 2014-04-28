@@ -115,9 +115,7 @@ namespace wmib.Extensions
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "seenrx "))
             {
-                Core.irc.Queue.DeliverMessage(
-                    "Sorry but this command can be used in channels only (it's cpu expensive so it can be used on public by trusted users only)",
-                    user.Nick, IRC.priority.low);
+                IRC.DeliverMessage("Sorry but this command can be used in channels only (it's cpu expensive so it can be used on public by trusted users only)", user);
                 return true;
             }
             return false;
@@ -164,7 +162,7 @@ namespace wmib.Extensions
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
                 }
                 return;
             }
@@ -175,17 +173,17 @@ namespace wmib.Extensions
                 {
                     if (!GetConfig(channel, "Seen.Enabled", false))
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("seen-e2", channel.Language), channel.Name);
+                        IRC.DeliverMessage(messages.Localize("seen-e2", channel.Language), channel.Name);
                         return;
                     }
-                    Core.irc.Queue.DeliverMessage(messages.Localize("seen-off", channel.Language), channel.Name, IRC.priority.high);
+                    IRC.DeliverMessage(messages.Localize("seen-off", channel.Language), channel.Name);
                     SetConfig(channel, "Seen.Enabled", false);
                     channel.SaveConfig();
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
                 }
                 return;
             }
@@ -196,17 +194,17 @@ namespace wmib.Extensions
                 {
                     if (GetConfig(channel, "Seen.Enabled", false))
                     {
-                        Core.irc.Queue.DeliverMessage(messages.Localize("seen-oe", channel.Language), channel.Name);
+                        IRC.DeliverMessage(messages.Localize("seen-oe", channel.Language), channel.Name);
                         return;
                     }
                     SetConfig(channel, "Seen.Enabled", true);
                     channel.SaveConfig();
-                    Core.irc.Queue.DeliverMessage(messages.Localize("seen-on", channel.Language), channel.Name, IRC.priority.high);
+                    IRC.DeliverMessage(messages.Localize("seen-on", channel.Language), channel.Name);
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    Core.irc.Queue.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, IRC.priority.low);
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
                 }
             }
         }
@@ -431,14 +429,14 @@ namespace wmib.Extensions
                     if (temp_nick.ToUpper() == temp_source.ToUpper())
                     {
                         response = "are you really looking for yourself?";
-                        Core.irc.Queue.DeliverMessage(temp_source + ": " + response, chan.Name);
+                        IRC.DeliverMessage(temp_source + ": " + response, chan.Name);
                         Working = false;
                         return;
                     }
                     if (temp_nick.ToUpper() == Configuration.IRC.NickName.ToUpper())
                     {
                         response = "I am right here";
-                        Core.irc.Queue.DeliverMessage(temp_source + ": " + response, chan.Name);
+                        IRC.DeliverMessage(temp_source + ": " + response, chan.Name);
                         Working = false;
                         return;
                     }
@@ -458,11 +456,11 @@ namespace wmib.Extensions
                         }
                         response += " (multiple results were found: " + results + ")";
                     }
-                    Core.irc.Queue.DeliverMessage(temp_source + ": " + response, chan.Name);
+                    IRC.DeliverMessage(temp_source + ": " + response, chan.Name);
                     Working = false;
                     return;
                 }
-                Core.irc.Queue.DeliverMessage(messages.Localize("Error1", chan.Language), chan.Name);
+                IRC.DeliverMessage(messages.Localize("Error1", chan.Language), chan.Name);
                 Working = false;
             }
             catch (ThreadAbortException)
@@ -530,7 +528,7 @@ namespace wmib.Extensions
                     if (curr > 80)
                     {
                         SearchThread.Abort();
-                        Core.irc.Queue.DeliverMessage("This search took too much time, please optimize query", channel.Name);
+                        IRC.DeliverMessage("This search took too much time, please optimize query", channel.Name);
                         Working = false;
                         break;
                     }
@@ -689,13 +687,13 @@ namespace wmib.Extensions
                 if (nick.ToUpper() == source.ToUpper())
                 {
                     response = "are you really looking for yourself?";
-                    Core.irc.Queue.DeliverMessage(source + ": " + response, target, IRC.priority.normal);
+                    IRC.DeliverMessage(source + ": " + response, target);
                     return;
                 }
                 if (nick.ToUpper() == Configuration.IRC.NickName.ToUpper())
                 {
                     response = "I am right here";
-                    Core.irc.Queue.DeliverMessage(source + ": " + response, target, IRC.priority.normal);
+                    IRC.DeliverMessage(source + ": " + response, target);
                     return;
                 }
                 if (channel != null)
@@ -717,7 +715,7 @@ namespace wmib.Extensions
                         }
                     }
                 }
-                Core.irc.Queue.DeliverMessage(source + ": " + response, target, IRC.priority.normal);
+                IRC.DeliverMessage(source + ": " + response, target);
             }
             catch (Exception fail)
             {
@@ -880,21 +878,15 @@ namespace wmib.Extensions
             }
         }
 
-        public static string FormatTimeSpan(TimeSpan ts) {
+        public static string FormatTimeSpan(TimeSpan ts)
+		{
             string newTimeString = "";
-
-            if (ts.Days != 0) {
+            if (ts.Days != 0)
                 newTimeString += ts.Days + "d";
-            }
-
-            if (ts.Hours != 0) {
+            if (ts.Hours != 0)
                 newTimeString += ts.Hours + "h";
-            }
-
-            if (ts.Minutes != 0) {
+            if (ts.Minutes != 0)
                 newTimeString += ts.Minutes + "m";
-            }
-
             return newTimeString + ts.Seconds + "s";
         }
     }
