@@ -334,6 +334,7 @@ namespace wmib
 
         public void Disconnect()
         {
+            this.IsWorking = false;
             this.Protocol.Disconnect();
         }
 
@@ -359,6 +360,7 @@ namespace wmib
                     }
                     // in case we got disconnected, we log it and restart the procedure
                     Syslog.WarningLog("Disconnected from irc network on " + Nick);
+                    Thread.Sleep(20000);
                 } catch (ThreadAbortException)
                 {
                     Syslog.DebugLog("Terminated primary thread for instance " + Nick);

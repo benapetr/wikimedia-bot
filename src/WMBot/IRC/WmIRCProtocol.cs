@@ -99,6 +99,7 @@ namespace wmib
                         Syslog.DebugLog("Resumming previous session on " + this.IRCNetwork.Nickname);
                         done = false;
                         Auth = false;
+                        IRCNetwork.IsConnected = true;
                         ChannelsJoined = true;
                         IsWorking = true;
                     } else if (response.StartsWith(":"))
@@ -218,7 +219,6 @@ namespace wmib
                 }
                 try
                 {
-                    this.Send("QUIT :" + IRCNetwork.Quit);
                     IRCNetwork.IsConnected = false;
                     if (SSL)
                     {
