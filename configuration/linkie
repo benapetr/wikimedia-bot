@@ -64,6 +64,7 @@ bugzilla|https://bugzilla.wikimedia.org/show_bug.cgi?id=$1
 buzztard|https://buzztard.org/index.php/$1
 bxr|https://bxr.wikipedia.org/wiki/$1
 bytesmiths|https://www.Bytesmiths.com/wiki/$1
+c|https://commons.wikimedia.org/wiki/$1
 c2|https://c2.com/cgi/wiki?$1
 c2find|https://c2.com/cgi/wiki?FindPage&value=$1
 ca|https://ca.wikipedia.org/wiki/$1
