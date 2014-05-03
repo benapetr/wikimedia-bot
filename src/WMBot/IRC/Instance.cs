@@ -313,10 +313,6 @@ namespace wmib
                 }
                 this.ChannelsJoined = true;
             }
-            //irc.ChannelThread = new Thread(irc.ChannelList) {Name = "ChannelList:" + Nick};
-            //Core.ThreadManager.RegisterThread(irc.ChannelThread);
-            //irc.ChannelThread.Start();
-            //Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
         }
 
         /// <summary>

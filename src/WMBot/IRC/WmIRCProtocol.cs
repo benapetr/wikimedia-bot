@@ -141,11 +141,11 @@ namespace wmib
         {
             if (incoming)
             {
-                Core.TrafficLog(IRCNetwork.Nickname + ">>" + text);
+                Core.TrafficLog(IRCNetwork.Nickname + "<<" + text);
             }
             else
             {
-                Core.TrafficLog(IRCNetwork.Nickname + "<<" + text);
+                Core.TrafficLog(IRCNetwork.Nickname + ">>" + text);
             }
         }
 
@@ -154,46 +154,42 @@ namespace wmib
             try
             {
                 this._Connect();
-                try
+                while (!streamReader.EndOfStream && IsConnected)
                 {
-                    while (!streamReader.EndOfStream && IsConnected)
+                    if (!IRCNetwork.IsConnected)
                     {
-                        if (!IRCNetwork.IsConnected)
-                        {
-                            IRCNetwork.IsConnected = true;
-                        }
-                        string text;
-                        if (Backlog.Count > 0)
-                        {
-                            lock (Backlog)
-                            {
-                                text = Backlog[0];
-                                Backlog.RemoveAt(0);
-                            }
-                        } else
-                        {
-                            text = streamReader.ReadLine();
-                        }
-                        text = this.RawTraffic(text);
-                        this.TrafficLog(text, true);
-                        libirc.ProcessorIRC processor = new libirc.ProcessorIRC(IRCNetwork, text, ref LastPing);
-                        processor.ProfiledResult();
-                        LastPing = processor.pong;
+                        IRCNetwork.IsConnected = true;
                     }
-                }catch (ThreadAbortException)
-                {
-                    this.SafeDc();
-                    this.DisconnectExec("Thread aborted");
-                }catch (System.Net.Sockets.SocketException ex)
-                {
-                    this.SafeDc();
-                    this.DisconnectExec(ex.Message);
-                }catch (System.IO.IOException ex)
-                {
-                    this.SafeDc();
-                    this.DisconnectExec(ex.Message);
+                    string text;
+                    if (Backlog.Count > 0)
+                    {
+                        lock (Backlog)
+                        {
+                            text = Backlog[0];
+                            Backlog.RemoveAt(0);
+                        }
+                    } else
+                    {
+                        text = streamReader.ReadLine();
+                    }
+                    text = this.RawTraffic(text);
+                    this.TrafficLog(text, true);
+                    libirc.ProcessorIRC processor = new libirc.ProcessorIRC(IRCNetwork, text, ref LastPing);
+                    processor.ProfiledResult();
+                    LastPing = processor.pong;
                 }
-                Core.ThreadManager.UnregisterThread(System.Threading.Thread.CurrentThread);
+            }catch (ThreadAbortException)
+            {
+                this.SafeDc();
+                this.DisconnectExec("Thread aborted");
+            }catch (System.Net.Sockets.SocketException ex)
+            {
+                this.SafeDc();
+                this.DisconnectExec(ex.Message);
+            }catch (System.IO.IOException ex)
+            {
+               this.SafeDc();
+               this.DisconnectExec(ex.Message);
             } catch (Exception fail)
             {
                 Core.HandleException(fail);
@@ -201,6 +197,7 @@ namespace wmib
                 this.DisconnectExec(fail.Message);
                 Core.ThreadManager.UnregisterThread(this.main);
             }
+            Core.ThreadManager.UnregisterThread(System.Threading.Thread.CurrentThread);
         }
 
         protected override void SafeDc()
@@ -241,6 +238,11 @@ namespace wmib
                 Core.ThreadManager.KillThread(this.main);
             }
             return Result.Done;
+        }
+
+        public override void DebugLog(string Text, int Verbosity)
+        {
+            Syslog.DebugLog(Text, Verbosity);
         }
 
         public override Thread Open()
