@@ -34,7 +34,7 @@ namespace wmib
                 {
                     if (channel.SystemUsers.IsApproved(user, host, "join"))
                     {
-                        while (!Core.FinishedJoining)
+                        while (!IRC.FinishedJoining)
                         {
                             Syslog.Log("Postponing request to join because bot is still loading", true);
                             Thread.Sleep(2000);
@@ -112,7 +112,7 @@ namespace wmib
                 {
                     if (channel.SystemUsers.IsApproved(user, host, "drop"))
                     {
-                        while (!Core.FinishedJoining)
+                        while (!IRC.FinishedJoining)
                         {
                             Syslog.Log("Postponing request to part " + channel.Name + " because bot is still loading", true);
                             Thread.Sleep(2000);
@@ -161,7 +161,7 @@ namespace wmib
                 {
                     if (channel.SystemUsers.IsApproved(user, host, "part"))
                     {
-                        while (!Core.FinishedJoining)
+                        while (!IRC.FinishedJoining)
                         {
                             Syslog.Log("Postponing request to part " + channel.Name + " because bot is still loading", true);
                             Thread.Sleep(2000);

@@ -36,6 +36,7 @@ namespace wmib
         private List<string> Backlog = new List<string>();
         public bool ChannelsJoined = false;
         public bool IsWorking = false;
+        // we have to return false here because the wm-bot bouncer doesn't support ssl yet
         public override bool SupportSSL
         {
             get
@@ -140,12 +141,10 @@ namespace wmib
         {
             if (incoming)
             {
-                Syslog.DebugLog(IRCNetwork.Nickname + ">>" + text);
                 Core.TrafficLog(IRCNetwork.Nickname + ">>" + text);
             }
             else
             {
-                Syslog.DebugLog(IRCNetwork.Nickname + "<<" + text);
                 Core.TrafficLog(IRCNetwork.Nickname + "<<" + text);
             }
         }

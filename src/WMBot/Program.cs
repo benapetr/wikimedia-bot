@@ -195,7 +195,7 @@ namespace wmib
                 Security.Init();
                 Security.Global();
                 Syslog.Log("Connecting");
-                Core.Connect();
+                IRC.Connect();
                 UnixSignal[] signals = 
                 {
                     new UnixSignal (Signum.SIGINT),

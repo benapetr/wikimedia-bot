@@ -19,6 +19,18 @@ namespace wmib
 {
     public partial class IRC
     {
+        /// <summary>
+        /// If this is not true it means bot did not yet finish connecting or joining to all networks
+        /// </summary>
+        private static bool finishedJoining = false;
+        public static bool FinishedJoining
+        {
+            get
+            {
+                return finishedJoining;
+            }
+        }
+
         public static void DeliverMessage(string text, Channel target, libirc.Defs.Priority priority = libirc.Defs.Priority.Normal)
         {
             if (!target.Suppress)
@@ -76,38 +88,39 @@ namespace wmib
             }
         }
 
-        /*
+        /// <summary>
+        /// Connect to network
+        /// </summary>
+        public static void Connect()
+        {
+            Instance.ConnectAllIrcInstances();
+            finishedJoining = true;
+            InitialiseList();
+        }
+
+        private static void InitialiseList()
+        {
+            Thread thread = new Thread(ChannelList);
+            thread.Name = "IRC/ChannelList";
+            Core.ThreadManager.RegisterThread(thread);
+            thread.Start();
+        }
+
         /// <summary>
         /// This function will retrieve a list of users in a channel for every channel that doesn't have it so far
         /// </summary>
-        public void ChannelList()
+        private static void ChannelList()
         {
             try
             {
-                while (IsConnected && Core.IsRunning)
+                while (Core.IsRunning)
                 {
-                    List<string> channels = new List<string>();
-                    // check if there is some channel which needs an update of user list
-                    foreach (Channel dd in ParentInstance.ChannelList)
+                    foreach (Channel channel in Configuration.ChannelList)
                     {
-                        if (!dd.HasFreshUserList)
-                        {
-                            channels.Add(dd.Name);
-                        }
+                        if (!channel.HasFreshUserList && channel.PrimaryInstance != null && channel.PrimaryInstance.Network != null)
+                            channel.PrimaryInstance.Network.Transfer("WHO " + channel.Name, libirc.Defs.Priority.Low);
                     }
-
-                    if (channels.Count >= 1)
-                    {
-                        foreach (string xx in channels)
-                        {
-                            Syslog.Log("requesting user list on " + ParentInstance.Nick + " for channel: " + xx);
-                            // Send the request with low priority
-                            Queue.Send("WHO " + xx, libirc.Defs.Priority.Low);
-                        }
-                        // we give 10 seconds for each channel to send us a list
-                        Thread.Sleep(10000 * channels.Count);
-                    }
-                    Thread.Sleep(10000);
+                    Thread.Sleep((Configuration.Channels.Count * 2000) + 80000);
                 }
             }
             catch (ThreadAbortException)
@@ -121,137 +134,5 @@ namespace wmib
             }
             Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
         }
-
-        /// <summary>
-        /// Connection
-        /// </summary>
-        /// <returns></returns>
-        public void ParserExec()
-        {
-            string nick = "";
-            string host = "";
-            const char delimiter = (char)001;
-
-            while ((!streamReader.EndOfStream || Backlog.Count > 0) && Core.IsRunning)
-            {
-                string text;
-                lock (Backlog)
-                {
-                    if (Backlog.Count == 0)
-                    {
-                        text = streamReader.ReadLine();
-                    } else
-                    {
-                        text = Backlog[0];
-                        Backlog.RemoveAt(0);
-                    }
-                }
-                Core.TrafficLog(ParentInstance.Nick + "<<<<<<" + text);
-                if (Configuration.IRC.UsingBouncer)
-                {
-                    if (text.StartsWith("CONTROL: "))
-                    {
-                        if (text == "CONTROL: DC")
-                        {
-                            SendData("CONTROL: CREATE " + Server);
-                            streamWriter.Flush();
-                            Syslog.Log("CACHE: Lost connection to remote on " + this.ParentInstance.Nick + 
-                                ", creating new session on remote"
-                            );
-                            ChannelsJoined = false;
-                            IsWorking = false;
-                            int xx = 0;
-                            bool Connected_ = false;
-                            while (!Connected_)
-                            {
-                                Thread.Sleep(2000);
-                                SendData("CONTROL: STATUS");
-                                string response = streamReader.ReadLine();
-                                Core.TrafficLog(ParentInstance.Nick + "<<<<<<" + response);
-                                if (response.StartsWith(":"))
-                                {
-                                    // we received network data here
-                                    lock(Backlog)
-                                    {
-                                        Backlog.Add(response);
-                                    }
-                                    continue;
-                                }
-                                if (response == "CONTROL: TRUE")
-                                {
-                                    Syslog.Log("Bouncer reconnected to network on: " + NickName);
-                                    NetworkInit();
-                                    ParentInstance.Join();
-                                    Connected_ = true;
-                                } else
-                                {
-                                    xx++;
-                                    if (xx > 6)
-                                    {
-                                        Syslog.WarningLog("Bouncer failed to connect to the network within 10 seconds, disconnecting it: " + NickName);
-                                        SendData("CONTROL: DISCONNECT");
-                                        return;
-                                    }
-                                    Syslog.Log("Still waiting for bouncer (trying " + xx 
-                                               + "/6) on " + NickName + " " + response);
-                                }
-                            }
-                        }
-                    }
-                }
-                if (text.StartsWith(":"))
-                {
-                    DateTime pong;
-                    libirc.ProcessorIRC processor = new libirc.ProcessorIRC(WmIrcProtocol.Network, text, ref pong);
-                    processor.ProfiledResult();
-                    string check = text.Substring(text.IndexOf(" "));
-                    if (!check.StartsWith(" 005"))
-                    {
-                        string command = "";
-                        if (text.Contains(" :"))
-                        {
-                            command = text.Substring(1);
-                            command = command.Substring(0, command.IndexOf(" :"));
-                        }
-                        
-                        if (command.Contains("KICK"))
-                        {
-                            string temp = command.Substring(command.IndexOf("KICK"));
-                            string[] parts = temp.Split(' ');
-                            if (parts.Length > 1)
-                            {
-                                string _channel = parts[1];
-                                if (_channel == Configuration.System.DebugChan && ParentInstance.Nick != Core.irc.NickName)
-                                {
-                                    continue;
-                                }
-                                string user = parts[2];
-                                if (user == NickName)
-                                {
-                                    Channel chan = Core.GetChannel(_channel);
-                                    if (chan != null)
-                                    {
-                                        lock(Configuration.Channels)
-                                        {
-                                            if (Configuration.Channels.Contains(chan))
-                                            {
-                                                Configuration.Channels.Remove(chan);
-                                                Syslog.Log("I was kicked from " + parts[1]);
-                                                Configuration.Save();
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                Thread.Sleep(50);
-            }
-            Syslog.Log("Lost connection to IRC on " + NickName);
-            Disconnect();
-            IsWorking = false;
-        }
-        */
     }
 }

@@ -49,10 +49,6 @@ namespace wmib
         /// </summary>
         private static Status _Status = Status.OK;
         /// <summary>
-        /// If this is not true it means bot did not yet finish connecting or joining to all networks
-        /// </summary>
-        public static bool FinishedJoining = false;
-        /// <summary>
         /// Thread which is writing the system data to files
         /// </summary>
         public static Thread WriterThread = null;
@@ -298,15 +294,6 @@ namespace wmib
                 Syslog.Log("Unfinished transaction could not be restored! DB of " + name + " is now broken");
                 return false;
             }
-        }
-
-        /// <summary>
-        /// Connect to network
-        /// </summary>
-        public static void Connect()
-        {
-            Instance.ConnectAllIrcInstances();
-            FinishedJoining = true;
         }
 
         private static void Terminate()
