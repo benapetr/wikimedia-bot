@@ -47,7 +47,6 @@ namespace wmib
 
         public override bool __evt__IncomingData(IncomingDataEventArgs args)
         {
-            Syslog.DebugLog(args.ServerLine);
             switch(args.Command)
             {
                 case "001":
