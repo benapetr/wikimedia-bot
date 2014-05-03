@@ -39,7 +39,7 @@ namespace wmib
                     return;
                 case "VERSION":
                     Transfer("NOTICE " + args.SourceInfo.Nick + " :" + _Protocol.Separator + "VERSION " 
-                             + Configuration.System.Version);
+                             + Configuration.System.Version + " http://meta.wikimedia.org/wiki/WM-Bot");
                    return;
             }
             Syslog.DebugLog("Ignoring uknown CTCP from " + args.Source + ": " + args.CTCP + args.Message);
@@ -55,6 +55,28 @@ namespace wmib
                     break;
             }
             return base.__evt__IncomingData(args);
+        }
+
+        public override void __evt_Self(NetworkSelfEventArgs args)
+        {
+            switch(args.Type)
+            {
+                case libirc.Network.EventType.Kick:
+                    Syslog.Log("I was kicked from " + args.ChannelName + " by " + args.SourceInfo.Nick + " because of " + args.Message);
+                    Channel channel = Core.GetChannel(args.ChannelName);
+                    if (channel != null)
+                    {
+                        lock(Configuration.Channels)
+                        {
+                            if (Configuration.Channels.Contains(channel))
+                            {
+                                Configuration.Channels.Remove(channel);
+                                Configuration.Save();
+                            }
+                        }
+                    }
+                    break;
+            }
         }
 
         public override void __evt_FinishChannelParseUser(NetworkChannelDataEventArgs args)

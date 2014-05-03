@@ -118,7 +118,10 @@ namespace wmib
                     foreach (Channel channel in Configuration.ChannelList)
                     {
                         if (!channel.HasFreshUserList && channel.PrimaryInstance != null && channel.PrimaryInstance.Network != null)
+                        {
                             channel.PrimaryInstance.Network.Transfer("WHO " + channel.Name, libirc.Defs.Priority.Low);
+                            Thread.Sleep(1000);
+                        }
                     }
                     Thread.Sleep((Configuration.Channels.Count * 2000) + 80000);
                 }
