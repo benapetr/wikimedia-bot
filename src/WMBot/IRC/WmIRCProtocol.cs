@@ -70,7 +70,7 @@ namespace wmib
             return true;
         }
 
-        private void _Connect()
+        private bool _Connect()
         {
             Syslog.Log("Connecting instance " + this.IRCNetwork.Nickname + " to irc server " + Server + "...");
             if (!Configuration.IRC.UsingBouncer)
@@ -89,28 +89,29 @@ namespace wmib
             {
                 this.Send("CONTROL: STATUS");
                 Syslog.Log("CACHE: Waiting for buffer (network bouncer) of instance " + this.IRCNetwork.Nickname);
-                bool done = true;
-                while (done)
+                while (true)
                 {
                     string response = streamReader.ReadLine();
                     this.TrafficLog(response, true);
                     if (response == "CONTROL: TRUE")
                     {
                         Syslog.DebugLog("Resumming previous session on " + this.IRCNetwork.Nickname);
-                        done = false;
                         Auth = false;
                         IRCNetwork.IsConnected = true;
                         ChannelsJoined = true;
                         IsWorking = true;
+                        break;
                     } else if (response.StartsWith(":"))
                     {
                         Backlog.Add(response);
                     } else if (response == "CONTROL: FALSE")
                     {
                         Syslog.DebugLog("Bouncer is not connected, starting new session on " + IRCNetwork.Nickname);
-                        done = false;
-                        ChannelsJoined = false;
-                        this.Send("CONTROL: CREATE " + Server);
+                        if (!this.connectBnc())
+                        {
+                            return false;
+                        }
+                        break;
                     }
                 }
             }
@@ -131,6 +132,7 @@ namespace wmib
                 Core.ThreadManager.RegisterThread(TDeliveryQueue);
                 TDeliveryQueue.Start();
             }
+            return true;
         }
 
         public override Result Transfer(string text, libirc.Defs.Priority priority, libirc.Network network)
@@ -150,17 +152,65 @@ namespace wmib
             }
         }
 
+        private bool connectBnc()
+        {
+            this.Send("CONTROL: CREATE " + this.Server);
+            this.ChannelsJoined = false;
+            int retries = 0;
+            bool Connected_ = false;
+            while (!Connected_)
+            {
+                Thread.Sleep(2000);
+                this.Send("CONTROL: STATUS");
+                string response = streamReader.ReadLine();
+                this.TrafficLog(response, true);
+                if (response.StartsWith(":"))
+                {
+                    // we received network data here
+                    lock(Backlog)
+                        Backlog.Add(response);
+                    continue;
+                }
+                if (response == "CONTROL: TRUE")
+                {
+                    Syslog.Log("Bouncer connected to " + Server + " on: " + this.IRCNetwork.Nickname);
+                } else
+                {
+                    retries++;
+                    if (retries > 6)
+                    {
+                        Syslog.WarningLog("Bouncer failed to connect to the network within 10 seconds, disconnecting it: "
+                                          + this.IRCNetwork.Nickname);
+                        this.Send("CONTROL: DISCONNECT");
+                        return false;
+                    }
+                    Syslog.Log("Still waiting for bouncer (trying " + retries.ToString() + "/6) on " + this.IRCNetwork.Nickname + " " + response);
+                }
+            }
+            return true;
+        }
+
+        private void KillSelf(string reason)
+        {
+            this.SafeDc();
+            this.DisconnectExec(reason);
+            Core.ThreadManager.UnregisterThread(System.Threading.Thread.CurrentThread);
+        }
+
         private void ThreadExec()
         {
             try
             {
-                this._Connect();
+                if (!this._Connect())
+                {
+                    this.KillSelf("Unable to connect to remote");
+                    return;
+                }
+                // why is this??
+                if (!IRCNetwork.IsConnected)
+                    IRCNetwork.IsConnected = true;
                 while (!streamReader.EndOfStream && IsConnected)
                 {
-                    if (!IRCNetwork.IsConnected)
-                    {
-                        IRCNetwork.IsConnected = true;
-                    }
                     string text;
                     if (Backlog.Count > 0)
                     {
@@ -173,6 +223,17 @@ namespace wmib
                     {
                         text = streamReader.ReadLine();
                     }
+                    if (Configuration.IRC.UsingBouncer && text[0] == 'C' && text.StartsWith("CONTROL: "))
+                    {
+                        if (text == "CONTROL: DC")
+                        {
+                            Syslog.Log("CACHE: Lost connection to remote on " + this.IRCNetwork.Nickname);
+                            this.ChannelsJoined = false;
+                            this.IsWorking = false;
+                            this.KillSelf("Lost connection to remote");
+                            return;
+                        }
+                    }
                     text = this.RawTraffic(text);
                     this.TrafficLog(text, true);
                     libirc.ProcessorIRC processor = new libirc.ProcessorIRC(IRCNetwork, text, ref LastPing);
@@ -181,24 +242,18 @@ namespace wmib
                 }
             }catch (ThreadAbortException)
             {
-                this.SafeDc();
-                this.DisconnectExec("Thread aborted");
+                KillSelf("Thread aborted");
             }catch (System.Net.Sockets.SocketException ex)
             {
-                this.SafeDc();
-                this.DisconnectExec(ex.Message);
+                this.KillSelf(ex.Message);
             }catch (System.IO.IOException ex)
             {
-               this.SafeDc();
-               this.DisconnectExec(ex.Message);
+               this.KillSelf(ex.Message);
             } catch (Exception fail)
             {
                 Core.HandleException(fail);
-                this.SafeDc();
-                this.DisconnectExec(fail.Message);
-                Core.ThreadManager.UnregisterThread(this.main);
+                this.KillSelf(fail.Message);
             }
-            Core.ThreadManager.UnregisterThread(System.Threading.Thread.CurrentThread);
         }
 
         protected override void SafeDc()
