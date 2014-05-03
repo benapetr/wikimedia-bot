@@ -45,6 +45,26 @@ namespace wmib
             Syslog.DebugLog("Ignoring uknown CTCP from " + args.Source + ": " + args.CTCP + args.Message);
         }
 
+        public override void __evt_KICK(NetworkKickEventArgs args)
+        {
+            if (this.Nickname.ToLower() == args.Target.ToLower())
+            {
+                Syslog.Log("I was kicked from " + args.ChannelName + " by " + args.SourceInfo.Nick + " because of: " + args.Message);
+                Channel channel = Core.GetChannel(args.ChannelName);
+                if (channel != null)
+                {
+                    lock(Configuration.Channels)
+                    {
+                        if (Configuration.Channels.Contains(channel))
+                        {
+                            Configuration.Channels.Remove(channel);
+                            Configuration.Save();
+                        }
+                    }
+                }
+            }
+        }
+
         public override bool __evt__IncomingData(IncomingDataEventArgs args)
         {
             switch(args.Command)
@@ -57,25 +77,31 @@ namespace wmib
             return base.__evt__IncomingData(args);
         }
 
-        public override void __evt_Self(NetworkSelfEventArgs args)
+        public override void __evt_NICK(NetworkNICKEventArgs args)
         {
-            switch(args.Type)
+            foreach (Channel channel in Configuration.ChannelList)
             {
-                case libirc.Network.EventType.Kick:
-                    Syslog.Log("I was kicked from " + args.ChannelName + " by " + args.SourceInfo.Nick + " because of " + args.Message);
-                    Channel channel = Core.GetChannel(args.ChannelName);
-                    if (channel != null)
+                if (channel.ContainsUser(args.OldNick))
+                {
+                    lock (ExtensionHandler.Extensions)
                     {
-                        lock(Configuration.Channels)
+                        foreach (Module extension_ in ExtensionHandler.Extensions)
                         {
-                            if (Configuration.Channels.Contains(channel))
+                            try
                             {
-                                Configuration.Channels.Remove(channel);
-                                Configuration.Save();
+                                if (extension_.IsWorking)
+                                {
+                                    extension_.Hook_Nick(channel, args.SourceInfo, args.OldNick);
+                                }
+                            }
+                            catch (Exception fail)
+                            {
+                                Syslog.Log("Error on hook in " + extension_.Name, true);
+                                Core.HandleException(fail);
                             }
                         }
                     }
-                    break;
+                }
             }
         }
 
