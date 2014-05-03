@@ -414,7 +414,7 @@ namespace wmib.Extensions.RssFeed
             }
             catch (ThreadAbortException)
             {
-				return;
+                return;
             }
             catch (Exception fail)
             {

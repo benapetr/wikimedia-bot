@@ -879,7 +879,7 @@ namespace wmib.Extensions
         }
 
         public static string FormatTimeSpan(TimeSpan ts)
-		{
+        {
             string newTimeString = "";
             if (ts.Days != 0)
                 newTimeString += ts.Days + "d";

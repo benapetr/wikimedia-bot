@@ -22,17 +22,17 @@ namespace wmib
             this.instance = Instance;
         }
 
-		public override void __evt_CTCP (NetworkCTCPEventArgs args)
-		{
-			switch (args.CTCP)
-			{
-				case "FINGER":
-					Transfer("NOTICE " + args.SourceInfo.Nick + " :" + _Protocol.Separator + "FINGER" + 
-				    	     " I am a bot don't finger me");
-					return;
-				case "TIME":
-					Transfer("NOTICE " + args.SourceInfo.Nick + " :" + _Protocol.Separator + "TIME " + DateTime.Now.ToString());
-					return;
+        public override void __evt_CTCP (NetworkCTCPEventArgs args)
+        {
+            switch (args.CTCP)
+            {
+                case "FINGER":
+                    Transfer("NOTICE " + args.SourceInfo.Nick + " :" + _Protocol.Separator + "FINGER" + 
+                             " I am a bot don't finger me");
+                    return;
+                case "TIME":
+                    Transfer("NOTICE " + args.SourceInfo.Nick + " :" + _Protocol.Separator + "TIME " + DateTime.Now.ToString());
+                    return;
                 case "PING":
                     Transfer("NOTICE " + args.SourceInfo.Nick + " :" + _Protocol.Separator + "PING" + args.Message.Substring(
                         args.Message.IndexOf(_Protocol.Separator + "PING") + 5));
@@ -41,9 +41,9 @@ namespace wmib
                     Transfer("NOTICE " + args.SourceInfo.Nick + " :" + _Protocol.Separator + "VERSION " 
                              + Configuration.System.Version);
                    return;
-			}
+            }
             Syslog.DebugLog("Ignoring uknown CTCP from " + args.Source + ": " + args.CTCP + args.Message);
-		}
+        }
 
         public override bool __evt__IncomingData(IncomingDataEventArgs args)
         {
@@ -58,11 +58,11 @@ namespace wmib
             return base.__evt__IncomingData(args);
         }
 
-		public override void __evt_PRIVMSG (NetworkPRIVMSGEventArgs args)
-		{
-			if (args.ChannelName == null)
-			{
-				// private message
+        public override void __evt_PRIVMSG (NetworkPRIVMSGEventArgs args)
+        {
+            if (args.ChannelName == null)
+            {
+                // private message
                 // store which instance this message was from so that we can send it using same instance
                 lock(Instance.TargetBuffer)
                 {
@@ -110,16 +110,16 @@ namespace wmib
                     Syslog.Log("Private message: (handled by " + modules + " from " + args.SourceInfo.Nick + ") " + 
                                args.Message, false);
                 }
-			} else
-			{
-				if (args.IsAct)
-				{
-					Core.GetAction(args.Message, args.ChannelName, args.SourceInfo.Host, args.SourceInfo.Nick);
-					return;
-				}
-				Core.GetMessage(args.ChannelName, args.SourceInfo.Nick, args.SourceInfo.Host, args.Message);
-			}
-		}
+            } else
+            {
+                if (args.IsAct)
+                {
+                    Core.GetAction(args.Message, args.ChannelName, args.SourceInfo.Host, args.SourceInfo.Nick);
+                    return;
+                }
+                Core.GetMessage(args.ChannelName, args.SourceInfo.Nick, args.SourceInfo.Host, args.Message);
+            }
+        }
     }
 }
 

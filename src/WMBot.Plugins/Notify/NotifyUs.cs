@@ -49,10 +49,10 @@ namespace wmib.Extensions
             while (result != null)
             {
                 IRC.DeliverMessage(result.Source_Name + "! " + OldNick + " just changed nicknames to " + 
-				                   Target.Nick + " which you wanted to talk with, in " + channel.Name + 
-				                   ". This message was delivered to you because you asked me to notify"+
-				                   "you about this user's activity. For more information, see "+
-				                   "http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
+                                   Target.Nick + " which you wanted to talk with, in " + channel.Name + 
+                                   ". This message was delivered to you because you asked me to notify"+
+                                   "you about this user's activity. For more information, see "+
+                                   "http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
                 lock (Notification.NotificationList)
                 {
                     Notification.NotificationList.Remove(result);
@@ -63,10 +63,10 @@ namespace wmib.Extensions
             while (result != null)
             {
                 IRC.DeliverMessage(result.Source_Name + "! " + OldNick + " just changed a nickname to " + 
-				                   Target.Nick + " which you wanted to talk with, in " + channel.Name + 
-				                   ". This message was delivered to you because you asked me to notify"+
-				                   " you about this user's activity. For more information, see "+
-				                   "http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
+                                   Target.Nick + " which you wanted to talk with, in " + channel.Name + 
+                                   ". This message was delivered to you because you asked me to notify"+
+                                   " you about this user's activity. For more information, see "+
+                                   "http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
                 lock (Notification.NotificationList)
                 {
                     Notification.NotificationList.Remove(result);

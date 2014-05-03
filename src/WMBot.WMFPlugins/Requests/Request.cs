@@ -163,7 +163,7 @@ namespace wmib
                 return;
             }
 
-			if (message == Configuration.System.CommandPrefix + "requests-off")
+            if (message == Configuration.System.CommandPrefix + "requests-off")
             {
                 if (channel.SystemUsers.IsApproved(invoker.Nick, invoker.Host, "admin"))
                 {
@@ -184,7 +184,7 @@ namespace wmib
                 return;
             }
 
-			if (message == Configuration.System.CommandPrefix + "requests-on")
+            if (message == Configuration.System.CommandPrefix + "requests-on")
             {
                 if (channel.SystemUsers.IsApproved(invoker.Nick, invoker.Host, "admin"))
                 {

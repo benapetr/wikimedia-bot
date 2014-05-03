@@ -55,7 +55,7 @@ namespace wmib.Extensions
             ChanLog(message, channel, invoker.Nick, invoker.Host, false);
         }
 
-		public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
+        public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
             ChanLog(message, channel, invoker.Nick, invoker.Host);
             if (message == Configuration.System.CommandPrefix + "logon")
@@ -188,7 +188,7 @@ namespace wmib.Extensions
                     DJ.Add(item);
                 }
             }
-		}
+        }
 
         public override void Hook_Kick(wmib.Channel channel, libirc.UserInfo source, libirc.UserInfo user)
         {

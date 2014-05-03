@@ -498,9 +498,9 @@ namespace wmib
         public bool ContainsUser(string name)
         {
             if (this.IrcChannel != null)
-			{
-				return this.IrcChannel.ContainsUser(name);
-			}
+            {
+                return this.IrcChannel.ContainsUser(name);
+            }
             return false;
         }
 

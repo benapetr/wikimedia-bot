@@ -201,7 +201,7 @@ namespace wmib
                 }
                 if (text.StartsWith(":"))
                 {
-					DateTime pong;
+                    DateTime pong;
                     libirc.ProcessorIRC processor = new libirc.ProcessorIRC(WmIrcProtocol.Network, text, ref pong);
                     processor.ProfiledResult();
                     string check = text.Substring(text.IndexOf(" "));
