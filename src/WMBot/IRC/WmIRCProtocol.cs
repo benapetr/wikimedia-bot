@@ -232,7 +232,7 @@ namespace wmib
                     Connected = false;
                 } catch (System.IO.IOException er)
                 {
-                    this.DebugLog(er.Message);
+                    this.DebugLog(er.Message, 1);
                     Connected = false;
                 }
                 Core.ThreadManager.KillThread(this.main);
