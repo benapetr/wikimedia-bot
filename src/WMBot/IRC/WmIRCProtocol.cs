@@ -78,7 +78,7 @@ namespace wmib
                 networkStream = new TcpClient(Server, 6667).GetStream();
             } else
             {
-                Syslog.Log(this.IRCNetwork.Nickname + " is using personal bouncer port " + BouncerPort);
+                Syslog.Log(this.IRCNetwork.Nickname + " is using personal bouncer port " + BouncerPort.ToString());
                 networkStream = new TcpClient(BouncerHost, BouncerPort).GetStream();
             }
             Connected = true;
@@ -93,6 +93,7 @@ namespace wmib
                 while (done)
                 {
                     string response = streamReader.ReadLine();
+                    this.TrafficLog(response, true);
                     if (response == "CONTROL: TRUE")
                     {
                         Syslog.DebugLog("Resumming previous session on " + this.IRCNetwork.Nickname);
@@ -109,7 +110,6 @@ namespace wmib
                         done = false;
                         ChannelsJoined = false;
                         this.Send("CONTROL: CREATE " + Server);
-                        streamWriter.Flush();
                     }
                 }
             }
@@ -141,11 +141,11 @@ namespace wmib
         {
             if (incoming)
             {
-                Core.TrafficLog(IRCNetwork.Nickname + "<<" + text);
+                Core.TrafficLog(IRCNetwork.Nickname + " << " + text);
             }
             else
             {
-                Core.TrafficLog(IRCNetwork.Nickname + ">>" + text);
+                Core.TrafficLog(IRCNetwork.Nickname + " >> " + text);
             }
         }
 
