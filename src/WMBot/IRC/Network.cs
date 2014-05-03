@@ -58,6 +58,14 @@ namespace wmib
             return base.__evt__IncomingData(args);
         }
 
+        public override void __evt_FinishChannelParseUser(NetworkChannelDataEventArgs args)
+        {
+            Channel channel = Core.GetChannel(args.ChannelName);
+            Syslog.DebugLog("Finished parsing of user list for channel: " + args.ChannelName);
+            if (channel != null)
+                channel.HasFreshUserList = true;
+        }
+
         public override void __evt_PRIVMSG (NetworkPRIVMSGEventArgs args)
         {
             if (args.ChannelName == null)
