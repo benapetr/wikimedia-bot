@@ -279,11 +279,10 @@ namespace wmib
 
         public int QueueSize()
         {
-            //if (irc == null || irc.Queue == null)
-            //{
+            if (this.Protocol == null)
                 return 0;
-            //}
-            //return irc.Queue.Size();
+
+            return this.Protocol.QueueSize;
         }
 
         /// <summary>
