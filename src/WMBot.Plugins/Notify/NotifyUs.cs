@@ -84,17 +84,17 @@ namespace wmib.Extensions
             }
         }
 
-        public override void Hook_Kick(Channel channel, libirc.UserInfo source, libirc.UserInfo user)
+        public override void Hook_Kick(Channel channel, libirc.UserInfo source, string user)
         {
-            Notification result = Notification.RetrieveTarget(user.Nick);
+            Notification result = Notification.RetrieveTarget(user);
             while (result != null)
             {
-                IRC.DeliverMessage(result.Source_Name + "! " + user.Nick + " just got kicked from " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
+                IRC.DeliverMessage(result.Source_Name + "! " + user + " just got kicked from " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
                 lock (Notification.NotificationList)
                 {
                     Notification.NotificationList.Remove(result);
                 }
-                result = Notification.RetrieveTarget(user.Nick);
+                result = Notification.RetrieveTarget(user);
             }
         }
 

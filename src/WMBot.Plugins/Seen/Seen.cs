@@ -219,9 +219,9 @@ namespace wmib.Extensions
             WriteStatus(OldNick, Target.Host, channel.Name, item.Action.Nick, Target.Nick);
         }
 
-        public override void Hook_Kick(Channel channel, libirc.UserInfo source, libirc.UserInfo user)
+        public override void Hook_Kick(Channel channel, libirc.UserInfo source, string user)
         {
-            WriteStatus(user.Nick, user.Host, channel.Name, item.Action.Kick);
+            WriteStatus(user, "", channel.Name, item.Action.Kick);
         }
 
         public override void Hook_Part(Channel channel, libirc.UserInfo user)

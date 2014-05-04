@@ -190,18 +190,17 @@ namespace wmib.Extensions
             }
         }
 
-        public override void Hook_Kick(wmib.Channel channel, libirc.UserInfo source, libirc.UserInfo user)
+        public override void Hook_Kick(wmib.Channel channel, libirc.UserInfo source, string user)
         {
             if (GetConfig(channel, "Logging.Enabled", false))
             {
                 Item item = new Item();
                 item.channel = channel;
                 item.act = false;
-                item.host = user.Host;
                 item.message = source.Nick;
                 item.time = DateTime.Now;
                 item.type = 4;
-                item.username = user.Nick;
+                item.username = user;
                 lock (DJ)
                 {
                     DJ.Add(item);

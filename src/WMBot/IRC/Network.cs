@@ -47,19 +47,18 @@ namespace wmib
 
         public override void __evt_KICK(NetworkKickEventArgs args)
         {
+            Channel channel = Core.GetChannel(args.ChannelName);
+            if (channel == null)  return;
+            SystemHooks.IrcKick(channel, args.SourceInfo, args.Target);
             if (this.Nickname.ToLower() == args.Target.ToLower())
             {
                 Syslog.Log("I was kicked from " + args.ChannelName + " by " + args.SourceInfo.Nick + " because of: " + args.Message);
-                Channel channel = Core.GetChannel(args.ChannelName);
-                if (channel != null)
+                lock(Configuration.Channels)
                 {
-                    lock(Configuration.Channels)
+                    if (Configuration.Channels.Contains(channel))
                     {
-                        if (Configuration.Channels.Contains(channel))
-                        {
-                            Configuration.Channels.Remove(channel);
-                            Configuration.Save();
-                        }
+                        Configuration.Channels.Remove(channel);
+                        Configuration.Save();
                     }
                 }
             }
@@ -77,6 +76,81 @@ namespace wmib
             return base.__evt__IncomingData(args);
         }
 
+        public override void __evt_JOIN(NetworkChannelEventArgs args)
+        {
+            Channel channel = Core.GetChannel(args.ChannelName);
+            if (channel != null)
+            {
+                lock (ExtensionHandler.Extensions)
+                {
+                    foreach (Module module in ExtensionHandler.Extensions)
+                    {
+                        try
+                        {
+                            if (module.IsWorking)
+                            {
+                                module.Hook_Join(channel, args.SourceInfo);
+                            }
+                        }
+                        catch (Exception fail)
+                        {
+                            Syslog.Log("MODULE: exception at Hook_Join in " + module.Name, true);
+                            Core.HandleException(fail);
+                        }
+                    }
+                }
+            }
+        }
+
+        public override void __evt_PART(NetworkChannelDataEventArgs args)
+        {
+            Channel channel = Core.GetChannel(args.ChannelName);
+            if (channel != null)
+            {
+                lock (ExtensionHandler.Extensions)
+                {
+                    foreach (Module module in ExtensionHandler.Extensions)
+                    {
+                        if (!module.IsWorking)
+                        {
+                            continue;
+                        }
+                        try
+                        {
+                            module.Hook_Part(channel, args.SourceInfo);
+                        }
+                        catch (Exception fail)
+                        {
+                            Core.HandleException(fail);
+                        }
+                    }
+                }
+            }
+        }
+
+        public override void __evt_QUIT(NetworkGenericDataEventArgs args)
+        {
+            lock (ExtensionHandler.Extensions)
+            {
+                foreach (Module module in ExtensionHandler.Extensions)
+                {
+                    if (!module.IsWorking)
+                    {
+                        continue;
+                    }
+                    try
+                    {
+                        module.Hook_Quit(args.SourceInfo, args.Message);
+                    }
+                    catch (Exception fail)
+                    {
+                        Syslog.Log("MODULE: exception at Hook_Quit in " + module.Name, true);
+                        Core.HandleException(fail);
+                    }
+                }
+            }
+        }
+        
         public override void __evt_NICK(NetworkNICKEventArgs args)
         {
             foreach (Channel channel in Configuration.ChannelList)
