@@ -501,6 +501,9 @@ namespace wmib
             if (this.IrcChannel != null)
             {
                 return this.IrcChannel.ContainsUser(name);
+            } else
+            {
+                Syslog.DebugLog("IrcChannel is NULL: " + Name);
             }
             return false;
         }
