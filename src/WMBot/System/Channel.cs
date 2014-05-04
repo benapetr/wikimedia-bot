@@ -497,6 +497,7 @@ namespace wmib
         /// <returns></returns>
         public bool ContainsUser(string name)
         {
+            this.RefetchChannel();
             if (this.IrcChannel != null)
             {
                 return this.IrcChannel.ContainsUser(name);

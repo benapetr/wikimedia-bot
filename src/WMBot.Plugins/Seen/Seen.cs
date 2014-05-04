@@ -91,7 +91,7 @@ namespace wmib.Extensions
 
         public override bool Construct()
         {
-            Version = new Version(2, 2, 1, 10);
+            Version = new Version(2, 2, 1, 0);
             return true;
         }
 
