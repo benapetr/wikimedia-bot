@@ -68,7 +68,6 @@
     <Compile Include="Terminal.cs" />
     <Compile Include="Syslog\Logging.cs" />
     <Compile Include="System\SystemHooks.cs" />
-    <Compile Include="IRC\Channel.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Commands\Admin.cs" />
     <Compile Include="Commands\Permissions.cs" />
@@ -81,6 +80,7 @@
     <Compile Include="IRC\Network.cs" />
     <Compile Include="IRC\WmIRCProtocol.cs" />
     <Compile Include="IRC\IRC.cs" />
+    <Compile Include="System\Channel.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
