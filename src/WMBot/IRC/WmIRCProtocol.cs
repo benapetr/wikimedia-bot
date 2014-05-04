@@ -102,7 +102,7 @@ namespace wmib
                         IsWorking = true;
                         // this here is a nasty hack to make libirc think that we just joined all the channels
                         // we should be already on
-                        foreach (Instance xx in Instance.Instances)
+                        foreach (Instance xx in Instance.Instances.Values)
                         {
                             foreach (Channel channel in xx.ChannelList)
                             {
