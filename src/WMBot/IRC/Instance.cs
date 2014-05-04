@@ -290,28 +290,35 @@ namespace wmib
         /// </summary>
         private void JoinAll()
         {
-            if (this.ChannelsJoined == false)
+            try
             {
-                while (!this.IsWorking)
+                if (this.ChannelsJoined == false)
                 {
-                    Syslog.DebugLog("JOIN THREAD: Waiting for " + Nick + " to finish connection to IRC server", 6);
-                    Thread.Sleep(1000);
-                }
-                if (Configuration.System.DebugChan != null)
-                {
-                    this.Network.Join(Configuration.System.DebugChan);
-                }
-                foreach (Channel channel in ChannelList)
-                {
-                    if (channel.Name.Length > 0 && channel.Name != Configuration.System.DebugChan)
+                    while (!this.IsWorking)
                     {
-                        Syslog.DebugLog("Joining " + channel.Name + " on " + Nick);
-                        this.Network.Join(channel.Name);
+                        Syslog.DebugLog("JOIN THREAD: Waiting for " + Nick + " to finish connection to IRC server", 6);
                         Thread.Sleep(1000);
                     }
+                    if (Configuration.System.DebugChan != null)
+                    {
+                        this.Network.Join(Configuration.System.DebugChan);
+                    }
+                    foreach (Channel channel in ChannelList)
+                    {
+                        if (channel.Name.Length > 0 && channel.Name != Configuration.System.DebugChan)
+                        {
+                            Syslog.DebugLog("Joining " + channel.Name + " on " + Nick);
+                            this.Network.Join(channel.Name);
+                            Thread.Sleep(1000);
+                        }
+                    }
+                    this.ChannelsJoined = true;
                 }
-                this.ChannelsJoined = true;
+            } catch (Exception fail)
+            {
+                Core.HandleException(fail);
             }
+            Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
         }
 
         /// <summary>
