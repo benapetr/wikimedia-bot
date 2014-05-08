@@ -56,6 +56,7 @@ botwiki|https://botwiki.sno.cc/wiki/$1
 boxrec|https://www.boxrec.com/media/index.php?$1
 bpy|https://bpy.wikipedia.org/wiki/$1
 br|https://br.wikipedia.org/wiki/$1
+brickimedia|http://meta.brickimedia.org/wiki/$1
 brickwiki|https://brickwiki.org/index.php?title=$1
 bridgeswiki|https://c2.com:8000/$1
 bs|https://bs.wikipedia.org/wiki/$1
