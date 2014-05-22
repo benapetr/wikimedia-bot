@@ -184,6 +184,7 @@ namespace wmib
                 if (response == "CONTROL: TRUE")
                 {
                     Syslog.Log("Bouncer connected to " + Server + " on: " + this.IRCNetwork.Nickname);
+                    return true;
                 } else
                 {
                     retries++;
