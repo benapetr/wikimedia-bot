@@ -66,7 +66,7 @@
     <Compile Include="System\StorageWriter.cs" />
     <Compile Include="System\Variables.cs" />
     <Compile Include="Terminal.cs" />
-    <Compile Include="Syslog\Logging.cs" />
+    <Compile Include="Syslog.cs" />
     <Compile Include="System\SystemHooks.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Commands\Admin.cs" />
