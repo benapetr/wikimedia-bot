@@ -36,6 +36,7 @@ namespace wmib
         private List<string> Backlog = new List<string>();
         public bool ChannelsJoined = false;
         public bool IsWorking = false;
+        public bool IsDisconnected = false;
         // we have to return false here because the wm-bot bouncer doesn't support ssl yet
         public override bool SupportSSL
         {
@@ -267,6 +268,7 @@ namespace wmib
 
         protected override void SafeDc()
         {
+            this.IsDisconnected = true;
             base.SafeDc();
             Core.ThreadManager.KillThread(this.TKeep);
             Core.ThreadManager.KillThread(this.TDeliveryQueue);

@@ -84,11 +84,7 @@ namespace wmib
         {
             get
             {
-                if (this.Network != null && this.Network.IsConnected)
-                {
-                    return true;
-                }
-                return false;
+                return this.Network != null && this.Network.IsConnected;
             }
         }
         private Thread JoinThread;
@@ -148,7 +144,7 @@ namespace wmib
             {
                 if (Instances.ContainsKey(name))
                 {
-                    throw new Exception("Can't load instance " + name + " because this instance already is present");
+                    throw new Exception("Can't load instance " + name + " because this instance is already running");
                 }
                 Instances.Add(name, instance);
             }
@@ -335,6 +331,7 @@ namespace wmib
         
         public void Connect()
         {
+            this.Protocol.IsDisconnected = false;
             this.Protocol.Open();
         }
 
@@ -352,7 +349,7 @@ namespace wmib
                 {
                     this.Disconnect();
                     this.Connect();
-                    while (!this.IsWorking)
+                    while (!this.IsWorking && !this.Protocol.IsDisconnected)
                     {
                         // we need to wait for the irc handler to connect to irc
                         Thread.Sleep(100);
