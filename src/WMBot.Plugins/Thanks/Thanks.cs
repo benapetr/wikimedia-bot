@@ -83,15 +83,8 @@ namespace wmib.Extensions
 
         public override bool Construct()
         {
+            this.HasSeparateThreadInstance = false;
             return true;
-        }
-
-        public override void Load()
-        {
-            while (IsWorking)
-            {
-                Thread.Sleep(100);
-            }
         }
 
         public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)

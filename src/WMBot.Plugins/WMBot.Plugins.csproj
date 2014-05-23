@@ -61,6 +61,7 @@
     <Compile Include="Statistics\Statistics.cs" />
     <Compile Include="Thanks\Thanks.cs" />
     <Compile Include="DynamicRole\DynamicRoles.cs" />
+    <Compile Include="Translate\Translate.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WMBot\WMBot.csproj">
