@@ -143,7 +143,8 @@ namespace wmib.Extensions.RssFeed
                                             i.template = property.Value;
                                             break;
                                         case "so":
-                                            i.ScannerOnly = bool.Parse(property.Value);
+											if (property.Value.Length > 0)
+                                            	i.ScannerOnly = bool.Parse(property.Value);
                                             break;
                                     }
                                 }

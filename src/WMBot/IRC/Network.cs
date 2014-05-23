@@ -47,6 +47,8 @@ namespace wmib
 
         public override void __evt_KICK(NetworkKickEventArgs args)
         {
+            if (args.ChannelName == Configuration.System.DebugChan && this.instance != Instance.PrimaryInstance)
+                return;
             Channel channel = Core.GetChannel(args.ChannelName);
             if (channel == null)  return;
             SystemHooks.IrcKick(channel, args.SourceInfo, args.Target);
@@ -78,6 +80,8 @@ namespace wmib
 
         public override void __evt_JOIN(NetworkChannelEventArgs args)
         {
+            if (args.ChannelName == Configuration.System.DebugChan && this.instance != Instance.PrimaryInstance)
+                return;
             Channel channel = Core.GetChannel(args.ChannelName);
             if (channel != null)
             {
@@ -104,6 +108,8 @@ namespace wmib
 
         public override void __evt_PART(NetworkChannelDataEventArgs args)
         {
+            if (args.ChannelName == Configuration.System.DebugChan && this.instance != Instance.PrimaryInstance)
+                return;
             Channel channel = Core.GetChannel(args.ChannelName);
             if (channel != null)
             {
@@ -153,7 +159,7 @@ namespace wmib
         
         public override void __evt_NICK(NetworkNICKEventArgs args)
         {
-            foreach (Channel channel in Configuration.ChannelList)
+            foreach (Channel channel in instance.ChannelList)
             {
                 if (channel.ContainsUser(args.OldNick))
                 {
@@ -241,6 +247,8 @@ namespace wmib
                 }
             } else
             {
+                if (args.ChannelName == Configuration.System.DebugChan && this.instance != Instance.PrimaryInstance)
+                    return;
                 if (args.IsAct)
                 {
                     Core.GetAction(args.Message, args.ChannelName, args.SourceInfo.Host, args.SourceInfo.Nick);
