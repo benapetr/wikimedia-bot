@@ -106,7 +106,7 @@ namespace wmib.Extensions
 								{
 									foreach (XmlNode n2 in n1.ChildNodes)
 									{
-										if (n2.Name == "Text")
+										if (n2.Name == "text")
 										{
 											ok = true;
 											IRC.DeliverMessage("(powered by Yandex): " + n2.InnerText, request.Channel);
@@ -116,6 +116,7 @@ namespace wmib.Extensions
 							}
 							if (!ok)
 							{
+								DebugLog(result);
 								IRC.DeliverMessage("Error - unable to translate the message (wrong language?) check debug logs for more information", request.Channel);
 							}
 
