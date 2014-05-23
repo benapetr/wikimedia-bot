@@ -145,6 +145,7 @@ namespace wmib.Extensions
 					IRC.DeliverMessage(invoker.Nick + ": invalid language!", channel);
 					return;
 				}
+				DebugLog("Inserted new request from " + invoker.Nick + ": " + message);
                 string text = message.Substring(message.IndexOf(parts[1]) + parts[1].Length + 1);
                 // schedule a message
                 Ring.Add(new Buffer.Item(channel, source_language, target_language, text));
