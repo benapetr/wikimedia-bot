@@ -95,8 +95,9 @@ namespace wmib.Extensions
 						try
 						{
 							// get a translation for this item
-							string result = wx.DownloadString(this.URL + "translate?key=" + key + "&lang=" + request.SourceLang + "-" + request.TargetLang +
-							                                  "&text=" + System.Web.HttpUtility.UrlEncode(request.Message));
+							string result = wx.DownloadString(this.URL + "translate?key=" + key + "&lang=" + System.Web.HttpUtility.UrlEncode(request.SourceLang) + "-" +
+							                                  System.Web.HttpUtility.UrlEncode(request.TargetLang) + "&text=" + 
+							                                  System.Web.HttpUtility.UrlEncode(request.Message));
 							XmlDocument xd = new XmlDocument();
 							xd.LoadXml(result);
 							bool ok = false;
@@ -109,7 +110,7 @@ namespace wmib.Extensions
 										if (n2.Name == "text")
 										{
 											ok = true;
-											IRC.DeliverMessage("(powered by Yandex): " + n2.InnerText, request.Channel);
+											IRC.DeliverMessage("Translating from " + request.SourceLang + " to " + request.TargetLang + " (powered by Yandex): " + n2.InnerText, request.Channel);
 										}
 									}
 								}
@@ -136,6 +137,12 @@ namespace wmib.Extensions
 
 		private static bool IsValid(string language_code)
 		{
+			if (language_code.Contains("+") ||
+				language_code.Contains("-") ||
+				language_code.Contains("_") ||
+				language_code.Contains("&") ||
+				language_code.Contains("?"))
+				return false;
 			return true;
 		}
 
