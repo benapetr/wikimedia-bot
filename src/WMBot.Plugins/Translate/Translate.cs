@@ -72,7 +72,7 @@ namespace wmib.Extensions
         public override void Load()
         {
 			System.Net.WebClient wx = new System.Net.WebClient();
-			string key = Configuration.RetrieveConfig("Yandex");
+			string key = Configuration.RetrieveConfig("yandex");
 			key = System.Web.HttpUtility.UrlEncode(key);
 			if (key == null)
 			{
@@ -129,6 +129,7 @@ namespace wmib.Extensions
         {
             if (message.StartsWith(Configuration.System.CommandPrefix + "translate "))
             {
+				message = message.Substring(10);
                 List<string> parts = new List<string>(message.Split(' '));
                 if (parts.Count < 3)
                 {
