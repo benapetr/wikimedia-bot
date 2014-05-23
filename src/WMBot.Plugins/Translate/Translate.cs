@@ -30,14 +30,16 @@ namespace wmib.Extensions
                 public Channel Channel;
                 public string SourceLang;
                 public string TargetLang;
+				public string TargetName;
                 public string Message;
 
-                public Item(Channel channel, string sl, string tl, string message)
-                {
+                public Item(Channel channel, string sl, string tl, string tn, string message)
+				{
                     this.SourceLang = sl;
                     this.TargetLang = tl;
                     this.Message = message;
                     this.Channel = channel;
+					this.TargetName = tn;
                 }
             }
 
@@ -110,7 +112,13 @@ namespace wmib.Extensions
 										if (n2.Name == "text")
 										{
 											ok = true;
-											IRC.DeliverMessage("Translating from " + request.SourceLang + " to " + request.TargetLang + " (powered by Yandex): " + n2.InnerText, request.Channel);
+											if (request.TargetName == null)
+											{
+												IRC.DeliverMessage("Translating from " + request.SourceLang + " to " + request.TargetLang + ": " + n2.InnerText + " (powered by Yandex)", request.Channel);
+											} else
+											{
+												IRC.DeliverMessage(request.TargetName + ": " + n2.InnerText + " (powered by Yandex)", request.Channel);
+											}
 										}
 									}
 								}
@@ -157,6 +165,7 @@ namespace wmib.Extensions
                     IRC.DeliverMessage("Invalid number of parameters", channel);
                     return;
                 }
+				string target = null;
                 string source_language = parts[0];
                 string target_language = parts[1];
 				if (!IsValid(source_language) || !IsValid(target_language))
@@ -165,8 +174,13 @@ namespace wmib.Extensions
 					return;
 				}
                 string text = message.Substring(message.IndexOf(parts[1]) + parts[1].Length + 1);
+				if (text.Contains("|"))
+				{
+					target = text.Substring(text.IndexOf("|") + 1).Trim();
+					text = text.Substring(0, text.IndexOf("|"));
+				}
                 // schedule a message
-                Ring.Add(new Buffer.Item(channel, source_language, target_language, text));
+				Ring.Add(new Buffer.Item(channel, source_language, target_language, target, text));
             }
         }
     }
