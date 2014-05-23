@@ -95,6 +95,8 @@ namespace wmib.Extensions
 						try
 						{
 							// get a translation for this item
+							DebugLog("Getting " + this.URL + "translate?key=" + key + "&lang=" + request.SourceLang + "-" + request.TargetLang +
+							         "&text=" + System.Web.HttpUtility.UrlEncode(request.Message));
 							string result = wx.DownloadString(this.URL + "translate?key=" + key + "&lang=" + request.SourceLang + "-" + request.TargetLang +
 							                                  "&text=" + System.Web.HttpUtility.UrlEncode(request.Message));
 							DebugLog(result);
