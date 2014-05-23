@@ -39,6 +39,9 @@
     <Reference Include="libirc">
       <HintPath>..\WMBot\libirc.dll</HintPath>
     </Reference>
+    <Reference Include="wmib">
+      <HintPath>..\..\bin\wmib.exe</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HtmlDump\HtmlDump.cs" />
@@ -62,12 +65,6 @@
     <Compile Include="Thanks\Thanks.cs" />
     <Compile Include="DynamicRole\DynamicRoles.cs" />
     <Compile Include="Translate\Translate.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\WMBot\WMBot.csproj">
-      <Project>{69FFE45E-1CA0-47E5-92D9-4C8E2EDBE911}</Project>
-      <Name>WMBot</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

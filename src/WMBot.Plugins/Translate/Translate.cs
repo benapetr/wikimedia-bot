@@ -95,31 +95,31 @@ namespace wmib.Extensions
 						try
 						{
 							// get a translation for this item
-							DebugLog("Getting " + this.URL + "translate?key=" + key + "&lang=" + request.SourceLang + "-" + request.TargetLang +
-							         "&text=" + System.Web.HttpUtility.UrlEncode(request.Message));
 							string result = wx.DownloadString(this.URL + "translate?key=" + key + "&lang=" + request.SourceLang + "-" + request.TargetLang +
 							                                  "&text=" + System.Web.HttpUtility.UrlEncode(request.Message));
-							DebugLog(result);
 							XmlDocument xd = new XmlDocument();
 							xd.LoadXml(result);
+							bool ok = false;
 							foreach(XmlNode n1 in xd.ChildNodes)
 							{
-								DebugLog(n1.Name);
-								if (n1.ChildNodes.Count > 0)
+								if (n1.Name == "Translation" && n1.ChildNodes.Count > 0)
 								{
 									foreach (XmlNode n2 in n1.ChildNodes)
 									{
-										DebugLog(n2.Name);
+										if (n2.Name == "Text")
+										{
+											ok = true;
+											IRC.DeliverMessage("(powered by Yandex): " + n2.InnerText, request.Channel);
+										}
 									}
 								}
 							}
-							if (xd.ChildNodes.Count > 0 && xd.ChildNodes[0].ChildNodes.Count > 0)
-							{
-								IRC.DeliverMessage("(powered by Yandex): " + xd.ChildNodes[0].ChildNodes[0].InnerText, request.Channel);
-							} else
+							if (!ok)
 							{
 								IRC.DeliverMessage("Error - unable to translate the message (wrong language?) check debug logs for more information", request.Channel);
 							}
+
+
 						} catch (ThreadAbortException)
 						{
 							return;
@@ -156,7 +156,6 @@ namespace wmib.Extensions
 					IRC.DeliverMessage(invoker.Nick + ": invalid language!", channel);
 					return;
 				}
-				DebugLog("Inserted new request from " + invoker.Nick + ": " + message);
                 string text = message.Substring(message.IndexOf(parts[1]) + parts[1].Length + 1);
                 // schedule a message
                 Ring.Add(new Buffer.Item(channel, source_language, target_language, text));
