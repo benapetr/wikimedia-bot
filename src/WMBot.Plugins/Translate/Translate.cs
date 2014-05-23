@@ -102,6 +102,17 @@ namespace wmib.Extensions
 							DebugLog(result);
 							XmlDocument xd = new XmlDocument();
 							xd.LoadXml(result);
+							foreach(XmlNode n1 in xd.ChildNodes)
+							{
+								DebugLog(n1.Name);
+								if (n1.ChildNodes.Count > 0)
+								{
+									foreach (XmlNode n2 in n1.ChildNodes)
+									{
+										DebugLog(n2.Name);
+									}
+								}
+							}
 							if (xd.ChildNodes.Count > 0 && xd.ChildNodes[0].ChildNodes.Count > 0)
 							{
 								IRC.DeliverMessage("(powered by Yandex): " + xd.ChildNodes[0].ChildNodes[0].InnerText, request.Channel);
