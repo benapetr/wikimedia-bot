@@ -131,7 +131,7 @@ namespace wmib.Extensions
         {
             if (message.StartsWith(Configuration.System.CommandPrefix + "translate "))
             {
-				message = message.Substring(10);
+				message = message.Substring(11);
                 List<string> parts = new List<string>(message.Split(' '));
                 if (parts.Count < 3)
                 {
