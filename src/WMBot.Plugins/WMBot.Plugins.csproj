@@ -51,7 +51,6 @@
     <Compile Include="NetCat\NetCat.cs" />
     <Compile Include="Notify\Notification.cs" />
     <Compile Include="Notify\NotifyUs.cs" />
-    <Compile Include="OperatorTools\Op.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RssFeed\Feed.cs" />
     <Compile Include="RssFeed\Module.cs" />
@@ -62,6 +61,7 @@
     <Compile Include="Thanks\Thanks.cs" />
     <Compile Include="DynamicRole\DynamicRoles.cs" />
     <Compile Include="Translate\Translate.cs" />
+    <Compile Include="OperatorTools\ChannelTools.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
