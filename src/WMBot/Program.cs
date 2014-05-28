@@ -166,6 +166,7 @@ namespace wmib
                 Configuration.System.UpTime = DateTime.Now;
                 Core.KernelThread = Thread.CurrentThread;
                 Core.KernelThread.Name = "Kernel";
+                Configuration.System.Version += " [libirc v. " + libirc.Defs.Version.ToString() + "]";
                 Thread logger = new Thread(Logging.Exec) {Name = "Logger"};
                 Core.ThreadManager.RegisterThread(logger);
                 ParseArgs(args);
