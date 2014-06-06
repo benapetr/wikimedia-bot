@@ -399,6 +399,7 @@ oeis|https://www.research.att.com/~njas/sequences/$1
 oldwikisource|https://wikisource.org/wiki/$1
 olpc|https://wiki.laptop.org/go/$1
 om|https://om.wikipedia.org/wiki/$1
+oncyclopedia|http://oncyclopedia.net/wiki/$1
 onelook|https://www.onelook.com/?ls=b&w=$1
 openfacts|https://openfacts.berlios.de/index.phtml?title=$1
 openstreetmap|https://wiki.openstreetmap.org/index.php/$1
