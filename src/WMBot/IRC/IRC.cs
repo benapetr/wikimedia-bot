@@ -34,7 +34,8 @@ namespace wmib
         public static void DeliverMessage(string text, Channel target, libirc.Defs.Priority priority = libirc.Defs.Priority.Normal)
         {
             if (!target.Suppress)
-            {            
+            {
+                Self(text, target);
                 target.PrimaryInstance.Network.Message(text, target.Name, priority);
             }
         }
@@ -72,6 +73,7 @@ namespace wmib
                 }
                 if (!ch.Suppress)
                 {
+                    Self(text, ch);
                     ch.PrimaryInstance.Network.Message(text, target, priority);
                 }
             } else
@@ -85,6 +87,31 @@ namespace wmib
                     }
                 }
                 Instance.PrimaryInstance.Network.Message(text, target, priority);
+            }
+        }
+
+        /// <summary>
+        /// Write a self message to modules
+        /// </summary>
+        /// <param name="message">Message.</param>
+        private static void Self(string message, Channel channel)
+        {
+            lock (ExtensionHandler.Extensions)
+            {
+                foreach (Module module in ExtensionHandler.Extensions)
+                {
+                    try
+                    {
+                        if (module.IsWorking)
+                        {
+                            module.Hook_OnSelf(channel, new libirc.UserInfo(Configuration.IRC.NickName, "wmib", "wikimedia/bot/wm-bot"), message);
+                        }
+                    }
+                    catch (Exception fail)
+                    {
+                        Core.HandleException(fail, module.Name);
+                    }
+                }
             }
         }
 
