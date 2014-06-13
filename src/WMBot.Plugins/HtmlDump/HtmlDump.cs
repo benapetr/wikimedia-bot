@@ -268,7 +268,7 @@ namespace wmib.Extensions
                                 string html = xx.Extension_DumpHtml(_Channel);
                                 if (!string.IsNullOrEmpty(html))
                                 {
-                                    ModuleData.Add(xx.Name.ToLower(), xx.Extension_DumpHtml(_Channel));
+                                    ModuleData.Add(xx.Name.ToLower(), html);
                                 }
                             }
                         }

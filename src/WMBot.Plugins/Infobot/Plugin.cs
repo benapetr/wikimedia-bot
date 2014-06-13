@@ -194,11 +194,18 @@ namespace wmib.Extensions
 
         public override string Extension_DumpHtml(Channel channel)
         {
+            
             string HTML = "";
             Infobot info = (Infobot)channel.RetrieveObject("Infobot");
             if (info != null)
             {
-                HTML += "\n<table border=1 class=\"infobot\" width=100%>\n<tr><th width=10%>Key</th><th>Value</th></tr>\n";
+                string JSON_blob = Newtonsoft.Json.JsonConvert.SerializeObject(info);
+                string JSON_file = Configuration.Paths.DumpDir + "/" + channel.Name + "_json.htm";
+                File.WriteAllText(JSON_file, JSON_blob);
+            }
+            HTML += "JSON blob: <a href=\"" + channel.Name + "_json.htm\">open</a>";
+            if (info != null)
+            {
                 List<Infobot.InfobotKey> list = new List<Infobot.InfobotKey>();
                 lock (info)
                 {
@@ -211,7 +218,8 @@ namespace wmib.Extensions
                         list.AddRange(info.Keys);
                     }
                 }
-                if (info.Keys.Count > 0)
+                HTML += "\n<table border=1 class=\"infobot\" width=100%>\n<tr><th width=10%>Key</th><th>Value</th></tr>\n";
+                if (list.Count > 0)
                 {
                     foreach (Infobot.InfobotKey Key in list)
                     {
