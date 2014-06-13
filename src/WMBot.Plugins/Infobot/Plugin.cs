@@ -194,19 +194,12 @@ namespace wmib.Extensions
 
         public override string Extension_DumpHtml(Channel channel)
         {
-            
             string HTML = "";
             Infobot info = (Infobot)channel.RetrieveObject("Infobot");
             if (info != null)
             {
-                string JSON_blob = Newtonsoft.Json.JsonConvert.SerializeObject(info);
-                string JSON_file = Configuration.Paths.DumpDir + "/" + channel.Name + "_json.htm";
-                File.WriteAllText(JSON_file, JSON_blob);
-            }
-            HTML += "JSON blob: <a href=\"" + channel.Name + "_json.htm\">open</a>";
-            if (info != null)
-            {
                 List<Infobot.InfobotKey> list = new List<Infobot.InfobotKey>();
+                List<Infobot.InfobotAlias> aliases = new List<Infobot.InfobotAlias>();
                 lock (info)
                 {
                     if (GetConfig(channel, "Infobot.Sorted", false))
@@ -217,7 +210,13 @@ namespace wmib.Extensions
                     {
                         list.AddRange(info.Keys);
                     }
+                    aliases.AddRange(info.Aliases);
                 }
+                string JSON_blob = Newtonsoft.Json.JsonConvert.SerializeObject(list);
+                JSON_blob += Newtonsoft.Json.JsonConvert.SerializeObject(aliases);
+                string JSON_file = Configuration.Paths.DumpDir + "/" + channel.Name + "_json.htm";
+                File.WriteAllText(JSON_file, JSON_blob);
+                HTML += "JSON blob: <a href=\"" + channel.Name + "_json.htm\">open</a>";
                 HTML += "\n<table border=1 class=\"infobot\" width=100%>\n<tr><th width=10%>Key</th><th>Value</th></tr>\n";
                 if (list.Count > 0)
                 {
@@ -230,7 +229,7 @@ namespace wmib.Extensions
                 HTML += "<h4>Aliases</h4>\n<table class=\"infobot\" border=1 width=100%>\n";
                 lock (info)
                 {
-                    foreach (Infobot.InfobotAlias data in info.Alias)
+                    foreach (Infobot.InfobotAlias data in info.Aliases)
                     {
                         HTML += Core.HTML.AddLink(data.Name, data.Key);
                     }

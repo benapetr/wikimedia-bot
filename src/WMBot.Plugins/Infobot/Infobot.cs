@@ -54,7 +54,7 @@ namespace wmib.Extensions
         /// <summary>
         /// List of all aliases we want to use
         /// </summary>
-        public List<InfobotAlias> Alias = new List<InfobotAlias>();
+        public List<InfobotAlias> Aliases = new List<InfobotAlias>();
 
         public Channel pChannel;
 
@@ -84,7 +84,7 @@ namespace wmib.Extensions
             {
                 lock (this)
                 {
-                    foreach (InfobotAlias key in Alias)
+                    foreach (InfobotAlias key in Aliases)
                     {
                         if (key.Name == name)
                         {
@@ -98,7 +98,7 @@ namespace wmib.Extensions
                 name = name.ToLower();
                 lock (this)
                 {
-                    foreach (InfobotAlias key in Alias)
+                    foreach (InfobotAlias key in Aliases)
                     {
                         if (key.Name.ToLower() == name)
                         {
@@ -526,11 +526,11 @@ namespace wmib.Extensions
                             {
                                 lock (infobot)
                                 {
-                                    foreach (InfobotAlias b in infobot.Alias)
+                                    foreach (InfobotAlias b in infobot.Aliases)
                                     {
                                         if (b.Name == Parameters[0])
                                         {
-                                            infobot.Alias.Remove(b);
+                                            infobot.Aliases.Remove(b);
                                             IRC.DeliverMessage(messages.Localize("AliasRemoved", chan.Language), chan);
                                             this.StoreDB();
                                             return false;
@@ -587,7 +587,7 @@ namespace wmib.Extensions
                 // there is no key with this name, let's check if there is an alias for such a key
                 lock (infobot)
                 {
-                    foreach (InfobotAlias alias in infobot.Alias)
+                    foreach (InfobotAlias alias in infobot.Aliases)
                     {
                         if (Sensitive)
                         {
@@ -630,7 +630,7 @@ namespace wmib.Extensions
                                     results.Add(f.Key);
                                 }
                             }
-                            foreach (InfobotAlias f in infobot.Alias)
+                            foreach (InfobotAlias f in infobot.Aliases)
                             {
                                 if (!results.Contains(f.Key) && f.Key.StartsWith(Parameters[0]))
                                 {
@@ -648,7 +648,7 @@ namespace wmib.Extensions
                             }
                             lock (infobot)
                             {
-                                foreach (InfobotAlias alias in infobot.Alias)
+                                foreach (InfobotAlias alias in infobot.Aliases)
                                 {
                                     if (alias.Name == results[0])
                                     {
@@ -752,7 +752,7 @@ namespace wmib.Extensions
         /// <param name="Chan"></param>
         public void RSearch(string key, Channel Chan)
         {
-            if (!key.StartsWith("@regsearch"))
+            if (!key.StartsWith(Configuration.System.CommandPrefix + "regsearch"))
             {
                 return;
             }
@@ -801,11 +801,7 @@ namespace wmib.Extensions
 
         public void Find(string key, Channel Chan)
         {
-            if (Chan == null)
-            {
-                return;
-            }
-            if (!key.StartsWith("@search"))
+            if (Chan == null || !key.StartsWith(Configuration.System.CommandPrefix + "search"))
             {
                 return;
             }
@@ -841,7 +837,7 @@ namespace wmib.Extensions
                     }
                 }
             }
-            if (results == "")
+            if (String.IsNullOrEmpty(results))
             {
                 IRC.DeliverMessage(messages.Localize("ResultsWereNotFound", Chan.Language), Chan.Name);
             }
@@ -992,7 +988,7 @@ namespace wmib.Extensions
                     Syslog.Log("Recovering snapshot " + temporary_data);
                     File.Copy(temporary_data, datafile_xml, true);
                     this.Keys.Clear();
-                    this.Alias.Clear();
+                    this.Aliases.Clear();
                     Parent.Log("Loading snapshot of " + pChannel.Name);
                     LoadData();
                     IRC.DeliverMessage("Snapshot " + temporary_data + " was loaded and previous database was permanently deleted", pChannel);
@@ -1119,7 +1115,7 @@ namespace wmib.Extensions
         {
             lock (this)
             {
-                foreach (InfobotAlias stakey in Alias)
+                foreach (InfobotAlias stakey in Aliases)
                 {
                     if (stakey.Name == al)
                     {
@@ -1143,7 +1139,7 @@ namespace wmib.Extensions
                         return;
                     }
                 }
-                Alias.Add(new InfobotAlias(al, key));
+                Aliases.Add(new InfobotAlias(al, key));
             }
             IRC.DeliverMessage(messages.Localize("infobot8", chan.Language), chan.Name);
             this.StoreDB();

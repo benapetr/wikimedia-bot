@@ -45,7 +45,7 @@ namespace wmib.Extensions
                 XmlNode xmlnode = data.CreateElement("database");
                 lock (this)
                 {
-                    foreach (InfobotAlias key in Alias)
+                    foreach (InfobotAlias key in Aliases)
                     {
                         XmlAttribute name = data.CreateAttribute("alias_key_name");
                         name.Value = key.Name;
@@ -146,7 +146,7 @@ namespace wmib.Extensions
                         }
                         else
                         {
-                            Alias.Add(new InfobotAlias(name.Replace("<separator>", "|"), value.Replace("<separator>", "|")));
+                            Aliases.Add(new InfobotAlias(name.Replace("<separator>", "|"), value.Replace("<separator>", "|")));
                         }
                     }
                 }
@@ -190,7 +190,7 @@ namespace wmib.Extensions
                 lock (this)
                 {
                     Keys.Clear();
-                    Alias.Clear();
+                    Aliases.Clear();
                 }
                 foreach (XmlNode xx in data.ChildNodes[0].ChildNodes)
                 {
@@ -199,7 +199,7 @@ namespace wmib.Extensions
                         InfobotAlias _Alias = new InfobotAlias(xx.Attributes[0].Value, xx.Attributes[1].Value);
                         lock (this)
                         {
-                            Alias.Add(_Alias);
+                            Aliases.Add(_Alias);
                         }
                         continue;
                     }
