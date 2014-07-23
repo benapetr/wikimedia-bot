@@ -191,7 +191,7 @@ namespace wmib
 
         public static void Kill()
         {
-
+            
         }
 
         public static void ConnectAllIrcInstances()
@@ -292,6 +292,11 @@ namespace wmib
                 {
                     while (!this.IsWorking)
                     {
+                        if (!this.IsActive || !Core.IsRunning)
+                        {
+                            Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
+                            return;
+                        }
                         Syslog.DebugLog("JOIN THREAD: Waiting for " + Nick + " to finish connection to IRC server", 6);
                         Thread.Sleep(1000);
                     }

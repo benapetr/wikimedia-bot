@@ -170,7 +170,6 @@ namespace wmib
                             case "kill":
                                 if (Instance.Instances.ContainsKey(parameters))
                                 {
-                                    Instance.Instances[parameters].IsActive = false;
                                     Instance.Instances[parameters].ShutDown();
                                     Write("Killed: " + parameters);
                                     break;
@@ -195,7 +194,7 @@ namespace wmib
                                     }
                                     if (!Instance.Instances[parameters].IsWorking)
                                     {
-                                        Write("Failed to initialize instance");
+                                        Write("Failed to initialize instance (timeout)");
                                         break;
                                     }
                                     Write("Joining channels");
