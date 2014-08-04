@@ -22,7 +22,7 @@ namespace wmib
             this.instance = Instance;
         }
 
-        public override void __evt_CTCP (NetworkCTCPEventArgs args)
+        protected override void __evt_CTCP(NetworkCTCPEventArgs args)
         {
             switch (args.CTCP)
             {
@@ -45,7 +45,7 @@ namespace wmib
             Syslog.DebugLog("Ignoring uknown CTCP from " + args.Source + ": " + args.CTCP + args.Message);
         }
 
-        public override void __evt_KICK(NetworkKickEventArgs args)
+        protected override void __evt_KICK(NetworkKickEventArgs args)
         {
             if (args.ChannelName == Configuration.System.DebugChan && this.instance != Instance.PrimaryInstance)
                 return;
@@ -66,7 +66,7 @@ namespace wmib
             }
         }
 
-        public override bool __evt__IncomingData(IncomingDataEventArgs args)
+        protected override bool __evt__IncomingData(IncomingDataEventArgs args)
         {
             switch(args.Command)
             {
@@ -78,7 +78,7 @@ namespace wmib
             return base.__evt__IncomingData(args);
         }
 
-        public override void __evt_JOIN(NetworkChannelEventArgs args)
+        protected override void __evt_JOIN(NetworkChannelEventArgs args)
         {
             if (args.ChannelName == Configuration.System.DebugChan && this.instance != Instance.PrimaryInstance)
                 return;
@@ -106,7 +106,7 @@ namespace wmib
             }
         }
 
-        public override void __evt_PART(NetworkChannelDataEventArgs args)
+        protected override void __evt_PART(NetworkChannelDataEventArgs args)
         {
             if (args.ChannelName == Configuration.System.DebugChan && this.instance != Instance.PrimaryInstance)
                 return;
@@ -134,7 +134,7 @@ namespace wmib
             }
         }
 
-        public override void __evt_QUIT(NetworkGenericDataEventArgs args)
+        protected override void __evt_QUIT(NetworkGenericDataEventArgs args)
         {
             lock (ExtensionHandler.Extensions)
             {
@@ -156,8 +156,8 @@ namespace wmib
                 }
             }
         }
-        
-        public override void __evt_NICK(NetworkNICKEventArgs args)
+
+        protected override void __evt_NICK(NetworkNICKEventArgs args)
         {
             foreach (Channel channel in instance.ChannelList)
             {
@@ -185,7 +185,7 @@ namespace wmib
             }
         }
 
-        public override void __evt_FinishChannelParseUser(NetworkChannelDataEventArgs args)
+        protected override void __evt_FinishChannelParseUser(NetworkChannelDataEventArgs args)
         {
             Channel channel = Core.GetChannel(args.ChannelName);
             Syslog.DebugLog("Finished parsing of user list for channel: " + args.ChannelName);
@@ -193,7 +193,7 @@ namespace wmib
                 channel.HasFreshUserList = true;
         }
 
-        public override void __evt_PRIVMSG (NetworkPRIVMSGEventArgs args)
+        protected override void __evt_PRIVMSG(NetworkPRIVMSGEventArgs args)
         {
             if (args.ChannelName == null)
             {
