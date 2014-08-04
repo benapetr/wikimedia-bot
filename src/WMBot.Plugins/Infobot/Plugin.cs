@@ -216,7 +216,7 @@ namespace wmib.Extensions
                 JSON_blob += "\n\n" + Newtonsoft.Json.JsonConvert.SerializeObject(aliases);
                 string JSON_file = Configuration.Paths.DumpDir + "/" + channel.Name + "_dump.js";
                 File.WriteAllText(JSON_file, JSON_blob);
-                HTML += "JSON blob: <a href=\"" + channel.Name + "_dump.js\">open</a>";
+                HTML += "JSON blob: <a href=\"" + System.Web.HttpUtility.UrlEncode(channel.Name) + "_dump.js\">open</a>";
                 HTML += "\n<table border=1 class=\"infobot\" width=100%>\n<tr><th width=10%>Key</th><th>Value</th></tr>\n";
                 if (list.Count > 0)
                 {
