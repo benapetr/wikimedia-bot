@@ -39,10 +39,9 @@ namespace wmib
             {
                 get
                 {
-                    lock (threads)
-                    {
-                        return new List<Thread>(threads);
-                    }
+                    List<Thread> ls = new List<Thread>(threads);
+                    ls.AddRange(libirc.ThreadManager.ThreadList);
+                    return ls;
                 }
             }
 

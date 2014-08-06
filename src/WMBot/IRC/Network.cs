@@ -118,9 +118,8 @@ namespace wmib
                     foreach (Module module in ExtensionHandler.Extensions)
                     {
                         if (!module.IsWorking)
-                        {
                             continue;
-                        }
+
                         try
                         {
                             module.Hook_Part(channel, args.SourceInfo);
@@ -141,9 +140,8 @@ namespace wmib
                 foreach (Module module in ExtensionHandler.Extensions)
                 {
                     if (!module.IsWorking)
-                    {
                         continue;
-                    }
+
                     try
                     {
                         module.Hook_Quit(args.SourceInfo, args.Message);
@@ -170,9 +168,8 @@ namespace wmib
                             try
                             {
                                 if (extension_.IsWorking)
-                                {
                                     extension_.Hook_Nick(channel, args.SourceInfo, args.OldNick);
-                                }
+
                             }
                             catch (Exception fail)
                             {
@@ -202,12 +199,9 @@ namespace wmib
                 lock(Instance.TargetBuffer)
                 {
                     if (!Instance.TargetBuffer.ContainsKey(args.SourceInfo.Nick))
-                    {
                         Instance.TargetBuffer.Add(args.SourceInfo.Nick, this.instance);
-                    } else
-                    {
+                    else
                         Instance.TargetBuffer[args.SourceInfo.Nick] = this.instance;
-                    }
                 }
                 bool respond = !Commands.Trusted(args.Message, args.SourceInfo.Nick, args.SourceInfo.Host);
                 string modules = "";

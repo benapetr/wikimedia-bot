@@ -38,9 +38,7 @@ namespace wmib
                     return;
                 }
                 if (!chan.SuppressWarnings)
-                {
                     IRC.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan);
-                }
                 return;
             }
 
@@ -102,7 +100,7 @@ namespace wmib
                     {
                         parameter = message.Substring(message.IndexOf(" ") + 1).ToLower();
                     }
-                    if (parameter != "")
+                    if (!String.IsNullOrEmpty(parameter))
                     {
                         if (messages.Exists(parameter))
                         {
@@ -112,19 +110,15 @@ namespace wmib
                             return;
                         }
                         if (!chan.SuppressWarnings)
-                        {
                             IRC.DeliverMessage(messages.Localize("InvalidCode", chan.Language), chan);
-                        }
                         return;
                     }
                     IRC.DeliverMessage(messages.Localize("LanguageInfo", chan.Language), chan);
                     return;
                 }
                 if (!chan.SuppressWarnings)
-                {
                     IRC.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan,
                                                   libirc.Defs.Priority.Low);
-                }
                 return;
             }
 
@@ -132,10 +126,8 @@ namespace wmib
             {
                 string parameter = "";
                 if (message.Contains(" "))
-                {
                     parameter = message.Substring(message.IndexOf(" ") + 1);
-                }
-                if (parameter != "")
+                if (!String.IsNullOrEmpty(parameter))
                 {
                     Core.ShowHelp(parameter, chan);
                     return;
@@ -164,9 +156,7 @@ namespace wmib
                     return;
                 }
                 if (!chan.SuppressWarnings)
-                {
                     IRC.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, libirc.Defs.Priority.Low);
-                }
                 return;
             }
 
@@ -185,9 +175,7 @@ namespace wmib
                     return;
                 }
                 if (!chan.SuppressWarnings)
-                {
                     IRC.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, libirc.Defs.Priority.Low);
-                }
                 return;
             }
 
@@ -261,9 +249,7 @@ namespace wmib
                     return;
                 }
                 if (!chan.SuppressWarnings)
-                {
                     IRC.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, libirc.Defs.Priority.Low);
-                }
             }
 
             if (message == Configuration.System.CommandPrefix + "traffic-on")
@@ -275,9 +261,7 @@ namespace wmib
                     return;
                 }
                 if (!chan.SuppressWarnings)
-                {
                     IRC.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, libirc.Defs.Priority.Low);
-                }
             }
 
             if (message == Configuration.System.CommandPrefix + "restart")
@@ -290,15 +274,12 @@ namespace wmib
                     return;
                 }
                 if (!chan.SuppressWarnings)
-                {
                     IRC.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan.Name, libirc.Defs.Priority.Low);
-                }
             }
 
             if (message == Configuration.System.CommandPrefix + "channellist")
             {
-                IRC.DeliverMessage(messages.Localize("Responses-List", chan.Language, new List<string>
-                                                        { Configuration.Channels.Count.ToString() }), chan);
+                IRC.DeliverMessage(messages.Localize("Responses-List", chan.Language, new List<string> { Configuration.Channels.Count.ToString() }), chan);
                 return;
             }
 
@@ -327,8 +308,7 @@ namespace wmib
                                     chan.SaveConfig();
                                     return;
                                 }
-                                IRC.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string>
-                                                                       { name, value }), chan);
+                                IRC.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { name, value }), chan);
                                 return;
                             case "respond-wait":
                                 int _temp_b;
@@ -337,38 +317,32 @@ namespace wmib
                                     if (_temp_b > 1 && _temp_b < 364000)
                                     {
                                         chan.RespondWait = _temp_b;
-                                        IRC.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string>
-                                                                                   { value, name }), chan);
+                                        IRC.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, name }), chan);
                                         chan.SaveConfig();
                                         return;
                                     }
                                 }
-                                IRC.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string>
-                                                                       { name, value }), chan);
+                                IRC.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { name, value }), chan);
                                 return;
                             case "respond-message":
                                 if (bool.TryParse(value, out _temp_a))
                                 {
                                     chan.RespondMessage = _temp_a;
-                                    IRC.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string>
-                                                                               { value, name }), chan);
+                                    IRC.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, name }), chan);
                                     chan.SaveConfig();
                                     return;
                                 }
-                                IRC.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string>
-                                                                       { name, value }), chan);
+                                IRC.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { name, value }), chan);
                                 return;
                             case "suppress-warnings":
                                 if (bool.TryParse(value, out _temp_a))
                                 {
                                     chan.SuppressWarnings = _temp_a;
-                                    IRC.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string>
-                                                                               { value, name }), chan);
+                                    IRC.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, name }), chan);
                                     chan.SaveConfig();
                                     return;
                                 }
-                                IRC.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string>
-                                                                       { name, value }), chan);
+                                IRC.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { name, value }), chan);
                                 return;
                         }
                         bool exist = false;
@@ -378,13 +352,9 @@ namespace wmib
                             {
                                 try
                                 {
-                                    if (curr.IsWorking)
-                                    {
-                                        if (curr.Hook_SetConfig(chan, invoker, name, value))
-                                        {
-                                            exist = true;
-                                        }
-                                    }
+                                    if (curr.IsWorking && curr.Hook_SetConfig(chan, invoker, name, value))
+                                        exist = true;
+
                                 }
                                 catch (Exception fail)
                                 {
@@ -394,9 +364,7 @@ namespace wmib
                             }
                         }
                         if (!chan.SuppressWarnings && !exist)
-                        {
                             IRC.DeliverMessage(messages.Localize("configure-wrong", chan.Language), chan);
-                        }
                         return;
                     }
                     if (!text.Contains(" "))
@@ -404,16 +372,13 @@ namespace wmib
                         switch (text)
                         {
                             case "ignore-unknown":
-                                IRC.DeliverMessage(messages.Localize("Responses-Conf", chan.Language, new List<string>
-                                                                       { text, chan.IgnoreUnknown.ToString() } ), chan);
+                                IRC.DeliverMessage(messages.Localize("Responses-Conf", chan.Language, new List<string> { text, chan.IgnoreUnknown.ToString() }), chan);
                                 return;
                             case "respond-message":
-                                IRC.DeliverMessage(messages.Localize("Responses-Conf", chan.Language, new List<string>
-                                                                       { text, chan.RespondMessage.ToString() }), chan);
+                                IRC.DeliverMessage(messages.Localize("Responses-Conf", chan.Language, new List<string> { text, chan.RespondMessage.ToString() }), chan);
                                 return;
                             case "suppress-warnings":
-                                IRC.DeliverMessage(messages.Localize("Responses-Conf", chan.Language, new List<string>
-                                                                       { text, chan.SuppressWarnings.ToString() } ), chan);
+                                IRC.DeliverMessage(messages.Localize("Responses-Conf", chan.Language, new List<string> { text, chan.SuppressWarnings.ToString() }), chan);
                                 return;
                         }
                         bool exist = false;
@@ -423,13 +388,8 @@ namespace wmib
                             {
                                 try
                                 {
-                                    if (curr.IsWorking)
-                                    {
-                                        if (curr.Hook_GetConfig(chan, invoker, text))
-                                        {
-                                            exist = true;
-                                        }
-                                    }
+                                    if (curr.IsWorking && curr.Hook_GetConfig(chan, invoker, text))
+                                        exist = true;
                                 }
                                 catch (Exception fail)
                                 {
@@ -439,20 +399,14 @@ namespace wmib
                             }
                         }
                         if (exist)
-                        {
                             return;
-                        }
                     }
                     if (!chan.SuppressWarnings)
-                    {
                         IRC.DeliverMessage(messages.Localize("configure-wrong", chan.Language), chan);
-                    }
                     return;
                 }
                 if (!chan.SuppressWarnings)
-                {
                     IRC.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, libirc.Defs.Priority.Low);
-                }
                 return;
             }
 
@@ -498,43 +452,34 @@ namespace wmib
             }
 #endif
 
-            if (message == Configuration.System.CommandPrefix + "verbosity--")
+            if (message == Configuration.System.CommandPrefix + "verbosity--" && chan.SystemUsers.IsApproved(invoker, "root"))
             {
-                if (chan.SystemUsers.IsApproved(invoker, "root"))
+                if (Configuration.System.SelectedVerbosity > 0)
                 {
-                    if (Configuration.System.SelectedVerbosity > 0)
-                    {
-                        Configuration.System.SelectedVerbosity--;
-                    }
-                    IRC.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity, 
-                                                  chan, libirc.Defs.Priority.High);
+                    Configuration.System.SelectedVerbosity--;
                 }
+                IRC.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity,
+                                              chan, libirc.Defs.Priority.High);
             }
 
-            if (message == Configuration.System.CommandPrefix + "verbosity++")
+            if (message == Configuration.System.CommandPrefix + "verbosity++" && chan.SystemUsers.IsApproved(invoker, "root"))
             {
-                if (chan.SystemUsers.IsApproved(invoker, "root"))
-                {
-                    Configuration.System.SelectedVerbosity++;
-                    IRC.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity,
+                Configuration.System.SelectedVerbosity++;
+                IRC.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity,
                                                   chan, libirc.Defs.Priority.High);
-                }
             }
 
-            if (message.StartsWith(Configuration.System.CommandPrefix + "system-rm "))
+            if (message.StartsWith(Configuration.System.CommandPrefix + "system-rm ") && chan.SystemUsers.IsApproved(invoker, "root"))
             {
-                if (chan.SystemUsers.IsApproved(invoker, "root"))
+                string module = message.Substring("@system-lm ".Length);
+                Module _m = ExtensionHandler.RetrieveModule(module);
+                if (_m == null)
                 {
-                    string module = message.Substring("@system-lm ".Length);
-                    Module _m = ExtensionHandler.RetrieveModule(module);
-                    if (_m == null)
-                    {
-                        IRC.DeliverMessage("This module is not currently loaded in core", chan, libirc.Defs.Priority.High);
-                        return;
-                    }
-                    _m.Exit();
-                    IRC.DeliverMessage("Unloaded module " + module, chan, libirc.Defs.Priority.High);
+                    IRC.DeliverMessage("This module is not currently loaded in core", chan, libirc.Defs.Priority.High);
+                    return;
                 }
+                _m.Exit();
+                IRC.DeliverMessage("Unloaded module " + module, chan, libirc.Defs.Priority.High);
             }
 
             if (message == Configuration.System.CommandPrefix + "commands")
