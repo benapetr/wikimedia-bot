@@ -34,6 +34,13 @@ namespace wmib.Extensions
         public readonly static string SnapshotsDirectory = "snapshots";
         private InfobotWriter writer;
 
+        public override bool Construct()
+        {
+            RestartOnModuleCrash = true;
+            Version = new Version(1, 8, 0, 1);
+            return true;
+        }
+
         public override bool Hook_OnUnload()
         {
             bool success = true;
@@ -819,13 +826,6 @@ namespace wmib.Extensions
                     return true;
             }
             return false;
-        }
-
-        public override bool Construct()
-        {
-            RestartOnModuleCrash = true;
-            Version = new Version(1, 8, 0, 0);
-            return true;
         }
 
         public override void Hook_ReloadConfig(Channel chan)
