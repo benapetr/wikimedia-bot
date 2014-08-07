@@ -147,6 +147,7 @@ namespace wmib
                                 + "reauth [instance] - resend password to nickserv\n"
                                 + "traffic-on - turn on traffic logs\n"
                                 + "traffic-off - turn off traffic logs\n"
+                                + "send [instance] [text] - deliver a RAW text to IRC server on a given bot\n"
                                 + "kill [instance] - disconnect selected instance\n"
                                 + "conn [instance] - connect instance\n");
                                 break;
