@@ -144,6 +144,7 @@ namespace wmib
                                 + "verbosity++\nverbosity--\n"
                                 + "info - print information about system\n"
                                 + "halt - shutdown bot\n"
+                                + "reauth [instance] - resend password to nickserv\n"
                                 + "traffic-on - turn on traffic logs\n"
                                 + "traffic-off - turn off traffic logs\n"
                                 + "kill [instance] - disconnect selected instance\n"
@@ -153,6 +154,15 @@ namespace wmib
                                 Disconnect("Shutting down");
                                 Core.Kill();
                                 return;
+                            case "reauth":
+                                if (Instance.Instances.ContainsKey(parameters))
+                                {
+                                    Instance.Instances[parameters].Protocol.Authenticate(false);
+                                    Write("Sent a password to nickserv on " + parameters);
+                                    break;
+                                }
+                                Write("Unknown instance: " + parameters);
+                                break;
                             case "traffic-on":
                                 Configuration.Network.Logging = true;
                                 Write("Dumping traffic into datafile");
