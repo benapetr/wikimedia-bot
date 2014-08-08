@@ -221,6 +221,24 @@ namespace wmib.Extensions
                         }
                     }
                     builder.AppendLine("</table>");
+                    builder.AppendLine("<h2>Permissions</h2>");
+                    builder.AppendLine("<table class=\"permissions\">");
+                    builder.AppendLine("  <tr><th>Role</th><th>Permissions</th><th>Roles</th></tr>");
+                    lock (Security.Roles)
+                    {
+                        foreach (string rn in Security.Roles.Keys)
+                        {
+                            Security.Role role = Security.Roles[rn];
+                            builder.AppendLine("<tr><td>" + rn + "</td><td>");
+                            foreach (string permission in role.Permissions)
+                                builder.AppendLine(permission + "<br>");
+                            builder.AppendLine("</td><td>");
+                            foreach (Security.Role sr in role.Roles)
+                                builder.AppendLine(sr.Level.ToString() + "</br>");
+                            builder.AppendLine("</td></tr>");
+                        }
+                    }
+                    builder.AppendLine("</table>");
                     builder.AppendLine("<h2>Plugins</h2>");
                     builder.AppendLine("<table class=\"modules\">");
                     foreach (Module module in ExtensionHandler.Extensions)
