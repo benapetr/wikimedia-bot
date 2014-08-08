@@ -29,7 +29,7 @@ namespace wmib.Extensions
 
         public override bool Construct()
         {
-            Version = new Version(1, 0, 0, 3);
+            Version = new Version(1, 0, 0, 4);
             return true;
         }
 
@@ -233,7 +233,7 @@ namespace wmib.Extensions
                         Security.Roles[role].Grant(_role);
                     }
                     IsUpdated = true;
-                    IRC.DeliverMessage("Successfuly granted role" + parameters[1] + " to " + role, channel);
+                    IRC.DeliverMessage("Successfuly granted role " + parameters[1] + " to " + role, channel);
                     return;
                 }
                 if (!channel.SuppressWarnings)
