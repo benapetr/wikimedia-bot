@@ -29,7 +29,7 @@ namespace wmib.Extensions
 
         public override bool Construct()
         {
-            Version = new Version(1, 0, 0, 2);
+            Version = new Version(1, 0, 0, 3);
             return true;
         }
 
@@ -149,6 +149,96 @@ namespace wmib.Extensions
                 {
                     IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
                 }
+                return;
+            }
+            if (message.StartsWith(Configuration.System.CommandPrefix + "revokerole "))
+            {
+                if (channel.SystemUsers.IsApproved(invoker, "grant"))
+                {
+                    string name = message.Substring("@revokerole ".Length);
+                    List<string> parameters = new List<string>(name.Split(' '));
+                    if (parameters.Count != 2)
+                    {
+                        IRC.DeliverMessage("Invalid number of parameters", channel);
+                        return;
+                    }
+                    string role = channel_name + "." + parameters[0];
+                    Security.Role _role;
+                    lock (Security.Roles)
+                    {
+                        // now we need to get the role
+                        if (!Security.Roles.ContainsKey(parameters[1]))
+                        {
+                            IRC.DeliverMessage("There is no such a role", channel);
+                            return;
+                        }
+                        _role = Security.Roles[parameters[1]];
+                        if (!Security.Roles.ContainsKey(role))
+                        {
+                            IRC.DeliverMessage("There is no such a role", channel);
+                            return;
+                        }
+                        if (!Security.Roles[role].Roles.Contains(_role))
+                        {
+                            IRC.DeliverMessage("This role doesn't has this role so I can't revoke it!!", channel);
+                            return;
+                        }
+                        Security.Roles[role].Revoke(_role);
+                    }
+                    IsUpdated = true;
+                    IRC.DeliverMessage("Successfuly revoked role" + parameters[1] + " to " + role, channel);
+                    return;
+                }
+                if (!channel.SuppressWarnings)
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
+
+                return;
+            }
+            if (message.StartsWith(Configuration.System.CommandPrefix + "grantrole "))
+            {
+                if (channel.SystemUsers.IsApproved(invoker, "grant"))
+                {
+                    string name = message.Substring("@grantrole ".Length);
+                    List<string> parameters = new List<string>(name.Split(' '));
+                    if (parameters.Count != 2)
+                    {
+                        IRC.DeliverMessage("Invalid number of parameters", channel);
+                        return;
+                    }
+                    string role = channel_name + "." + parameters[0];
+                    Security.Role _role;
+                    lock (Security.Roles)
+                    {
+                        // now we need to get the role
+                        if (!Security.Roles.ContainsKey(parameters[1]))
+                        {
+                            IRC.DeliverMessage("There is no such a role", channel);
+                            return;
+                        }
+                        _role = Security.Roles[parameters[1]];
+                        if (_role.IsPermitted("root"))
+                        {
+                            IRC.DeliverMessage("Sorry but this role can't be granted", channel);
+                            return;
+                        }
+                        if (!Security.Roles.ContainsKey(role))
+                            Security.Roles.Add(role, new Security.Role(_role.Level));
+                        else if (Security.Roles[role].Level < _role.Level)
+                            Security.Roles[role].Level = _role.Level;
+                        if (Security.Roles[role].Roles.Contains(_role))
+                        {
+                            IRC.DeliverMessage("This role already has this role as well", channel);
+                            return;
+                        }
+                        Security.Roles[role].Grant(_role);
+                    }
+                    IsUpdated = true;
+                    IRC.DeliverMessage("Successfuly granted role" + parameters[1] + " to " + role, channel);
+                    return;
+                }
+                if (!channel.SuppressWarnings)
+                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
+
                 return;
             }
         }
