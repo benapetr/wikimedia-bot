@@ -229,12 +229,12 @@ namespace wmib.Extensions
                         foreach (string rn in Security.Roles.Keys)
                         {
                             Security.Role role = Security.Roles[rn];
-                            builder.AppendLine("<tr><td>" + rn + "</td><td>");
+                            builder.AppendLine("<tr><td valign=top>" + rn + "</td><td valign=top>");
                             foreach (string permission in role.Permissions)
                                 builder.AppendLine(permission + "<br>");
-                            builder.AppendLine("</td><td>");
+                            builder.AppendLine("</td><td valign=top>");
                             foreach (Security.Role sr in role.Roles)
-                                builder.AppendLine(sr.Level.ToString() + "</br>");
+                                builder.AppendLine(Security.GetNameOfRole(sr) + "</br>");
                             builder.AppendLine("</td></tr>");
                         }
                     }

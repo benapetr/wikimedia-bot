@@ -293,6 +293,19 @@ namespace wmib
             return Roles.ContainsKey(name);
         }
 
+        public static string GetNameOfRole(Security.Role role)
+        {
+            lock (Security.Roles)
+            {
+                foreach (KeyValuePair<string, Security.Role> xx in Security.Roles)
+                {
+                    if (role == xx.Value)
+                        return xx.Key;
+                }
+            }
+            return "{unknown role}";
+        }
+
         public void InsertUser(XmlNode node)
         {
             string regex = null;
