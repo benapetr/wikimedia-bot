@@ -142,7 +142,7 @@ namespace wmib
 
             if (message == Configuration.System.CommandPrefix + "suppress-off")
             {
-                if (chan.SystemUsers.IsApproved(invoker, "admin"))
+                if (chan.SystemUsers.IsApproved(invoker, "unsuppress"))
                 {
                     if (!chan.Suppress)
                     {
@@ -162,7 +162,7 @@ namespace wmib
 
             if (message == Configuration.System.CommandPrefix + "suppress-on")
             {
-                if (chan.SystemUsers.IsApproved(invoker, "admin"))
+                if (chan.SystemUsers.IsApproved(invoker, "suppress"))
                 {
                     if (chan.Suppress)
                     {

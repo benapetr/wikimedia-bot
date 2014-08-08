@@ -221,6 +221,8 @@ namespace wmib
             Roles["operator"].Grant("join");
             Roles["admin"].Grant("admin");
             Roles["admin"].Grant("drop");
+            Roles["admin"].Grant("suppress");
+            Roles["admin"].Grant("unsuppress");
             Roles["admin"].Grant("part");
             Roles["admin"].Grant(Roles["operator"]);
             // admins have all privileges as trusted users
