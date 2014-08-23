@@ -224,6 +224,7 @@ namespace wmib
                             }
                         }
                     }
+                    modules.Trim();
                 }
                 if (respond)
                 {
