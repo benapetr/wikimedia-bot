@@ -61,12 +61,13 @@ namespace wmib
             Authenticate();
         }
 
-        private bool Authenticate()
+        public bool Authenticate(bool wait = true)
         {
-            if (Configuration.IRC.LoginPw != "")
+            if (!String.IsNullOrEmpty(Configuration.IRC.LoginPw))
             {
                 this.Send("PRIVMSG nickserv :identify " + Configuration.IRC.LoginNick + " " + Configuration.IRC.LoginPw);
-                Thread.Sleep(4000);
+                if (wait)
+                    Thread.Sleep(4000);
             }
             return true;
         }

@@ -86,7 +86,7 @@ namespace wmib
             /// <summary>
             /// Login pw
             /// </summary>
-            public static string LoginPw = "";
+            public static string LoginPw = null;
             /// <summary>
             /// Whether the bot is using external network module
             /// </summary>

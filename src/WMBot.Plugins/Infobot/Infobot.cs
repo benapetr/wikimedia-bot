@@ -87,9 +87,7 @@ namespace wmib.Extensions
                     foreach (InfobotAlias key in Aliases)
                     {
                         if (key.Name == name)
-                        {
                             return true;
-                        }
                     }
                 }
             }
@@ -101,9 +99,7 @@ namespace wmib.Extensions
                     foreach (InfobotAlias key in Aliases)
                     {
                         if (key.Name.ToLower() == name)
-                        {
                             return true;
-                        }
                     }
                 }
             }
@@ -126,9 +122,7 @@ namespace wmib.Extensions
                     foreach (InfobotKey key in Keys)
                     {
                         if (key.Key.ToLower() == name)
-                        {
                             return true;
-                        }
                     }
                 }
             }
@@ -139,9 +133,7 @@ namespace wmib.Extensions
                     foreach (InfobotKey key in Keys)
                     {
                         if (key.Key == name)
-                        {
                             return true;
-                        }
                     }
                 }
             }
@@ -158,9 +150,7 @@ namespace wmib.Extensions
                     foreach (InfobotKey key in Keys)
                     {
                         if (key.Key.ToLower() == name)
-                        {
                             return key;
-                        }
                     }
                 }
             }
@@ -171,9 +161,7 @@ namespace wmib.Extensions
                     foreach (InfobotKey key in Keys)
                     {
                         if (key.Key == name)
-                        {
                             return key;
-                        }
                     }
                 }
             }
@@ -204,13 +192,9 @@ namespace wmib.Extensions
                     last = CV.LastTime + " (" + span + " ago)";
                 }
                 if (CV.CreationTime != NA)
-                {
                     created = CV.CreationTime.ToString();
-                }
-                if (CV.User != "")
-                {
+                if (!string.IsNullOrEmpty(CV.User))
                     name = CV.User;
-                }
                 string type = " this key is normal";
                 if (CV.Raw)
                 {
@@ -403,15 +387,11 @@ namespace wmib.Extensions
                 Infobot infobot = null;
 
                 if (Allowed)
-                {
                     infobot = (Infobot)data.RetrieveObject("Infobot");
-                }
 
                 // check if key is ignored
                 if (IsIgnored(message, chan))
-                {
                     return true;
-                }
 
                 // split by parameters so we can easily get the arguments user provided
                 List<string> Parameters = new List<string>(message.Split(' '));
@@ -429,31 +409,18 @@ namespace wmib.Extensions
                             {
                                 // check if we can deliver error message
                                 if (!chan.SuppressWarnings)
-                                {
                                     IRC.DeliverMessage(messages.Localize("db7", chan.Language), chan);
-                                }
                                 return true;
                             }
                             // they can but there is only 1 parameter and we need at least 2
                             if (Parameters.Count < 3)
                             {
                                 if (!chan.SuppressWarnings)
-                                {
                                     IRC.DeliverMessage(messages.Localize("key", chan.Language), chan);
-                                }
                                 return true;
                             }
                             // get a key name
                             string key = message.Substring(message.IndexOf(" is") + 4);
-                            // check if there is pipe symbol in the key, which is not a valid symbol
-                            if (Parameters[0].Contains("|"))
-                            {
-                                if (!chan.SuppressWarnings)
-                                {
-                                    IRC.DeliverMessage("Invalid symbol in the key", chan);
-                                }
-                                return true;
-                            }
                             if (infobot != null)
                             {
                                 infobot.SetKey(key, Parameters[0], user, chan);
@@ -463,9 +430,39 @@ namespace wmib.Extensions
                         else
                         {
                             if (!chan.SuppressWarnings)
-                            {
                                 IRC.DeliverMessage(messages.Localize("Authorization", chan.Language), chan);
+                        }
+                        return false;
+                    } else if (Parameters[1] == "replace")
+                    {
+                        // check if they are approved to do that
+                        if (chan.SystemUsers.IsApproved(user, host, InfobotModule.PermissionAdd))
+                        {
+                            if (!Allowed)
+                            {
+                                // check if we can deliver error message
+                                if (!chan.SuppressWarnings)
+                                    IRC.DeliverMessage(messages.Localize("db7", chan.Language), chan);
+                                return true;
                             }
+                            // they can but there is only 1 parameter and we need at least 2
+                            if (Parameters.Count < 3)
+                            {
+                                if (!chan.SuppressWarnings)
+                                    IRC.DeliverMessage(messages.Localize("key", chan.Language), chan);
+                                return true;
+                            }
+                            // get a key name
+                            string key = message.Substring(message.IndexOf(" replace") + 9);
+                            if (infobot != null)
+                            {
+                                infobot.replaceKey(key, Parameters[0], user, chan);
+                                return true;
+                            }
+                        }
+                        else if (!chan.SuppressWarnings)
+                        {
+                            IRC.DeliverMessage(messages.Localize("Authorization", chan.Language), chan);
                         }
                         return false;
                     }
@@ -937,13 +934,7 @@ namespace wmib.Extensions
                     }
                     Keys.Add(new InfobotKey(key, Text, user, "false"));
                     IRC.DeliverMessage(messages.Localize("infobot6", chan.Language), chan);
-                    Infobot infobot = (Infobot)pChannel.RetrieveObject("Infobot");
-                    if (infobot == null)
-                    {
-                        Syslog.Log("Unable to save the key because the Infobot doesn't exist in " + pChannel.Name, true);
-                        return;
-                    }
-                    infobot.StoreDB();
+                    this.StoreDB();
                 }
                 catch (Exception b)
                 {
@@ -1111,7 +1102,7 @@ namespace wmib.Extensions
         /// <param name="user">User</param>
         /// <param name="chan"></param>
         /// <param name="enforced"></param>
-        public void aliasKey(string key, string al, string user, Channel chan, bool enforced = false)
+        private void aliasKey(string key, string al, string user, Channel chan, bool enforced = false)
         {
             lock (this)
             {
@@ -1145,7 +1136,30 @@ namespace wmib.Extensions
             this.StoreDB();
         }
 
-        public void rmKey(string key, string user, Channel _ch)
+        private void replaceKey(string Text, string key, string user, Channel chan)
+        {
+            lock (this)
+            {
+                try
+                {
+                    bool newkey = !KeyExists(key, Sensitive);
+                    if (!newkey)
+                        this.DeleteKey(key);
+                    Keys.Add(new InfobotKey(key, Text, user, "false"));
+                    if (newkey)
+                        IRC.DeliverMessage(messages.Localize("infobot6", chan.Language), chan);
+                    else
+                        IRC.DeliverMessage("Successfully replaced " + key, chan);
+                    this.StoreDB();
+                }
+                catch (Exception b)
+                {
+                    Core.HandleException(b, "infobot");
+                }
+            }
+        }
+
+        private bool DeleteKey(string key)
         {
             lock (this)
             {
@@ -1156,9 +1170,8 @@ namespace wmib.Extensions
                         if (keys.Key == key)
                         {
                             Keys.Remove(keys);
-                            IRC.DeliverMessage(messages.Localize("infobot9", _ch.Language) + key, _ch.Name);
                             this.StoreDB();
-                            return;
+                            return true;
                         }
                     }
                     else
@@ -1166,14 +1179,21 @@ namespace wmib.Extensions
                         if (keys.Key.ToLower() == key.ToLower())
                         {
                             Keys.Remove(keys);
-                            IRC.DeliverMessage(messages.Localize("infobot9", _ch.Language) + key, _ch.Name);
                             this.StoreDB();
-                            return;
+                            return true;
                         }
                     }
                 }
             }
-            IRC.DeliverMessage(messages.Localize("infobot10", _ch.Language), _ch.Name);
+            return false;
+        }
+
+        private void rmKey(string key, string user, Channel _ch)
+        {
+            if (this.DeleteKey(key))
+                IRC.DeliverMessage(messages.Localize("infobot9", _ch.Language) + key, _ch.Name);
+            else
+                IRC.DeliverMessage(messages.Localize("infobot10", _ch.Language), _ch.Name);
         }
     }
 }

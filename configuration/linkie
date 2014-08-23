@@ -204,6 +204,7 @@ gausswiki|https://gauss.ffii.org/$1
 gd|https://gd.wikipedia.org/wiki/$1
 gentoo-wiki|https://gentoo-wiki.com/$1
 genwiki|https://wiki.genealogy.net/index.php/$1
+gerrit|https://gerrit.wikimedia.org/r/$1
 gh|https://github.com/$1
 github|https://github.com/$1
 gl|https://gl.wikipedia.org/wiki/$1

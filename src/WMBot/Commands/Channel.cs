@@ -99,9 +99,7 @@ namespace wmib
             try
             {
                 if (origin == "NULL")
-                {
                     origin = channel.Name;
-                }
                 if (channel.Name == Configuration.System.DebugChan && (message == Configuration.System.CommandPrefix + "part" 
                                                           || message == Configuration.System.CommandPrefix + "drop"))
                 {
@@ -130,9 +128,7 @@ namespace wmib
                                     try
                                     {
                                         if (curr.IsWorking)
-                                        {
                                             curr.Hook_ChannelDrop(channel);
-                                        }
                                     }
                                     catch (Exception fail)
                                     {

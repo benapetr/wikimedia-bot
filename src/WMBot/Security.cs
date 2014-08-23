@@ -221,6 +221,8 @@ namespace wmib
             Roles["operator"].Grant("join");
             Roles["admin"].Grant("admin");
             Roles["admin"].Grant("drop");
+            Roles["admin"].Grant("suppress");
+            Roles["admin"].Grant("unsuppress");
             Roles["admin"].Grant("part");
             Roles["admin"].Grant(Roles["operator"]);
             // admins have all privileges as trusted users
@@ -289,6 +291,19 @@ namespace wmib
                 return false;
             }
             return Roles.ContainsKey(name);
+        }
+
+        public static string GetNameOfRole(Security.Role role)
+        {
+            lock (Security.Roles)
+            {
+                foreach (KeyValuePair<string, Security.Role> xx in Security.Roles)
+                {
+                    if (role == xx.Value)
+                        return xx.Key;
+                }
+            }
+            return "{unknown role}";
         }
 
         public void InsertUser(XmlNode node)
