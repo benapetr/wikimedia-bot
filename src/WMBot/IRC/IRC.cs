@@ -150,6 +150,14 @@ namespace wmib
                             Thread.Sleep(1000);
                         }
                     }
+                    // take stolen nick
+                    foreach (Instance instance in Instance.Instances.Values)
+                    {
+                        if (instance.Nick != instance.Network.Nickname)
+                        {
+                            instance.Network.Transfer("NICK " + instance.Nick);
+                        }
+                    }
                     Thread.Sleep((Configuration.Channels.Count * 2000) + 80000);
                 }
             }

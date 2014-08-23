@@ -389,7 +389,7 @@ namespace wmib.Extensions
         public override bool Construct()
         {
             Version = new Version(1, 0, 20);
-            HasSeparateThreadInstance = false;
+            //HasSeparateThreadInstance = false;
             return true;
         }
     }
