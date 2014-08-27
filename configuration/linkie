@@ -433,6 +433,7 @@ o-revi|http://revi.orain.org/wiki/$1
 o-sohwiki|http://sofwiki.orain.org/wiki/$1
 o-test|http://test.orain.org/wiki/$1
 o-ukrwiki1|http://ukrwiki1.orain.org/wiki/$1
+o-verkeer|https://verkeer.orain.org/wiki/$1
 o-wikiteam|http://wikiteam.orain.org/wiki/$1
 pa|https://pa.wikipedia.org/wiki/$1
 pag|https://pag.wikipedia.org/wiki/$1
