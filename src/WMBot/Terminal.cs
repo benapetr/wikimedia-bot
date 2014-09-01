@@ -24,13 +24,30 @@ namespace wmib
     /// </summary>
     public class Terminal
     {
-        public class Session
+        public class Session : IDisposable
         {
             private TcpClient connection;
             private NetworkStream networkStream;
-            private StreamReader streamReader;
-            private StreamWriter streamWriter;
-            
+            private StreamReader streamReader = null;
+            private StreamWriter streamWriter = null;
+
+            protected virtual void Dispose(bool disposing)
+            {
+                if (!disposing)
+                    return;
+
+                if (this.streamReader != null)
+                    this.streamReader.Dispose();
+                if (this.streamWriter != null)
+                    this.streamWriter.Dispose();
+            }
+
+            public void Dispose()
+            {
+                this.Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+
             private void Write(string text)
             {
                 streamWriter.WriteLine(text);

@@ -212,14 +212,18 @@ namespace wmib
                     {
                         case Signum.SIGINT:
                             SigInt(null, null);
-                            return;
+                            goto exit;
                         case Signum.SIGTERM:
                             Syslog.WriteNow("SIGTERM - Shutting down", true);
                             Core.Kill();
-                            return;
+                            goto exit;
                     }
                     Thread.Sleep(200);
                 }
+                exit:
+                    // memory cleanup
+                    if (Core.DB != null)
+                        ((WMIBMySQL)Core.DB).Dispose();
             }
             catch (Exception fatal)
             {

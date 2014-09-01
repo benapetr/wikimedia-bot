@@ -24,7 +24,7 @@ namespace wmib
     /// <summary>
     /// Mysql
     /// </summary>
-    public class WMIBMySQL : Database
+    public class WMIBMySQL : Database, IDisposable
     {
         [Serializable]
         public class Unwritten
@@ -54,7 +54,7 @@ namespace wmib
         private bool Recovering;
         private readonly Unwritten unwritten = new Unwritten();
         
-        private MySqlConnection Connection;
+        private MySqlConnection Connection = null;
         /// <summary>
         /// Return true if mysql is connected to server
         /// </summary>
@@ -68,6 +68,21 @@ namespace wmib
 
         private bool connected;
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposing)
+                return;
+
+            if (this.Connection != null)
+                this.Connection.Dispose();
+        }
+
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
         public WMIBMySQL()
         {
             string file = Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "unwrittensql.xml";
@@ -76,16 +91,18 @@ namespace wmib
             {
                 Syslog.WarningLog("There is a mysql dump file from previous run containing mysql rows that were never successfuly inserted, trying to recover them");
                 XmlDocument document = new XmlDocument();
-                TextReader sr = new StreamReader(file);
-                document.Load(sr);
-                XmlNodeReader reader = new XmlNodeReader(document.DocumentElement);
-                XmlSerializer xs = new XmlSerializer(typeof(Unwritten));
-                Unwritten un = (Unwritten)xs.Deserialize(reader);
-                reader.Close();
-                sr.Close();
-                lock (unwritten.PendingRows)
+                using (TextReader sr = new StreamReader(file))
                 {
-                    unwritten.PendingRows.AddRange(un.PendingRows);
+                    document.Load(sr);
+                    using (XmlNodeReader reader = new XmlNodeReader(document.DocumentElement))
+                    {
+                        XmlSerializer xs = new XmlSerializer(typeof(Unwritten));
+                        Unwritten un = (Unwritten)xs.Deserialize(reader);
+                        lock (unwritten.PendingRows)
+                        {
+                            unwritten.PendingRows.AddRange(un.PendingRows);
+                        }
+                    }
                 }
             }
             Thread reco = new Thread(Exec) {Name = "MySQL/Recovery"};

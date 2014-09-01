@@ -182,8 +182,10 @@ namespace wmib
             {
                 DumpableDict dict = new DumpableDict();
                 XmlSerializer xmlSerializer = new XmlSerializer(dict.GetType());
-                StreamReader reader = new StreamReader(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "security.xml");
-                dict = (DumpableDict)xmlSerializer.Deserialize(reader);
+                using (StreamReader reader = new StreamReader(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "security.xml"))
+                {
+                    dict = (DumpableDict)xmlSerializer.Deserialize(reader);
+                }
                 // first we need to create all roles in the file, that is important
                 foreach (DumpableDict.RoleInfo ri in dict.Roles)
                 {
@@ -248,10 +250,11 @@ namespace wmib
         {
             DumpableDict du = new DumpableDict(Roles);
             XmlSerializer xmlSerializer = new XmlSerializer(du.GetType());
-            StringWriter textWriter = new StringWriter();
-
-            xmlSerializer.Serialize(textWriter, du);
-            return textWriter.ToString();
+            using (StringWriter textWriter = new StringWriter())
+            {
+                xmlSerializer.Serialize(textWriter, du);
+                return textWriter.ToString();
+            }
         }
 
         public static int GetLevelOfRole(string role)
