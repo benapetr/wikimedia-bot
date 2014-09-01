@@ -583,7 +583,13 @@ namespace wmib
             }
             return false;
         }
-        
+
+        public bool IsKnown(string User, string Host)
+        {
+            SystemUser current = GetUser(User + "!@" + Host);
+            return current.Role != "null";
+        }
+
         /// <summary>
         /// Check if user is approved to do operation requested
         /// </summary>

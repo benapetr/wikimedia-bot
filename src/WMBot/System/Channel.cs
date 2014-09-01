@@ -135,9 +135,8 @@ namespace wmib
                 }
             }
             if (!Directory.Exists(Configuration.WebPages.HtmlPath))
-            {
                 Directory.CreateDirectory(Configuration.WebPages.HtmlPath);
-            }
+
             lock(ExtensionHandler.Extensions)
             {
                 foreach (Module module in ExtensionHandler.Extensions)
@@ -175,15 +174,13 @@ namespace wmib
 
         public string GetConfigFilePath()
         {
-            return Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + this.Name + ".xml";
+            return GetConfigFilePath(this.Name);
         }
 
-        public void RefetchChannel()
+        protected void RefetchChannel()
         {
             if (this.IrcChannel == null)
-            {
                 this.IrcChannel = this.PrimaryInstance.Network.GetChannel(this.Name);
-            }
         }
 
         /// <summary>
@@ -408,26 +405,17 @@ namespace wmib
                 InsertData("sharedinfo", SharedDB, ref data, ref xmlnode);
                 InsertData("defaultbot", DefaultInstance, ref data, ref xmlnode);
                 if (!(SharedLinkedChan.Count < 1))
-                {
                     foreach (Channel current in SharedLinkedChan)
-                    {
                         InsertData("name", current.Name, ref data, ref xmlnode, "sharedch");
-                    }
-                }
+
                 if (!(Infobot_IgnoredNames.Count < 1))
-                {
                     foreach (string curr in Infobot_IgnoredNames)
-                    {
                         InsertData("name", curr, ref data, ref xmlnode, "ignored");
-                    }
-                }
+
                 if (ExtensionData.Count > 0)
-                {
                     foreach (KeyValuePair<string, string> item in ExtensionData)
-                    {
                         InsertData(item.Key, item.Value, ref data, ref xmlnode, "extension");
-                    }
-                }
+
                 lock (this.SystemUsers.Users)
                 {
                     foreach (SystemUser user in this.SystemUsers.Users)
@@ -453,9 +441,7 @@ namespace wmib
                 data.AppendChild(xmlnode);
                 data.Save(fn);
                 if (File.Exists(Configuration.TempName(fn)))
-                {
                     File.Delete(Configuration.TempName(fn));
-                }
             } catch (Exception)
             {
                 Core.RecoverFile(fn, Name);
@@ -485,9 +471,7 @@ namespace wmib
             SharedChans.Clear();
             SharedLinkedChan.Clear();
             if (Configuration.Channels.Contains(this))
-            {
                 Configuration.Channels.Remove(this);
-            }
         }
 
         /// <summary>
@@ -499,12 +483,9 @@ namespace wmib
         {
             this.RefetchChannel();
             if (this.IrcChannel != null)
-            {
                 return this.IrcChannel.ContainsUser(name);
-            } else
-            {
+            else
                 Syslog.DebugLog("IrcChannel is NULL: " + Name);
-            }
             return false;
         }
 
@@ -516,17 +497,9 @@ namespace wmib
         {
             foreach (string x in SharedChans)
             {
-                string name = x.Replace(" ", "");
-                if (!string.IsNullOrEmpty(name))
-                {
-                    if (Core.GetChannel(name) != null)
-                    {
-                        if (SharedLinkedChan.Contains(Core.GetChannel(name)) == false)
-                        {
-                            SharedLinkedChan.Add(Core.GetChannel(name));
-                        }
-                    }
-                }
+                Channel channel = Core.GetChannel(x.Trim());
+                if (channel != null && !SharedLinkedChan.Contains(channel))
+                    SharedLinkedChan.Add(channel);
             }
             return 0;
         }

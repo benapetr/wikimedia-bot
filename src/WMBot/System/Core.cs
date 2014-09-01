@@ -187,9 +187,7 @@ namespace wmib
                     foreach (Module curr in ExtensionHandler.Extensions)
                     {
                         if (!curr.IsWorking)
-                        {
                             continue;
-                        }
                         try
                         {
                             curr.Hook_ACTN(channel, new libirc.UserInfo(nick, "", host), message);
@@ -250,13 +248,9 @@ namespace wmib
             try
             {
                 if (!File.Exists(name))
-                {
                     return false;
-                }
                 if (File.Exists(Configuration.TempName(name)))
-                {
                     BackupRecovery(name);
-                }
                 File.Copy(name, Configuration.TempName(name), true);
             } catch (Exception b)
             {
@@ -394,26 +388,18 @@ namespace wmib
         public static bool GetMessage(string channel, string nick, string host, string message)
         {
             LastText = nick + " chan: " + channel + " " + message;
-            Channel curr = GetChannel(channel);
-            if (curr != null)
+            Channel channel_ = GetChannel(channel);
+            if (channel_ != null)
             {
-                bool ignore = false;
-                if (curr.IgnoreUnknown)
-                {
-                    if (!curr.SystemUsers.IsApproved(nick, host, "trust"))
-                    {
-                        ignore = true;
-                    }
-                }
-                if (!ignore)
+                if (!channel_.IgnoreUnknown || channel_.SystemUsers.IsKnown(nick, host))
                 {
                     if (message.StartsWith(Configuration.System.CommandPrefix))
                     {
-                        Commands.ModifyRights(message, curr, nick, host);
-                        Commands.AddChannel(curr, nick, host, message);
-                        Commands.PartChannel(curr, nick, host, message);
+                        Commands.ModifyRights(message, channel_, nick, host);
+                        Commands.AddChannel(channel_, nick, host, message);
+                        Commands.PartChannel(channel_, nick, host, message);
                     }
-                    Commands.ParseAdmin(curr, nick, host, message);
+                    Commands.ParseAdmin(channel_, nick, host, message);
                 }
                 lock(ExtensionHandler.Extensions)
                 {
@@ -423,7 +409,7 @@ namespace wmib
                         {
                             if (_Module.IsWorking)
                             {
-                                _Module.Hook_PRIV(curr, new libirc.UserInfo(nick, "", host), message);
+                                _Module.Hook_PRIV(channel_, new libirc.UserInfo(nick, "", host), message);
                             }
                         } catch (Exception f)
                         {
@@ -432,15 +418,15 @@ namespace wmib
                         }
                     }
                 }
-                if (curr.RespondMessage)
+                if (channel_.RespondMessage)
                 {
                     if (message.StartsWith(Configuration.IRC.NickName + ":"))
                     {
-                        DateTime time = curr.TimeOfLastMsg;
-                        if (DateTime.Now >= time.AddSeconds(curr.RespondWait))
+                        DateTime time = channel_.TimeOfLastMsg;
+                        if (DateTime.Now >= time.AddSeconds(channel_.RespondWait))
                         {
-                            IRC.DeliverMessage(messages.Localize("hi", curr.Language, new List<string> { nick }), curr.Name);
-                            curr.TimeOfLastMsg = DateTime.Now;
+                            IRC.DeliverMessage(messages.Localize("hi", channel_.Language, new List<string> { nick }), channel_.Name);
+                            channel_.TimeOfLastMsg = DateTime.Now;
                         }
                     }
                 }
