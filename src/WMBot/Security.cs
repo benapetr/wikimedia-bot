@@ -594,11 +594,6 @@ namespace wmib
         public bool IsApproved(string User, string Host, string privilege)
         {
             SystemUser current = GetUser(User + "!@" + Host);
-            if (current.Role == "null")
-            {
-                // not allowed to do anything infact
-                return false;
-            }
             return HasPrivilege(privilege, current.Role);
         }
 

@@ -14,9 +14,6 @@ using System;
 
 namespace wmib
 {
-    /// <summary>
-    /// Kernel
-    /// </summary>
     public partial class Commands
     {
         public static bool Trusted(string message, string user, string host)
