@@ -41,8 +41,8 @@ namespace wmib
                         }
                         if (message.Contains(" "))
                         {
-                            string _channel = message.Substring(message.IndexOf(" ") + 1).Trim();
-                            if (!Core.ValidFile(_channel) || !_channel.StartsWith("#"))
+                            string channel_name = message.Substring(message.IndexOf(" ") + 1).Trim();
+                            if (!Core.ValidFile(channel_name) || !channel_name.StartsWith("#"))
                             {
                                 IRC.DeliverMessage(messages.Localize("InvalidName", channel.Language), channel);
                                 return;
@@ -51,27 +51,26 @@ namespace wmib
                             {
                                 foreach (Channel cu in Configuration.Channels)
                                 {
-                                    if (_channel == cu.Name)
+                                    if (channel_name == cu.Name)
                                     {
                                         IRC.DeliverMessage(messages.Localize("ChannelIn", channel.Language), channel);
                                         return;
                                     }
                                 }
                             }
-                            bool existing = Channel.ConfigExists(_channel);
-                            Channel xx = new Channel(_channel);
+                            bool existing = Channel.ConfigExists(channel_name);
+                            Channel xx = new Channel(channel_name);
                             lock (Configuration.Channels)
                             {
                                 Configuration.Channels.Add(xx);
                             }
                             Configuration.Save();
-                            xx.PrimaryInstance.Network.Join(_channel);
+                            xx.PrimaryInstance.Network.Join(channel_name);
                             Thread.Sleep(100);
-                            Channel Chan = Core.GetChannel(_channel);
+                            Channel Chan = Core.GetChannel(channel_name);
                             if (!existing)
-                            {
                                 Chan.SystemUsers.AddUser("admin", Security.EscapeUser(user) + "!.*@" + Security.EscapeUser(host));
-                            }
+
                             return;
                         }
                         IRC.DeliverMessage(messages.Localize("InvalidName", channel.Language), channel);
@@ -93,7 +92,7 @@ namespace wmib
         /// <param name="user">User</param>
         /// <param name="host">Host</param>
         /// <param name="message">Message</param>
-        /// <param name="origin"></param>
+        /// <param name="origin">The channel from which this request was sent</param>
         public static void PartChannel(Channel channel, string user, string host, string message, string origin = "NULL")
         {
             try
@@ -121,26 +120,27 @@ namespace wmib
                         try
                         {
                             File.Delete(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + channel.Name + ".xml");
-                            lock (ExtensionHandler.Extensions)
-                            {
-                                foreach (Module curr in ExtensionHandler.Extensions)
-                                {
-                                    try
-                                    {
-                                        if (curr.IsWorking)
-                                            curr.Hook_ChannelDrop(channel);
-                                    }
-                                    catch (Exception fail)
-                                    {
-                                        Syslog.Log("MODULE: exception at Hook_ChannelDrop in " + curr.Name, true);
-                                        Core.HandleException(fail, curr.Name);
-                                    }
-                                }
-                            }
                         }
                         catch (Exception fail)
                         {
+                            Syslog.ErrorLog("Failed to delete configuration file of " + channel.Name);
                             Core.HandleException(fail);
+                        }
+                        lock (ExtensionHandler.Extensions)
+                        {
+                            foreach (Module curr in ExtensionHandler.Extensions)
+                            {
+                                try
+                                {
+                                    if (curr.IsWorking)
+                                        curr.Hook_ChannelDrop(channel);
+                                }
+                                catch (Exception fail)
+                                {
+                                    Syslog.Log("MODULE: exception at Hook_ChannelDrop in " + curr.Name, true);
+                                    Core.HandleException(fail, curr.Name);
+                                }
+                            }
                         }
                         lock (Configuration.Channels)
                         {

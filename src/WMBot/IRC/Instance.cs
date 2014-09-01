@@ -28,7 +28,10 @@ namespace wmib
         /// </summary>
         public static Dictionary<string, Instance> Instances = new Dictionary<string, Instance>();
         /// <summary>
-        /// Target's of each instance
+        /// Targets of each instance
+        /// 
+        /// This is used to remember the last instance that user was talking to in a private message
+        /// so that we respond to user using the same instance and not primary one
         /// </summary>
         public static Dictionary<string, Instance> TargetBuffer = new Dictionary<string, Instance>();
         public WmIrcProtocol Protocol = null;

@@ -19,7 +19,10 @@ namespace wmib
     public partial class Commands
     {
         /// <summary>
-        /// Display admin command
+        /// Process command that usually requires admin rights
+        /// 
+        /// This function processes most of admin commands which are part
+        /// of wm-bot
         /// </summary>
         /// <param name="chan">Channel</param>
         /// <param name="user">User name</param>
@@ -27,8 +30,13 @@ namespace wmib
         /// <param name="message">Message</param>
         public static void ParseAdmin(Channel chan, string user, string host, string message)
         {
+            if (string.IsNullOrEmpty(message))
+                return;
+            if (message[0] != Configuration.System.CommandPrefix[0])
+                return;
+            string UnprefixedMessage = message.Substring(1);
             libirc.UserInfo invoker = new libirc.UserInfo(user, "", host);
-            if (message == Configuration.System.CommandPrefix + "reload")
+            if (UnprefixedMessage == "reload")
             {
                 if (chan.SystemUsers.IsApproved(invoker, "admin"))
                 {
@@ -42,17 +50,17 @@ namespace wmib
                 return;
             }
 
-            if (message == Configuration.System.CommandPrefix + "info")
+            if (UnprefixedMessage == "info")
             {
                 IRC.DeliverMessage(Configuration.WebPages.WebpageURL + Configuration.Paths.DumpDir
                                             + "/" + HttpUtility.UrlEncode(chan.Name) + ".htm", chan);
                 return;
             }
 
-            if (message.StartsWith(Configuration.System.CommandPrefix + "part "))
+            if (UnprefixedMessage.StartsWith("part "))
             {
                 string channel = message.Substring(6);
-                if (channel != "")
+                if (!string.IsNullOrEmpty(channel))
                 {
                     Channel _Channel = Core.GetChannel(channel);
                     if (_Channel == null)
@@ -70,10 +78,10 @@ namespace wmib
                 return;
             }
 
-            if (message.StartsWith(Configuration.System.CommandPrefix + "drop "))
+            if (UnprefixedMessage.StartsWith("drop "))
             {
                 string channel = message.Substring(6);
-                if (channel != "")
+                if (!string.IsNullOrEmpty(channel))
                 {
                     Channel _Channel = Core.GetChannel(channel);
                     if (_Channel == null)
@@ -91,7 +99,7 @@ namespace wmib
                 return;
             }
 
-            if (message.StartsWith(Configuration.System.CommandPrefix + "language"))
+            if (UnprefixedMessage.StartsWith("language"))
             {
                 if (chan.SystemUsers.IsApproved(invoker, "admin"))
                 {
@@ -122,7 +130,7 @@ namespace wmib
                 return;
             }
 
-            if (message.StartsWith(Configuration.System.CommandPrefix + "help"))
+            if (UnprefixedMessage.StartsWith("help"))
             {
                 string parameter = "";
                 if (message.Contains(" "))
@@ -140,7 +148,7 @@ namespace wmib
                 return;
             }
 
-            if (message == Configuration.System.CommandPrefix + "suppress-off")
+            if (UnprefixedMessage == "suppress-off")
             {
                 if (chan.SystemUsers.IsApproved(invoker, "unsuppress"))
                 {
@@ -160,7 +168,7 @@ namespace wmib
                 return;
             }
 
-            if (message == Configuration.System.CommandPrefix + "suppress-on")
+            if (UnprefixedMessage == "suppress-on")
             {
                 if (chan.SystemUsers.IsApproved(invoker, "suppress"))
                 {
@@ -179,7 +187,7 @@ namespace wmib
                 return;
             }
 
-            if (message == Configuration.System.CommandPrefix + "whoami")
+            if (UnprefixedMessage == "whoami")
             {
                 SystemUser current = chan.SystemUsers.GetUser(user + "!@" + host);
                 if (current.Role == "null")
@@ -191,8 +199,7 @@ namespace wmib
                 return;
             }
 
-
-            if (message.StartsWith(Configuration.System.CommandPrefix + "instance "))
+            if (UnprefixedMessage.StartsWith("instance "))
             {
                 if (chan.SystemUsers.IsApproved(invoker, "root"))
                 {
@@ -240,7 +247,7 @@ namespace wmib
                 }
             }
 
-            if (message == Configuration.System.CommandPrefix + "traffic-off")
+            if (UnprefixedMessage == "traffic-off")
             {
                 if (chan.SystemUsers.IsApproved(invoker, "root"))
                 {
@@ -252,7 +259,7 @@ namespace wmib
                     IRC.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, libirc.Defs.Priority.Low);
             }
 
-            if (message == Configuration.System.CommandPrefix + "traffic-on")
+            if (UnprefixedMessage == "traffic-on")
             {
                 if (chan.SystemUsers.IsApproved(invoker, "root"))
                 {
@@ -264,7 +271,7 @@ namespace wmib
                     IRC.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, libirc.Defs.Priority.Low);
             }
 
-            if (message == Configuration.System.CommandPrefix + "restart")
+            if (UnprefixedMessage == "restart")
             {
                 if (chan.SystemUsers.IsApproved(invoker, "root"))
                 {
@@ -277,13 +284,13 @@ namespace wmib
                     IRC.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan.Name, libirc.Defs.Priority.Low);
             }
 
-            if (message == Configuration.System.CommandPrefix + "channellist")
+            if (UnprefixedMessage == "channellist")
             {
                 IRC.DeliverMessage(messages.Localize("Responses-List", chan.Language, new List<string> { Configuration.Channels.Count.ToString() }), chan);
                 return;
             }
 
-            if (message.StartsWith(Configuration.System.CommandPrefix + "configure "))
+            if (UnprefixedMessage.StartsWith("configure "))
             {
                 if (chan.SystemUsers.IsApproved(invoker, "admin"))
                 {
@@ -354,7 +361,6 @@ namespace wmib
                                 {
                                     if (curr.IsWorking && curr.Hook_SetConfig(chan, invoker, name, value))
                                         exist = true;
-
                                 }
                                 catch (Exception fail)
                                 {
@@ -451,8 +457,7 @@ namespace wmib
                 }
             }
 #endif
-
-            if (message == Configuration.System.CommandPrefix + "verbosity--" && chan.SystemUsers.IsApproved(invoker, "root"))
+            if (UnprefixedMessage == "verbosity--" && chan.SystemUsers.IsApproved(invoker, "root"))
             {
                 if (Configuration.System.SelectedVerbosity > 0)
                 {
@@ -462,14 +467,14 @@ namespace wmib
                                               chan, libirc.Defs.Priority.High);
             }
 
-            if (message == Configuration.System.CommandPrefix + "verbosity++" && chan.SystemUsers.IsApproved(invoker, "root"))
+            if (UnprefixedMessage == "verbosity++" && chan.SystemUsers.IsApproved(invoker, "root"))
             {
                 Configuration.System.SelectedVerbosity++;
                 IRC.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity,
                                                   chan, libirc.Defs.Priority.High);
             }
 
-            if (message.StartsWith(Configuration.System.CommandPrefix + "system-rm ") && chan.SystemUsers.IsApproved(invoker, "root"))
+            if (UnprefixedMessage.StartsWith("system-rm ") && chan.SystemUsers.IsApproved(invoker, "root"))
             {
                 string module = message.Substring("@system-lm ".Length);
                 Module _m = ExtensionHandler.RetrieveModule(module);
