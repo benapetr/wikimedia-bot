@@ -20,13 +20,13 @@ namespace WMBot.Bouncer
         static void Main(string[] args)
         {
             if (args.Length > 1)
-            {
                 Server.network = args[1];
-            }
-
             if (args.Length > 0)
-            {
                 Server.port = int.Parse(args[0]);
+            if (args.Length > 2)
+            {
+                // pid file
+                System.IO.File.WriteAllText(args[2], System.Diagnostics.Process.GetCurrentProcess().Id.ToString());
             }
             Syslog.Log("wm-bnc v. 1.0.0.0");
             
