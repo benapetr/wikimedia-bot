@@ -584,6 +584,11 @@ namespace wmib
             return false;
         }
 
+        public bool IsKnown(libirc.UserInfo user)
+        {
+            return this.IsKnown(user.Nick, user.Host);
+        }
+
         public bool IsKnown(string User, string Host)
         {
             SystemUser current = GetUser(User + "!@" + Host);
