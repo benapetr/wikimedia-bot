@@ -33,21 +33,13 @@ namespace wmib.Extensions
                 ms = ms.Replace("?", "");
                 ms = ms.ToLower();
                 if (ms.StartsWith("hi "))
-                {
                     ms = ms.Substring(3);
-                }
                 if (ms.StartsWith("hi, "))
-                {
                     ms = ms.Substring(4);
-                }
                 if (ms.StartsWith("hello "))
-                {
                     ms = ms.Substring(5);
-                }
                 if (ms.StartsWith("hello, "))
-                {
                     ms = ms.Substring(6);
-                }
                 if (ms.EndsWith(":ping") || ms.EndsWith(": ping"))
                 {
                     string target = message.Substring(0, message.IndexOf(":"));
@@ -58,7 +50,7 @@ namespace wmib.Extensions
                     }
                 }
 
-                if (ms == "i have a question" || ms == "can i ask a question" || ms == "can i ask" || ms == "i got a question" || ms == "can i have a question" || ms == "can someone help me" || ms == "i need help")
+                if (ms == "i have a question" || ms == "can i ask a question" || ms == "is anyone willing to help" || ms == "can i ask" || ms == "i got a question" || ms == "can i have a question" || ms == "can someone help me" || ms == "i need help")
                 {
                     IRC.DeliverMessage("Hi " + invoker.Nick + ", just ask! There is no need to ask if you can ask", channel);
                     return;
@@ -81,9 +73,7 @@ namespace wmib.Extensions
                     return;
                 }
                 if (!channel.SuppressWarnings)
-                {
                     IRC.DeliverMessage("Permission denied", channel);
-                }
             }
 
             if (message == Configuration.System.CommandPrefix + "noslap")
@@ -96,9 +86,7 @@ namespace wmib.Extensions
                     return;
                 }
                 if (!channel.SuppressWarnings)
-                {
                     IRC.DeliverMessage("Permission denied", channel);
-                }
             }
 
             if (message == Configuration.System.CommandPrefix + "nopingslap")
@@ -111,9 +99,7 @@ namespace wmib.Extensions
                     return;
                 }
                 if (!channel.SuppressWarnings)
-                {
                     IRC.DeliverMessage("Permission denied", channel);
-                }
             }
 
             if (message == Configuration.System.CommandPrefix + "pingslap")
@@ -126,9 +112,7 @@ namespace wmib.Extensions
                     return;
                 }
                 if (!channel.SuppressWarnings)
-                {
                     IRC.DeliverMessage("Permission denied", channel);
-                }
             }
         }
     }
