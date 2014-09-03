@@ -297,28 +297,22 @@ namespace wmib.Extensions
                         }
                     }
                 }
-                string text = CreateHeader(_Channel.Name);
+                StringBuilder text = new StringBuilder(CreateHeader(_Channel.Name));
                 if (ModuleData.ContainsKey("infobot core"))
                 {
                     if (Module.GetConfig(_Channel, "Infobot.Enabled", true))
                     {
-                        text += "<h4>Infobot</h4>\n";
+                        text.Append("<h4>Infobot</h4>\n");
                         if (_Channel.SharedDB != "" && _Channel.SharedDB != "local")
                         {
                             Channel temp = Core.GetChannel(_Channel.SharedDB);
                             if (temp != null)
-                            {
-                                text += "Linked to <a href=" + HttpUtility.UrlEncode(temp.Name) + ".htm>" + temp.Name + "</a>\n";
-                            }
+                                text.Append("Linked to <a href=" + HttpUtility.UrlEncode(temp.Name) + ".htm>" + temp.Name + "</a>\n");
                             else
-                            {
-                                text += "Channel is linked to " + _Channel.SharedDB + " which isn't in my db, that's weird";
-                            }
+                                text.AppendLine("Channel is linked to " + _Channel.SharedDB + " which isn't in my db, that's weird");
                         }
                         else
-                        {
-                            text += ModuleData["infobot core"];
-                        }
+                            text.AppendLine(ModuleData["infobot core"]);
                     }
                     ModuleData.Remove("infobot core");
                 }
@@ -326,8 +320,8 @@ namespace wmib.Extensions
                 {
                     if (Module.GetConfig(_Channel, "RC.Enabled", false))
                     {
-                        text += "\n<br /><h4>Recent changes</h4>";
-                        text += ModuleData["rc"];
+                        text.AppendLine("\n<br /><h4>Recent changes</h4>");
+                        text.AppendLine(ModuleData["rc"]);
                         ModuleData.Remove("rc");
                     }
                 }
@@ -335,7 +329,7 @@ namespace wmib.Extensions
                 {
                     if (Module.GetConfig(_Channel, "Statistics.Enabled", false))
                     {
-                        text += ModuleData["statistics"];
+                        text.AppendLine(ModuleData["statistics"]);
                         ModuleData.Remove("statistics");
                     }
                 }
@@ -343,19 +337,17 @@ namespace wmib.Extensions
                 {
                     if (Module.GetConfig(_Channel, "Rss.Enable", false))
                     {
-                        text += ModuleData["feed"];
+                        text.AppendLine(ModuleData["feed"]);
                         ModuleData.Remove("feed");
                     }
                 }
                 foreach (KeyValuePair<string, string> item in ModuleData)
                 {
                     if (!string.IsNullOrEmpty(item.Value))
-                    {
-                        text += item.Value;
-                    }
+                        text.AppendLine(item.Value);
                 }
-                text += CreateFooter();
-                File.WriteAllText(dumpname, text);
+                text.Append(CreateFooter());
+                File.WriteAllText(dumpname, text.ToString());
             }
             catch (Exception b)
             {
