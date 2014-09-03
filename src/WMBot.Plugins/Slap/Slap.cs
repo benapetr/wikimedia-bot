@@ -63,12 +63,13 @@ namespace wmib.Extensions
                 }
             }
 
-            if (message == Configuration.System.CommandPrefix + "slap")
+            if (message == Configuration.System.CommandPrefix + "slap" ||
+                message == Configuration.System.CommandPrefix + "slap-on")
             {
                 if (channel.SystemUsers.IsApproved(invoker, "admin"))
                 {
                     SetConfig(channel, "Slap.Enabled", true);
-                    IRC.DeliverMessage("I will be slapping stupid people since now", channel);
+                    IRC.DeliverMessage("I will be slapping annoying people since now", channel);
                     channel.SaveConfig();
                     return;
                 }
@@ -76,12 +77,13 @@ namespace wmib.Extensions
                     IRC.DeliverMessage("Permission denied", channel);
             }
 
-            if (message == Configuration.System.CommandPrefix + "noslap")
+            if (message == Configuration.System.CommandPrefix + "noslap" ||
+                message == Configuration.System.CommandPrefix + "slap-off")
             {
                 if (channel.SystemUsers.IsApproved(invoker, "admin"))
                 {
                     SetConfig(channel, "Slap.Enabled", false);
-                    IRC.DeliverMessage("I will not be slapping stupid people since now", channel);
+                    IRC.DeliverMessage("I will not be slapping people since now", channel);
                     channel.SaveConfig();
                     return;
                 }
