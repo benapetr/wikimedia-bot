@@ -37,9 +37,9 @@ namespace wmib.Extensions
                 if (ms.StartsWith("hi, "))
                     ms = ms.Substring(4);
                 if (ms.StartsWith("hello "))
-                    ms = ms.Substring(5);
-                if (ms.StartsWith("hello, "))
                     ms = ms.Substring(6);
+                if (ms.StartsWith("hello, "))
+                    ms = ms.Substring(7);
                 if (ms.EndsWith(":ping") || ms.EndsWith(": ping"))
                 {
                     string target = message.Substring(0, message.IndexOf(":"));
