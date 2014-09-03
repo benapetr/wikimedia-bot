@@ -178,7 +178,7 @@ namespace wmib
         public static void Init()
         {
             Core.RecoverFile(Configuration.Paths.Security);
-            if (File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "security.xml"))
+            if (File.Exists(Configuration.Paths.Security))
             {
                 DumpableDict dict = new DumpableDict();
                 XmlSerializer xmlSerializer = new XmlSerializer(dict.GetType());
@@ -211,9 +211,9 @@ namespace wmib
             }
             // let's assume there is no role definition file, so we create some initial, built-in roles
             Roles.Add("null", new Role(0));
-            Roles.Add("trusted", new Role(1));
-            Roles.Add("operator", new Role(6));
-            Roles.Add("admin", new Role(20));
+            Roles.Add("trusted", new Role(100));
+            Roles.Add("operator", new Role(1000));
+            Roles.Add("admin", new Role(20000));
             Roles.Add("root", new Role(65535));
             Roles["trusted"].Grant("trust");
             // trusted users can add users to trust list
