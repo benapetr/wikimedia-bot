@@ -44,7 +44,9 @@ namespace wmib
         private static void CommandList(CommandParams parameters)
         {
             string commands = "";
-            foreach (string command in CommandPool.CommandsList.Keys)
+            List<string> list = new List<string>(CommandPool.CommandsList.Keys);
+            list.Sort();
+            foreach (string command in list)
             {
                 commands += command;
                 commands += ", ";
