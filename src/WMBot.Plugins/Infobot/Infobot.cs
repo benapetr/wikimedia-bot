@@ -343,9 +343,7 @@ namespace wmib.Extensions
                 text = text.Substring(0, text.IndexOf("|"));
             }
             List<string> Parameters = new List<string>(text.Split(' '));
-            string value_ = Key.Text;
-            if (!String.IsNullOrEmpty(text))
-                value_ = ParseInfo(Parameters, text, Key, fu);
+            string value_ = ParseInfo(Parameters, text, Key, fu);
             if (String.IsNullOrEmpty(Target_))
                 IRC.DeliverMessage(value_, chan);
             else
