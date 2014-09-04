@@ -20,6 +20,7 @@ namespace wmib
         public Network (string server, Instance Instance, WmIrcProtocol protocol) : base(server, (libirc.Protocols.ProtocolIrc)protocol)
         {
             this.instance = Instance;
+            this.Config.TrafficInterval = Configuration.IRC.Interval;
         }
 
         protected override void __evt_CTCP(NetworkCTCPEventArgs args)
