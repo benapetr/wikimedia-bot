@@ -359,6 +359,8 @@ namespace wmib
 
         private static void Drop(CommandParams parameters)
         {
+            if (string.IsNullOrEmpty(parameters.Parameters))
+                return;
             string channel = parameters.Parameters;
             if (!string.IsNullOrEmpty(channel))
             {
@@ -379,6 +381,8 @@ namespace wmib
 
         private static void Part(CommandParams parameters)
         {
+            if (string.IsNullOrEmpty(parameters.Parameters))
+                return;
             string channel = parameters.Parameters;
             if (!string.IsNullOrEmpty(channel))
             {
