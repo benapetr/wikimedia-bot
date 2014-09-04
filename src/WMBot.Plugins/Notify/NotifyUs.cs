@@ -114,17 +114,17 @@ namespace wmib.Extensions
                 }
                 if (nick.Contains("@"))
                 {
-                    IRC.DeliverMessage("I doubt that anyone could have such a nick '" + parameter + "'", target.TargetName);
+                    IRC.DeliverMessage("I doubt that anyone could have such a nick '" + nick + "'", target.TargetName);
                     return;
                 }
-                if (Notification.Contains(parameter, invoker.Nick))
+                if (Notification.Contains(nick, invoker.Nick))
                 {
                     IRC.DeliverMessage("You've already asked me to watch this user", target.TargetName);
                     return;
                 }
                 foreach (Channel item in Configuration.ChannelList)
                 {
-                    if (item.ContainsUser(parameter))
+                    if (item.ContainsUser(nick))
                     {
                         IRC.DeliverMessage("This user is now online in " + item.Name + ". I'll let you know when they show some activity (talk, etc.)", target.TargetName);
                         lock (Notification.NotificationList)
@@ -139,9 +139,9 @@ namespace wmib.Extensions
                     Notification.NotificationList.Add(new Notification(nick, invoker.Nick, invoker.Host, text));
                 }
                 if (text == null)
-                    IRC.DeliverMessage("I will let you know when I see " + parameter + " around here", target.TargetName);
+                    IRC.DeliverMessage("I will let you know when I see " + nick + " around here", target.TargetName);
                 else
-                    IRC.DeliverMessage("I will let you know when I see " + parameter + " and I will deliver that message to them", target.TargetName);
+                    IRC.DeliverMessage("I will let you know when I see " + nick + " and I will deliver that message to them", target.TargetName);
             }
         }
 
