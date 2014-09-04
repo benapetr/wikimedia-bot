@@ -52,13 +52,13 @@ namespace wmib
                     }
                 }
                 bool existing = Channel.ConfigExists(channel_name);
-                Channel xx = new Channel(channel_name);
+                Channel channel = new Channel(channel_name);
                 lock (Configuration.Channels)
                 {
-                    Configuration.Channels.Add(xx);
+                    Configuration.Channels.Add(channel);
                 }
                 Configuration.Save();
-                xx.PrimaryInstance.Network.Join(channel_name);
+                channel.PrimaryInstance.Network.Join(channel_name);
                 Thread.Sleep(100);
                 Channel Chan = Core.GetChannel(channel_name);
                 if (!existing)

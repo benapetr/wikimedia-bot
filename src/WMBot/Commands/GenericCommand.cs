@@ -75,26 +75,33 @@ namespace wmib
 
         public virtual void Launch(CommandParams parameter)
         {
-            if (this.channelOnly && parameter.SourceChannel == null)
-                return;
-            if (this.RequiredPermission != null)
+            try
             {
-                if (parameter.SourceChannel != null)
+                if (this.channelOnly && parameter.SourceChannel == null)
+                    return;
+                if (this.RequiredPermission != null)
                 {
-                    if (!parameter.SourceChannel.SystemUsers.IsApproved(parameter.User, requiredPermission))
+                    if (parameter.SourceChannel != null)
                     {
-                        if (!parameter.SourceChannel.SuppressWarnings && !SilentErrors)
-                            IRC.DeliverMessage(messages.Localize("PermissionDenied", parameter.SourceChannel.Language), parameter.SourceChannel);
-                        // user doesn't have permission to run this command
-                        return;
+                        if (!parameter.SourceChannel.SystemUsers.IsApproved(parameter.User, requiredPermission))
+                        {
+                            if (!parameter.SourceChannel.SuppressWarnings && !SilentErrors)
+                                IRC.DeliverMessage(messages.Localize("PermissionDenied", parameter.SourceChannel.Language), parameter.SourceChannel);
+                            // user doesn't have permission to run this command
+                            return;
+                        }
+                    }
+                    else if (!Security.IsGloballyApproved(parameter.User, RequiredPermission))
+                    {
+                        IRC.DeliverMessage(messages.Localize("PermissionDenied"), parameter.User, libirc.Defs.Priority.Low);
                     }
                 }
-                else if (!Security.IsGloballyApproved(parameter.User, RequiredPermission))
-                {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied"), parameter.User, libirc.Defs.Priority.Low);
-                }
+                this.action(parameter);
             }
-            this.action(parameter);
+            catch (Exception fail)
+            {
+                Core.HandleException(fail);
+            }
         }
     }
 }
