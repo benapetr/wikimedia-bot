@@ -260,8 +260,7 @@ namespace wmib.Extensions
                 {
                     _Channel = channel,
                     Name = "!" + message.Substring(1),
-                    User = invoker.Nick,
-                    Host = invoker.Host
+                    User = invoker,
                 };
                 jobs.Add(item);
                 Unwritable = false;
@@ -859,7 +858,7 @@ namespace wmib.Extensions
                             Infobot infobot = (Infobot)item._Channel.RetrieveObject("Infobot");
                             if (infobot != null)
                             {
-                                infobot.InfobotExec(item.Name, item.User, item._Channel, item.Host);
+                                infobot.InfobotExec(item.Name, item.User, item._Channel);
                             }
                         }
                     }

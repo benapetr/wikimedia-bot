@@ -246,14 +246,17 @@ namespace wmib.Extensions
             return Item;
         }
 
-        private static string ParseInfo(List<string> parameters, string original, InfobotKey Key)
+        private static string ParseInfo(List<string> parameters, string original, InfobotKey Key, libirc.UserInfo fu)
         {
             bool raw = false;
             if (Key != null)
-            {
                 raw = Key.Raw;
-            }
             string text = Key.Text;
+            if (!raw)
+            {
+                text = text.Replace("$infobot_nick", fu.Nick);
+                text = text.Replace("$infobot_host", fu.Host);
+            }
             if (parameters.Count > 0)
             {
                 string keys = "";
@@ -317,7 +320,7 @@ namespace wmib.Extensions
             return (channel.Infobot_IgnoredNames.Contains(ignore_test));
         }
 
-        private bool DeliverKey(InfobotKey Key, string OriginalText, Channel chan)
+        private bool DeliverKey(InfobotKey Key, string OriginalText, Channel chan, libirc.UserInfo fu)
         {
             if (Key == null)
             {
@@ -327,12 +330,9 @@ namespace wmib.Extensions
             string text = OriginalText;
             // we remove the key name from message so that only parameters remain
             if (text.Contains(" "))
-            {
                 text = text.Substring(text.IndexOf(" ") + 1);
-            } else
-            {
+            else
                 text = "";
-            }
             if (text.Contains("|"))
             {
                 Target_ = OriginalText.Substring(OriginalText.IndexOf("|") + 1);
@@ -344,18 +344,12 @@ namespace wmib.Extensions
             }
             List<string> Parameters = new List<string>(text.Split(' '));
             string value_ = Key.Text;
-            if (text != "")
-            {
-                value_ = ParseInfo(Parameters, text, Key);
-            }
-            if (Target_ == "")
-            {
+            if (!String.IsNullOrEmpty(text))
+                value_ = ParseInfo(Parameters, text, Key, fu);
+            if (String.IsNullOrEmpty(Target_))
                 IRC.DeliverMessage(value_, chan);
-            }
             else
-            {
                 IRC.DeliverMessage(Target_ + ": " + value_, chan);
-            }
             Key.Displayed++;
             Key.LastTime = DateTime.Now;
             this.StoreDB();
@@ -370,7 +364,7 @@ namespace wmib.Extensions
         /// <param name="chan">Channel</param>
         /// <param name="host">Host name</param>
         /// <returns></returns>
-        public bool InfobotExec(string message, string user, Channel chan, string host)
+        public bool InfobotExec(string message, libirc.UserInfo user, Channel chan)
         {
             try
             {
@@ -403,7 +397,7 @@ namespace wmib.Extensions
                     if (Parameters[1] == "is")
                     {
                         // check if they are approved to do that
-                        if (chan.SystemUsers.IsApproved(user, host, InfobotModule.PermissionAdd))
+                        if (chan.SystemUsers.IsApproved(user, InfobotModule.PermissionAdd))
                         {
                             if (!Allowed)
                             {
@@ -423,7 +417,7 @@ namespace wmib.Extensions
                             string key = message.Substring(message.IndexOf(" is") + 4);
                             if (infobot != null)
                             {
-                                infobot.SetKey(key, Parameters[0], user, chan);
+                                infobot.SetKey(key, Parameters[0], user.Nick, chan);
                                 return true;
                             }
                         }
@@ -436,7 +430,7 @@ namespace wmib.Extensions
                     } else if (Parameters[1] == "replace")
                     {
                         // check if they are approved to do that
-                        if (chan.SystemUsers.IsApproved(user, host, InfobotModule.PermissionAdd))
+                        if (chan.SystemUsers.IsApproved(user, InfobotModule.PermissionAdd))
                         {
                             if (!Allowed)
                             {
@@ -456,7 +450,7 @@ namespace wmib.Extensions
                             string key = message.Substring(message.IndexOf(" replace") + 9);
                             if (infobot != null)
                             {
-                                infobot.replaceKey(key, Parameters[0], user, chan);
+                                infobot.replaceKey(key, Parameters[0], user.Nick, chan);
                                 return true;
                             }
                         }
@@ -474,7 +468,7 @@ namespace wmib.Extensions
                         {
                             force = true;
                         }
-                        if (chan.SystemUsers.IsApproved(user, host, InfobotModule.PermissionAdd))
+                        if (chan.SystemUsers.IsApproved(user, InfobotModule.PermissionAdd))
                         {
                             if (!Allowed)
                             {
@@ -509,7 +503,7 @@ namespace wmib.Extensions
                     }
                     if (Parameters[1] == "unalias")
                     {
-                        if (chan.SystemUsers.IsApproved(user, host, InfobotModule.PermissionDel))
+                        if (chan.SystemUsers.IsApproved(user, InfobotModule.PermissionDel))
                         {
                             if (!Allowed)
                             {
@@ -546,7 +540,7 @@ namespace wmib.Extensions
                     // remove key
                     if (Parameters[1] == "del")
                     {
-                        if (chan.SystemUsers.IsApproved(user, host, InfobotModule.PermissionDel))
+                        if (chan.SystemUsers.IsApproved(user, InfobotModule.PermissionDel))
                         {
                             if (!Allowed)
                             {
@@ -575,7 +569,7 @@ namespace wmib.Extensions
 
                 InfobotKey Key = infobot.GetKey(Parameters[0]);
                 // let's try to deliver this as a key
-                if (DeliverKey(Key, message, chan))
+                if (DeliverKey(Key, message, chan, user))
                 {
                     return true;
                 }
@@ -592,7 +586,7 @@ namespace wmib.Extensions
                             {
                                 // let's try to get a target key
                                 InfobotKey Key_ = infobot.GetKey(alias.Key);
-                                if (DeliverKey(Key_, message, chan))
+                                if (DeliverKey(Key_, message, chan, user))
                                 {
                                     return true;
                                 }
@@ -604,7 +598,7 @@ namespace wmib.Extensions
                             {
                                 // let's try to get a target key
                                 InfobotKey Key_ = infobot.GetKey(alias.Key);
-                                if (DeliverKey(Key_, message, chan))
+                                if (DeliverKey(Key_, message, chan, user))
                                 {
                                     return true;
                                 }
@@ -639,7 +633,7 @@ namespace wmib.Extensions
                         if (results.Count == 1)
                         {
                             InfobotKey Key_ = infobot.GetKey(results[0]);
-                            if (DeliverKey(Key_, message, chan))
+                            if (DeliverKey(Key_, message, chan, user))
                             {
                                 return true;
                             }
@@ -650,7 +644,7 @@ namespace wmib.Extensions
                                     if (alias.Name == results[0])
                                     {
                                         Key_ = infobot.GetKey(alias.Name);
-                                        if (DeliverKey(Key_, message, chan))
+                                        if (DeliverKey(Key_, message, chan, user))
                                         {
                                             return true;
                                         }

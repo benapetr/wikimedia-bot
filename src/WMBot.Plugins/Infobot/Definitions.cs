@@ -132,15 +132,11 @@ namespace wmib.Extensions
             /// <summary>
             /// User
             /// </summary>
-            public string User = null;
+            public libirc.UserInfo User = null;
             /// <summary>
             /// Name
             /// </summary>
             public string Name = null;
-            /// <summary>
-            /// Host
-            /// </summary>
-            public string Host = null;
         }
     }
 }
