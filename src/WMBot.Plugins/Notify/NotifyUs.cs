@@ -109,7 +109,7 @@ namespace wmib.Extensions
                 string text = null;
                 if (nick.Contains(" "))
                 {
-                    text = parameter.Substring(message.IndexOf(" ") + 1);
+                    text = parameter.Substring(parameter.IndexOf(" ") + 1);
                     nick = nick.Substring(0, nick.IndexOf(" "));
                 }
                 if (nick.Contains("@"))
