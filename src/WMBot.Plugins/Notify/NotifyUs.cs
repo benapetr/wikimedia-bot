@@ -19,7 +19,7 @@ namespace wmib.Extensions
     {
         public override bool Construct()
         {
-            Version = new Version(1, 0, 16, 0);
+            Version = new Version(1, 0, 18, 0);
             return true;
         }
 
@@ -35,6 +35,7 @@ namespace wmib.Extensions
             while (result != null)
             {
                 IRC.DeliverMessage(result.Source_Name + "! " + user.Nick + " just joined " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
+                this.Deliver(result);
                 lock (Notification.NotificationList)
                 {
                     Notification.NotificationList.Remove(result);
@@ -90,11 +91,57 @@ namespace wmib.Extensions
             while (result != null)
             {
                 IRC.DeliverMessage(result.Source_Name + "! " + user + " just got kicked from " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
+                this.Deliver(result);
                 lock (Notification.NotificationList)
                 {
                     Notification.NotificationList.Remove(result);
                 }
                 result = Notification.RetrieveTarget(user);
+            }
+        }
+
+        private void Notify(string message, libirc.UserInfo invoker, libirc.Target target)
+        {
+            string parameter = message.Substring(message.IndexOf(" ") + 1).Trim();
+            if (String.IsNullOrEmpty(parameter) != true)
+            {
+                string nick = parameter;
+                string text = null;
+                if (nick.Contains(" "))
+                {
+                    text = parameter.Substring(message.IndexOf(" ") + 1);
+                    nick = nick.Substring(0, nick.IndexOf(" "));
+                }
+                if (nick.Contains("@"))
+                {
+                    IRC.DeliverMessage("I doubt that anyone could have such a nick '" + parameter + "'", target.TargetName);
+                    return;
+                }
+                if (Notification.Contains(parameter, invoker.Nick))
+                {
+                    IRC.DeliverMessage("You've already asked me to watch this user", target.TargetName);
+                    return;
+                }
+                foreach (Channel item in Configuration.ChannelList)
+                {
+                    if (item.ContainsUser(parameter))
+                    {
+                        IRC.DeliverMessage("This user is now online in " + item.Name + ". I'll let you know when they show some activity (talk, etc.)", target.TargetName);
+                        lock (Notification.NotificationList)
+                        {
+                            Notification.NotificationList.Add(new Notification(nick, invoker.Nick, invoker.Host, text));
+                        }
+                        return;
+                    }
+                }
+                lock (Notification.NotificationList)
+                {
+                    Notification.NotificationList.Add(new Notification(nick, invoker.Nick, invoker.Host, text));
+                }
+                if (text == null)
+                    IRC.DeliverMessage("I will let you know when I see " + parameter + " around here", target.TargetName);
+                else
+                    IRC.DeliverMessage("I will let you know when I see " + parameter + " and I will deliver that message to them", target.TargetName);
             }
         }
 
@@ -104,6 +151,7 @@ namespace wmib.Extensions
             while (result != null)
             {
                 IRC.DeliverMessage(result.Source_Name + "! " + invoker.Nick + " just said something in " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
+                this.Deliver(result);
                 lock (Notification.NotificationList)
                 {
                     Notification.NotificationList.Remove(result);
@@ -113,37 +161,7 @@ namespace wmib.Extensions
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "notify "))
             {
-                string parameter = message.Substring(message.IndexOf(" ") + 1).Trim();
-                if (parameter != "")
-                {
-                    if (!isValid(parameter))
-                    {
-                        IRC.DeliverMessage("I doubt that anyone could have such a nick '" + parameter + "'", channel);
-                        return;
-                    }
-                    if (Notification.Contains(parameter, invoker.Nick))
-                    {
-                        IRC.DeliverMessage("You've already asked me to watch this user", channel);
-                        return;
-                    }
-                    foreach (Channel item in Configuration.ChannelList)
-                    {
-                        if (item.ContainsUser(parameter))
-                        {
-                            IRC.DeliverMessage("This user is now online in " + item.Name + ". I'll let you know when they show some activity (talk, etc.)", channel);
-                            lock(Notification.NotificationList)
-                            {
-                                Notification.NotificationList.Add(new Notification(parameter, invoker.Nick, invoker.Host));
-                            }
-                            return;
-                        }
-                    }
-                    lock (Notification.NotificationList)
-                    {
-                        Notification.NotificationList.Add(new Notification(parameter, invoker.Nick, invoker.Host));
-                    }
-                    IRC.DeliverMessage("I'll let you know when I see " + parameter + " around here", channel);
-                }
+                this.Notify(message, invoker, channel);
             }
         }
 
@@ -169,6 +187,7 @@ namespace wmib.Extensions
             while (result != null)
             {
                 IRC.DeliverMessage(result.Source_Name + "! " + user.Nick + " just sent me a private message. This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
+                this.Deliver(result);
                 lock (Notification.NotificationList)
                 {
                     Notification.NotificationList.Remove(result);
@@ -178,58 +197,24 @@ namespace wmib.Extensions
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "notify "))
             {
-                string parameter = message.Substring(message.IndexOf(" ") + 1);
-                if (parameter != "")
-                {
-                    if (!isValid(parameter))
-                    {
-                        IRC.DeliverMessage("I doubt that anyone could have such a nick '" + parameter + "'", user.Nick);
-                        return true;
-                    }
-                    if (Notification.Contains(parameter, user.Nick))
-                    {
-                        IRC.DeliverMessage("You've already asked me to watch this user", user.Nick);
-                        return true;
-                    }
-                    foreach (Channel item in Configuration.ChannelList)
-                    {
-                        if (item.ContainsUser(parameter))
-                        {
-                            IRC.DeliverMessage("This user is now online in " + item.Name + " so I'll let you know when they show some activity (talk, etc.)", user);
-                            lock(Notification.NotificationList)
-                            {
-                                Notification.NotificationList.Add(new Notification(parameter, user.Nick, user.Host));
-                            }
-                            return true;
-                        }
-                    }
-                    lock (Notification.NotificationList)
-                    {
-                        Notification.NotificationList.Add(new Notification(parameter, user.Nick, user.Host));
-                    }
-                    IRC.DeliverMessage("I'll let you know when I see " + parameter + " around here", user);
-                    return true;
-                }
+                this.Notify(message, user, user);
             }
             return false;
+        }
+
+        private void Deliver(Notification notification)
+        {
+            if (notification.Message == null)
+                return;
+
+
+            IRC.DeliverMessage("Hi " + notification.User + ", " + notification.Source_Name + " was looking for you and wanted me to tell you this when you are here: " +
+                                  notification.Message, notification.User);
         }
 
         public override void Hook_BeforeSysWeb(ref string html)
         {
             html += "<br />\nNotifications: " + Notification.NotificationList.Count;
-        }
-
-        public static bool isValid(string name)
-        {
-            if (name.Contains(" "))
-            {
-                return false;
-            }
-            if (name.Contains("@"))
-            {
-                return false;
-            }
-            return true;
         }
 
         public override bool Hook_OnRegister()
@@ -250,6 +235,7 @@ namespace wmib.Extensions
             }
             catch (ThreadAbortException)
             {
+                return;
             }
             catch (Exception fail)
             {

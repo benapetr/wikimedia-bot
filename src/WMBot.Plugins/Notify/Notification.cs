@@ -18,17 +18,19 @@ namespace wmib.Extensions
     public class Notification
     {
         public static List<Notification> NotificationList = new List<Notification>();
-        public string _User = null;
+        public string User = null;
+        public string Message = null;
         public DateTime Expiry;
         public string Source_Name = null;
         public string Source_Host = null;
 
-        public Notification(string Target, string Source, string Host)
+        public Notification(string Target, string Source, string Host, string Text = null)
         {
-            _User = Target;
-            Source_Host = Host;
-            Source_Name = Source;
-            Expiry = DateTime.Now.AddDays(20);
+            this.User = Target;
+            this.Source_Host = Host;
+            this.Source_Name = Source;
+            this.Message = Text;
+            this.Expiry = DateTime.Now.AddDays(20);
         }
 
         public static Notification RetrieveTarget(string Target)
@@ -38,7 +40,7 @@ namespace wmib.Extensions
             { 
                 foreach (Notification x in NotificationList)
                 {
-                    if (x._User.ToLower() == target)
+                    if (x.User.ToLower() == target)
                     {
                         return x;
                     }
@@ -71,7 +73,7 @@ namespace wmib.Extensions
             {
                 foreach (Notification x in NotificationList)
                 {
-                    if (x._User.ToUpper() == Target)
+                    if (x.User.ToUpper() == Target)
                     {
                         if (Source == x.Source_Name.ToUpper())
                         {

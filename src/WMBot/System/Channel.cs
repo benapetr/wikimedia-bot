@@ -21,7 +21,7 @@ namespace wmib
     /// Represent a channel
     /// </summary>
     [Serializable]
-    public class Channel
+    public class Channel : libirc.Target
     {
         /// <summary>
         /// Channel name
@@ -94,6 +94,13 @@ namespace wmib
         /// </summary>
         [NonSerialized]
         public Instance PrimaryInstance = null;
+        public override string TargetName
+        {
+            get
+            {
+                return this.Name;
+            }
+        }
         /// <summary>
         /// Users
         /// </summary>
