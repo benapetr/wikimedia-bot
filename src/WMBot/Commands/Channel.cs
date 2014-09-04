@@ -27,13 +27,13 @@ namespace wmib
         /// <param name="message">Message</param>
         public static void AddChannel(CommandParams parameters)
         {
-            while (!IRC.FinishedJoining)
-            {
-                Syslog.Log("Postponing request to join because bot is still loading", true);
-                Thread.Sleep(2000);
-            }
             if (!String.IsNullOrEmpty(parameters.Parameters))
             {
+                while (!IRC.FinishedJoining)
+                {
+                    Syslog.Log("Postponing request to join " + parameters.Parameters + " because bot is still loading", true);
+                    Thread.Sleep(2000);
+                }
                 string channel_name = parameters.Parameters.Trim();
                 if (!Core.ValidFile(channel_name) || !channel_name.StartsWith("#"))
                 {

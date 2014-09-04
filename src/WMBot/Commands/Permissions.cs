@@ -40,6 +40,8 @@ namespace wmib
 
         private static void TrustAdd(CommandParams parameters)
         {
+            if (parameters.Parameters == null)
+                return;
             string[] rights_info = parameters.Parameters.Split(' ');
             if (rights_info.Length < 3)
             {
@@ -77,6 +79,8 @@ namespace wmib
 
         private static void TrustDel(CommandParams parameters)
         {
+            if (parameters.Parameters == null)
+                return;
             string[] rights_info = parameters.Parameters.Split(' ');
             if (rights_info.Length > 1)
             {
