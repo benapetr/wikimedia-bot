@@ -176,13 +176,13 @@ namespace wmib
                 switch (parameters.Parameters)
                 {
                     case "ignore-unknown":
-                        IRC.DeliverMessage(messages.Localize("Responses-Conf", parameters.SourceChannel.Language, new List<string> { text, parameters.SourceChannel.IgnoreUnknown.ToString() }), parameters.SourceChannel);
+                        IRC.DeliverMessage(messages.Localize("Responses-Conf", parameters.SourceChannel.Language, new List<string> { parameters.Parameters, parameters.SourceChannel.IgnoreUnknown.ToString() }), parameters.SourceChannel);
                         return;
                     case "respond-message":
-                        IRC.DeliverMessage(messages.Localize("Responses-Conf", parameters.SourceChannel.Language, new List<string> { text, parameters.SourceChannel.RespondMessage.ToString() }), parameters.SourceChannel);
+                        IRC.DeliverMessage(messages.Localize("Responses-Conf", parameters.SourceChannel.Language, new List<string> { parameters.Parameters, parameters.SourceChannel.RespondMessage.ToString() }), parameters.SourceChannel);
                         return;
                     case "suppress-warnings":
-                        IRC.DeliverMessage(messages.Localize("Responses-Conf", parameters.SourceChannel.Language, new List<string> { text, parameters.SourceChannel.SuppressWarnings.ToString() }), parameters.SourceChannel);
+                        IRC.DeliverMessage(messages.Localize("Responses-Conf", parameters.SourceChannel.Language, new List<string> { parameters.Parameters, parameters.SourceChannel.SuppressWarnings.ToString() }), parameters.SourceChannel);
                         return;
                 }
                 bool exist = false;
@@ -279,8 +279,8 @@ namespace wmib
 
         private static void Restart(CommandParams parameters)
         {
-            IRC.DeliverMessage("System is shutting down, requested by " + invoker.Nick + " from " + chan.Name, Configuration.System.DebugChan, libirc.Defs.Priority.High);
-            Syslog.Log("System is shutting down, requested by " + invoker.Nick + " from " + chan.Name);
+            IRC.DeliverMessage("System is shutting down, requested by " + parameters.User.Nick + " from " + parameters.SourceChannel.Name, Configuration.System.DebugChan, libirc.Defs.Priority.High);
+            Syslog.Log("System is shutting down, requested by " + parameters.User.Nick + " from " + parameters.SourceChannel.Name);
             Core.Kill();
         }
 
