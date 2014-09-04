@@ -100,7 +100,7 @@ namespace wmib.Extensions
             }
         }
 
-        private void Notify(string message, libirc.UserInfo invoker, libirc.Target target_)
+        private void NotifyUser(string message, libirc.UserInfo invoker, libirc.Target target_)
         {
             string parameter = message.Substring(message.IndexOf(" ") + 1).Trim();
             if (String.IsNullOrEmpty(parameter) != true)
@@ -161,7 +161,7 @@ namespace wmib.Extensions
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "notify "))
             {
-                this.Notify(message, invoker, channel);
+                this.NotifyUser(message, invoker, channel);
             }
         }
 
@@ -197,7 +197,7 @@ namespace wmib.Extensions
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "notify "))
             {
-                this.Notify(message, user, user);
+                this.NotifyUser(message, user, user);
             }
             return false;
         }
