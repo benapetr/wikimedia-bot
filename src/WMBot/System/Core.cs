@@ -399,7 +399,7 @@ namespace wmib
                         Commands.AddChannel(channel_, nick, host, message);
                         Commands.PartChannel(channel_, nick, host, message);
                     }
-                    Commands.Generic.ProcessCommands(channel_, nick, "", host, message);
+                    Commands.Processing.ProcessCommands(channel_, nick, "", host, message);
                 }
                 lock(ExtensionHandler.Extensions)
                 {

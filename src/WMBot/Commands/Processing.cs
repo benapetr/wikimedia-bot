@@ -6,7 +6,7 @@ namespace wmib
 {
     public partial class Commands
     {
-        public class Generic
+        public class Processing
         {
             public static void ProcessCommands(Channel chan, string nick, string ident, string host, string message)
             {

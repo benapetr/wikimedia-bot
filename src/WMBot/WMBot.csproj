@@ -51,7 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\CommandPool.cs" />
-    <Compile Include="Commands\Generic.cs" />
+    <Compile Include="Commands\Processing.cs" />
     <Compile Include="Commands\GenericCommand.cs" />
     <Compile Include="Database.cs" />
     <Compile Include="IRC\Instance.cs" />
