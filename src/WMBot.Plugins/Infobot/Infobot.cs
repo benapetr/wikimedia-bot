@@ -195,7 +195,7 @@ namespace wmib.Extensions
                     created = CV.CreationTime.ToString();
                 if (!string.IsNullOrEmpty(CV.User))
                     name = CV.User;
-                string type = " this key is normal";
+                string type = " this key is not raw (variables will be changed using some awesome magic)";
                 if (CV.Raw)
                 {
                     type = " this key is raw";
