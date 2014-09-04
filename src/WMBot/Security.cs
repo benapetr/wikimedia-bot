@@ -171,6 +171,14 @@ namespace wmib
         {
             return HasPrivilege(permission, user.Role);
         }
+
+        public static bool IsGloballyApproved(libirc.UserInfo user, string permission)
+        {
+            SystemUser current = GetGlobalUser(user.Nick + "!@" + user.Host);
+            if (current == null)
+                return false;
+            return IsGloballyApproved(current, permission);
+        }
         
         /// <summary>
         /// Load all roles
@@ -554,6 +562,11 @@ namespace wmib
                 }
             }
             return lv;
+        }
+
+        public SystemUser GetUser(libirc.UserInfo user)
+        {
+            return GetUser(user.Nick + "!@" + user.Host);
         }
 
         /// <summary>

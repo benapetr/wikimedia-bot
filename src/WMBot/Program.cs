@@ -191,6 +191,8 @@ namespace wmib
                     Syslog.Log("Initializing MySQL");
                     Core.DB = new WMIBMySQL();
                 }
+                // register all commands
+                Commands.InitAdminCommands();
                 Syslog.Log("Loading modules");
                 ExtensionHandler.SearchMods();
                 Security.Init();

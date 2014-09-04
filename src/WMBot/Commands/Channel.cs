@@ -8,7 +8,7 @@
 //MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //GNU General Public License for more details.
 
-// Created by Petr Bena
+// Copyright 2013 - 2014 Petr Bena (benapetr@gmail.com)
 
 using System;
 using System.IO;

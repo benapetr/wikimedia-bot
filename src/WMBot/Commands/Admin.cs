@@ -8,7 +8,7 @@
 //MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //GNU General Public License for more details.
 
-// Created by Petr Bena
+// Copyright 2013 - 2014 Petr Bena (benapetr@gmail.com)
 
 using System;
 using System.Collections.Generic;
@@ -18,481 +18,381 @@ namespace wmib
 {
     public partial class Commands
     {
-        /// <summary>
-        /// Process command that usually requires admin rights
-        /// 
-        /// This function processes most of admin commands which are part
-        /// of wm-bot
-        /// </summary>
-        /// <param name="chan">Channel</param>
-        /// <param name="user">User name</param>
-        /// <param name="host">Host</param>
-        /// <param name="message">Message</param>
-        public static void ParseAdmin(Channel chan, string user, string host, string message)
+        public static void InitAdminCommands()
         {
-            if (string.IsNullOrEmpty(message))
-                return;
-            if (message[0] != Configuration.System.CommandPrefix[0])
-                return;
-            string UnprefixedMessage = message.Substring(1);
-            libirc.UserInfo invoker = new libirc.UserInfo(user, "", host);
-            if (UnprefixedMessage == "reload")
+            CommandPool.RegisterCommand(new GenericCommand("commands", Commands.CommandList, true, null, false));
+            CommandPool.RegisterCommand(new GenericCommand("configure", Commands.Configure, false, "admin"));
+            CommandPool.RegisterCommand(new GenericCommand("channellist", Commands.ChannelList));
+            CommandPool.RegisterCommand(new GenericCommand("drop", Commands.Drop, false));
+            CommandPool.RegisterCommand(new GenericCommand("help", Commands.Help));
+            CommandPool.RegisterCommand(new GenericCommand("language", Commands.Language, true, "admin"));
+            CommandPool.RegisterCommand(new GenericCommand("info", Commands.Info));
+            CommandPool.RegisterCommand(new GenericCommand("instance", Commands.Instance, false, "root"));
+            CommandPool.RegisterCommand(new GenericCommand("part", Commands.Part, false));
+            CommandPool.RegisterCommand(new GenericCommand("reload", Commands.Reload, true, "admin"));
+            CommandPool.RegisterCommand(new GenericCommand("restart", Commands.Restart, true, "root"));
+            CommandPool.RegisterCommand(new GenericCommand("traffic-off", Commands.TrafficOff, true, "root"));
+            CommandPool.RegisterCommand(new GenericCommand("traffic-on", Commands.TrafficOn, true, "root"));
+            CommandPool.RegisterCommand(new GenericCommand("suppress-on", Commands.SuppressOn, false, "suppress"));
+            CommandPool.RegisterCommand(new GenericCommand("suppress-off", Commands.SuppressOff, false, "unsuppress"));
+            CommandPool.RegisterCommand(new GenericCommand("system-rm", Commands.SystemUnload, true, "root"));
+            CommandPool.RegisterCommand(new GenericCommand("verbosity--", Commands.VerbosityDown, true, "root"));
+            CommandPool.RegisterCommand(new GenericCommand("verbosity++", Commands.VerbosityUp, true, "root"));
+            CommandPool.RegisterCommand(new GenericCommand("whoami", Commands.Whoami));
+        }
+
+        private static void CommandList(CommandParams parameters)
+        {
+            string commands = "";
+            foreach (string command in CommandPool.CommandsList.Keys)
             {
-                if (chan.SystemUsers.IsApproved(invoker, "admin"))
-                {
-                    chan.LoadConfig();
-                    SystemHooks.IrcReloadChannelConf(chan);
-                    IRC.DeliverMessage(messages.Localize("Config", chan.Language), chan);
-                    return;
-                }
-                if (!chan.SuppressWarnings)
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan);
+                commands += command;
+                commands += ", ";
+            }
+            if (commands.EndsWith(", "))
+                commands = commands.Substring(0, commands.Length - 2);
+
+            if (parameters.SourceChannel != null)
+                IRC.DeliverMessage("I know: " + commands, parameters.SourceChannel);
+            else if (parameters.SourceUser != null)
+                IRC.DeliverMessage("I know: " + commands, parameters.SourceUser);
+        }
+
+        private static void VerbosityDown(CommandParams parameters)
+        {
+            if (Configuration.System.SelectedVerbosity > 0)
+            {
+                Configuration.System.SelectedVerbosity--;
+            }
+            IRC.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity,
+                                          parameters.SourceChannel, libirc.Defs.Priority.High);
+        }
+
+        private static void VerbosityUp(CommandParams parameters)
+        {
+            Configuration.System.SelectedVerbosity++;
+            IRC.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity,
+                                              parameters.SourceChannel, libirc.Defs.Priority.High);
+        }
+
+        private static void SystemUnload(CommandParams parameters)
+        {
+            if (string.IsNullOrEmpty(parameters.Parameters))
+            {
+                IRC.DeliverMessage("You need to provide at least 1 parameters", parameters.SourceChannel);
+            }
+            string module = parameters.Parameters;
+            Module _m = ExtensionHandler.RetrieveModule(module);
+            if (_m == null)
+            {
+                IRC.DeliverMessage("This module is not currently loaded in core", parameters.SourceChannel, libirc.Defs.Priority.High);
                 return;
             }
+            _m.Exit();
+            IRC.DeliverMessage("Unloaded module " + module, parameters.SourceChannel, libirc.Defs.Priority.High);
+        }
 
-            if (UnprefixedMessage == "info")
-            {
-                IRC.DeliverMessage(Configuration.WebPages.WebpageURL + Configuration.Paths.DumpDir
-                                            + "/" + HttpUtility.UrlEncode(chan.Name) + ".htm", chan);
+        private static void Configure(CommandParams parameters)
+        {
+            if (string.IsNullOrEmpty(parameters.Parameters))
                 return;
-            }
 
-            if (UnprefixedMessage.StartsWith("part "))
+            if (parameters.Parameters.Contains("=") && !parameters.Parameters.EndsWith("="))
             {
-                string channel = message.Substring(6);
-                if (!string.IsNullOrEmpty(channel))
+                string name = parameters.Parameters.Substring(0, parameters.Parameters.IndexOf("="));
+                string value = parameters.Parameters.Substring(parameters.Parameters.IndexOf("=") + 1);
+                bool _temp_a;
+                switch (name)
                 {
-                    Channel _Channel = Core.GetChannel(channel);
-                    if (_Channel == null)
-                    {
-                        IRC.DeliverMessage(messages.Localize("UnknownChan", chan.Language), chan,
-                                                      libirc.Defs.Priority.Low);
-                        return;
-                    }
-                    PartChannel(_Channel, invoker.Nick, invoker.Host, Configuration.System.CommandPrefix
-                                     + "part", chan.Name);
-                    return;
-                }
-                IRC.DeliverMessage(messages.Localize("Responses-PartFail", chan.Language), chan,
-                                              libirc.Defs.Priority.Low);
-                return;
-            }
-
-            if (UnprefixedMessage.StartsWith("drop "))
-            {
-                string channel = message.Substring(6);
-                if (!string.IsNullOrEmpty(channel))
-                {
-                    Channel _Channel = Core.GetChannel(channel);
-                    if (_Channel == null)
-                    {
-                        IRC.DeliverMessage(messages.Localize("UnknownChan", chan.Language), chan,
-                                                      libirc.Defs.Priority.Low);
-                        return;
-                    }
-                    PartChannel(_Channel, invoker.Nick, invoker.Host, Configuration.System.CommandPrefix
-                                     + "drop", chan.Name);
-                    return;
-                }
-                IRC.DeliverMessage(messages.Localize("Responses-PartFail", chan.Language), chan,
-                                              libirc.Defs.Priority.Low);
-                return;
-            }
-
-            if (UnprefixedMessage.StartsWith("language"))
-            {
-                if (chan.SystemUsers.IsApproved(invoker, "admin"))
-                {
-                    string parameter = "";
-                    if (message.Contains(" "))
-                    {
-                        parameter = message.Substring(message.IndexOf(" ") + 1).ToLower();
-                    }
-                    if (!String.IsNullOrEmpty(parameter))
-                    {
-                        if (messages.Exists(parameter))
+                    case "ignore-unknown":
+                        if (bool.TryParse(value, out _temp_a))
                         {
-                            chan.Language = parameter;
-                            IRC.DeliverMessage(messages.Localize("Language", chan.Language), chan);
-                            chan.SaveConfig();
+                            parameters.SourceChannel.IgnoreUnknown = _temp_a;
+                            IRC.DeliverMessage(messages.Localize("configuresave", parameters.SourceChannel.Language,
+                                                                       new List<string> { value, name }), parameters.SourceChannel);
+                            parameters.SourceChannel.SaveConfig();
                             return;
                         }
-                        if (!chan.SuppressWarnings)
-                            IRC.DeliverMessage(messages.Localize("InvalidCode", chan.Language), chan);
+                        IRC.DeliverMessage(messages.Localize("configure-va", parameters.SourceChannel.Language, new List<string> { name, value }), parameters.SourceChannel);
                         return;
+                    case "respond-wait":
+                        int _temp_b;
+                        if (int.TryParse(value, out _temp_b))
+                        {
+                            if (_temp_b > 1 && _temp_b < 364000)
+                            {
+                                parameters.SourceChannel.RespondWait = _temp_b;
+                                IRC.DeliverMessage(messages.Localize("configuresave", parameters.SourceChannel.Language, new List<string> { value, name }), parameters.SourceChannel);
+                                parameters.SourceChannel.SaveConfig();
+                                return;
+                            }
+                        }
+                        IRC.DeliverMessage(messages.Localize("configure-va", parameters.SourceChannel.Language, new List<string> { name, value }), parameters.SourceChannel);
+                        return;
+                    case "respond-message":
+                        if (bool.TryParse(value, out _temp_a))
+                        {
+                            parameters.SourceChannel.RespondMessage = _temp_a;
+                            IRC.DeliverMessage(messages.Localize("configuresave", parameters.SourceChannel.Language, new List<string> { value, name }), parameters.SourceChannel);
+                            parameters.SourceChannel.SaveConfig();
+                            return;
+                        }
+                        IRC.DeliverMessage(messages.Localize("configure-va", parameters.SourceChannel.Language, new List<string> { name, value }), parameters.SourceChannel);
+                        return;
+                    case "suppress-warnings":
+                        if (bool.TryParse(value, out _temp_a))
+                        {
+                            parameters.SourceChannel.SuppressWarnings = _temp_a;
+                            IRC.DeliverMessage(messages.Localize("configuresave", parameters.SourceChannel.Language, new List<string> { value, name }), parameters.SourceChannel);
+                            parameters.SourceChannel.SaveConfig();
+                            return;
+                        }
+                        IRC.DeliverMessage(messages.Localize("configure-va", parameters.SourceChannel.Language, new List<string> { name, value }), parameters.SourceChannel);
+                        return;
+                }
+                bool exist = false;
+                lock (ExtensionHandler.Extensions)
+                {
+                    foreach (Module curr in ExtensionHandler.Extensions)
+                    {
+                        try
+                        {
+                            if (curr.IsWorking && curr.Hook_SetConfig(parameters.SourceChannel, parameters.User, name, value))
+                                exist = true;
+                        }
+                        catch (Exception fail)
+                        {
+                            Syslog.Log("Error on Hook_SetConfig module " + curr.Name);
+                            Core.HandleException(fail, curr.Name);
+                        }
                     }
-                    IRC.DeliverMessage(messages.Localize("LanguageInfo", chan.Language), chan);
+                }
+                if (!parameters.SourceChannel.SuppressWarnings && !exist)
+                    IRC.DeliverMessage(messages.Localize("configure-wrong", parameters.SourceChannel.Language), parameters.SourceChannel);
+                return;
+            }
+            if (!parameters.Parameters.Contains(" "))
+            {
+                switch (parameters.Parameters)
+                {
+                    case "ignore-unknown":
+                        IRC.DeliverMessage(messages.Localize("Responses-Conf", parameters.SourceChannel.Language, new List<string> { text, parameters.SourceChannel.IgnoreUnknown.ToString() }), parameters.SourceChannel);
+                        return;
+                    case "respond-message":
+                        IRC.DeliverMessage(messages.Localize("Responses-Conf", parameters.SourceChannel.Language, new List<string> { text, parameters.SourceChannel.RespondMessage.ToString() }), parameters.SourceChannel);
+                        return;
+                    case "suppress-warnings":
+                        IRC.DeliverMessage(messages.Localize("Responses-Conf", parameters.SourceChannel.Language, new List<string> { text, parameters.SourceChannel.SuppressWarnings.ToString() }), parameters.SourceChannel);
+                        return;
+                }
+                bool exist = false;
+                lock (ExtensionHandler.Extensions)
+                {
+                    foreach (Module curr in ExtensionHandler.Extensions)
+                    {
+                        try
+                        {
+                            if (curr.IsWorking && curr.Hook_GetConfig(parameters.SourceChannel, parameters.User, parameters.Parameters))
+                                exist = true;
+                        }
+                        catch (Exception fail)
+                        {
+                            Syslog.Log("Error on Hook_GetConfig module " + curr.Name);
+                            Core.HandleException(fail);
+                        }
+                    }
+                }
+                if (exist)
+                    return;
+            }
+            if (!parameters.SourceChannel.SuppressWarnings)
+                IRC.DeliverMessage(messages.Localize("configure-wrong", parameters.SourceChannel.Language), parameters.SourceChannel);
+        }
+
+        private static void ChannelList(CommandParams parameters)
+        {
+            IRC.DeliverMessage(messages.Localize("Responses-List", parameters.SourceChannel.Language, new List<string> { Configuration.Channels.Count.ToString() }),
+                                parameters.SourceChannel);
+        }
+
+        private static void TrafficOff(CommandParams parameters)
+        {
+            Configuration.Network.Logging = false;
+            IRC.DeliverMessage("Logging stopped", parameters.SourceChannel);
+        }
+
+        private static void TrafficOn(CommandParams parameters)
+        {
+            Configuration.Network.Logging = true;
+            IRC.DeliverMessage("Logging started", parameters.SourceChannel);
+        }
+
+        private static void Instance(CommandParams parameters)
+        {
+            if (string.IsNullOrEmpty(parameters.Parameters) || !parameters.Parameters.Contains(" "))
+            {
+                IRC.DeliverMessage("This command need 2 parameters", parameters.SourceChannel);
+                return;
+            }
+            string channel = parameters.Parameters.Substring(parameters.Parameters.IndexOf(" ") + 1);
+            string instance = parameters.Parameters.Substring(0, parameters.Parameters.IndexOf(" "));
+            Channel ch = Core.GetChannel(channel);
+            if (ch == null)
+            {
+                IRC.DeliverMessage("This channel I never heard of :'(", parameters.SourceChannel);
+                return;
+            }
+            Instance _instance;
+            lock (wmib.Instance.Instances)
+            {
+                if (!wmib.Instance.Instances.ContainsKey(instance))
+                {
+                    IRC.DeliverMessage("This instance I never heard of :'(", parameters.SourceChannel);
                     return;
                 }
-                if (!chan.SuppressWarnings)
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan,
+                _instance = wmib.Instance.Instances[instance];
+            }
+
+            if (_instance == ch.PrimaryInstance)
+            {
+                IRC.DeliverMessage("This channel is already in this instance", parameters.SourceChannel);
+                return;
+            }
+            ch.PrimaryInstance.Network.Transfer("PART " + ch.Name + " :Switching instance");
+            ch.PrimaryInstance = _instance;
+            ch.PrimaryInstance.Network.Transfer("JOIN " + ch.Name);
+            ch.DefaultInstance = ch.PrimaryInstance.Nick;
+            ch.SaveConfig();
+            IRC.DeliverMessage("Changed default instance of " + channel + " to " + instance, parameters.SourceChannel);
+        }
+
+        private static void Whoami(CommandParams parameters)
+        {
+            SystemUser current = parameters.SourceChannel.SystemUsers.GetUser(parameters.User);
+            if (current.Role == "null")
+            {
+                IRC.DeliverMessage(messages.Localize("Unknown", parameters.SourceChannel.Language), parameters.SourceChannel);
+                return;
+            }
+            IRC.DeliverMessage(messages.Localize("usr1", parameters.SourceChannel.Language, new List<string> { current.Role, current.Name }), parameters.SourceChannel);
+        }
+
+        private static void Restart(CommandParams parameters)
+        {
+            IRC.DeliverMessage("System is shutting down, requested by " + invoker.Nick + " from " + chan.Name, Configuration.System.DebugChan, libirc.Defs.Priority.High);
+            Syslog.Log("System is shutting down, requested by " + invoker.Nick + " from " + chan.Name);
+            Core.Kill();
+        }
+
+        private static void SuppressOn(CommandParams parameters)
+        {
+            if (parameters.SourceChannel.Suppress)
+            {
+                //Message("Channel had already quiet mode disabled", chan.name);
+                return;
+            }
+            IRC.DeliverMessage(messages.Localize("SilenceBegin", parameters.SourceChannel.Language), parameters.SourceChannel);
+            parameters.SourceChannel.Suppress = true;
+            parameters.SourceChannel.SaveConfig();
+        }
+
+        private static void SuppressOff(CommandParams parameters)
+        {
+            if (!parameters.SourceChannel.Suppress)
+            {
+                IRC.DeliverMessage(messages.Localize("Silence1", parameters.SourceChannel.Language), parameters.SourceChannel);
+                return;
+            }
+            parameters.SourceChannel.Suppress = false;
+            IRC.DeliverMessage(messages.Localize("Silence2", parameters.SourceChannel.Language), parameters.SourceChannel);
+            parameters.SourceChannel.SaveConfig();
+            Configuration.Save();
+        }
+
+        private static void Info(CommandParams parameters)
+        {
+            IRC.DeliverMessage(Configuration.WebPages.WebpageURL + Configuration.Paths.DumpDir
+                                + "/" + HttpUtility.UrlEncode(parameters.SourceChannel.Name) + ".htm", parameters.SourceChannel);
+        }
+
+        private static void Reload(CommandParams parameters)
+        {
+            parameters.SourceChannel.LoadConfig();
+            SystemHooks.IrcReloadChannelConf(parameters.SourceChannel);
+            IRC.DeliverMessage(messages.Localize("Config", parameters.SourceChannel.Language), parameters.SourceChannel);
+            return;
+        }
+
+        private static void Help(CommandParams parameters)
+        {
+            if (!String.IsNullOrEmpty(parameters.Parameters))
+            {
+                Core.ShowHelp(parameters.Parameters, parameters.SourceChannel);
+                return;
+            }
+            IRC.DeliverMessage("I am running http://meta.wikimedia.org/wiki/WM-Bot version "
+                                          + Configuration.System.Version + " my source code is licensed "
+                                          + "under GPL and located at https://github.com/benapetr/wikimedia-bot "
+                                          + "I will be very happy if you fix my bugs or implement new features",
+                                          parameters.SourceChannel);
+        }
+
+        private static void Language(CommandParams parameters)
+        {
+            if (!String.IsNullOrEmpty(parameters.Parameters))
+            {
+                if (messages.Exists(parameters.Parameters))
+                {
+                    parameters.SourceChannel.Language = parameters.Parameters;
+                    IRC.DeliverMessage(messages.Localize("Language", parameters.SourceChannel.Language), parameters.SourceChannel);
+                    parameters.SourceChannel.SaveConfig();
+                    return;
+                }
+                if (!parameters.SourceChannel.SuppressWarnings)
+                    IRC.DeliverMessage(messages.Localize("InvalidCode", parameters.SourceChannel.Language), parameters.SourceChannel);
+                return;
+            }
+            IRC.DeliverMessage(messages.Localize("LanguageInfo", parameters.SourceChannel.Language), parameters.SourceChannel);
+        }
+
+        private static void Drop(CommandParams parameters)
+        {
+            string channel = parameters.Parameters;
+            if (!string.IsNullOrEmpty(channel))
+            {
+                Channel _Channel = Core.GetChannel(channel);
+                if (_Channel == null)
+                {
+                    IRC.DeliverMessage(messages.Localize("UnknownChan", parameters.SourceChannel.Language), parameters.SourceChannel,
                                                   libirc.Defs.Priority.Low);
+                    return;
+                }
+                PartChannel(_Channel, parameters.User.Nick, parameters.User.Host, Configuration.System.CommandPrefix
+                                 + "drop", parameters.SourceChannel.Name);
                 return;
             }
+            IRC.DeliverMessage(messages.Localize("Responses-PartFail", parameters.SourceChannel.Language), parameters.SourceChannel,
+                                          libirc.Defs.Priority.Low);
+        }
 
-            if (UnprefixedMessage.StartsWith("help"))
+        private static void Part(CommandParams parameters)
+        {
+            string channel = parameters.Parameters;
+            if (!string.IsNullOrEmpty(channel))
             {
-                string parameter = "";
-                if (message.Contains(" "))
-                    parameter = message.Substring(message.IndexOf(" ") + 1);
-                if (!String.IsNullOrEmpty(parameter))
+                Channel _Channel = Core.GetChannel(channel);
+                if (_Channel == null)
                 {
-                    Core.ShowHelp(parameter, chan);
+                    IRC.DeliverMessage(messages.Localize("UnknownChan", parameters.SourceChannel.Language), parameters.SourceChannel,
+                                                  libirc.Defs.Priority.Low);
                     return;
                 }
-                IRC.DeliverMessage("I am running http://meta.wikimedia.org/wiki/WM-Bot version "
-                                              + Configuration.System.Version + " my source code is licensed "
-                                              + "under GPL and located at https://github.com/benapetr/wikimedia-bot "
-                                              + "I will be very happy if you fix my bugs or implement new features",
-                                              chan);
+                PartChannel(_Channel, parameters.User.Nick, parameters.User.Host, Configuration.System.CommandPrefix
+                                 + "part", parameters.SourceChannel.Name);
                 return;
             }
-
-            if (UnprefixedMessage == "suppress-off")
-            {
-                if (chan.SystemUsers.IsApproved(invoker, "unsuppress"))
-                {
-                    if (!chan.Suppress)
-                    {
-                        IRC.DeliverMessage(messages.Localize("Silence1", chan.Language), chan);
-                        return;
-                    }
-                    chan.Suppress = false;
-                    IRC.DeliverMessage(messages.Localize("Silence2", chan.Language), chan);
-                    chan.SaveConfig();
-                    Configuration.Save();
-                    return;
-                }
-                if (!chan.SuppressWarnings)
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, libirc.Defs.Priority.Low);
-                return;
-            }
-
-            if (UnprefixedMessage == "suppress-on")
-            {
-                if (chan.SystemUsers.IsApproved(invoker, "suppress"))
-                {
-                    if (chan.Suppress)
-                    {
-                        //Message("Channel had already quiet mode disabled", chan.name);
-                        return;
-                    }
-                    IRC.DeliverMessage(messages.Localize("SilenceBegin", chan.Language), chan);
-                    chan.Suppress = true;
-                    chan.SaveConfig();
-                    return;
-                }
-                if (!chan.SuppressWarnings)
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, libirc.Defs.Priority.Low);
-                return;
-            }
-
-            if (UnprefixedMessage == "whoami")
-            {
-                SystemUser current = chan.SystemUsers.GetUser(user + "!@" + host);
-                if (current.Role == "null")
-                {
-                    IRC.DeliverMessage(messages.Localize("Unknown", chan.Language), chan);
-                    return;
-                }
-                IRC.DeliverMessage(messages.Localize("usr1", chan.Language, new List<string> { current.Role, current.Name }), chan);
-                return;
-            }
-
-            if (UnprefixedMessage.StartsWith("instance "))
-            {
-                if (chan.SystemUsers.IsApproved(invoker, "root"))
-                {
-                    message = message.Substring(".instance ".Length);
-                    if (!message.Contains(" "))
-                    {
-                        IRC.DeliverMessage("This command need 2 parameters", chan);
-                        return;
-                    }
-                    string channel = message.Substring(message.IndexOf(" ") + 1);
-                    string instance = message.Substring(0, message.IndexOf(" "));
-                    Channel ch = Core.GetChannel(channel);
-                    if (ch == null)
-                    {
-                        IRC.DeliverMessage("This channel I never heard of :'(", chan);
-                        return;
-                    }
-                    Instance _instance;
-                    lock (Instance.Instances)
-                    {
-                        if (!Instance.Instances.ContainsKey(instance))
-                        {
-                            IRC.DeliverMessage("This instance I never heard of :'(", chan);
-                            return;
-                        }
-                        _instance = Instance.Instances[instance];
-                    }
-
-                    if (_instance == ch.PrimaryInstance)
-                    {
-                        IRC.DeliverMessage("This channel is already in this instance", chan);
-                        return;
-                    }
-                    ch.PrimaryInstance.Network.Transfer("PART " + ch.Name + " :Switching instance");
-                    ch.PrimaryInstance = _instance;
-                    ch.PrimaryInstance.Network.Transfer("JOIN " + ch.Name);
-                    ch.DefaultInstance = ch.PrimaryInstance.Nick;
-                    ch.SaveConfig();
-                    IRC.DeliverMessage("Changed default instance of " + channel + " to " + instance, chan);
-                    return;
-                }
-                if (!chan.SuppressWarnings)
-                {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, libirc.Defs.Priority.Low);
-                }
-            }
-
-            if (UnprefixedMessage == "traffic-off")
-            {
-                if (chan.SystemUsers.IsApproved(invoker, "root"))
-                {
-                    Configuration.Network.Logging = false;
-                    IRC.DeliverMessage("Logging stopped", chan);
-                    return;
-                }
-                if (!chan.SuppressWarnings)
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, libirc.Defs.Priority.Low);
-            }
-
-            if (UnprefixedMessage == "traffic-on")
-            {
-                if (chan.SystemUsers.IsApproved(invoker, "root"))
-                {
-                    Configuration.Network.Logging = true;
-                    IRC.DeliverMessage("Logging traf", chan.Name);
-                    return;
-                }
-                if (!chan.SuppressWarnings)
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, libirc.Defs.Priority.Low);
-            }
-
-            if (UnprefixedMessage == "restart")
-            {
-                if (chan.SystemUsers.IsApproved(invoker, "root"))
-                {
-                    IRC.DeliverMessage("System is shutting down, requested by " + invoker.Nick + " from " + chan.Name, Configuration.System.DebugChan, libirc.Defs.Priority.High);
-                    Syslog.Log("System is shutting down, requested by " + invoker.Nick + " from " + chan.Name);
-                    Core.Kill();
-                    return;
-                }
-                if (!chan.SuppressWarnings)
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan.Name, libirc.Defs.Priority.Low);
-            }
-
-            if (UnprefixedMessage == "channellist")
-            {
-                IRC.DeliverMessage(messages.Localize("Responses-List", chan.Language, new List<string> { Configuration.Channels.Count.ToString() }), chan);
-                return;
-            }
-
-            if (UnprefixedMessage.StartsWith("configure "))
-            {
-                if (chan.SystemUsers.IsApproved(invoker, "admin"))
-                {
-                    string text = message.Substring("@configure ".Length);
-                    if (string.IsNullOrEmpty(text))
-                    {
-                        return;
-                    }
-                    if (text.Contains("=") && !text.EndsWith("="))
-                    {
-                        string name = text.Substring(0, text.IndexOf("="));
-                        string value = text.Substring(text.IndexOf("=") + 1);
-                        bool _temp_a;
-                        switch (name)
-                        {
-                            case "ignore-unknown":
-                                if (bool.TryParse(value, out _temp_a))
-                                {
-                                    chan.IgnoreUnknown = _temp_a;
-                                    IRC.DeliverMessage(messages.Localize("configuresave", chan.Language,
-                                                                               new List<string> { value, name }), chan);
-                                    chan.SaveConfig();
-                                    return;
-                                }
-                                IRC.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { name, value }), chan);
-                                return;
-                            case "respond-wait":
-                                int _temp_b;
-                                if (int.TryParse(value, out _temp_b))
-                                {
-                                    if (_temp_b > 1 && _temp_b < 364000)
-                                    {
-                                        chan.RespondWait = _temp_b;
-                                        IRC.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, name }), chan);
-                                        chan.SaveConfig();
-                                        return;
-                                    }
-                                }
-                                IRC.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { name, value }), chan);
-                                return;
-                            case "respond-message":
-                                if (bool.TryParse(value, out _temp_a))
-                                {
-                                    chan.RespondMessage = _temp_a;
-                                    IRC.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, name }), chan);
-                                    chan.SaveConfig();
-                                    return;
-                                }
-                                IRC.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { name, value }), chan);
-                                return;
-                            case "suppress-warnings":
-                                if (bool.TryParse(value, out _temp_a))
-                                {
-                                    chan.SuppressWarnings = _temp_a;
-                                    IRC.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, name }), chan);
-                                    chan.SaveConfig();
-                                    return;
-                                }
-                                IRC.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { name, value }), chan);
-                                return;
-                        }
-                        bool exist = false;
-                        lock (ExtensionHandler.Extensions)
-                        {
-                            foreach (Module curr in ExtensionHandler.Extensions)
-                            {
-                                try
-                                {
-                                    if (curr.IsWorking && curr.Hook_SetConfig(chan, invoker, name, value))
-                                        exist = true;
-                                }
-                                catch (Exception fail)
-                                {
-                                    Syslog.Log("Error on Hook_SetConfig module " + curr.Name);
-                                    Core.HandleException(fail, curr.Name);
-                                }
-                            }
-                        }
-                        if (!chan.SuppressWarnings && !exist)
-                            IRC.DeliverMessage(messages.Localize("configure-wrong", chan.Language), chan);
-                        return;
-                    }
-                    if (!text.Contains(" "))
-                    {
-                        switch (text)
-                        {
-                            case "ignore-unknown":
-                                IRC.DeliverMessage(messages.Localize("Responses-Conf", chan.Language, new List<string> { text, chan.IgnoreUnknown.ToString() }), chan);
-                                return;
-                            case "respond-message":
-                                IRC.DeliverMessage(messages.Localize("Responses-Conf", chan.Language, new List<string> { text, chan.RespondMessage.ToString() }), chan);
-                                return;
-                            case "suppress-warnings":
-                                IRC.DeliverMessage(messages.Localize("Responses-Conf", chan.Language, new List<string> { text, chan.SuppressWarnings.ToString() }), chan);
-                                return;
-                        }
-                        bool exist = false;
-                        lock (ExtensionHandler.Extensions)
-                        {
-                            foreach (Module curr in ExtensionHandler.Extensions)
-                            {
-                                try
-                                {
-                                    if (curr.IsWorking && curr.Hook_GetConfig(chan, invoker, text))
-                                        exist = true;
-                                }
-                                catch (Exception fail)
-                                {
-                                    Syslog.Log("Error on Hook_GetConfig module " + curr.Name);
-                                    Core.HandleException(fail);
-                                }
-                            }
-                        }
-                        if (exist)
-                            return;
-                    }
-                    if (!chan.SuppressWarnings)
-                        IRC.DeliverMessage(messages.Localize("configure-wrong", chan.Language), chan);
-                    return;
-                }
-                if (!chan.SuppressWarnings)
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", chan.Language), chan, libirc.Defs.Priority.Low);
-                return;
-            }
-
-#if FALSE
-            if (message.StartsWith(Configuration.System.CommandPrefix + "system-lm "))
-            {
-                if (chan.SystemUsers.IsApproved(invoker, "root"))
-                {
-                    string module = message.Substring("@system-lm ".Length);
-                    if (module.EndsWith(".bin"))
-                    {
-                        Module _m = ExtensionHandler.RetrieveModule(module);
-                        if (_m != null)
-                        {
-                            Core.irc.Queue.DeliverMessage("This module was already loaded and you can't load one module twice,"
-                                                          +" module will be reloaded now", chan, IRC.priority.high);
-                            _m.Exit();
-                        }
-                        if (module.EndsWith(".bin"))
-                        {
-                            module = "modules" + Path.DirectorySeparatorChar + module;
-                            if (File.Exists(module))
-                            {
-                                if (ExtensionHandler.LoadAllModulesInLibrary(module))
-                                {
-                                    Core.irc.Queue.DeliverMessage("Loaded module " + module, chan, IRC.priority.high);
-                                    return;
-                                }
-                                Core.irc.Queue.DeliverMessage("Unable to load module " + module, chan, IRC.priority.high);
-                                return;
-                            }
-                            Core.irc.Queue.DeliverMessage("File not found " + module, chan, IRC.priority.high);
-                            return;
-                        }
-
-                        Core.irc.Queue.DeliverMessage("Loaded module " + module, chan, IRC.priority.high);
-                        return;
-                    }
-                    Core.irc.Queue.DeliverMessage("This module is not currently loaded in core", chan, IRC.priority.high);
-                    return;
-
-                }
-            }
-#endif
-            if (UnprefixedMessage == "verbosity--" && chan.SystemUsers.IsApproved(invoker, "root"))
-            {
-                if (Configuration.System.SelectedVerbosity > 0)
-                {
-                    Configuration.System.SelectedVerbosity--;
-                }
-                IRC.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity,
-                                              chan, libirc.Defs.Priority.High);
-            }
-
-            if (UnprefixedMessage == "verbosity++" && chan.SystemUsers.IsApproved(invoker, "root"))
-            {
-                Configuration.System.SelectedVerbosity++;
-                IRC.DeliverMessage("Verbosity: " + Configuration.System.SelectedVerbosity,
-                                                  chan, libirc.Defs.Priority.High);
-            }
-
-            if (UnprefixedMessage.StartsWith("system-rm ") && chan.SystemUsers.IsApproved(invoker, "root"))
-            {
-                string module = message.Substring("@system-lm ".Length);
-                Module _m = ExtensionHandler.RetrieveModule(module);
-                if (_m == null)
-                {
-                    IRC.DeliverMessage("This module is not currently loaded in core", chan, libirc.Defs.Priority.High);
-                    return;
-                }
-                _m.Exit();
-                IRC.DeliverMessage("Unloaded module " + module, chan, libirc.Defs.Priority.High);
-            }
-
-            if (message == Configuration.System.CommandPrefix + "commands")
-            {
-                IRC.DeliverMessage("Commands: there is too many commands to display on one line,"
-                                              + " see http://meta.wikimedia.org/wiki/wm-bot for a list of"
-                                              + " commands and help", chan);
-            }
+            IRC.DeliverMessage(messages.Localize("Responses-PartFail", parameters.SourceChannel.Language), parameters.SourceChannel,
+                                          libirc.Defs.Priority.Low);
         }
     }
 }

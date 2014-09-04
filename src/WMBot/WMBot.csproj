@@ -50,6 +50,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\CommandPool.cs" />
+    <Compile Include="Commands\Generic.cs" />
+    <Compile Include="Commands\GenericCommand.cs" />
     <Compile Include="Database.cs" />
     <Compile Include="IRC\Instance.cs" />
     <Compile Include="MySQL.cs" />
@@ -81,6 +84,7 @@
     <Compile Include="IRC\WmIRCProtocol.cs" />
     <Compile Include="IRC\IRC.cs" />
     <Compile Include="System\Channel.cs" />
+    <Compile Include="WmibException.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
