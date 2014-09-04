@@ -25,64 +25,49 @@ namespace wmib
         /// <param name="user">User</param>
         /// <param name="host">Host</param>
         /// <param name="message">Message</param>
-        public static void AddChannel(Channel channel, string user, string host, string message)
+        public static void AddChannel(CommandParams parameters)
         {
-            try
+            while (!IRC.FinishedJoining)
             {
-                if (message.StartsWith(Configuration.System.CommandPrefix + "add ") ||
-                    message.StartsWith(Configuration.System.CommandPrefix + "join "))
+                Syslog.Log("Postponing request to join because bot is still loading", true);
+                Thread.Sleep(2000);
+            }
+            if (!String.IsNullOrEmpty(parameters.Parameters))
+            {
+                string channel_name = parameters.Parameters.Trim();
+                if (!Core.ValidFile(channel_name) || !channel_name.StartsWith("#"))
                 {
-                    if (channel.SystemUsers.IsApproved(user, host, "join"))
+                    IRC.DeliverMessage(messages.Localize("InvalidName", parameters.SourceChannel.Language), parameters.SourceChannel);
+                    return;
+                }
+                lock (Configuration.Channels)
+                {
+                    foreach (Channel cu in Configuration.Channels)
                     {
-                        while (!IRC.FinishedJoining)
+                        if (channel_name == cu.Name)
                         {
-                            Syslog.Log("Postponing request to join because bot is still loading", true);
-                            Thread.Sleep(2000);
-                        }
-                        if (message.Contains(" "))
-                        {
-                            string channel_name = message.Substring(message.IndexOf(" ") + 1).Trim();
-                            if (!Core.ValidFile(channel_name) || !channel_name.StartsWith("#"))
-                            {
-                                IRC.DeliverMessage(messages.Localize("InvalidName", channel.Language), channel);
-                                return;
-                            }
-                            lock (Configuration.Channels)
-                            {
-                                foreach (Channel cu in Configuration.Channels)
-                                {
-                                    if (channel_name == cu.Name)
-                                    {
-                                        IRC.DeliverMessage(messages.Localize("ChannelIn", channel.Language), channel);
-                                        return;
-                                    }
-                                }
-                            }
-                            bool existing = Channel.ConfigExists(channel_name);
-                            Channel xx = new Channel(channel_name);
-                            lock (Configuration.Channels)
-                            {
-                                Configuration.Channels.Add(xx);
-                            }
-                            Configuration.Save();
-                            xx.PrimaryInstance.Network.Join(channel_name);
-                            Thread.Sleep(100);
-                            Channel Chan = Core.GetChannel(channel_name);
-                            if (!existing)
-                                Chan.SystemUsers.AddUser("admin", Security.EscapeUser(user) + "!.*@" + Security.EscapeUser(host));
-
+                            IRC.DeliverMessage(messages.Localize("ChannelIn", parameters.SourceChannel.Language), parameters.SourceChannel);
                             return;
                         }
-                        IRC.DeliverMessage(messages.Localize("InvalidName", channel.Language), channel);
-                        return;
                     }
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
                 }
+                bool existing = Channel.ConfigExists(channel_name);
+                Channel xx = new Channel(channel_name);
+                lock (Configuration.Channels)
+                {
+                    Configuration.Channels.Add(xx);
+                }
+                Configuration.Save();
+                xx.PrimaryInstance.Network.Join(channel_name);
+                Thread.Sleep(100);
+                Channel Chan = Core.GetChannel(channel_name);
+                if (!existing)
+                    Chan.SystemUsers.AddUser("admin", Security.EscapeUser(parameters.User.Nick) + "!.*@" + Security.EscapeUser(parameters.User.Host));
+
+                return;
             }
-            catch (Exception b)
-            {
-                Core.HandleException(b);
-            }
+            IRC.DeliverMessage(messages.Localize("InvalidName", parameters.SourceChannel.Language), parameters.SourceChannel);
+            return;
         }
 
         /// <summary>
@@ -99,7 +84,7 @@ namespace wmib
             {
                 if (origin == "NULL")
                     origin = channel.Name;
-                if (channel.Name == Configuration.System.DebugChan && (message == Configuration.System.CommandPrefix + "part" 
+                if (channel.Name == Configuration.System.DebugChan && (message == Configuration.System.CommandPrefix + "part"
                                                           || message == Configuration.System.CommandPrefix + "drop"))
                 {
                     IRC.DeliverMessage("Cowardly refusing to part this channel, because I love it :3", channel);

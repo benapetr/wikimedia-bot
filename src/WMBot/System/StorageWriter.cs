@@ -33,19 +33,19 @@ namespace wmib
                 int count = Data.Count;
                 lock (ExtensionHandler.Extensions)
                 {
-                    foreach (Module curr in ExtensionHandler.Extensions)
+                    foreach (Module module in ExtensionHandler.Extensions)
                     {
                         try
                         {
-                            if (curr.IsWorking)
+                            if (module.IsWorking)
                             {
-                                count += (int)curr.Hook_GetWriterSize();
+                                count += (int)module.Hook_GetWriterSize();
                             }
                         }
                         catch (Exception fail)
                         {
-                            Syslog.Log("MODULE: exception at Hook_GetWriterSize in " + curr.Name, true);
-                            Core.HandleException(fail, curr.Name);
+                            Syslog.Log("MODULE: exception at Hook_GetWriterSize in " + module.Name, true);
+                            Core.HandleException(fail, module.Name);
                         }
                     }
                 }

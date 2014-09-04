@@ -394,11 +394,7 @@ namespace wmib
                 if (!channel_.IgnoreUnknown || channel_.SystemUsers.IsKnown(nick, host))
                 {
                     if (message.StartsWith(Configuration.System.CommandPrefix))
-                    {
-                        Commands.ModifyRights(message, channel_, nick, host);
-                        Commands.AddChannel(channel_, nick, host, message);
                         Commands.PartChannel(channel_, nick, host, message);
-                    }
                     Commands.Processing.ProcessCommands(channel_, nick, "", host, message);
                 }
                 lock(ExtensionHandler.Extensions)

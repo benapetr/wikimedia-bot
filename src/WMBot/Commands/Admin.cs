@@ -20,6 +20,8 @@ namespace wmib
     {
         public static void InitAdminCommands()
         {
+            CommandPool.RegisterCommand(new GenericCommand("add", Commands.AddChannel, false, "join"));
+            CommandPool.RegisterCommand(new GenericCommand("join", Commands.AddChannel, false, "join"));
             CommandPool.RegisterCommand(new GenericCommand("commands", Commands.CommandList, true, null, false));
             CommandPool.RegisterCommand(new GenericCommand("configure", Commands.Configure, false, "admin"));
             CommandPool.RegisterCommand(new GenericCommand("channellist", Commands.ChannelList));
@@ -33,6 +35,9 @@ namespace wmib
             CommandPool.RegisterCommand(new GenericCommand("restart", Commands.Restart, true, "root"));
             CommandPool.RegisterCommand(new GenericCommand("traffic-off", Commands.TrafficOff, true, "root"));
             CommandPool.RegisterCommand(new GenericCommand("traffic-on", Commands.TrafficOn, true, "root"));
+            CommandPool.RegisterCommand(new GenericCommand("trustadd", Commands.TrustAdd, false, "trustadd"));
+            CommandPool.RegisterCommand(new GenericCommand("trustdel", Commands.TrustDel, false, "trustdel"));
+            CommandPool.RegisterCommand(new GenericCommand("trusted", Commands.TrustedList, false));
             CommandPool.RegisterCommand(new GenericCommand("suppress-on", Commands.SuppressOn, false, "suppress"));
             CommandPool.RegisterCommand(new GenericCommand("suppress-off", Commands.SuppressOff, false, "unsuppress"));
             CommandPool.RegisterCommand(new GenericCommand("system-rm", Commands.SystemUnload, true, "root"));

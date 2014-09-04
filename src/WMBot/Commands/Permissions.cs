@@ -37,90 +37,58 @@ namespace wmib
             }
             return false;
         }
-        
-        /// <summary>
-        /// Change rights of user
-        /// </summary>
-        /// <param name="message">Message</param>
-        /// <param name="channel">Channel</param>
-        /// <param name="user">User</param>
-        /// <param name="host">Host</param>
-        /// <returns></returns>
-        public static int ModifyRights(string message, Channel channel, string user, string host)
+
+        private static void TrustAdd(CommandParams parameters)
         {
-            try
+            string[] rights_info = parameters.Parameters.Split(' ');
+            if (rights_info.Length < 3)
             {
-                libirc.UserInfo invoker = new libirc.UserInfo(user, "", host);
-                if (message.StartsWith(Configuration.System.CommandPrefix + "trustadd"))
-                {
-                    string[] rights_info = message.Split(' ');
-                    if (channel.SystemUsers.IsApproved(invoker, "trustadd"))
-                    {
-                        if (rights_info.Length < 3)
-                        {
-                            IRC.DeliverMessage(messages.Localize("Trust1", channel.Language), channel);
-                            return 0;
-                        }
-                        if (!Security.Roles.ContainsKey(rights_info[2]))
-                        {
-                            IRC.DeliverMessage(messages.Localize("Unknown1", channel.Language), channel);
-                            return 2;
-                        }
-                        int level = Security.GetLevelOfRole(rights_info[2]);
-                        // This optional hack disallow to grant roles like "root" to anyone so that this role can be granted only to users
-                        // with shell access to server and hard-inserting it to admins file. If you wanted to allow granting of root, just
-                        // change System.MaxGrantableRoleLevel to 65535, this isn't very secure though
-                        if (level > Configuration.System.MaxGrantableRoleLevel)
-                        {
-                            IRC.DeliverMessage("You can't grant this role because it's over the maximum grantable role level, sorry", channel);
-                            return 2;
-                        }
-                        // now we check if role that user is to grant doesn't have higher level than the role they have
-                        // if we didn't do that, users with low roles could grant admin to someone and exploit this
-                        // to grant admins to themselve
-                        if (level > channel.SystemUsers.GetLevel(invoker))
-                        {
-                            IRC.DeliverMessage(messages.Localize("RoleMismatch", channel.Language), channel);
-                            return 2;
-                        }
-                        if (channel.SystemUsers.AddUser(rights_info[2], rights_info[1]))
-                        {
-                            IRC.DeliverMessage(messages.Localize("UserSc", channel.Language) + rights_info[1], channel);
-                            return 0;
-                        }
-                    }
-                    else
-                    {
-                        IRC.DeliverMessage(messages.Localize("Authorization", channel.Language), channel);
-                        return 0;
-                    }
-                }
-                if (message.StartsWith(Configuration.System.CommandPrefix + "trusted"))
-                {
-                    IRC.DeliverMessage(messages.Localize("TrustedUserList", channel.Language) + channel.SystemUsers.ListAll(), channel);
-                    return 0;
-                }
-                if (message.StartsWith(Configuration.System.CommandPrefix + "trustdel"))
-                {
-                    string[] rights_info = message.Split(' ');
-                    if (rights_info.Length > 1)
-                    {
-                        if (channel.SystemUsers.IsApproved(user, host, "trustdel"))
-                        {
-                            channel.SystemUsers.DeleteUser(channel.SystemUsers.GetUser(user + "!@" + host), rights_info[1]);
-                            return 0;
-                        }
-                        IRC.DeliverMessage(messages.Localize("Authorization", channel.Language), channel);
-                        return 0;
-                    }
-                    IRC.DeliverMessage(messages.Localize("InvalidUser", channel.Language), channel);
-                }
+                IRC.DeliverMessage(messages.Localize("Trust1", parameters.SourceChannel.Language), parameters.SourceChannel);
+                return;
             }
-            catch (Exception b)
+            if (!Security.Roles.ContainsKey(rights_info[2]))
             {
-                Core.HandleException(b);
+                IRC.DeliverMessage(messages.Localize("Unknown1", parameters.SourceChannel.Language), parameters.SourceChannel);
+                return;
             }
-            return 0;
+            int level = Security.GetLevelOfRole(rights_info[2]);
+            // This optional hack disallow to grant roles like "root" to anyone so that this role can be granted only to users
+            // with shell access to server and hard-inserting it to admins file. If you wanted to allow granting of root, just
+            // change System.MaxGrantableRoleLevel to 65535, this isn't very secure though
+            if (level > Configuration.System.MaxGrantableRoleLevel)
+            {
+                IRC.DeliverMessage("You can't grant this role because it's over the maximum grantable role level, sorry", parameters.SourceChannel);
+                return;
+            }
+            // now we check if role that user is to grant doesn't have higher level than the role they have
+            // if we didn't do that, users with low roles could grant admin to someone and exploit this
+            // to grant admins to themselve
+            if (level > parameters.SourceChannel.SystemUsers.GetLevel(parameters.User))
+            {
+                IRC.DeliverMessage(messages.Localize("RoleMismatch", parameters.SourceChannel.Language), parameters.SourceChannel);
+                return;
+            }
+            if (parameters.SourceChannel.SystemUsers.AddUser(rights_info[2], rights_info[1]))
+            {
+                IRC.DeliverMessage(messages.Localize("UserSc", parameters.SourceChannel.Language) + rights_info[1], parameters.SourceChannel);
+                return;
+            }
+        }
+
+        private static void TrustDel(CommandParams parameters)
+        {
+            string[] rights_info = parameters.Parameters.Split(' ');
+            if (rights_info.Length > 1)
+            {
+                parameters.SourceChannel.SystemUsers.DeleteUser(parameters.SourceChannel.SystemUsers.GetUser(parameters.User), rights_info[1]);
+                return;
+            }
+            IRC.DeliverMessage(messages.Localize("InvalidUser", parameters.SourceChannel.Language), parameters.SourceChannel);
+        }
+
+        private static void TrustedList(CommandParams parameters)
+        {
+            IRC.DeliverMessage(messages.Localize("TrustedUserList", parameters.SourceChannel.Language) + parameters.SourceChannel.SystemUsers.ListAll(), parameters.SourceChannel);
         }
     }
 }
