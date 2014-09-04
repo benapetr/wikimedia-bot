@@ -204,8 +204,10 @@ namespace wmib
                     else
                         Instance.TargetBuffer[args.SourceInfo.Nick] = this.instance;
                 }
-                bool respond = !Commands.Trusted(args.Message, args.SourceInfo.Nick, args.SourceInfo.Host);
                 string modules = "";
+                bool respond = !Commands.Trusted(args.Message, args.SourceInfo.Nick, args.SourceInfo.Host);
+                if (respond)
+                    modules += "trusted";
                 lock(ExtensionHandler.Extensions)
                 {
                     foreach (Module module in ExtensionHandler.Extensions)
