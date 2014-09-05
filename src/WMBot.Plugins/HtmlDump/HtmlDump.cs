@@ -206,17 +206,14 @@ namespace wmib.Extensions
                 builder.AppendFormat("<br />Core version: {0}<br />\n", Configuration.System.Version);
                 builder.AppendFormat("<h2>Bots</h2>");
                 builder.AppendFormat("<table class=\"text\"><th>Name</th><th>Status</th><th>Bouncer</th>");
-                lock (Instance.Instances)
+                foreach (Instance xx in Instance.Instances.Values)
                 {
-                    foreach (Instance xx in Instance.Instances.Values)
+                    string status = "Online in " + xx.ChannelCount + " channels";
+                    if (!xx.IsWorking || !xx.IsConnected)
                     {
-                        string status = "Online in " + xx.ChannelCount + " channels";
-                        if (!xx.IsWorking || !xx.IsConnected)
-                        {
-                            status = "Disconnected";
-                        }
-                        builder.AppendLine("<tr><td>" + xx.Nick + "</td><td>" + status + "</td><td>" + xx.Port + "</td></tr>");
+                        status = "Disconnected";
                     }
+                    builder.AppendLine("<tr><td>" + xx.Nick + "</td><td>" + status + "</td><td>" + xx.Port + "</td></tr>");
                 }
                 builder.AppendLine("</table>");
                 builder.AppendLine("<h2>Permissions</h2>");
@@ -272,25 +269,25 @@ namespace wmib.Extensions
             try
             {
                 Dictionary<string, string> ModuleData = new Dictionary<string, string>();
-                    foreach (Module xx in ExtensionHandler.ExtensionList)
+                foreach (Module xx in ExtensionHandler.ExtensionList)
+                {
+                    try
                     {
-                        try
+                        if (xx.IsWorking)
                         {
-                            if (xx.IsWorking)
+                            string html = xx.Extension_DumpHtml(_Channel);
+                            if (!string.IsNullOrEmpty(html))
                             {
-                                string html = xx.Extension_DumpHtml(_Channel);
-                                if (!string.IsNullOrEmpty(html))
-                                {
-                                    ModuleData.Add(xx.Name.ToLower(), html);
-                                }
+                                ModuleData.Add(xx.Name.ToLower(), html);
                             }
                         }
-                        catch (Exception fail)
-                        {
-                            Syslog.Log("Unable to retrieve web data", true);
-                            Core.HandleException(fail, "HtmlDump");
-                        }
                     }
+                    catch (Exception fail)
+                    {
+                        Syslog.Log("Unable to retrieve web data", true);
+                        Core.HandleException(fail, "HtmlDump");
+                    }
+                }
                 StringBuilder text = new StringBuilder(CreateHeader(_Channel.Name));
                 if (ModuleData.ContainsKey("infobot core"))
                 {

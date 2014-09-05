@@ -53,7 +53,7 @@ namespace wmib
                 streamWriter.WriteLine(text);
                 streamWriter.Flush();
             }
-            
+
             private void Disconnect()
             {
                 lock (SessionList)
@@ -63,10 +63,10 @@ namespace wmib
                 }
                 Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
             }
-            
+
             private void Disconnect(string text)
             {
-                Write (text);
+                Write(text);
                 connection.Close();
                 lock (SessionList)
                 {
@@ -75,7 +75,7 @@ namespace wmib
                 }
                 Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
             }
-            
+
             public void ThreadExec(object data)
             {
                 try
@@ -118,7 +118,7 @@ namespace wmib
                                 list.AddRange(parameters.Split(' '));
                             }
                         }
-    
+
                         switch (command.ToLower())
                         {
                             case "exit":
@@ -126,7 +126,7 @@ namespace wmib
                                 Disconnect("Good bye");
                                 return;
                             case "info":
-                                string result = "Uptime: " + Core.getUptime() + " Version: " + Configuration.System.Version 
+                                string result = "Uptime: " + Core.getUptime() + " Version: " + Configuration.System.Version
                                     + "\n\nBuffer information:\nUnwritten lines (file storage): " + StorageWriter.Count + "\n";
                                 if (Core.DB != null)
                                 {
@@ -135,7 +135,7 @@ namespace wmib
                                 result += "\nThreads:\n";
                                 foreach (Thread thread in Core.ThreadManager.ThreadList)
                                 {
-                                    result += "Thread: " + FormatToSpecSize(thread.Name, 20) + " status: " + 
+                                    result += "Thread: " + FormatToSpecSize(thread.Name, 20) + " status: " +
                                               FormatToSpecSize(thread.ThreadState.ToString(), 20) +
                                               " id: " + FormatToSpecSize(thread.ManagedThreadId.ToString(), 8) + "\n";
                                 }
@@ -143,15 +143,12 @@ namespace wmib
                                 Write(result);
                                 result = "";
                                 Syslog.DebugLog("Retrieving information for user " + username + " in system");
-                                lock (Instance.Instances)
+                                foreach (Instance instance in Instance.Instances.Values)
                                 {
-                                    foreach (Instance instance in Instance.Instances.Values)
-                                    {
-                                        Syslog.DebugLog("Retrieving information for user " + username + " of instance " +  instance.Nick, 2);
-                                        result += instance.Nick + " channels: " + instance.ChannelCount +
-                                            " connected: " + instance.IsConnected + " working: " +
-                                            instance.IsWorking + " queue: " + instance.QueueSize() + "\n";
-                                    }
+                                    Syslog.DebugLog("Retrieving information for user " + username + " of instance " + instance.Nick, 2);
+                                    result += instance.Nick + " channels: " + instance.ChannelCount +
+                                        " connected: " + instance.IsConnected + " working: " +
+                                        instance.IsWorking + " queue: " + instance.QueueSize() + "\n";
                                 }
                                 Write(result);
                                 break;
@@ -305,18 +302,19 @@ namespace wmib
         /// </summary>
         public static void Init()
         {
-            listenerThread = new Thread(ExecuteThread) {Name = "Telnet"};
+            listenerThread = new Thread(ExecuteThread) { Name = "Telnet" };
             Core.ThreadManager.RegisterThread(listenerThread);
             listenerThread.Start();
         }
-        
+
         public static string FormatToSpecSize(string st, int size)
         {
             if (st.Length > size)
             {
                 st = st.Substring(0, st.Length - ((st.Length - size) + 3));
                 st += "...";
-            } else
+            }
+            else
             {
                 while (st.Length < size)
                 {
@@ -343,7 +341,7 @@ namespace wmib
                     {
                         SessionList.Add(session);
                     }
-                    Thread client = new Thread(session.ThreadExec) {Name = "Telnet:" + connection.Client.RemoteEndPoint};
+                    Thread client = new Thread(session.ThreadExec) { Name = "Telnet:" + connection.Client.RemoteEndPoint };
                     Core.ThreadManager.RegisterThread(client);
                     client.Start(connection);
                     Thread.Sleep(100);

@@ -244,16 +244,12 @@ namespace wmib
                 return;
             }
             Instance _instance;
-            lock (wmib.Instance.Instances)
+            if (!wmib.Instance.Instances.ContainsKey(instance))
             {
-                if (!wmib.Instance.Instances.ContainsKey(instance))
-                {
-                    IRC.DeliverMessage("This instance I never heard of :'(", parameters.SourceChannel);
-                    return;
-                }
-                _instance = wmib.Instance.Instances[instance];
+                IRC.DeliverMessage("This instance I never heard of :'(", parameters.SourceChannel);
+                return;
             }
-
+            _instance = wmib.Instance.Instances[instance];
             if (_instance == ch.PrimaryInstance)
             {
                 IRC.DeliverMessage("This channel is already in this instance", parameters.SourceChannel);

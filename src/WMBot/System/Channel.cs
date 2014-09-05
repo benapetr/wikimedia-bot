@@ -128,19 +128,16 @@ namespace wmib
             }
             else
             {
-                lock (Instance.Instances)
+                if (!Instance.Instances.ContainsKey(DefaultInstance))
                 {
-                    if (!Instance.Instances.ContainsKey(DefaultInstance))
-                    {
-                        Syslog.WarningLog("There is no instance " + DefaultInstance + " reassigning channel " + this.Name +
-                                          " to a different instance");
-                        this.PrimaryInstance = Instance.GetInstance();
-                        Syslog.Log("Reassigned to " + this.PrimaryInstance.Nick);
-                    }
-                    else
-                    {
-                        PrimaryInstance = Instance.Instances[DefaultInstance];
-                    }
+                    Syslog.WarningLog("There is no instance " + DefaultInstance + " reassigning channel " + this.Name +
+                                      " to a different instance");
+                    this.PrimaryInstance = Instance.GetInstance();
+                    Syslog.Log("Reassigned to " + this.PrimaryInstance.Nick);
+                }
+                else
+                {
+                    PrimaryInstance = Instance.Instances[DefaultInstance];
                 }
             }
             if (!Directory.Exists(Configuration.WebPages.HtmlPath))

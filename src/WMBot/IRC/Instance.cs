@@ -143,14 +143,11 @@ namespace wmib
         {
             Syslog.DebugLog("Creating instance " + name + " with port " + port);
             Instance instance = new Instance(name, port);
-            lock(Instances)
+            if (Instances.ContainsKey(name))
             {
-                if (Instances.ContainsKey(name))
-                {
-                    throw new Exception("Can't load instance " + name + " because this instance is already running");
-                }
-                Instances.Add(name, instance);
+                throw new Exception("Can't load instance " + name + " because this instance is already running");
             }
+            Instances.Add(name, instance);
             return instance;
         }
 
@@ -163,29 +160,23 @@ namespace wmib
             int lowest = 99999999;
             Instance instance = null;
             // first try to get instance which is online
-            lock(Instances)
+            foreach (Instance xx in Instances.Values)
             {
-                foreach (Instance xx in Instances.Values)
+                if (xx.IsConnected && xx.IsWorking && xx.ChannelCount < lowest)
                 {
-                    if (xx.IsConnected && xx.IsWorking && xx.ChannelCount < lowest)
-                    {
-                        lowest = xx.ChannelCount;
-                        instance = xx;
-                    }
+                    lowest = xx.ChannelCount;
+                    instance = xx;
                 }
             }
             // if there is no such return any instance with low channels
             if (instance == null)
             {
-                lock(Instances)
+                foreach (Instance xx in Instances.Values)
                 {
-                    foreach (Instance xx in Instances.Values)
+                    if (xx.ChannelCount < lowest)
                     {
-                        if (xx.ChannelCount < lowest)
-                        {
-                            lowest = xx.ChannelCount;
-                            instance = xx;
-                        }
+                        lowest = xx.ChannelCount;
+                        instance = xx;
                     }
                 }
             }
@@ -194,7 +185,7 @@ namespace wmib
 
         public static void Kill()
         {
-            
+
         }
 
         public static void ConnectAllIrcInstances()
@@ -264,7 +255,7 @@ namespace wmib
         /// </summary>
         public void Join()
         {
-            JoinThread = new Thread(JoinAll) {Name = "Jointhread:" + Nick};
+            JoinThread = new Thread(JoinAll) { Name = "Jointhread:" + Nick };
             Core.ThreadManager.RegisterThread(JoinThread);
             JoinThread.Start();
         }
@@ -318,7 +309,8 @@ namespace wmib
                     }
                     this.ChannelsJoined = true;
                 }
-            } catch (Exception fail)
+            }
+            catch (Exception fail)
             {
                 Core.HandleException(fail);
             }
@@ -336,7 +328,7 @@ namespace wmib
             Core.ThreadManager.RegisterThread(thread);
             thread.Start();
         }
-        
+
         public void Connect()
         {
             this.Protocol.IsDisconnected = false;
@@ -372,27 +364,32 @@ namespace wmib
                     // in case we got disconnected, we log it and restart the procedure
                     Syslog.WarningLog("Disconnected from irc network on " + Nick);
                     Thread.Sleep(20000);
-                } catch (ThreadAbortException)
+                }
+                catch (ThreadAbortException)
                 {
                     Syslog.DebugLog("Terminated primary thread for instance " + Nick);
                     return;
-                }catch (IOException fail) 
+                }
+                catch (IOException fail)
                 {
                     if (this.IsActive)
                     {
                         Syslog.ErrorLog("Failure of primary thread of instance " + Nick + " attempting to recover");
                         Core.HandleException(fail);
-                    } else
+                    }
+                    else
                     {
                         return;
                     }
-                }catch (Exception fail)
+                }
+                catch (Exception fail)
                 {
                     Core.HandleException(fail);
                     if (this.IsActive)
                     {
                         Syslog.ErrorLog("Failure of primary thread of instance " + Nick + " attempting to recover");
-                    } else
+                    }
+                    else
                     {
                         return;
                     }

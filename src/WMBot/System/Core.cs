@@ -400,21 +400,21 @@ namespace wmib
                         Commands.PartChannel(channel_, nick, host, message);
                     Commands.Processing.ProcessCommands(channel_, nick, "", host, message);
                 }
-                    foreach (Module _Module in ExtensionHandler.ExtensionList)
+                foreach (Module _Module in ExtensionHandler.ExtensionList)
+                {
+                    try
                     {
-                        try
+                        if (_Module.IsWorking)
                         {
-                            if (_Module.IsWorking)
-                            {
-                                _Module.Hook_PRIV(channel_, new libirc.UserInfo(nick, "", host), message);
-                            }
-                        }
-                        catch (Exception f)
-                        {
-                            Syslog.Log("MODULE: exception at Hook_PRIV in " + _Module.Name, true);
-                            HandleException(f);
+                            _Module.Hook_PRIV(channel_, new libirc.UserInfo(nick, "", host), message);
                         }
                     }
+                    catch (Exception f)
+                    {
+                        Syslog.Log("MODULE: exception at Hook_PRIV in " + _Module.Name, true);
+                        HandleException(f);
+                    }
+                }
                 if (channel_.RespondMessage)
                 {
                     if (message.StartsWith(Configuration.IRC.NickName + ":"))
