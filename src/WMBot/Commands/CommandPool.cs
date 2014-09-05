@@ -51,11 +51,19 @@ namespace wmib
                 {
                     throw new WmibException("This command is already registered: " + command.Name);
                 }
+                if (command.Module != null)
+                {
+                    Syslog.DebugLog("Module " + command.Module + " registered a new command: " + command.Name);
+                }
+                else
+                {
+                    Syslog.DebugLog("Registering a new command: " + command.Name);
+                }
                 commands.Add(command.Name, command);
             }
         }
 
-        public void UnregisterCommand(GenericCommand command)
+        public static void UnregisterCommand(GenericCommand command)
         {
             lock (commands)
             {
@@ -63,6 +71,18 @@ namespace wmib
                     throw new WmibException("There is no such a command in pool: " + command.Name);
 
                 commands.Remove(command.Name);
+                Syslog.DebugLog("Unregistered command: " + command.Name);
+            }
+        }
+
+        public static void UnregisterCommand(string command_name)
+        {
+            lock (commands)
+            {
+                if (!commands.ContainsKey(command_name))
+                    throw new WmibException("There is no such a command in pool: " + command_name);
+
+                commands.Remove(command_name);
             }
         }
     }

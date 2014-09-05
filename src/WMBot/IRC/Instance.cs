@@ -386,13 +386,9 @@ namespace wmib
                 {
                     Core.HandleException(fail);
                     if (this.IsActive)
-                    {
                         Syslog.ErrorLog("Failure of primary thread of instance " + Nick + " attempting to recover");
-                    }
                     else
-                    {
                         return;
-                    }
                     Thread.Sleep(20000);
                 }
             }

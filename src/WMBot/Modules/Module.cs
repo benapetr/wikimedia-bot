@@ -124,6 +124,17 @@ namespace wmib
             }
         }
 
+        protected void RegisterCommand(GenericCommand command)
+        {
+            command.Module = this.Name;
+            CommandPool.RegisterCommand(command);
+        }
+
+        protected void UnregisterCommand(string command)
+        {
+            CommandPool.UnregisterCommand(command);
+        }
+
         public virtual void RegisterPermissions() { }
         public virtual void UnregisterPermissions() { }
         /// <summary>

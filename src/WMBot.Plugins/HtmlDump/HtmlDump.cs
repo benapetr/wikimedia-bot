@@ -160,13 +160,14 @@ namespace wmib.Extensions
             string[] a = Directory.GetFiles("configuration");
             // 2
             // Calculate total bytes of all files in a loop.
-            long b = 0;
+            double b = 0;
             foreach (string name in a)
             {
                 FileInfo info = new FileInfo(name);
                 b += info.Length;
             }
-            return b.ToString();
+            b = b / 1024;
+            return b.ToString() + "kb";
         }
 
         /// <summary>

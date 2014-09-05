@@ -100,7 +100,7 @@ namespace wmib
             /// </summary>
             public static int Interval = 800;
         }
-        
+
         public class System
         {
             /// <summary>
@@ -157,7 +157,7 @@ namespace wmib
                 //         ModuleB,
                 //         ModuleX,
                 //         ModuleC;
-                
+
                 get { return _modulesToLoadList ?? (_modulesToLoadList = ModulesToLoad.Replace("\n", "").Split(',')); }
             }
         }
@@ -185,7 +185,7 @@ namespace wmib
             /// </summary>
             public static int MysqlPort = 3306;
         }
-        
+
         public class Network
         {
             /// <summary>
@@ -240,7 +240,7 @@ namespace wmib
                     text.Append(channel.Name + "\n");
                 }
             }
-            File.WriteAllText(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + Paths.ChannelFile, 
+            File.WriteAllText(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + Paths.ChannelFile,
                               text.ToString());
         }
 
@@ -338,10 +338,10 @@ namespace wmib
             {
                 Directory.CreateDirectory(Variables.ConfigurationDirectory);
             }
-            if (!File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar 
+            if (!File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar
                              + Paths.ConfigFile))
             {
-                Console.WriteLine("Error: unable to find config file in configuration/" 
+                Console.WriteLine("Error: unable to find config file in configuration/"
                     + Paths.ConfigFile);
                 Console.WriteLine("You can get a configuration file here: https://github.com/benapetr/wikimedia-bot/blob/master/configuration/wmib.conf");
                 return 2;
@@ -364,7 +364,7 @@ namespace wmib
             MySQL.MysqlPort = RetrieveConfig("mysql_port", MySQL.MysqlPort);
             MySQL.MysqlHost = RetrieveConfig("mysql_host");
             WebPages.Css = RetrieveConfig("style_html_file", "");
-            Network.SystemPort = RetrieveConfig("system_port",  Network.SystemPort);
+            Network.SystemPort = RetrieveConfig("system_port", Network.SystemPort);
             if (string.IsNullOrEmpty(IRC.LoginNick))
             {
                 Console.WriteLine("Error there is no login for bot (nick key is missing?)");
@@ -403,7 +403,8 @@ namespace wmib
                     }
                     int port = int.Parse(ConfigurationData["instanceport" + CurrentInstance]);
                     Instance.CreateInstance(InstanceName, port);
-                } else
+                }
+                else
                 {
                     Instance.CreateInstance(InstanceName);
                 }
@@ -419,7 +420,7 @@ namespace wmib
                 string name = x.Replace(" ", "");
                 if (!string.IsNullOrEmpty(name))
                 {
-                    lock(Channels)
+                    lock (Channels)
                     {
                         Channels.Add(new Channel(name));
                     }
@@ -428,7 +429,7 @@ namespace wmib
             Syslog.Log("Channels were all loaded, linking databases");
 
             // Now when all chans are loaded let's link them together
-            lock(Channels)
+            lock (Channels)
             {
                 foreach (Channel channel in Channels)
                 {

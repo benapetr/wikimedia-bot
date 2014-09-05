@@ -32,6 +32,7 @@ namespace wmib
         private string requiredPermission = null;
         private bool channelOnly = true;
         public bool SilentErrors = false;
+        public string Module = null;
         public bool ChannelOnly
         {
             get
