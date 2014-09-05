@@ -356,7 +356,7 @@ namespace wmib
         {
             if (string.IsNullOrEmpty(parameters.Parameters))
                 return;
-            string channel = parameters.Parameters;
+            string channel = parameters.Parameters.Trim();
             if (!string.IsNullOrEmpty(channel))
             {
                 Channel _Channel = Core.GetChannel(channel);
@@ -378,7 +378,7 @@ namespace wmib
         {
             if (string.IsNullOrEmpty(parameters.Parameters))
                 return;
-            string channel = parameters.Parameters;
+            string channel = parameters.Parameters.Trim();
             if (!string.IsNullOrEmpty(channel))
             {
                 Channel _Channel = Core.GetChannel(channel);
