@@ -43,17 +43,17 @@ namespace wmib
             if (parameters.Parameters == null)
                 return;
             string[] rights_info = parameters.Parameters.Split(' ');
-            if (rights_info.Length < 3)
+            if (rights_info.Length < 2)
             {
                 IRC.DeliverMessage(messages.Localize("Trust1", parameters.SourceChannel.Language), parameters.SourceChannel);
                 return;
             }
-            if (!Security.Roles.ContainsKey(rights_info[2]))
+            if (!Security.Roles.ContainsKey(rights_info[1]))
             {
                 IRC.DeliverMessage(messages.Localize("Unknown1", parameters.SourceChannel.Language), parameters.SourceChannel);
                 return;
             }
-            int level = Security.GetLevelOfRole(rights_info[2]);
+            int level = Security.GetLevelOfRole(rights_info[1]);
             // This optional hack disallow to grant roles like "root" to anyone so that this role can be granted only to users
             // with shell access to server and hard-inserting it to admins file. If you wanted to allow granting of root, just
             // change System.MaxGrantableRoleLevel to 65535, this isn't very secure though
@@ -70,24 +70,23 @@ namespace wmib
                 IRC.DeliverMessage(messages.Localize("RoleMismatch", parameters.SourceChannel.Language), parameters.SourceChannel);
                 return;
             }
-            if (parameters.SourceChannel.SystemUsers.AddUser(rights_info[2], rights_info[1]))
+            if (parameters.SourceChannel.SystemUsers.AddUser(rights_info[1], rights_info[0]))
             {
-                IRC.DeliverMessage(messages.Localize("UserSc", parameters.SourceChannel.Language) + rights_info[1], parameters.SourceChannel);
+                IRC.DeliverMessage(messages.Localize("UserSc", parameters.SourceChannel.Language) + rights_info[0], parameters.SourceChannel);
                 return;
             }
         }
 
         private static void TrustDel(CommandParams parameters)
         {
-            if (parameters.Parameters == null)
-                return;
-            string[] rights_info = parameters.Parameters.Split(' ');
-            if (rights_info.Length > 1)
+            if (parameters.Parameters == null || parameters.Parameters.Length == 0)
             {
-                parameters.SourceChannel.SystemUsers.DeleteUser(parameters.SourceChannel.SystemUsers.GetUser(parameters.User), rights_info[1]);
+                IRC.DeliverMessage(messages.Localize("InvalidUser", parameters.SourceChannel.Language), parameters.SourceChannel);
                 return;
             }
-            IRC.DeliverMessage(messages.Localize("InvalidUser", parameters.SourceChannel.Language), parameters.SourceChannel);
+            string rights_info = parameters.Parameters.Trim();
+            parameters.SourceChannel.SystemUsers.DeleteUser(parameters.SourceChannel.SystemUsers.GetUser(parameters.User), rights_info);
+            return;
         }
 
         private static void TrustedList(CommandParams parameters)
