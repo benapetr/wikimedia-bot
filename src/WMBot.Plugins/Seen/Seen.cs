@@ -152,7 +152,7 @@ namespace wmib.Extensions
                         {
                             parameter = message.Substring(message.IndexOf(" ") + 1);
                         }
-                        if (parameter != "")
+                        if (!String.IsNullOrEmpty(parameter))
                         {
                             RegEx(parameter, channel, invoker.Nick);
                             return;

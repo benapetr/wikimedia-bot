@@ -21,14 +21,14 @@ namespace wmib.Extensions
     public class InfobotWriter
     {
         public Thread thread;
-        
+
         public void Init()
         {
-            thread = new Thread(Worker) {Name = "Module:Infobot/Worker"};
+            thread = new Thread(Worker) { Name = "Module:Infobot/Worker" };
             Core.ThreadManager.RegisterThread(thread);
             thread.Start();
         }
-        
+
         private void Worker()
         {
             try
@@ -52,18 +52,15 @@ namespace wmib.Extensions
 
         public void SaveData()
         {
-            lock (Configuration.Channels)
+            foreach (Channel x in Configuration.ChannelList)
             {
-                foreach (Channel x in Configuration.Channels)
+                Infobot infobot = (Infobot)x.RetrieveObject("Infobot");
+                if (infobot != null)
                 {
-                    Infobot infobot = (Infobot)x.RetrieveObject("Infobot");
-                    if (infobot != null)
+                    if (infobot.stored == false)
                     {
-                        if (infobot.stored == false)
-                        {
-                            infobot.stored = true;
-                            infobot.Save();
-                        }
+                        infobot.stored = true;
+                        infobot.Save();
                     }
                 }
             }

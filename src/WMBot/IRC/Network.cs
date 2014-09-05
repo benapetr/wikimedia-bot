@@ -62,9 +62,9 @@ namespace wmib
                     if (Configuration.Channels.Contains(channel))
                     {
                         Configuration.Channels.Remove(channel);
-                        Configuration.Save();
                     }
                 }
+                Configuration.Save();
             }
         }
 

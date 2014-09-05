@@ -417,7 +417,7 @@ namespace wmib
             foreach (string x in File.ReadAllLines(Paths.GetChannelFile()))
             {
                 string name = x.Replace(" ", "");
-                if (name != "")
+                if (!string.IsNullOrEmpty(name))
                 {
                     lock(Channels)
                     {

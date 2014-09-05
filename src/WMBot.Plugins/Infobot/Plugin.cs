@@ -693,16 +693,13 @@ namespace wmib.Extensions
                         return;
                     }
                     IRC.DeliverMessage(messages.Localize("infobot13", channel.Language), channel);
-                    lock (Configuration.Channels)
+                    foreach (Channel curr in Configuration.ChannelList)
                     {
-                        foreach (Channel curr in Configuration.Channels)
+                        if (curr.SharedDB == channel.Name.ToLower())
                         {
-                            if (curr.SharedDB == channel.Name.ToLower())
-                            {
-                                curr.SharedDB = "";
-                                curr.SaveConfig();
-                                IRC.DeliverMessage(messages.Localize("infobot19", curr.Language, new List<string> { invoker.Nick }), curr);
-                            }
+                            curr.SharedDB = "";
+                            curr.SaveConfig();
+                            IRC.DeliverMessage(messages.Localize("infobot19", curr.Language, new List<string> { invoker.Nick }), curr);
                         }
                     }
                     channel.SharedDB = "";
