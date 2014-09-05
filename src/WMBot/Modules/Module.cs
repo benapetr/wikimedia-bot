@@ -90,13 +90,6 @@ namespace wmib
         ~Module()
         {
             Exit();
-            lock (ExtensionHandler.Extensions)
-            {
-                if (ExtensionHandler.Extensions.Contains(this))
-                {
-                    ExtensionHandler.Extensions.Remove(this);
-                }
-            }
             Syslog.Log("Module was unloaded: " + this.Name);
         }
 
@@ -139,41 +132,41 @@ namespace wmib
         /// </summary>
         /// <param name="html"></param>
         /// <param name="channel"></param>
-        public virtual void Hook_AfterChannelWeb(ref string html, Channel channel) {}
+        public virtual void Hook_AfterChannelWeb(ref string html, Channel channel) { }
         /// <summary>
         /// Someone is kicked
         /// </summary>
         /// <param name="channel"></param>
         /// <param name="source"></param>
         /// <param name="user"></param>
-        public virtual void Hook_Kick(wmib.Channel channel, libirc.UserInfo source, string user)  {}
+        public virtual void Hook_Kick(wmib.Channel channel, libirc.UserInfo source, string user) { }
         /// <summary>
         /// This is a private hook of html extension, each module can return a string that is a part of status page for each channel
         /// the content of the page is unsorted so this string will be randomly inside of html source
         /// </summary>
         /// <param name="html"></param>
         /// <param name="channel"></param>
-        public virtual void Hook_ChannelWeb(ref string html, Channel channel) {}
+        public virtual void Hook_ChannelWeb(ref string html, Channel channel) { }
         /// <summary>
         /// Someone join
         /// </summary>
         /// <param name="channel"></param>
         /// <param name="user"></param>
-        public virtual void Hook_Join(Channel channel, libirc.UserInfo user) {}
+        public virtual void Hook_Join(Channel channel, libirc.UserInfo user) { }
         /// <summary>
         /// This hook is called when someone send a private message to channel
         /// </summary>
         /// <param name="channel">channel</param>
         /// <param name="invoker">invoker</param>
         /// <param name="message">message</param>
-        public virtual void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message) {}
+        public virtual void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message) { }
         /// <summary>
         /// When someone is using action
         /// </summary>
         /// <param name="channel"></param>
         /// <param name="invoker"></param>
         /// <param name="message"></param>
-        public virtual void Hook_ACTN(Channel channel, libirc.UserInfo invoker, string message) {}
+        public virtual void Hook_ACTN(Channel channel, libirc.UserInfo invoker, string message) { }
         /// <summary>
         /// Return a value
         /// </summary>
@@ -240,7 +233,7 @@ namespace wmib
         /// <param name="channel"></param>
         /// <param name="self"></param>
         /// <param name="message"></param>
-        public virtual void Hook_OnSelf(Channel channel, libirc.UserInfo self, string message) {}
+        public virtual void Hook_OnSelf(Channel channel, libirc.UserInfo self, string message) { }
 
         /// <summary>
         /// This is a private hook of html extension, each module can have a block of text in system page
@@ -256,7 +249,7 @@ namespace wmib
         /// This hook is called when channel is constructed
         /// </summary>
         /// <param name="channel"></param>
-        public virtual void Hook_Channel(Channel channel) {}
+        public virtual void Hook_Channel(Channel channel) { }
 
         /// <summary>
         /// When the module is loaded
@@ -475,7 +468,7 @@ namespace wmib
                         return result;
                     }
                 }
-              return invalid;
+                return invalid;
             }
             catch (Exception fail)
             {
@@ -546,7 +539,7 @@ namespace wmib
         /// Start
         /// </summary>
         public virtual void Load()
-        { 
+        {
             Syslog.Log("Module " + Name + " is missing core thread, terminated", true);
             RestartOnModuleCrash = false;
             IsWorking = false;
@@ -575,13 +568,7 @@ namespace wmib
                     }
                     Core.ThreadManager.KillThread(thread);
                 }
-                lock (ExtensionHandler.Extensions)
-                {
-                    if (ExtensionHandler.Extensions.Contains(this))
-                    {
-                        ExtensionHandler.Extensions.Remove(this);
-                    }
-                }
+                ExtensionHandler.UnregisterMod(this);
             }
             catch (Exception fail)
             {
@@ -598,14 +585,11 @@ namespace wmib
         {
             try
             {
-                lock (ExtensionHandler.Extensions)
+                foreach (Module x in ExtensionHandler.ExtensionList)
                 {
-                    foreach (Module x in ExtensionHandler.Extensions)
+                    if (x.Name == Name)
                     {
-                        if (x.Name == Name)
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
             }

@@ -113,7 +113,8 @@ namespace wmib
                                                   + LastText, Configuration.System.DebugChan);
                 }
                 Syslog.Log("DEBUG Exception in module " + module + ": " + ex.Message + ex.Source + ex.StackTrace, true);
-            } catch (Exception fail)
+            }
+            catch (Exception fail)
             {
                 // exception happened while we tried to handle another one, ignore that (probably issue with logging
                 Console.WriteLine(fail.ToString());
@@ -137,12 +138,14 @@ namespace wmib
                     Syslog.ErrorLog("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace +
                                 "\n\nThread name: " + Thread.CurrentThread.Name + "\n\nInner: " +
                                     ex.InnerException);
-                } else
+                }
+                else
                 {
                     Syslog.ErrorLog("DEBUG Exception: " + ex.Message + ex.Source + ex.StackTrace +
                                     "\n\nThread name: " + Thread.CurrentThread.Name);
                 }
-            } catch (Exception fail)
+            }
+            catch (Exception fail)
             {
                 // exception happened while we tried to handle another one, ignore that (probably issue with logging)
                 Console.WriteLine(fail.ToString());
@@ -156,7 +159,7 @@ namespace wmib
         /// <returns></returns>
         public static Channel GetChannel(string name)
         {
-            lock(Configuration.Channels)
+            lock (Configuration.Channels)
             {
                 foreach (Channel current in Configuration.Channels)
                 {
@@ -182,20 +185,18 @@ namespace wmib
             Channel channel = GetChannel(Channel);
             if (channel != null)
             {
-                lock(ExtensionHandler.Extensions)
+                foreach (Module curr in ExtensionHandler.ExtensionList)
                 {
-                    foreach (Module curr in ExtensionHandler.Extensions)
+                    if (!curr.IsWorking)
+                        continue;
+                    try
                     {
-                        if (!curr.IsWorking)
-                            continue;
-                        try
-                        {
-                            curr.Hook_ACTN(channel, new libirc.UserInfo(nick, "", host), message);
-                        } catch (Exception fail)
-                        {
-                            Syslog.Log("Exception on Hook_ACTN in module: " + curr.Name);
-                            HandleException(fail, curr.Name);
-                        }
+                        curr.Hook_ACTN(channel, new libirc.UserInfo(nick, "", host), message);
+                    }
+                    catch (Exception fail)
+                    {
+                        Syslog.Log("Exception on Hook_ACTN in module: " + curr.Name);
+                        HandleException(fail, curr.Name);
                     }
                 }
             }
@@ -252,7 +253,8 @@ namespace wmib
                 if (File.Exists(Configuration.TempName(name)))
                     BackupRecovery(name);
                 File.Copy(name, Configuration.TempName(name), true);
-            } catch (Exception b)
+            }
+            catch (Exception b)
             {
                 HandleException(b);
                 return false;
@@ -282,7 +284,8 @@ namespace wmib
                     Syslog.Log("Unfinished transaction could not be restored! DB of " + name + " is probably broken", true);
                 }
                 return false;
-            } catch (Exception b)
+            }
+            catch (Exception b)
             {
                 HandleException(b);
                 Syslog.Log("Unfinished transaction could not be restored! DB of " + name + " is now broken");
@@ -294,22 +297,19 @@ namespace wmib
         {
             try
             {
-                List<Module> list = new List<Module>();
-                lock(ExtensionHandler.Extensions)
-                {
-                    list.AddRange(ExtensionHandler.Extensions);
-                }
-                foreach (Module d in list)
+                foreach (Module d in ExtensionHandler.ExtensionList)
                 {
                     try
                     {
                         d.Exit();
-                    } catch (Exception fail)
+                    }
+                    catch (Exception fail)
                     {
                         HandleException(fail);
                     }
                 }
-            } catch (Exception fail)
+            }
+            catch (Exception fail)
             {
                 HandleException(fail);
             }
@@ -337,7 +337,7 @@ namespace wmib
                 while (kill < 20)
                 {
                     kill++;
-                    if (ExtensionHandler.Extensions.Count == 0)
+                    if (ExtensionHandler.ExtensionList.Count == 0)
                     {
                         Syslog.WriteNow("KERNEL: Modules are all down");
                         if (WriterThread.ThreadState == ThreadState.Running || WriterThread.ThreadState == ThreadState.WaitSleepJoin)
@@ -348,11 +348,13 @@ namespace wmib
                             {
                                 Syslog.WriteNow("KERNEL: Writer thread didn't shut down gracefully, killing", true);
                                 WriterThread.Abort();
-                            } else
+                            }
+                            else
                             {
                                 Syslog.WriteNow("KERNEL: Writer thread is shut down", true);
                             }
-                        } else
+                        }
+                        else
                         {
                             Syslog.WriteNow("KERNEL: Writer thread is down ok");
                         }
@@ -360,19 +362,20 @@ namespace wmib
                     }
                     Thread.Sleep(1000);
                 }
-                if (ExtensionHandler.Extensions.Count == 0)
+                if (ExtensionHandler.ExtensionList.Count == 0)
                 {
                     Syslog.WriteNow("KERNEL: Giving a grace time to other threads to finish");
                     Thread.Sleep(200);
                     Syslog.WriteNow("KERNEL: Terminated (ok)");
                     Environment.Exit(0);
                 }
-            } catch (Exception fail)
+            }
+            catch (Exception fail)
             {
                 HandleException(fail);
 
             }
-            Syslog.WriteNow("There was problem shutting down " + ExtensionHandler.Extensions.Count + " modules, terminating process");
+            Syslog.WriteNow("There was problem shutting down " + ExtensionHandler.ExtensionList.Count + " modules, terminating process");
             Syslog.WriteNow("KERNEL: Terminated (error)");
             Process.GetCurrentProcess().Kill();
         }
@@ -397,9 +400,7 @@ namespace wmib
                         Commands.PartChannel(channel_, nick, host, message);
                     Commands.Processing.ProcessCommands(channel_, nick, "", host, message);
                 }
-                lock(ExtensionHandler.Extensions)
-                {
-                    foreach (Module _Module in ExtensionHandler.Extensions)
+                    foreach (Module _Module in ExtensionHandler.ExtensionList)
                     {
                         try
                         {
@@ -407,13 +408,13 @@ namespace wmib
                             {
                                 _Module.Hook_PRIV(channel_, new libirc.UserInfo(nick, "", host), message);
                             }
-                        } catch (Exception f)
+                        }
+                        catch (Exception f)
                         {
                             Syslog.Log("MODULE: exception at Hook_PRIV in " + _Module.Name, true);
                             HandleException(f);
                         }
                     }
-                }
                 if (channel_.RespondMessage)
                 {
                     if (message.StartsWith(Configuration.IRC.NickName + ":"))
@@ -444,7 +445,7 @@ namespace wmib
             /// <returns></returns>
             public static bool Register(string name, string text)
             {
-                lock(HelpData)
+                lock (HelpData)
                 {
                     if (!HelpData.ContainsKey(name))
                     {
@@ -512,7 +513,7 @@ namespace wmib
             /// <returns></returns>
             public static bool Unregister(string name)
             {
-                lock(HelpData)
+                lock (HelpData)
                 {
                     if (HelpData.ContainsKey(name))
                     {
@@ -570,7 +571,7 @@ namespace wmib
             {
                 parameter = parameter.Substring(1);
             }
-            lock(HelpData)
+            lock (HelpData)
             {
                 if (HelpData.ContainsKey(parameter.ToLower()))
                 {
@@ -612,7 +613,7 @@ namespace wmib
             public static string AddLink(string name, string value)
             {
                 return "<tr><td>" + HttpUtility.HtmlEncode(name) + "</td><td><a href=\"#" +
-                        HttpUtility.HtmlEncode(value) + "\">" + 
+                        HttpUtility.HtmlEncode(value) + "\">" +
                         HttpUtility.HtmlEncode(value) + "</a></td></tr>\n";
             }
 
@@ -624,7 +625,7 @@ namespace wmib
             /// <returns></returns>
             public static string AddKey(string name, string value)
             {
-                return "<tr id=\"" + HttpUtility.HtmlEncode(name) + "\"><td>" + HttpUtility.HtmlEncode(name) 
+                return "<tr id=\"" + HttpUtility.HtmlEncode(name) + "\"><td>" + HttpUtility.HtmlEncode(name)
                     + "</td><td>" + HttpUtility.HtmlEncode(value) + "</td></tr>\n";
             }
         }

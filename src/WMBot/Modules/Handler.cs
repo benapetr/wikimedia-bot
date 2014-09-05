@@ -22,9 +22,32 @@ namespace wmib
         /// <summary>
         /// List of all modules loaded in kernel
         /// </summary>
-        public static List<Module> Extensions = new List<Module>();
+        private static List<Module> Extensions = new List<Module>();
+        public static List<Module> ExtensionList
+        {
+            get
+            {
+                List<Module> extensions;
+                lock (Extensions)
+                {
+                    extensions = new List<Module>(Extensions);
+                }
+                return extensions;
+            }
+        }
 
-        private static readonly List<Type> _moduleTypes = new List<Type>(); 
+        private static readonly List<Type> _moduleTypes = new List<Type>();
+
+        public static void UnregisterMod(Module module)
+        {
+            lock (Extensions)
+            {
+                if (Extensions.Contains(module))
+                {
+                    Extensions.Remove(module);
+                }
+            }
+        }
 
         /// <summary>
         /// Intialise module

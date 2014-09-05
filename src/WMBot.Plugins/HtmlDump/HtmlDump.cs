@@ -196,65 +196,62 @@ namespace wmib.Extensions
                                        + " Instance: " + chan.PrimaryInstance.Nick + "</td></tr>");
                 }
                 builder.AppendLine("</table>Uptime: " + Core.getUptime() + " Memory usage: " +
-                        (Process.GetCurrentProcess().PrivateMemorySize64/1024) + "kb Database size: " + getSize());
-                lock (ExtensionHandler.Extensions)
+                        (Process.GetCurrentProcess().PrivateMemorySize64 / 1024) + "kb Database size: " + getSize());
+                foreach (Module mm in ExtensionHandler.ExtensionList)
                 {
-                    foreach (Module mm in ExtensionHandler.Extensions)
+                    string text = string.Empty;
+                    mm.Hook_BeforeSysWeb(ref text);
+                    builder.AppendLine(text);
+                }
+                builder.AppendFormat("<br />Core version: {0}<br />\n", Configuration.System.Version);
+                builder.AppendFormat("<h2>Bots</h2>");
+                builder.AppendFormat("<table class=\"text\"><th>Name</th><th>Status</th><th>Bouncer</th>");
+                lock (Instance.Instances)
+                {
+                    foreach (Instance xx in Instance.Instances.Values)
                     {
-                        string text = string.Empty;
-                        mm.Hook_BeforeSysWeb(ref text);
-                        builder.AppendLine(text);
-                    }
-                    builder.AppendFormat("<br />Core version: {0}<br />\n", Configuration.System.Version);
-                    builder.AppendFormat("<h2>Bots</h2>");
-                    builder.AppendFormat("<table class=\"text\"><th>Name</th><th>Status</th><th>Bouncer</th>");
-                    lock (Instance.Instances)
-                    {
-                        foreach (Instance xx in Instance.Instances.Values)
+                        string status = "Online in " + xx.ChannelCount + " channels";
+                        if (!xx.IsWorking || !xx.IsConnected)
                         {
-                            string status = "Online in " + xx.ChannelCount + " channels";
-                            if (!xx.IsWorking || !xx.IsConnected)
-                            {
-                                status = "Disconnected";
-                            }
-                            builder.AppendLine("<tr><td>" + xx.Nick + "</td><td>" + status + "</td><td>" + xx.Port + "</td></tr>");
+                            status = "Disconnected";
+                        }
+                        builder.AppendLine("<tr><td>" + xx.Nick + "</td><td>" + status + "</td><td>" + xx.Port + "</td></tr>");
+                    }
+                }
+                builder.AppendLine("</table>");
+                builder.AppendLine("<h2>Permissions</h2>");
+                builder.AppendLine("<table class=\"permissions\">");
+                builder.AppendLine("  <tr><th>Role</th><th>Permissions</th><th>Roles</th></tr>");
+                lock (Security.Roles)
+                {
+                    foreach (string rn in Security.Roles.Keys)
+                    {
+                        Security.Role role = Security.Roles[rn];
+                        builder.AppendLine("<tr><td valign=top>" + rn + "</td><td valign=top>");
+                        foreach (string permission in role.Permissions)
+                            builder.AppendLine(permission + "<br>");
+                        builder.AppendLine("</td><td valign=top>");
+                        foreach (Security.Role sr in role.Roles)
+                            builder.AppendLine(Security.GetNameOfRole(sr) + "</br>");
+                        builder.AppendLine("</td></tr>");
+                    }
+                }
+                builder.AppendLine("</table>");
+                builder.AppendLine("<h2>Plugins</h2>");
+                builder.AppendLine("<table class=\"modules\">");
+                foreach (Module module in ExtensionHandler.ExtensionList)
+                {
+                    string status = "Terminated";
+                    if (module.IsWorking)
+                    {
+                        status = "OK";
+                        if (module.Warning)
+                        {
+                            status += " - RECOVERING";
                         }
                     }
-                    builder.AppendLine("</table>");
-                    builder.AppendLine("<h2>Permissions</h2>");
-                    builder.AppendLine("<table class=\"permissions\">");
-                    builder.AppendLine("  <tr><th>Role</th><th>Permissions</th><th>Roles</th></tr>");
-                    lock (Security.Roles)
-                    {
-                        foreach (string rn in Security.Roles.Keys)
-                        {
-                            Security.Role role = Security.Roles[rn];
-                            builder.AppendLine("<tr><td valign=top>" + rn + "</td><td valign=top>");
-                            foreach (string permission in role.Permissions)
-                                builder.AppendLine(permission + "<br>");
-                            builder.AppendLine("</td><td valign=top>");
-                            foreach (Security.Role sr in role.Roles)
-                                builder.AppendLine(Security.GetNameOfRole(sr) + "</br>");
-                            builder.AppendLine("</td></tr>");
-                        }
-                    }
-                    builder.AppendLine("</table>");
-                    builder.AppendLine("<h2>Plugins</h2>");
-                    builder.AppendLine("<table class=\"modules\">");
-                    foreach (Module module in ExtensionHandler.Extensions)
-                    {
-                        string status = "Terminated";
-                        if (module.IsWorking)
-                        {
-                            status = "OK";
-                            if (module.Warning)
-                            {
-                                status += " - RECOVERING";
-                            }
-                        }
-                        builder.AppendLine("<tr><td>" + module.Name + " (" + module.Version + ")</td><td>" + status +
-                                           " (startup date: " + module.Date + ")</td></tr>");
-                    }
+                    builder.AppendLine("<tr><td>" + module.Name + " (" + module.Version + ")</td><td>" + status +
+                                       " (startup date: " + module.Date + ")</td></tr>");
                 }
                 builder.AppendLine("</table>");
                 builder.AppendLine();
@@ -275,9 +272,7 @@ namespace wmib.Extensions
             try
             {
                 Dictionary<string, string> ModuleData = new Dictionary<string, string>();
-                lock (ExtensionHandler.Extensions)
-                {
-                    foreach (Module xx in ExtensionHandler.Extensions)
+                    foreach (Module xx in ExtensionHandler.ExtensionList)
                     {
                         try
                         {
@@ -296,7 +291,6 @@ namespace wmib.Extensions
                             Core.HandleException(fail, "HtmlDump");
                         }
                     }
-                }
                 StringBuilder text = new StringBuilder(CreateHeader(_Channel.Name));
                 if (ModuleData.ContainsKey("infobot core"))
                 {

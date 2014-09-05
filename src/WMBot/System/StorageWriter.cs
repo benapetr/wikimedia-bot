@@ -31,22 +31,19 @@ namespace wmib
             get
             {
                 int count = Data.Count;
-                lock (ExtensionHandler.Extensions)
+                foreach (Module module in ExtensionHandler.ExtensionList)
                 {
-                    foreach (Module module in ExtensionHandler.Extensions)
+                    try
                     {
-                        try
+                        if (module.IsWorking)
                         {
-                            if (module.IsWorking)
-                            {
-                                count += (int)module.Hook_GetWriterSize();
-                            }
+                            count += (int)module.Hook_GetWriterSize();
                         }
-                        catch (Exception fail)
-                        {
-                            Syslog.Log("MODULE: exception at Hook_GetWriterSize in " + module.Name, true);
-                            Core.HandleException(fail, module.Name);
-                        }
+                    }
+                    catch (Exception fail)
+                    {
+                        Syslog.Log("MODULE: exception at Hook_GetWriterSize in " + module.Name, true);
+                        Core.HandleException(fail, module.Name);
                     }
                 }
                 return count;

@@ -76,7 +76,8 @@ namespace wmib
                     Self(text, ch);
                     ch.PrimaryInstance.Network.Message(text, target, priority);
                 }
-            } else
+            }
+            else
             {
                 lock (Instance.TargetBuffer)
                 {
@@ -96,21 +97,18 @@ namespace wmib
         /// <param name="message">Message.</param>
         private static void Self(string message, Channel channel)
         {
-            lock (ExtensionHandler.Extensions)
+            foreach (Module module in ExtensionHandler.ExtensionList)
             {
-                foreach (Module module in ExtensionHandler.Extensions)
+                try
                 {
-                    try
+                    if (module.IsWorking)
                     {
-                        if (module.IsWorking)
-                        {
-                            module.Hook_OnSelf(channel, new libirc.UserInfo(Configuration.IRC.NickName, "wmib", "wikimedia/bot/wm-bot"), message);
-                        }
+                        module.Hook_OnSelf(channel, new libirc.UserInfo(Configuration.IRC.NickName, "wmib", "wikimedia/bot/wm-bot"), message);
                     }
-                    catch (Exception fail)
-                    {
-                        Core.HandleException(fail, module.Name);
-                    }
+                }
+                catch (Exception fail)
+                {
+                    Core.HandleException(fail, module.Name);
                 }
             }
         }

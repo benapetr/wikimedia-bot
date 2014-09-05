@@ -125,9 +125,10 @@ namespace wmib
                 // we need to save the instance so that next time bot reconnect to bouncer it uses the same instance
                 DefaultInstance = PrimaryInstance.Nick;
                 SaveConfig();
-            } else
+            }
+            else
             {
-                lock(Instance.Instances)
+                lock (Instance.Instances)
                 {
                     if (!Instance.Instances.ContainsKey(DefaultInstance))
                     {
@@ -135,7 +136,8 @@ namespace wmib
                                           " to a different instance");
                         this.PrimaryInstance = Instance.GetInstance();
                         Syslog.Log("Reassigned to " + this.PrimaryInstance.Nick);
-                    } else
+                    }
+                    else
                     {
                         PrimaryInstance = Instance.Instances[DefaultInstance];
                     }
@@ -144,22 +146,20 @@ namespace wmib
             if (!Directory.Exists(Configuration.WebPages.HtmlPath))
                 Directory.CreateDirectory(Configuration.WebPages.HtmlPath);
 
-            lock(ExtensionHandler.Extensions)
+            foreach (Module module in ExtensionHandler.ExtensionList)
             {
-                foreach (Module module in ExtensionHandler.Extensions)
+                try
                 {
-                    try
+                    if (module.IsWorking)
                     {
-                        if (module.IsWorking)
-                        {
-                            Channel self = this;
-                            module.Hook_Channel(self);
-                        }
-                    } catch (Exception fail)
-                    {
-                        Syslog.Log("MODULE: exception at Hook_Channel in " + module.Name, true);
-                        Core.HandleException(fail);
+                        Channel self = this;
+                        module.Hook_Channel(self);
                     }
+                }
+                catch (Exception fail)
+                {
+                    Syslog.Log("MODULE: exception at Hook_Channel in " + module.Name, true);
+                    Core.HandleException(fail);
                 }
             }
         }
@@ -197,7 +197,7 @@ namespace wmib
         /// <param name="data"></param>
         public void Extension_SetConfig(string name, string data)
         {
-            lock(ExtensionData)
+            lock (ExtensionData)
             {
                 if (ExtensionData.ContainsKey(name))
                 {
@@ -215,7 +215,7 @@ namespace wmib
         /// <returns></returns>
         public string Extension_GetConfig(string key)
         {
-            lock(ExtensionData)
+            lock (ExtensionData)
             {
                 if (ExtensionData.ContainsKey(key))
                 {
@@ -234,14 +234,15 @@ namespace wmib
         {
             try
             {
-                lock(ExtensionObjects)
+                lock (ExtensionObjects)
                 {
                     if (ExtensionObjects.ContainsKey(name))
                     {
                         return ExtensionObjects[name];
                     }
                 }
-            } catch (Exception er)
+            }
+            catch (Exception er)
             {
                 Core.HandleException(er);
             }
@@ -257,7 +258,7 @@ namespace wmib
         {
             try
             {
-                lock(ExtensionObjects)
+                lock (ExtensionObjects)
                 {
                     if (!ExtensionObjects.ContainsKey(Nm))
                     {
@@ -266,7 +267,8 @@ namespace wmib
                     ExtensionObjects.Remove(Nm);
                     return true;
                 }
-            } catch (Exception er)
+            }
+            catch (Exception er)
             {
                 Core.HandleException(er);
             }
@@ -283,7 +285,7 @@ namespace wmib
         {
             try
             {
-                lock(ExtensionObjects)
+                lock (ExtensionObjects)
                 {
                     if (ExtensionObjects.ContainsKey(Nm))
                     {
@@ -292,7 +294,8 @@ namespace wmib
                     ExtensionObjects.Add(Nm, Ob);
                     return true;
                 }
-            } catch (Exception er)
+            }
+            catch (Exception er)
             {
                 Core.HandleException(er);
                 return false;
@@ -333,7 +336,8 @@ namespace wmib
                             if (ExtensionData.ContainsKey(xx.Attributes[0].Value))
                             {
                                 ExtensionData[xx.Attributes[0].Value] = xx.Attributes[1].Value;
-                            } else
+                            }
+                            else
                             {
                                 ExtensionData.Add(xx.Attributes[0].Value, xx.Attributes[1].Value);
                             }
@@ -374,7 +378,8 @@ namespace wmib
                             break;
                     }
                 }
-            } catch (Exception fail)
+            }
+            catch (Exception fail)
             {
                 Syslog.Log("Unable to load the config of " + Name, true);
                 Core.HandleException(fail);
@@ -449,7 +454,8 @@ namespace wmib
                 data.Save(fn);
                 if (File.Exists(Configuration.TempName(fn)))
                     File.Delete(Configuration.TempName(fn));
-            } catch (Exception)
+            }
+            catch (Exception)
             {
                 Core.RecoverFile(fn, Name);
             }
@@ -466,11 +472,11 @@ namespace wmib
                 return;
             }
             SystemUsers = null;
-            lock(ExtensionData)
+            lock (ExtensionData)
             {
                 ExtensionData.Clear();
             }
-            lock(ExtensionObjects)
+            lock (ExtensionObjects)
             {
                 ExtensionObjects.Clear();
             }

@@ -18,43 +18,39 @@ namespace wmib
     {
         public static void IrcReloadChannelConf(Channel Channel)
         {
-            lock(ExtensionHandler.Extensions)
+            foreach (Module module in ExtensionHandler.ExtensionList)
             {
-                foreach (Module module in ExtensionHandler.Extensions)
+                try
                 {
-                    try
+                    if (module.IsWorking)
                     {
-                        if (module.IsWorking)
-                        {
-                            module.Hook_ReloadConfig(Channel);
-                        }
-                    } catch (Exception fail)
-                    {
-                        Syslog.Log("MODULE: exception at Hook_Reload in " + module.Name);
-                        Core.HandleException(fail, module.Name);
+                        module.Hook_ReloadConfig(Channel);
                     }
+                }
+                catch (Exception fail)
+                {
+                    Syslog.Log("MODULE: exception at Hook_Reload in " + module.Name);
+                    Core.HandleException(fail, module.Name);
                 }
             }
         }
 
         public static void IrcKick(Channel Channel, libirc.UserInfo Source, string Target)
         {
-            lock(ExtensionHandler.Extensions)
+            foreach (Module module in ExtensionHandler.ExtensionList)
             {
-                foreach (Module module in ExtensionHandler.Extensions)
+                if (!module.IsWorking)
                 {
-                    if (!module.IsWorking)
-                    {
-                        continue;
-                    }
-                    try
-                    {
-                        module.Hook_Kick(Channel, Source, Target);
-                    } catch (Exception fail)
-                    {
-                        Syslog.Log("MODULE: exception at Hook_Kick in " + module.Name, true);
-                        Core.HandleException(fail, module.Name);
-                    }
+                    continue;
+                }
+                try
+                {
+                    module.Hook_Kick(Channel, Source, Target);
+                }
+                catch (Exception fail)
+                {
+                    Syslog.Log("MODULE: exception at Hook_Kick in " + module.Name, true);
+                    Core.HandleException(fail, module.Name);
                 }
             }
         }

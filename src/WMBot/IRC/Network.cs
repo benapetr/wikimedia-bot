@@ -17,7 +17,8 @@ namespace wmib
     public class Network : libirc.Network
     {
         private Instance instance;
-        public Network (string server, Instance Instance, WmIrcProtocol protocol) : base(server, (libirc.Protocols.ProtocolIrc)protocol)
+        public Network(string server, Instance Instance, WmIrcProtocol protocol)
+            : base(server, (libirc.Protocols.ProtocolIrc)protocol)
         {
             this.instance = Instance;
             this.Config.TrafficInterval = Configuration.IRC.Interval;
@@ -28,7 +29,7 @@ namespace wmib
             switch (args.CTCP)
             {
                 case "FINGER":
-                    Transfer("NOTICE " + args.SourceInfo.Nick + " :" + _Protocol.Separator + "FINGER" + 
+                    Transfer("NOTICE " + args.SourceInfo.Nick + " :" + _Protocol.Separator + "FINGER" +
                              " I am a bot don't finger me");
                     return;
                 case "TIME":
@@ -39,9 +40,9 @@ namespace wmib
                         args.Message.IndexOf(_Protocol.Separator + "PING") + 5));
                     return;
                 case "VERSION":
-                    Transfer("NOTICE " + args.SourceInfo.Nick + " :" + _Protocol.Separator + "VERSION " 
+                    Transfer("NOTICE " + args.SourceInfo.Nick + " :" + _Protocol.Separator + "VERSION "
                              + Configuration.System.Version + " http://meta.wikimedia.org/wiki/WM-Bot");
-                   return;
+                    return;
             }
             Syslog.DebugLog("Ignoring uknown CTCP from " + args.Source + ": " + args.CTCP + args.Message);
         }
@@ -51,12 +52,12 @@ namespace wmib
             if (args.ChannelName == Configuration.System.DebugChan && this.instance != Instance.PrimaryInstance)
                 return;
             Channel channel = Core.GetChannel(args.ChannelName);
-            if (channel == null)  return;
+            if (channel == null) return;
             SystemHooks.IrcKick(channel, args.SourceInfo, args.Target);
             if (this.Nickname.ToLower() == args.Target.ToLower())
             {
                 Syslog.Log("I was kicked from " + args.ChannelName + " by " + args.SourceInfo.Nick + " because of: " + args.Message);
-                lock(Configuration.Channels)
+                lock (Configuration.Channels)
                 {
                     if (Configuration.Channels.Contains(channel))
                     {
@@ -69,7 +70,7 @@ namespace wmib
 
         protected override bool __evt__IncomingData(IncomingDataEventArgs args)
         {
-            switch(args.Command)
+            switch (args.Command)
             {
                 case "001":
                 case "002":
@@ -86,22 +87,19 @@ namespace wmib
             Channel channel = Core.GetChannel(args.ChannelName);
             if (channel != null)
             {
-                lock (ExtensionHandler.Extensions)
+                foreach (Module module in ExtensionHandler.ExtensionList)
                 {
-                    foreach (Module module in ExtensionHandler.Extensions)
+                    try
                     {
-                        try
+                        if (module.IsWorking)
                         {
-                            if (module.IsWorking)
-                            {
-                                module.Hook_Join(channel, args.SourceInfo);
-                            }
+                            module.Hook_Join(channel, args.SourceInfo);
                         }
-                        catch (Exception fail)
-                        {
-                            Syslog.Log("MODULE: exception at Hook_Join in " + module.Name, true);
-                            Core.HandleException(fail);
-                        }
+                    }
+                    catch (Exception fail)
+                    {
+                        Syslog.Log("MODULE: exception at Hook_Join in " + module.Name, true);
+                        Core.HandleException(fail);
                     }
                 }
             }
@@ -114,21 +112,18 @@ namespace wmib
             Channel channel = Core.GetChannel(args.ChannelName);
             if (channel != null)
             {
-                lock (ExtensionHandler.Extensions)
+                foreach (Module module in ExtensionHandler.ExtensionList)
                 {
-                    foreach (Module module in ExtensionHandler.Extensions)
-                    {
-                        if (!module.IsWorking)
-                            continue;
+                    if (!module.IsWorking)
+                        continue;
 
-                        try
-                        {
-                            module.Hook_Part(channel, args.SourceInfo);
-                        }
-                        catch (Exception fail)
-                        {
-                            Core.HandleException(fail);
-                        }
+                    try
+                    {
+                        module.Hook_Part(channel, args.SourceInfo);
+                    }
+                    catch (Exception fail)
+                    {
+                        Core.HandleException(fail);
                     }
                 }
             }
@@ -136,22 +131,19 @@ namespace wmib
 
         protected override void __evt_QUIT(NetworkGenericDataEventArgs args)
         {
-            lock (ExtensionHandler.Extensions)
+            foreach (Module module in ExtensionHandler.ExtensionList)
             {
-                foreach (Module module in ExtensionHandler.Extensions)
-                {
-                    if (!module.IsWorking)
-                        continue;
+                if (!module.IsWorking)
+                    continue;
 
-                    try
-                    {
-                        module.Hook_Quit(args.SourceInfo, args.Message);
-                    }
-                    catch (Exception fail)
-                    {
-                        Syslog.Log("MODULE: exception at Hook_Quit in " + module.Name, true);
-                        Core.HandleException(fail);
-                    }
+                try
+                {
+                    module.Hook_Quit(args.SourceInfo, args.Message);
+                }
+                catch (Exception fail)
+                {
+                    Syslog.Log("MODULE: exception at Hook_Quit in " + module.Name, true);
+                    Core.HandleException(fail);
                 }
             }
         }
@@ -162,21 +154,18 @@ namespace wmib
             {
                 if (channel.ContainsUser(args.OldNick))
                 {
-                    lock (ExtensionHandler.Extensions)
+                    foreach (Module extension_ in ExtensionHandler.ExtensionList)
                     {
-                        foreach (Module extension_ in ExtensionHandler.Extensions)
+                        try
                         {
-                            try
-                            {
-                                if (extension_.IsWorking)
-                                    extension_.Hook_Nick(channel, args.SourceInfo, args.OldNick);
+                            if (extension_.IsWorking)
+                                extension_.Hook_Nick(channel, args.SourceInfo, args.OldNick);
 
-                            }
-                            catch (Exception fail)
-                            {
-                                Syslog.Log("Error on hook in " + extension_.Name, true);
-                                Core.HandleException(fail);
-                            }
+                        }
+                        catch (Exception fail)
+                        {
+                            Syslog.Log("Error on hook in " + extension_.Name, true);
+                            Core.HandleException(fail);
                         }
                     }
                 }
@@ -197,7 +186,7 @@ namespace wmib
             {
                 // private message
                 // store which instance this message was from so that we can send it using same instance
-                lock(Instance.TargetBuffer)
+                lock (Instance.TargetBuffer)
                 {
                     if (!Instance.TargetBuffer.ContainsKey(args.SourceInfo.Nick))
                         Instance.TargetBuffer.Add(args.SourceInfo.Nick, this.instance);
@@ -208,27 +197,25 @@ namespace wmib
                 bool respond = !Commands.Trusted(args.Message, args.SourceInfo.Nick, args.SourceInfo.Host);
                 if (respond)
                     modules += "trusted";
-                lock(ExtensionHandler.Extensions)
+                foreach (Module module in ExtensionHandler.ExtensionList)
                 {
-                    foreach (Module module in ExtensionHandler.Extensions)
+                    if (module.IsWorking)
                     {
-                        if (module.IsWorking)
+                        try
                         {
-                            try
+                            if (module.Hook_OnPrivateFromUser(args.Message, args.SourceInfo))
                             {
-                                if (module.Hook_OnPrivateFromUser(args.Message, args.SourceInfo))
-                                {
-                                    respond = false;
-                                    modules += module.Name + " ";
-                                }
-                            } catch (Exception fail)
-                            {
-                                Core.HandleException(fail);
+                                respond = false;
+                                modules += module.Name + " ";
                             }
                         }
+                        catch (Exception fail)
+                        {
+                            Core.HandleException(fail);
+                        }
                     }
-                    modules.Trim();
                 }
+                modules.Trim();
                 if (respond)
                 {
                     IRC.DeliverMessage("Hi, I am robot, this command was not understood." +
@@ -238,12 +225,14 @@ namespace wmib
                                          "/WM-Bot for explanation of commands", args.SourceInfo,
                                          libirc.Defs.Priority.Low);
                     Syslog.Log("Ignoring private message: (" + args.SourceInfo.Nick + ") " + args.Message, false);
-                } else
+                }
+                else
                 {
-                    Syslog.Log("Private message: (handled by " + modules + " from " + args.SourceInfo.Nick + ") " + 
+                    Syslog.Log("Private message: (handled by " + modules + " from " + args.SourceInfo.Nick + ") " +
                                args.Message, false);
                 }
-            } else
+            }
+            else
             {
                 if (args.ChannelName == Configuration.System.DebugChan && this.instance != Instance.PrimaryInstance)
                     return;

@@ -35,13 +35,13 @@ namespace wmib
             /// </summary>
             public int Level;
             // For serialization only
-            public Role(){}
+            public Role() { }
 
             public Role(int level_)
             {
                 this.Level = level_;
             }
-            
+
             public void Revoke(string permission)
             {
                 lock (this.Permissions)
@@ -52,7 +52,7 @@ namespace wmib
                     }
                 }
             }
-            
+
             public void Revoke(Role role)
             {
                 lock (this.Roles)
@@ -63,7 +63,7 @@ namespace wmib
                     }
                 }
             }
-            
+
             public void Grant(Role role)
             {
                 lock (this.Roles)
@@ -74,7 +74,7 @@ namespace wmib
                     }
                 }
             }
-            
+
             public void Grant(string permission)
             {
                 lock (this.Permissions)
@@ -83,7 +83,7 @@ namespace wmib
                         this.Permissions.Add(permission);
                 }
             }
-            
+
             public bool IsPermitted(string permission)
             {
                 if (this.Permissions.Contains("root") || this.Permissions.Contains(permission))
@@ -115,7 +115,7 @@ namespace wmib
                 public List<string> Roles = new List<string>();
                 public List<string> Permissions = new List<string>();
                 public int Level;
-                public RoleInfo() {}
+                public RoleInfo() { }
                 public RoleInfo(Role role)
                 {
                     lock (Security.Roles)
@@ -138,7 +138,7 @@ namespace wmib
             public DumpableDict() { }
             public DumpableDict(Dictionary<string, Role> Roles)
             {
-                foreach (KeyValuePair<string,Role> role in Roles)
+                foreach (KeyValuePair<string, Role> role in Roles)
                 {
                     RoleInfo i = new RoleInfo(role.Value);
                     i.Name = role.Key;
@@ -166,7 +166,7 @@ namespace wmib
         {
             this._Channel = channel;
         }
-        
+
         public static bool IsGloballyApproved(SystemUser user, string permission)
         {
             return HasPrivilege(permission, user.Role);
@@ -179,7 +179,7 @@ namespace wmib
                 return false;
             return IsGloballyApproved(current, permission);
         }
-        
+
         /// <summary>
         /// Load all roles
         /// </summary>
@@ -238,18 +238,15 @@ namespace wmib
             // admins have all privileges as trusted users
             Roles["admin"].Grant(Roles["trusted"]);
             Roles["root"].Grant("root");
-            lock (ExtensionHandler.Extensions)
+            foreach (Module module in ExtensionHandler.ExtensionList)
             {
-                foreach (Module module in ExtensionHandler.Extensions)
+                try
                 {
-                    try
-                    {
-                        module.RegisterPermissions();
-                    }
-                    catch (Exception fail)
-                    {
-                        Core.HandleException(fail, module.Name);
-                    }
+                    module.RegisterPermissions();
+                }
+                catch (Exception fail)
+                {
+                    Core.HandleException(fail, module.Name);
                 }
             }
         }
@@ -273,7 +270,7 @@ namespace wmib
             }
             return 0;
         }
-        
+
         /// <summary>
         /// Verify the users credentials and if they are correct, returns a user instance
         /// </summary>
@@ -348,7 +345,7 @@ namespace wmib
         /// </summary>
         private static void GlobalLoad()
         {
-            string[] dba = File.ReadAllLines(Variables.ConfigurationDirectory + 
+            string[] dba = File.ReadAllLines(Variables.ConfigurationDirectory +
                            Path.DirectorySeparatorChar + "admins");
             lock (globalUsers)
             {
@@ -487,7 +484,7 @@ namespace wmib
             IRC.DeliverMessage(messages.Localize("Trust4", this._Channel.Language), this._Channel);
             return;
         }
-        
+
         /// <summary>
         /// Gets the global user. Work just as GetUser, but only for global records
         /// </summary>
@@ -522,7 +519,7 @@ namespace wmib
             }
             return lv;
         }
-        
+
         /// <summary>
         /// Return user object from a name
         /// 
@@ -579,12 +576,12 @@ namespace wmib
             {
                 foreach (SystemUser b in Users)
                 {
-                    users_ok += " " + b.Name + " (" + Variables.ColorChar + "2" + b.Role + Variables.ColorChar +")" + ",";
+                    users_ok += " " + b.Name + " (" + Variables.ColorChar + "2" + b.Role + Variables.ColorChar + ")" + ",";
                 }
             }
             return users_ok;
         }
-        
+
         private static bool HasPrivilege(string privilege, string role)
         {
             // this is just a performance hack

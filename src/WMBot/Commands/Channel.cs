@@ -111,20 +111,17 @@ namespace wmib
                             Syslog.ErrorLog("Failed to delete configuration file of " + channel.Name);
                             Core.HandleException(fail);
                         }
-                        lock (ExtensionHandler.Extensions)
+                        foreach (Module curr in ExtensionHandler.ExtensionList)
                         {
-                            foreach (Module curr in ExtensionHandler.Extensions)
+                            try
                             {
-                                try
-                                {
-                                    if (curr.IsWorking)
-                                        curr.Hook_ChannelDrop(channel);
-                                }
-                                catch (Exception fail)
-                                {
-                                    Syslog.Log("MODULE: exception at Hook_ChannelDrop in " + curr.Name, true);
-                                    Core.HandleException(fail, curr.Name);
-                                }
+                                if (curr.IsWorking)
+                                    curr.Hook_ChannelDrop(channel);
+                            }
+                            catch (Exception fail)
+                            {
+                                Syslog.Log("MODULE: exception at Hook_ChannelDrop in " + curr.Name, true);
+                                Core.HandleException(fail, curr.Name);
                             }
                         }
                         lock (Configuration.Channels)

@@ -158,20 +158,17 @@ namespace wmib
                         return;
                 }
                 bool exist = false;
-                lock (ExtensionHandler.Extensions)
+                foreach (Module curr in ExtensionHandler.ExtensionList)
                 {
-                    foreach (Module curr in ExtensionHandler.Extensions)
+                    try
                     {
-                        try
-                        {
-                            if (curr.IsWorking && curr.Hook_SetConfig(parameters.SourceChannel, parameters.User, name, value))
-                                exist = true;
-                        }
-                        catch (Exception fail)
-                        {
-                            Syslog.Log("Error on Hook_SetConfig module " + curr.Name);
-                            Core.HandleException(fail, curr.Name);
-                        }
+                        if (curr.IsWorking && curr.Hook_SetConfig(parameters.SourceChannel, parameters.User, name, value))
+                            exist = true;
+                    }
+                    catch (Exception fail)
+                    {
+                        Syslog.Log("Error on Hook_SetConfig module " + curr.Name);
+                        Core.HandleException(fail, curr.Name);
                     }
                 }
                 if (!parameters.SourceChannel.SuppressWarnings && !exist)
@@ -193,20 +190,17 @@ namespace wmib
                         return;
                 }
                 bool exist = false;
-                lock (ExtensionHandler.Extensions)
+                foreach (Module curr in ExtensionHandler.ExtensionList)
                 {
-                    foreach (Module curr in ExtensionHandler.Extensions)
+                    try
                     {
-                        try
-                        {
-                            if (curr.IsWorking && curr.Hook_GetConfig(parameters.SourceChannel, parameters.User, parameters.Parameters))
-                                exist = true;
-                        }
-                        catch (Exception fail)
-                        {
-                            Syslog.Log("Error on Hook_GetConfig module " + curr.Name);
-                            Core.HandleException(fail);
-                        }
+                        if (curr.IsWorking && curr.Hook_GetConfig(parameters.SourceChannel, parameters.User, parameters.Parameters))
+                            exist = true;
+                    }
+                    catch (Exception fail)
+                    {
+                        Syslog.Log("Error on Hook_GetConfig module " + curr.Name);
+                        Core.HandleException(fail);
                     }
                 }
                 if (exist)
