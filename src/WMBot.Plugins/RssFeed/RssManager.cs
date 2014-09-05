@@ -299,7 +299,8 @@ namespace wmib.Extensions.RssFeed
             catch (Exception fail)
             {
                 RSS.m.Log("Unable to parse feed from " + url + " I will try to do that again " + item.retries + " times", true);
-                RSS.m.HandleException(fail, "Feed");
+                RSS.m.Log("Exception was: " + fail.Message + " stack: " + fail.StackTrace.ToString());
+                // RSS.m.HandleException(fail, "Feed");
                 string dump = Path.GetTempFileName();
                 File.WriteAllText(dump, temp);
                 RSS.m.Log("Dumped the source to " + dump);
