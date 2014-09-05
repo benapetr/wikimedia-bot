@@ -124,94 +124,71 @@ namespace wmib.Extensions
         public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
             WriteStatus(invoker.Nick, invoker.Host, channel.Name, item.Action.Talk);
-            if (message.StartsWith(Configuration.System.CommandPrefix + "seen "))
-            {
-                if (GetConfig(channel, "Seen.Enabled", false))
-                {
-                    string parameter = "";
-                    if (message.Contains(" "))
-                    {
-                        parameter = message.Substring(message.IndexOf(" ") + 1);
-                    }
-                    if (parameter != "")
-                    {
-                        RetrieveStatus(parameter, channel, invoker.Nick);
-                        return;
-                    }
-                }
-            }
-
-            if (message.StartsWith(Configuration.System.CommandPrefix + "seenrx "))
-            {
-                if (channel.SystemUsers.IsApproved(invoker, "trust"))
-                {
-                    if (GetConfig(channel, "Seen.Enabled", false))
-                    {
-                        string parameter = "";
-                        if (message.Contains(" "))
-                        {
-                            parameter = message.Substring(message.IndexOf(" ") + 1);
-                        }
-                        if (!String.IsNullOrEmpty(parameter))
-                        {
-                            RegEx(parameter, channel, invoker.Nick);
-                            return;
-                        }
-                    }
-                    return;
-                }
-                if (!channel.SuppressWarnings)
-                {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
-                }
-                return;
-            }
-
-            if (message == Configuration.System.CommandPrefix + "seen-off")
-            {
-                if (channel.SystemUsers.IsApproved(invoker, "admin"))
-                {
-                    if (!GetConfig(channel, "Seen.Enabled", false))
-                    {
-                        IRC.DeliverMessage(messages.Localize("seen-e2", channel.Language), channel.Name);
-                        return;
-                    }
-                    IRC.DeliverMessage(messages.Localize("seen-off", channel.Language), channel.Name);
-                    SetConfig(channel, "Seen.Enabled", false);
-                    channel.SaveConfig();
-                    return;
-                }
-                if (!channel.SuppressWarnings)
-                {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
-                }
-                return;
-            }
-
-            if (message == Configuration.System.CommandPrefix + "seen-on")
-            {
-                if (channel.SystemUsers.IsApproved(invoker, "admin"))
-                {
-                    if (GetConfig(channel, "Seen.Enabled", false))
-                    {
-                        IRC.DeliverMessage(messages.Localize("seen-oe", channel.Language), channel.Name);
-                        return;
-                    }
-                    SetConfig(channel, "Seen.Enabled", true);
-                    channel.SaveConfig();
-                    IRC.DeliverMessage(messages.Localize("seen-on", channel.Language), channel.Name);
-                    return;
-                }
-                if (!channel.SuppressWarnings)
-                {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
-                }
-            }
         }
 
         public override void Hook_Join(Channel channel, libirc.UserInfo user)
         {
             WriteStatus(user.Nick, user.Host, channel.Name, item.Action.Join);
+        }
+
+        public override bool Hook_OnRegister()
+        {
+            RegisterCommand(new GenericCommand("seenrx", this.cmSeenrx, true, "trust"));
+            RegisterCommand(new GenericCommand("seen", this.cmSeen));
+            RegisterCommand(new GenericCommand("seen-on", this.cmSeenOn, true, "admin"));
+            RegisterCommand(new GenericCommand("seen-off", this.cmSeenOff, true, "admin"));
+            return base.Hook_OnRegister();
+        }
+
+        private void cmSeenOn(CommandParams parameters)
+        {
+            if (GetConfig(parameters.SourceChannel, "Seen.Enabled", false))
+            {
+                IRC.DeliverMessage(messages.Localize("seen-oe", parameters.SourceChannel.Language), parameters.SourceChannel.Name);
+                return;
+            }
+            SetConfig(parameters.SourceChannel, "Seen.Enabled", true);
+            parameters.SourceChannel.SaveConfig();
+            IRC.DeliverMessage(messages.Localize("seen-on", parameters.SourceChannel.Language), parameters.SourceChannel.Name);
+        }
+
+        private void cmSeen(CommandParams parameters)
+        {
+            if (parameters.Parameters == null)
+                return;
+            if (GetConfig(parameters.SourceChannel, "Seen.Enabled", false) && parameters.Parameters != "")
+                    RetrieveStatus(parameters.Parameters, parameters.SourceChannel, parameters.User.Nick);
+        }
+
+        public override bool Hook_OnUnload()
+        {
+            UnregisterCommand("seen");
+            UnregisterCommand("seenrx");
+            UnregisterCommand("seen-on");
+            UnregisterCommand("seen-off");
+            return base.Hook_OnUnload();
+        }
+
+        private void cmSeenOff(CommandParams parameters)
+        {
+            if (!GetConfig(parameters.SourceChannel, "Seen.Enabled", false))
+            {
+                IRC.DeliverMessage(messages.Localize("seen-e2", parameters.SourceChannel.Language), parameters.SourceChannel.Name);
+                return;
+            }
+            IRC.DeliverMessage(messages.Localize("seen-off", parameters.SourceChannel.Language), parameters.SourceChannel.Name);
+            SetConfig(parameters.SourceChannel, "Seen.Enabled", false);
+            parameters.SourceChannel.SaveConfig();
+        }
+
+        private void cmSeenrx(CommandParams parameters)
+        {
+            if (string.IsNullOrEmpty(parameters.Parameters))
+                return;
+            if (GetConfig(parameters.SourceChannel, "Seen.Enabled", false))
+            {
+                RegEx(parameters.Parameters, parameters.SourceChannel, parameters.User.Nick);
+            }
         }
 
         public override void Hook_Nick(Channel channel, libirc.UserInfo Target, string OldNick)

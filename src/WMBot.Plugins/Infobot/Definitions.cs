@@ -21,14 +21,7 @@ namespace wmib.Extensions
     {
         public class InfobotKey
         {
-            /// <summary>
-            /// Text
-            /// </summary>
             public string Text;
-
-            /// <summary>
-            /// Key
-            /// </summary>
             public string Key;
 
             /// <summary>
@@ -80,42 +73,24 @@ namespace wmib.Extensions
                 User = _User;
                 Raw = RAW;
                 Displayed = Number;
-                if (time == "")
-                {
+                if (string.IsNullOrEmpty(time))
                     LastTime = NA;
-                }
                 else
-                {
                     LastTime = DateTime.FromBinary(long.Parse(time));
-                }
-                if (date == "")
-                {
+
+                if (string.IsNullOrEmpty(date))
                     CreationTime = DateTime.Now;
-                }
                 else
-                {
                     CreationTime = DateTime.FromBinary(long.Parse(date));
-                }
+
             }
         }
 
         public class InfobotAlias
         {
-            /// <summary>
-            /// Name
-            /// </summary>
             public string Name;
-
-            /// <summary>
-            /// Key
-            /// </summary>
             public string Key;
 
-            /// <summary>
-            /// Constructor
-            /// </summary>
-            /// <param name="name">Alias</param>
-            /// <param name="key">Key</param>
             public InfobotAlias(string name, string key)
             {
                 Name = name;
@@ -125,17 +100,8 @@ namespace wmib.Extensions
 
         public class InfoItem
         {
-            /// <summary>
-            /// Channel
-            /// </summary>
-            public Channel _Channel = null;
-            /// <summary>
-            /// User
-            /// </summary>
+            public Channel Channel = null;
             public libirc.UserInfo User = null;
-            /// <summary>
-            /// Name
-            /// </summary>
             public string Name = null;
         }
     }

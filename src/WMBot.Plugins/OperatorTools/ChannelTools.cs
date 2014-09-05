@@ -25,6 +25,73 @@ namespace wmib.Extensions
             return c.RetrieveUser(name);
         }
 
+        private void PermanentOn(CommandParams p)
+        {
+            if (GetConfig(p.SourceChannel, "OP.Permanent", false))
+            {
+                IRC.DeliverMessage(messages.Localize("OpE3", p.SourceChannel.Language), p.SourceChannel);
+                return;
+            }
+            IRC.DeliverMessage(messages.Localize("OpM3", p.SourceChannel.Language), p.SourceChannel);
+            SetConfig(p.SourceChannel, "OP.Permanent", true);
+            p.SourceChannel.SaveConfig();
+        }
+
+        private void PermanentOff(CommandParams p)
+        {
+            if (!GetConfig(p.SourceChannel, "OP.Permanent", false))
+            {
+                IRC.DeliverMessage(messages.Localize("OpE2", p.SourceChannel.Language), p.SourceChannel);
+                return;
+            }
+            IRC.DeliverMessage(messages.Localize("OpM2", p.SourceChannel.Language), p.SourceChannel);
+            SetConfig(p.SourceChannel, "OP.Permanent", false);
+            p.SourceChannel.SaveConfig();
+        }
+
+        private void Off(CommandParams p)
+        {
+            if (!GetConfig(p.SourceChannel, "OP.Enabled", false))
+            {
+                IRC.DeliverMessage(messages.Localize("OpE4", p.SourceChannel.Language), p.SourceChannel);
+                return;
+            }
+            IRC.DeliverMessage(messages.Localize("OpM4", p.SourceChannel.Language), p.SourceChannel);
+            SetConfig(p.SourceChannel, "OP.Enabled", false);
+            p.SourceChannel.SaveConfig();
+        }
+
+        private void On(CommandParams p)
+        {
+            if (GetConfig(p.SourceChannel, "OP.Enabled", false))
+            {
+                IRC.DeliverMessage(messages.Localize("OpE1", p.SourceChannel.Language), p.SourceChannel);
+                return;
+            }
+            IRC.DeliverMessage(messages.Localize("OpM1", p.SourceChannel.Language), p.SourceChannel.Name);
+            SetConfig(p.SourceChannel, "OP.Enabled", true);
+            p.SourceChannel.SaveConfig();
+        }
+
+        public override bool Hook_OnUnload()
+        {
+            UnregisterCommand("optools-on");
+            UnregisterCommand("optools-off");
+            UnregisterCommand("optools-permanent-on");
+            UnregisterCommand("optools-permanent-off");
+            //UnregisterCommand("kick");
+            return base.Hook_OnUnload();
+        }
+
+        public override bool Hook_OnRegister()
+        {
+            RegisterCommand(new GenericCommand("optools-on", this.On, false, "admin"));
+            RegisterCommand(new GenericCommand("optools-permanent-on", this.PermanentOn, true, "admin"));
+            RegisterCommand(new GenericCommand("optools-permanent-off", this.PermanentOff, true, "admin"));
+            RegisterCommand(new GenericCommand("optools-off", this.Off, true, "admin"));
+            return base.Hook_OnRegister();
+        }
+
         public void GetOp(Channel chan)
         {
             if (!GetConfig(chan, "OP.Permanent", false))
@@ -47,90 +114,6 @@ namespace wmib.Extensions
 
         public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
-            if (message.StartsWith(Configuration.System.CommandPrefix + "optools-on"))
-            {
-                if (channel.SystemUsers.IsApproved(invoker, "admin"))
-                {
-                    if (GetConfig(channel, "OP.Enabled", false))
-                    {
-                        IRC.DeliverMessage(messages.Localize("OpE1", channel.Language), channel);
-                        return;
-                    }
-                    IRC.DeliverMessage(messages.Localize("OpM1", channel.Language), channel.Name);
-                    SetConfig(channel, "OP.Enabled", true);
-                    channel.SaveConfig();
-                    return;
-                }
-                if (!channel.SuppressWarnings)
-                {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
-                }
-                return;
-            }
-
-            if (message == Configuration.System.CommandPrefix + "optools-permanent-off")
-            {
-                if (channel.SystemUsers.IsApproved(invoker, "admin"))
-                {
-                    if (!GetConfig(channel, "OP.Permanent", false))
-                    {
-                        IRC.DeliverMessage(messages.Localize("OpE2", channel.Language), channel);
-                        return;
-                    }
-                    IRC.DeliverMessage(messages.Localize("OpM2", channel.Language), channel);
-                    SetConfig(channel, "OP.Permanent", false);
-                    channel.SaveConfig();
-                    return;
-                }
-                if (!channel.SuppressWarnings)
-                {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, libirc.Defs.Priority.Low);
-                }
-                return;
-            }
-
-            if (message == Configuration.System.CommandPrefix + "optools-permanent-on")
-            {
-                if (channel.SystemUsers.IsApproved(invoker, "admin"))
-                {
-                    if (GetConfig(channel, "OP.Permanent", false))
-                    {
-                        IRC.DeliverMessage(messages.Localize("OpE3", channel.Language), channel);
-                        return;
-                    }
-                    IRC.DeliverMessage(messages.Localize("OpM3", channel.Language), channel);
-                    SetConfig(channel, "OP.Permanent", true);
-                    channel.SaveConfig();
-                    return;
-                }
-                if (!channel.SuppressWarnings)
-                {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, libirc.Defs.Priority.Low);
-                }
-                return;
-            }
-
-            if (message == Configuration.System.CommandPrefix + "optools-off")
-            {
-                if (channel.SystemUsers.IsApproved(invoker, "admin"))
-                {
-                    if (!GetConfig(channel, "OP.Enabled", false))
-                    {
-                        IRC.DeliverMessage(messages.Localize("OpE4", channel.Language), channel);
-                        return;
-                    }
-                    IRC.DeliverMessage(messages.Localize("OpM4", channel.Language), channel);
-                    SetConfig(channel, "OP.Enabled", false);
-                    channel.SaveConfig();
-                    return;
-                }
-                if (!channel.SuppressWarnings)
-                {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel, libirc.Defs.Priority.Low);
-                }
-                return;
-            }
-
             if (message.StartsWith(Configuration.System.CommandPrefix + "kick "))
             {
                 if (channel.SystemUsers.IsApproved(invoker, "admin"))

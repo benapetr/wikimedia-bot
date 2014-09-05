@@ -41,11 +41,8 @@ namespace wmib.Extensions
 
         // if we need to update dump
         public bool update = true;
-
         public static Channel ReplyChan = null;
-
         public static DateTime NA = DateTime.MaxValue;
-
         /// <summary>
         /// List of all items in class
         /// </summary>
@@ -55,18 +52,9 @@ namespace wmib.Extensions
         /// List of all aliases we want to use
         /// </summary>
         public List<InfobotAlias> Aliases = new List<InfobotAlias>();
-
         public Channel pChannel;
-
         private string search_key;
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="database"></param>
-        /// <param name="channel"></param>
-        /// <param name="module"></param>
-        /// <param name="sensitive"></param>
         public Infobot(string database, Channel channel, Module module, bool sensitive = true)
         {
             Sensitive = sensitive;
@@ -723,14 +711,11 @@ namespace wmib.Extensions
                     }
                 }
             }
-            if (results == "")
-            {
+            if (String.IsNullOrEmpty(results))
                 IRC.DeliverMessage(messages.Localize("ResultsWereNotFound", ReplyChan.Language), ReplyChan.Name);
-            }
             else
-            {
                 IRC.DeliverMessage(messages.Localize("Results", _channel.Language, new List<string> { count.ToString() }) + results, ReplyChan.Name);
-            }
+            // ??
             InfobotModule.running = false;
         }
 
@@ -742,9 +727,7 @@ namespace wmib.Extensions
         public void RSearch(string key, Channel Chan)
         {
             if (!key.StartsWith(Configuration.System.CommandPrefix + "regsearch"))
-            {
                 return;
-            }
             if (!misc.IsValidRegex(key))
             {
                 IRC.DeliverMessage(messages.Localize("Error1", Chan.Language), Chan.Name);

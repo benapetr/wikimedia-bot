@@ -132,7 +132,8 @@ namespace wmib
 
         protected void UnregisterCommand(string command)
         {
-            CommandPool.UnregisterCommand(command);
+            if (CommandPool.Exists(command))
+                CommandPool.UnregisterCommand(command);
         }
 
         public virtual void RegisterPermissions() { }

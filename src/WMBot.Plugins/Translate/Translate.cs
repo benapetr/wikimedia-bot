@@ -22,7 +22,9 @@ namespace wmib.Extensions
 {
     public class Translate : Module
     {
+        public static Buffer Ring = new Buffer();
         private string URL = "https://translate.yandex.net/api/v1.5/tr/";
+
         public class Buffer
         {
             public class Item
@@ -64,7 +66,47 @@ namespace wmib.Extensions
             }
         }
 
-        public static Buffer Ring = new Buffer();
+        public override bool Hook_OnRegister()
+        {
+            RegisterCommand(new GenericCommand("translate", this.translate));
+            return base.Hook_OnRegister();
+        }
+
+        private void translate(CommandParams p)
+        {
+            if (string.IsNullOrEmpty(p.Parameters))
+                return;
+
+
+            List<string> parts = new List<string>(p.Parameters.Split(' '));
+            if (parts.Count < 3)
+            {
+                IRC.DeliverMessage("Invalid number of parameters", p.SourceChannel);
+                return;
+            }
+            string target = null;
+            string source_language = parts[0];
+            string target_language = parts[1];
+            if (!IsValid(source_language) || !IsValid(target_language))
+            {
+                IRC.DeliverMessage(p.User.Nick + ": invalid language!", p.SourceChannel);
+                return;
+            }
+            string text = p.Parameters.Substring(p.Parameters.IndexOf(parts[1]) + parts[1].Length + 1);
+            if (text.Contains("|"))
+            {
+                target = text.Substring(text.IndexOf("|") + 1).Trim();
+                text = text.Substring(0, text.IndexOf("|"));
+            }
+            // schedule a message
+            Ring.Add(new Buffer.Item(p.SourceChannel, source_language, target_language, target, text));
+        }
+
+        public override bool Hook_OnUnload()
+        {
+            UnregisterCommand("translate");
+            return base.Hook_OnUnload();
+        }
 
         public override bool Construct()
         {
@@ -150,36 +192,6 @@ namespace wmib.Extensions
                 language_code.Contains("?"))
                 return false;
             return true;
-        }
-
-        public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
-        {
-            if (message.StartsWith(Configuration.System.CommandPrefix + "translate "))
-            {
-                message = message.Substring(11);
-                List<string> parts = new List<string>(message.Split(' '));
-                if (parts.Count < 3)
-                {
-                    IRC.DeliverMessage("Invalid number of parameters", channel);
-                    return;
-                }
-                string target = null;
-                string source_language = parts[0];
-                string target_language = parts[1];
-                if (!IsValid(source_language) || !IsValid(target_language))
-                {
-                    IRC.DeliverMessage(invoker.Nick + ": invalid language!", channel);
-                    return;
-                }
-                string text = message.Substring(message.IndexOf(parts[1]) + parts[1].Length + 1);
-                if (text.Contains("|"))
-                {
-                    target = text.Substring(text.IndexOf("|") + 1).Trim();
-                    text = text.Substring(0, text.IndexOf("|"));
-                }
-                // schedule a message
-                Ring.Add(new Buffer.Item(channel, source_language, target_language, target, text));
-            }
         }
     }
 }

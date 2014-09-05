@@ -258,7 +258,7 @@ namespace wmib.Extensions
                 Unwritable = true;
                 Infobot.InfoItem item = new Infobot.InfoItem
                 {
-                    _Channel = channel,
+                    Channel = channel,
                     Name = "!" + message.Substring(1),
                     User = invoker,
                 };
@@ -852,10 +852,10 @@ namespace wmib.Extensions
                         Unwritable = false;
                         foreach (Infobot.InfoItem item in list)
                         {
-                            Infobot infobot = (Infobot)item._Channel.RetrieveObject("Infobot");
+                            Infobot infobot = (Infobot)item.Channel.RetrieveObject("Infobot");
                             if (infobot != null)
                             {
-                                infobot.InfobotExec(item.Name, item.User, item._Channel);
+                                infobot.InfobotExec(item.Name, item.User, item.Channel);
                             }
                         }
                     }
