@@ -128,10 +128,11 @@ namespace wmib
                             case "info":
                                 string result = "Uptime: " + Core.getUptime() + " Version: " + Configuration.System.Version
                                     + "\n\nBuffer information:\nUnwritten lines (file storage): " + StorageWriter.Count + "\n";
+                                // we flush it early so that we can see where it gets stuck in case of a dead lock
+                                Write(result);
+                                result = "";
                                 if (Core.DB != null)
-                                {
                                     result += "Unwritten rows (MySQL): " + Core.DB.CacheSize() + "\n";
-                                }
                                 result += "\nThreads:\n";
                                 foreach (Thread thread in Core.ThreadManager.ThreadList)
                                 {
@@ -139,8 +140,8 @@ namespace wmib
                                               FormatToSpecSize(thread.ThreadState.ToString(), 20) +
                                               " id: " + FormatToSpecSize(thread.ManagedThreadId.ToString(), 8) + "\n";
                                 }
-                                result += "\nInstances:";
                                 Write(result);
+                                Write("Instances:");
                                 result = "";
                                 Syslog.DebugLog("Retrieving information for user " + username + " in system");
                                 foreach (Instance instance in Instance.Instances.Values)

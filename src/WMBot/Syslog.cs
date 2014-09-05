@@ -60,14 +60,12 @@ namespace wmib
         public static bool Log(string Message, bool Warning = false)
         {
             if (IsQuiet)
-            {
                 return false;
-            }
+
             Type MessageType = Type.Normal;
             if (Warning)
-            {
                 MessageType = Type.Warning;
-            }
+
             Logging.Write(Message, MessageType);
             SystemHooks.SystemLog(Message, MessageType);
             return true;
@@ -112,14 +110,12 @@ namespace wmib
         public static bool WriteNow(string Message, bool Warning = false)
         {
             if (IsQuiet)
-            {
                 return false;
-            }
+
             Type _Type = Type.Normal;
             if (Warning)
-            {
                 _Type = Type.Warning;
-            }
+
             Logging.Display(DateTime.Now, Message, _Type);
             SystemHooks.SystemLog(Message, _Type);
             return true;
@@ -140,9 +136,7 @@ namespace wmib
         public static bool WriteNow(string Message, Type MessageType)
         {
             if (IsQuiet)
-            {
                 return false;
-            }
             Logging.Display(DateTime.Now, Message, MessageType);
             SystemHooks.SystemLog(Message, MessageType);
             return true;
@@ -197,7 +191,7 @@ namespace wmib
             /// <summary>
             /// Is a warning
             /// </summary>
-            public Syslog.Type _Type;
+            public Syslog.Type Type;
 
             /// <summary>
             /// Initializes a new instance of the class.
@@ -215,7 +209,7 @@ namespace wmib
             {
                 this.Text = text;
                 this.Time = time;
-                this._Type = MT;
+                this.Type = MT;
             }
         }
 
@@ -263,14 +257,16 @@ namespace wmib
                     Console.ForegroundColor = ConsoleColor.Yellow;
                 }
                 Console.Write(" [WARNING]");
-            } else if (MessageType == Syslog.Type.Error)
+            }
+            else if (MessageType == Syslog.Type.Error)
             {
                 if (Configuration.System.Colors)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                 }
                 Console.Write("   [ERROR]");
-            } else
+            }
+            else
             {
                 if (Configuration.System.Colors)
                 {
@@ -290,14 +286,14 @@ namespace wmib
             if (messages.Count > 0)
             {
                 List<Message> priv = new List<Message>();
-                lock(messages)
+                lock (messages)
                 {
                     priv.AddRange(messages);
                     messages.Clear();
                 }
                 foreach (Message message in priv)
                 {
-                    Display(message.Time, message.Text, message._Type);
+                    Display(message.Time, message.Text, message.Type);
                 }
             }
         }
