@@ -195,8 +195,8 @@ namespace wmib
                 }
                 string modules = "";
                 bool respond = !Commands.Trusted(args.Message, args.SourceInfo.Nick, args.SourceInfo.Host);
-                if (respond)
-                    modules += "trusted";
+                if (!respond)
+                    modules += "@trusted ";
                 foreach (Module module in ExtensionHandler.ExtensionList)
                 {
                     if (module.IsWorking)
