@@ -215,7 +215,6 @@ namespace wmib
                         }
                     }
                 }
-                modules.Trim();
                 if (respond)
                 {
                     IRC.DeliverMessage("Hi, I am robot, this command was not understood." +
@@ -228,6 +227,7 @@ namespace wmib
                 }
                 else
                 {
+                    modules = Core.Trim(modules);
                     Syslog.Log("Private message: (handled by " + modules + " from " + args.SourceInfo.Nick + ") " +
                                args.Message, false);
                 }

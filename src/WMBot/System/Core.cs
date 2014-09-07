@@ -152,6 +152,17 @@ namespace wmib
             }
         }
 
+        public static string Trim(string input)
+        {
+            if (String.IsNullOrEmpty(input))
+                return input;
+            while (input.StartsWith(" "))
+                input = input.Substring(1);
+            while (input.EndsWith(" "))
+                input = input.Substring(0, input.Length - 1);
+            return input;
+        }
+
         /// <summary>
         /// Get a channel object
         /// </summary>
