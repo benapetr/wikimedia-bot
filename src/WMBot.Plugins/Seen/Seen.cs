@@ -216,7 +216,7 @@ namespace wmib.Extensions
             try
             {
                 LoadData();
-                while (true)
+                while (this.IsWorking)
                 {
                     if (save)
                     {
@@ -230,9 +230,7 @@ namespace wmib.Extensions
             {
                 Save();
                 if (SearchThread.ThreadState == ThreadState.Running)
-                {
-                    SearchThread.Abort();
-                }
+                    wmib.Core.ThreadManager.KillThread(SearchThread);
             }
             catch (Exception fail)
             {
@@ -379,7 +377,7 @@ namespace wmib.Extensions
                                         break;
                                     case item.Action.Exit:
                                         string reason = xx.quit;
-                                        if (reason == "")
+                                        if (String.IsNullOrEmpty(reason))
                                         {
                                             reason = "no reason was given";
                                         }
@@ -388,18 +386,11 @@ namespace wmib.Extensions
                                 }
                                 TimeSpan span2 = DateTime.Now - xx.LastSeen;
                                 if (xx.lastplace == null)
-                                {
                                     xx.lastplace = "N/A";
-                                }
-    
                                 if (xx.LastAc == item.Action.Exit)
-                                {
                                     response = "Last time I saw " + xx.nick + " they were " + action + " at " + xx.LastSeen + " (" + FormatTimeSpan(span2) + " ago)";
-                                }
                                 else
-                                {
                                     response = "Last time I saw " + xx.nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen + " (" + FormatTimeSpan(span2) + " ago)";
-                                }
                             }
                         }
                     }
@@ -408,46 +399,43 @@ namespace wmib.Extensions
                         response = "are you really looking for yourself?";
                         IRC.DeliverMessage(temp_source + ": " + response, chan.Name);
                         Working = false;
-                        return;
+                        goto ex;
                     }
                     if (temp_nick.ToUpper() == Configuration.IRC.NickName.ToUpper())
                     {
                         response = "I am right here";
                         IRC.DeliverMessage(temp_source + ": " + response, chan.Name);
                         Working = false;
-                        return;
+                        goto ex;
                     }
                     if (chan.ContainsUser(temp_nick))
-                    {
                         response = temp_nick + " is in here, right now";
-                    }
                     if (multiple)
                     {
                         if (results.Length > 2)
-                        {
                             results = results.Substring(0, results.Length - 2);
-                        }
                         if (cn > 5)
-                        {
                             results = results + " and " + (cn - 5) + " more results";
-                        }
                         response += " (multiple results were found: " + results + ")";
                     }
                     IRC.DeliverMessage(temp_source + ": " + response, chan.Name);
                     Working = false;
-                    return;
+                    goto ex;
                 }
                 IRC.DeliverMessage(messages.Localize("Error1", chan.Language), chan.Name);
                 Working = false;
             }
             catch (ThreadAbortException)
             {
+                goto ex;
             }
             catch (Exception fail)
             {
                 HandleException(fail);
                 IsWorking = false;
             }
+            ex:
+                Core.ThreadManager.UnregisterThread(SearchThread);
         }
 
         public void StartRegex()
@@ -479,12 +467,12 @@ namespace wmib.Extensions
                 }
             }
             catch (ThreadAbortException)
-            {
-            }
+            { }
             catch (Exception fail)
             {
                 HandleException(fail);
             }
+            Core.ThreadManager.UnregisterThread(SearchHostThread);
         }
 
         public void RegEx2(string nick, Channel channel, string source)
@@ -495,6 +483,8 @@ namespace wmib.Extensions
                 temp_source = source;
                 chan = channel;
                 SearchThread = new Thread(Search);
+                SearchThread.Name = "Module:Seen/Search";
+                wmib.Core.ThreadManager.RegisterThread(SearchThread);
                 SearchThread.Start();
                 Working = true;
                 int curr = 0;
@@ -504,7 +494,7 @@ namespace wmib.Extensions
                     curr++;
                     if (curr > 80)
                     {
-                        SearchThread.Abort();
+                        Core.ThreadManager.KillThread(SearchThread);
                         IRC.DeliverMessage("This search took too much time, please optimize query", channel.Name);
                         Working = false;
                         break;
@@ -780,6 +770,8 @@ namespace wmib.Extensions
         public void LoadData()
         {
             SearchHostThread = new Thread(StartRegex);
+            SearchHostThread.Name = "Module:Seen/SearchHostThread";
+            Core.ThreadManager.RegisterThread(SearchHostThread);
             SearchHostThread.Start();
             try
             {
