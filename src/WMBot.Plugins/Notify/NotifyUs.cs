@@ -170,6 +170,9 @@ namespace wmib.Extensions
 
         public void cmNotify(CommandParams pm)
         {
+            if (String.IsNullOrEmpty(pm.Parameters))
+                return;
+
             this.NotifyUser(pm.Message, pm.User, pm.SourceChannel);
         }
 
