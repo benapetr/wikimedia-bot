@@ -135,7 +135,10 @@ namespace wmib
             {
                 if (!string.IsNullOrEmpty(Configuration.System.DebugChan))
                 {
-                    IRC.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText, Configuration.System.DebugChan);
+                    if (Configuration.System.SelectedVerbosity > 0)
+                        IRC.DeliverMessage("DEBUG Exception: " + ex.Message + " st: " + ex.StackTrace.Replace(Environment.NewLine, ""), Configuration.System.DebugChan);
+                    else
+                        IRC.DeliverMessage("DEBUG Exception: " + ex.Message + " last input was " + LastText, Configuration.System.DebugChan);
                 }
                 if (ex.InnerException != null)
                 {
