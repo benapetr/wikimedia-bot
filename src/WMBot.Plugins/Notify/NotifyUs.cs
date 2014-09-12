@@ -25,7 +25,7 @@ namespace wmib.Extensions
 
         public override bool Hook_OnUnload()
         {
-            CommandPool.UnregisterCommand("notify");
+            UnregisterCommand("notify");
             lock (Notification.NotificationList)
             {
                 foreach (Notification nt in Notification.NotificationList)
@@ -227,7 +227,7 @@ namespace wmib.Extensions
 
         public override bool Hook_OnRegister()
         {
-            CommandPool.RegisterCommand(new GenericCommand("notify", this.cmNotify));
+            RegisterCommand(new GenericCommand("notify", this.cmNotify));
             Core.Help.Register("notify", "inform you when specified user become active or join some channel in private message");
             return true;
         }
