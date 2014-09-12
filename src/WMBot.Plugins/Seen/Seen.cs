@@ -229,7 +229,7 @@ namespace wmib.Extensions
             catch (ThreadAbortException)
             {
                 Save();
-                if (SearchThread.ThreadState == ThreadState.Running)
+                if (SearchThread != null && SearchThread.ThreadState == ThreadState.Running)
                     wmib.Core.ThreadManager.KillThread(SearchThread);
             }
             catch (Exception fail)
