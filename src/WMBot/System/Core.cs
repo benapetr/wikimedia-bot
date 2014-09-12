@@ -109,8 +109,12 @@ namespace wmib
             {
                 if (!string.IsNullOrEmpty(Configuration.System.DebugChan))
                 {
-                    IRC.DeliverMessage("DEBUG Exception in module " + module + ": " + ex.Message + " last input was "
-                                                  + LastText, Configuration.System.DebugChan);
+                    if (Configuration.System.SelectedVerbosity > 0)
+                        IRC.DeliverMessage("DEBUG Exception in module " + module + ": " + ex.Message + " st: "
+                                                     + ex.StackTrace.Replace(Environment.NewLine, ""), Configuration.System.DebugChan);
+                    else
+                        IRC.DeliverMessage("DEBUG Exception in module " + module + ": " + ex.Message + " last input was "
+                                                     + LastText, Configuration.System.DebugChan);
                 }
                 Syslog.Log("DEBUG Exception in module " + module + ": " + ex.Message + ex.Source + ex.StackTrace, true);
             }
