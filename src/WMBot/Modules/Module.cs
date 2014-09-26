@@ -425,18 +425,7 @@ namespace wmib
         /// <param name="chan">Channel name</param>
         public void HandleException(Exception ex, string chan = "")
         {
-            try
-            {
-                if (!string.IsNullOrEmpty(Configuration.System.DebugChan))
-                {
-                    IRC.DeliverMessage("DEBUG Exception in plugin " + Name + ": " + ex.Message +
-                                                       " last input was " + Core.LastText,
-                                                       Configuration.System.DebugChan);
-                }
-                Syslog.Log("DEBUG Exception in module " + Name + ": " + ex.Message + ex.Source + ex.StackTrace, true);
-            }
-            catch (Exception) // exception happened while we tried to handle another one, ignore that (probably issue with logging)
-            { }
+            Core.HandleException(ex, this.Name);
         }
 
         /// <summary>
