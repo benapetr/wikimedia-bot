@@ -1,9 +1,9 @@
 #!/bin/sh
 
-p="/p:Configuration=Release"
+p="/p:Configuration=Debug"
 
-if [ "$1" = "--debug" ]; then
-    p="/p:Configuration=Debug"
+if [ "$1" = "--rl" ]; then
+    p="/p:Configuration=Release"
 fi
 
 echo "Checking all required packages..."
