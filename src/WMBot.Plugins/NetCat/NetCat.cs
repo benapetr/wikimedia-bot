@@ -110,7 +110,7 @@ namespace wmib.Extensions
                 Log("NetCat listening on port " + Port);
                 TcpListener server = new TcpListener(IPAddress.Any, Port);
                 server.Start();
-                while (true)
+                while (IsWorking)
                 {
                     try
                     {
@@ -129,6 +129,10 @@ namespace wmib.Extensions
                         HandleException(fail);
                     }
                 }
+            }
+            catch (ThreadAbortException)
+            {
+                return;
             }
             catch (Exception fail)
             {
