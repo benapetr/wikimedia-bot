@@ -680,6 +680,7 @@ wm2014|https://wikimania2014.wikimedia.org/wiki/$1
 wmania|https://wikimania.wikimedia.org/wiki/$1
 wmcz|https://meta.wikimedia.org/wiki/Wikimedia_Czech_Republic/$1
 wmf|https://wikimediafoundation.org/wiki/$1
+wmin|http://wiki.wikimedia.in/$1
 wmrs|https://rs.wikimedia.org/wiki/$1
 wmse|https://se.wikimedia.org/wiki/$1
 wo|https://wo.wikipedia.org/wiki/$1
