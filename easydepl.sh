@@ -79,6 +79,7 @@ fi
 
 text "Updating the binary file"
 cp "$source/bin/wmib.exe" "$target/wmib.exe" || exit 1
+cp "$source/bin/*.mdb" "$target/"
 cp "$source/configuration/sites" "$target/sites" || exit 1
 cp "$source/configuration/linkie" "$target/configuration/linkie" || exit 1
 cp `ls $source/bin/modules_debug/*.dll | grep -v Plugins.dll` "$target/" || exit 1
