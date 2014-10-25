@@ -163,6 +163,8 @@ namespace wmib.Extensions
             double b = 0;
             foreach (string name in a)
             {
+                if (name.EndsWith("~"))
+                    continue;
                 FileInfo info = new FileInfo(name);
                 b += info.Length;
             }
