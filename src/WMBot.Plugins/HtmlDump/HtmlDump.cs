@@ -185,7 +185,7 @@ namespace wmib.Extensions
                 foreach (Channel chan in Configuration.ChannelList)
                 {
                     builder.AppendLine("<tr>");
-                    builder.AppendFormat("<td><a href=\"{0}.htm\">{1}</a></td><td>\n", HttpUtility.UrlEncode(chan.Name),
+                    builder.AppendFormat("<td><a href=\"{0}.htm\">{1}</a> (" + chan.IrcChannel.UserCount.ToString() + ")</td><td>\n", HttpUtility.UrlEncode(chan.Name),
                         chan.Name);
                     builder.AppendLine("infobot: " + Module.GetConfig(chan, "Infobot.Enabled", true)
                                        + ", Recent Changes: " + Module.GetConfig(chan, "RC.Enabled", false)
