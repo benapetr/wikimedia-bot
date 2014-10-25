@@ -28,7 +28,7 @@ do
     current_bouncer=`expr $current_bouncer + 1`
     if [ ! -f "$BH/bouncer_$current_bouncer.pid" ];then
         echo "INFO: Starting bouncer $current_bouncer"
-        nohup $BH/scripts/start_bouncer.sh $current_bouncer ${port[$current_bouncer]} &
+        nohup $BH/scripts/start_bouncer.sh $current_bouncer ${port[$current_bouncer]} > /dev/null 2>&1 &
     fi
 done
 
@@ -41,7 +41,7 @@ if [ -f "$BH/wmib.pid" ];then
 fi
 
 echo "Starting bot core in nohup... (this can be a little spammy you know)"
-nohup $BH/restart.sh &
+nohup $BH/restart.sh > /dev/null 2>&1 &
 echo "That's all folks"
 
 exit 0
