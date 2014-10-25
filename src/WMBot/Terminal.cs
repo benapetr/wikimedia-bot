@@ -102,7 +102,7 @@ namespace wmib
                         Disconnect("No permissions, bye");
                         return;
                     }
-                    Write("Successfuly logged in to wm-bot, I have " + SessionList.Count + " users logged in");
+                    Write("Successfuly logged in to wm-bot, I have " + SessionList.Count.ToString() + " users logged in");
                     while (connection.Connected && !streamReader.EndOfStream && Core.IsRunning)
                     {
                         string text = streamReader.ReadLine();
