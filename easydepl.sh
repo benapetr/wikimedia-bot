@@ -84,6 +84,7 @@ cp "$source/configuration/linkie" "$target/configuration/linkie" || exit 1
 cp `ls $source/bin/modules_debug/*.dll | grep -v Plugins.dll` "$target/" || exit 1
 cp "$source"/bin/*.dll "$target/" || exit 1
 cp "$source"/bin/modules_debug/*Plugins.dll "$target/modules" || exit 1
+cp "$source"/bin/debug/modules/*Plugins.dll "$target/modules" || exit 1
 ok
 
 text "Restarting the bot"
