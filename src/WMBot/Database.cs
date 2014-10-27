@@ -34,12 +34,12 @@ namespace wmib
                 /// <summary>
                 /// Data
                 /// </summary>
-                public string Data = null;
+                public string Data;
 
                 public Value()
                 {
-                    Data = "false";
-                    Type = DataType.Boolean;
+                    this.Data = "false";
+                    this.Type = DataType.Boolean;
                 }
 
                 /// <summary>
@@ -81,6 +81,8 @@ namespace wmib
                 /// <param name="type"></param>
                 public Value(string text, DataType type)
                 {
+                    if (text == null)
+                        throw new NullReferenceException("Text can't be null");
                     Data = text;
                     Type = type;
                 }
