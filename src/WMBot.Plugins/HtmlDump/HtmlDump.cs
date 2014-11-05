@@ -47,9 +47,9 @@ namespace wmib.Extensions
                 {
                     if (GetConfig(chan, "HTML.Update", true))
                     {
+                        DebugLog("Making dump for " + chan.Name);
                         HtmlDumpObj dump = new HtmlDumpObj(chan);
                         dump.Make();
-                        Syslog.DebugLog("Making dump for " + chan.Name);
                         SetConfig(chan, "HTML.Update", false);
                     }
                 }
@@ -69,7 +69,7 @@ namespace wmib.Extensions
         /// <summary>
         /// Dump
         /// </summary>
-        public string dumpname;
+        private string dumpname;
 
         /// <summary>
         /// Constructor

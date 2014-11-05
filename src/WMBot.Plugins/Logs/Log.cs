@@ -28,9 +28,9 @@ namespace wmib.Extensions
 
         public class Item
         {
-            public string username = null;
+            public string username = "";
             public DateTime time;
-            public string message = null;
+            public string message = "";
             public bool act = false;
             // 0 chat
             // 1 quit
@@ -40,7 +40,7 @@ namespace wmib.Extensions
             // 5 topic change
             // 6 nick change
             public int type;
-            public string host;
+            public string host = "";
             public Channel channel;
         }
 
@@ -197,6 +197,7 @@ namespace wmib.Extensions
                 Item item = new Item();
                 item.channel = channel;
                 item.act = false;
+                item.host = source.Host;
                 item.message = source.Nick;
                 item.time = DateTime.Now;
                 item.type = 4;
