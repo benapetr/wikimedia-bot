@@ -181,6 +181,14 @@ namespace wmib
             return GetConfigFilePath(this.Name);
         }
 
+        public libirc.Channel GetChannel()
+        {
+            if (this.IrcChannel == null)
+                this.RefetchChannel();
+
+            return this.IrcChannel;
+        }
+
         protected void RefetchChannel()
         {
             if (this.IrcChannel == null)
