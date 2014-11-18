@@ -177,18 +177,24 @@ namespace wmib.Extensions
         /// </summary>
         public static void Stat()
         {
+            int line = 0;
             try
             {
+                
                 Thread.Sleep(2000);
                 StringBuilder builder = new StringBuilder(CreateHeader("System info"));
+                line = 3;
                 builder.AppendLine("<h1>System data</h1><p class=info>List of channels:</p>");
                 builder.AppendLine("<table class=\"channels\">");
                 builder.AppendLine("<tr><th>Channel name</th><th>Options</th></tr>");
+                line = 6;
                 foreach (Channel chan in Configuration.ChannelList)
                 {
                     builder.AppendLine("<tr>");
+                    line = 8;
                     builder.AppendFormat("<td><a href=\"{0}.htm\">{1}</a> (" + chan.IrcChannel.UserCount.ToString() + ")</td><td>\n", HttpUtility.UrlEncode(chan.Name),
                         chan.Name);
+                    line = 9;
                     builder.AppendLine("infobot: " + Module.GetConfig(chan, "Infobot.Enabled", true)
                                        + ", Recent Changes: " + Module.GetConfig(chan, "RC.Enabled", false)
                                        + ", Logs: " + Module.GetConfig(chan, "Logging.Enabled", false)
@@ -198,50 +204,66 @@ namespace wmib.Extensions
                                        + ", statistics: " + Module.GetConfig(chan, "Statistics.Enabled", false)
                                        + " Instance: " + chan.PrimaryInstance.Nick + "</td></tr>");
                 }
+                line = 10;
                 builder.AppendLine("</table>Uptime: " + Core.getUptime() + " Memory usage: " +
                         (Process.GetCurrentProcess().PrivateMemorySize64 / 1024) + "kb Database size: " + getSize());
+                line = 11;
                 foreach (Module mm in ExtensionHandler.ExtensionList)
                 {
                     string text = string.Empty;
+                    line = 12;
                     mm.Hook_BeforeSysWeb(ref text);
                     builder.AppendLine(text);
                 }
+                line = 13;
                 builder.AppendFormat("<br />Core version: {0}<br />\n", Configuration.System.Version);
                 builder.AppendFormat("<h2>Bots</h2>");
                 builder.AppendFormat("<table class=\"text\"><th>Name</th><th>Status</th><th>Bouncer</th>");
+                line = 16;
                 foreach (Instance xx in Instance.Instances.Values)
                 {
                     string status = "Online in " + xx.ChannelCount + " channels";
+                    line = 17;
                     if (!xx.IsWorking || !xx.IsConnected)
                     {
                         status = "Disconnected";
                     }
+                    line = 18;
                     builder.AppendLine("<tr><td>" + xx.Nick + "</td><td>" + status + "</td><td>" + xx.Port + "</td></tr>");
                 }
+                line = 20;
                 builder.AppendLine("</table>");
                 builder.AppendLine("<h2>Permissions</h2>");
                 builder.AppendLine("<table class=\"permissions\">");
                 builder.AppendLine("  <tr><th>Role</th><th>Permissions</th><th>Roles</th></tr>");
+                line = 24;
                 lock (Security.Roles)
                 {
                     foreach (string rn in Security.Roles.Keys)
                     {
                         Security.Role role = Security.Roles[rn];
+                        line = 25;
                         builder.AppendLine("<tr><td valign=top>" + rn + "</td><td valign=top>");
+                        line = 26;
                         foreach (string permission in role.Permissions)
                             builder.AppendLine(permission + "<br>");
+                        line = 27;
                         builder.AppendLine("</td><td valign=top>");
+                        line = 28;
                         foreach (Security.Role sr in role.Roles)
                             builder.AppendLine(Security.GetNameOfRole(sr) + "</br>");
+                        line = 29;
                         builder.AppendLine("</td></tr>");
                     }
                 }
+                line = 30;
                 builder.AppendLine("</table>");
                 builder.AppendLine("<h2>Plugins</h2>");
                 builder.AppendLine("<table class=\"modules\">");
                 foreach (Module module in ExtensionHandler.ExtensionList)
                 {
                     string status = "Terminated";
+                    line = 40;
                     if (module.IsWorking)
                     {
                         status = "OK";
@@ -250,16 +272,20 @@ namespace wmib.Extensions
                             status += " - RECOVERING";
                         }
                     }
+                    line = 41;
                     builder.AppendLine("<tr><td>" + module.Name + " (" + module.Version + ")</td><td>" + status +
                                        " (startup date: " + module.Date + ")</td></tr>");
                 }
+                line = 42;
                 builder.AppendLine("</table>");
                 builder.AppendLine();
                 builder.AppendLine(CreateFooter());
+                line = 43;
                 File.WriteAllText(Configuration.Paths.DumpDir + "/systemdata.htm", builder.ToString());
             }
             catch (Exception b)
             {
+                Syslog.Log("HTMLDUMP debug line " + line.ToString());
                 Core.HandleException(b, "HtmlDump");
             }
         }
