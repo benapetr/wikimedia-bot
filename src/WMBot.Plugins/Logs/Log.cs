@@ -502,12 +502,12 @@ namespace wmib.Extensions
             }
         }
 
-        public override void Hook_OnSelf(Channel channel, libirc.UserInfo self, string message)
+        public override void Hook_OnSelf(Channel channel, libirc.UserInfo self, string message, bool is_act = false)
         {
             if (channel == null || channel.PrimaryInstance == null)
                 return;
 
-            ChanLog(message, channel, channel.PrimaryInstance.Nick, "");
+            ChanLog(message, channel, channel.PrimaryInstance.Nick, "", !is_act);
         }
 
         /// <summary>

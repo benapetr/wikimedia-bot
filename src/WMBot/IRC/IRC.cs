@@ -54,7 +54,16 @@ namespace wmib
             Instance.PrimaryInstance.Network.Message(text, target.Nick, priority);
         }
 
-        public static void DeliverMessage(string text, string target, libirc.Defs.Priority priority = libirc.Defs.Priority.Normal)
+        public static void DeliverAction(string text, Channel target, libirc.Defs.Priority priority = libirc.Defs.Priority.Normal)
+        {
+            if (!target.Suppress)
+            {
+                SelfAct(text, target);
+                target.PrimaryInstance.Network.Act(text, target.Name, priority);
+            }
+        }
+
+        private static void dm(string text, string target, libirc.Defs.Priority priority = libirc.Defs.Priority.Normal, bool is_act = false)
         {
             // get a target instance
             if (target.StartsWith("#"))
@@ -74,7 +83,14 @@ namespace wmib
                 if (!ch.Suppress)
                 {
                     Self(text, ch);
-                    ch.PrimaryInstance.Network.Message(text, target, priority);
+                    if (!is_act)
+                    {
+                        ch.PrimaryInstance.Network.Message(text, target, priority);
+                    }
+                    else
+                    {
+                        ch.PrimaryInstance.Network.Act(text, target, priority);
+                    }
                 }
             }
             else
@@ -83,12 +99,32 @@ namespace wmib
                 {
                     if (Instance.TargetBuffer.ContainsKey(target))
                     {
-                        Instance.TargetBuffer[target].Network.Message(text, target, priority);
+                        if (is_act)
+                        {
+                            Instance.TargetBuffer[target].Network.Act(text, target, priority);
+                        }
+                        else
+                        {
+                            Instance.TargetBuffer[target].Network.Message(text, target, priority);
+                        }
                         return;
                     }
                 }
-                Instance.PrimaryInstance.Network.Message(text, target, priority);
+                if (!is_act)
+                    Instance.PrimaryInstance.Network.Message(text, target, priority);
+                else
+                    Instance.PrimaryInstance.Network.Act(text, target, priority);
             }
+        }
+
+        public static void DeliverAction(string text, string target, libirc.Defs.Priority priority = libirc.Defs.Priority.Normal)
+        {
+            dm(text, target, priority, true);
+        }
+
+        public static void DeliverMessage(string text, string target, libirc.Defs.Priority priority = libirc.Defs.Priority.Normal)
+        {
+            dm(text, target, priority);
         }
 
         /// <summary>
@@ -104,6 +140,24 @@ namespace wmib
                     if (module.IsWorking)
                     {
                         module.Hook_OnSelf(channel, new libirc.UserInfo(Configuration.IRC.NickName, "wmib", "wikimedia/bot/wm-bot"), message);
+                    }
+                }
+                catch (Exception fail)
+                {
+                    Core.HandleException(fail, module.Name);
+                }
+            }
+        }
+
+        private static void SelfAct(string message, Channel channel)
+        {
+            foreach (Module module in ExtensionHandler.ExtensionList)
+            {
+                try
+                {
+                    if (module.IsWorking)
+                    {
+                        module.Hook_OnSelf(channel, new libirc.UserInfo(Configuration.IRC.NickName, "wmib", "wikimedia/bot/wm-bot"), message, true);
                     }
                 }
                 catch (Exception fail)

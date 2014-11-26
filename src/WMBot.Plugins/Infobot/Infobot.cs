@@ -332,10 +332,20 @@ namespace wmib.Extensions
             }
             List<string> Parameters = new List<string>(text.Split(' '));
             string value_ = ParseInfo(Parameters, text, Key, fu);
-            if (String.IsNullOrEmpty(Target_))
-                IRC.DeliverMessage(value_, chan);
+            if (Key.IsAct)
+            {
+                if (String.IsNullOrEmpty(Target_))
+                    IRC.DeliverAction(value_, chan);
+                else
+                    IRC.DeliverAction(Target_ + ": " + value_, chan);
+            }
             else
-                IRC.DeliverMessage(Target_ + ": " + value_, chan);
+            {
+                if (String.IsNullOrEmpty(Target_))
+                    IRC.DeliverMessage(value_, chan);
+                else
+                    IRC.DeliverMessage(Target_ + ": " + value_, chan);
+            }
             Key.Displayed++;
             Key.LastTime = DateTime.Now;
             this.StoreDB();
@@ -380,8 +390,9 @@ namespace wmib.Extensions
                 if (Parameters.Count > 1)
                 {
                     // someone want to create a new key
-                    if (Parameters[1] == "is")
+                    if (Parameters[1] == "is" || Parameters[1] == "act")
                     {
+                        bool isAct = Parameters[1] == "act";
                         // check if they are approved to do that
                         if (chan.SystemUsers.IsApproved(user, InfobotModule.PermissionAdd))
                         {
@@ -400,10 +411,18 @@ namespace wmib.Extensions
                                 return true;
                             }
                             // get a key name
-                            string key = message.Substring(message.IndexOf(" is") + 4);
+                            string key;
+                            if (!isAct)
+                            {
+                                key = message.Substring(message.IndexOf(" is") + 4);
+                            }
+                            else
+                            {
+                                key = message.Substring(message.IndexOf(" act") + 5);
+                            }
                             if (infobot != null)
                             {
-                                infobot.SetKey(key, Parameters[0], user.Nick, chan);
+                                infobot.SetKey(key, Parameters[0], user.Nick, chan, isAct);
                                 return true;
                             }
                         }
@@ -893,7 +912,7 @@ namespace wmib.Extensions
         /// <param name="key">Key</param>
         /// <param name="user">User who created it</param>
         /// <param name="chan"></param>
-        public void SetKey(string Text, string key, string user, Channel chan)
+        public void SetKey(string Text, string key, string user, Channel chan, bool isact)
         {
             lock (this)
             {
@@ -907,7 +926,7 @@ namespace wmib.Extensions
                         }
                         return;
                     }
-                    Keys.Add(new InfobotKey(key, Text, user, "false"));
+                    Keys.Add(new InfobotKey(key, Text, user, "false", "", "", 0, false, isact));
                     IRC.DeliverMessage(messages.Localize("infobot6", chan.Language), chan);
                     this.StoreDB();
                 }

@@ -38,6 +38,7 @@ namespace wmib.Extensions
             /// Creation time of key
             /// </summary>
             public DateTime CreationTime;
+            public bool IsAct = false;
 
             /// <summary>
             /// If key is raw or not
@@ -65,13 +66,14 @@ namespace wmib.Extensions
             /// <param name="time"></param>
             /// <param name="Number"></param>
             /// <param name="RAW"></param>
-            public InfobotKey(string key, string text, string _User, string Lock = "false", string date = "", string time = "", int Number = 0, bool RAW = false)
+            public InfobotKey(string key, string text, string _User, string Lock = "false", string date = "", string time = "", int Number = 0, bool RAW = false, bool act = false)
             {
-                Text = text;
-                Key = key;
-                IsLocked = Lock;
-                User = _User;
-                Raw = RAW;
+                this.Text = text;
+                this.Key = key;
+                this.IsLocked = Lock;
+                this.User = _User;
+                this.Raw = RAW;
+                this.IsAct = act;
                 Displayed = Number;
                 if (string.IsNullOrEmpty(time))
                     LastTime = NA;

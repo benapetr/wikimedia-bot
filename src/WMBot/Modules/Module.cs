@@ -245,7 +245,7 @@ namespace wmib
         /// <param name="channel"></param>
         /// <param name="self"></param>
         /// <param name="message"></param>
-        public virtual void Hook_OnSelf(Channel channel, libirc.UserInfo self, string message) { }
+        public virtual void Hook_OnSelf(Channel channel, libirc.UserInfo self, string message, bool is_act = false) { }
 
         /// <summary>
         /// This is a private hook of html extension, each module can have a block of text in system page

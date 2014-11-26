@@ -21,10 +21,6 @@ namespace wmib
         /// <summary>
         /// Join channel
         /// </summary>
-        /// <param name="channel">Channel</param>
-        /// <param name="user">User</param>
-        /// <param name="host">Host</param>
-        /// <param name="message">Message</param>
         public static void AddChannel(CommandParams parameters)
         {
             if (!String.IsNullOrEmpty(parameters.Parameters))
