@@ -74,8 +74,10 @@ namespace wmib.Extensions
                         last.Value = key.LastTime.ToBinary().ToString();
                         XmlAttribute triggered = data.CreateAttribute("triggered");
                         triggered.Value = key.Displayed.ToString();
-                        XmlAttribute k = data.CreateAttribute("raw");
-                        k.Value = key.Raw.ToString();
+                        XmlAttribute act = data.CreateAttribute("is_act");
+                        act.Value = key.IsAct.ToString();
+                        XmlAttribute raw = data.CreateAttribute("raw");
+                        raw.Value = key.Raw.ToString();
                         XmlNode db = data.CreateElement("key");
                         db.Attributes.Append(name);
                         db.Attributes.Append(kk);
@@ -83,7 +85,8 @@ namespace wmib.Extensions
                         db.Attributes.Append(created);
                         db.Attributes.Append(last);
                         db.Attributes.Append(triggered);
-                        db.Attributes.Append(k);
+                        db.Attributes.Append(act);
+                        db.Attributes.Append(raw);
                         xmlnode.AppendChild(db);
                     }
                     data.AppendChild(xmlnode);
@@ -204,12 +207,44 @@ namespace wmib.Extensions
                         continue;
                     }
                     bool raw = false;
-                    if (xx.Attributes.Count > 6)
+                    string name = "";
+                    string value = "";
+                    string user = "#unknown#";
+                    string date = "";
+                    string time = "";
+                    bool is_act = false;
+                    int number = 0;
+                    foreach (XmlAttribute x in xx.Attributes)
                     {
-                        raw = bool.Parse(xx.Attributes[6].Value);
+                        switch (x.Name)
+                        {
+                            case "key_name":
+                                name = x.Value;
+                                break;
+                            case "data":
+                                value = x.Value;
+                                break;
+                            case "created_date":
+                                date = x.Value;
+                                break;
+                            case "nickname":
+                                user = x.Value;
+                                break;
+                            case "touched":
+                                time = x.Value;
+                                break;
+                            case "triggered":
+                                number = int.Parse(x.Value);
+                                break;
+                            case "raw":
+                                raw = bool.Parse(x.Value);
+                                break;
+                            case "is_act":
+                                is_act = bool.Parse(x.Value);
+                                break;
+                        }
                     }
-                    InfobotKey _key = new InfobotKey(xx.Attributes[0].Value, xx.Attributes[1].Value, xx.Attributes[2].Value, "false", xx.Attributes[3].Value,
-                    xx.Attributes[4].Value, int.Parse(xx.Attributes[5].Value), raw);
+                    InfobotKey _key = new InfobotKey(name, value, user, "false", date, time, number, raw, is_act);
                     lock (this)
                     {
                         Keys.Add(_key);
