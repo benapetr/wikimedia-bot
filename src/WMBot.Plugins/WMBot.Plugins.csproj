@@ -61,6 +61,7 @@
     <Compile Include="RssFeed\Feed.cs" />
     <Compile Include="RssFeed\Module.cs" />
     <Compile Include="RssFeed\RssManager.cs" />
+    <Compile Include="Scripting\ScriptingEngine.cs" />
     <Compile Include="Seen\Seen.cs" />
     <Compile Include="Slap\Slap.cs" />
     <Compile Include="Statistics\Statistics.cs" />
@@ -83,4 +84,5 @@
       <Name>WMBot</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
 </Project>

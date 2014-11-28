@@ -21,7 +21,7 @@ namespace wmib.Extensions
 {
     public partial class Infobot
     {
-                /// <summary>
+        /// <summary>
         /// Save to a file
         /// </summary>
         public void Save()
