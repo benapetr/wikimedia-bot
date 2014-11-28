@@ -96,6 +96,7 @@ namespace wmib.Extensions
                     {
                         try
                         {
+                            DebugLog("Running " + ts.task.Path, 1);
                             Process proc = new Process
                             {
                                 StartInfo = new ProcessStartInfo
@@ -109,17 +110,20 @@ namespace wmib.Extensions
                             };
 
                             proc.Start();
+                            DebugLog("Reading output for " + ts.task.Path, 1);
                             while (!proc.StandardOutput.EndOfStream)
                             {
+                                string line = proc.StandardOutput.ReadLine();
+                                DebugLog(line);
                                 if (ts.channel == null)
                                 {
                                     // send back to channel
-                                    IRC.DeliverMessage(proc.StandardOutput.ReadLine(), ts.channel);
+                                    IRC.DeliverMessage(line, ts.channel);
                                 }
                                 else
                                 {
                                     // to user
-                                    IRC.DeliverMessage(proc.StandardOutput.ReadLine(), ts.user);
+                                    IRC.DeliverMessage(line, ts.user);
                                 }
                             }
                         }
