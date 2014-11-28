@@ -109,6 +109,7 @@ namespace wmib.Extensions
                                 }
                             };
 
+                            DebugLog("Starts");
                             proc.Start();
                             while (!proc.StandardOutput.EndOfStream && !proc.StandardError.EndOfStream)
                             {
@@ -117,6 +118,7 @@ namespace wmib.Extensions
                                     line = proc.StandardOutput.ReadLine();
                                 else
                                     line = proc.StandardError.ReadLine();
+                                Log(line);
                                 if (ts.channel == null)
                                 {
                                     // send back to channel
@@ -128,6 +130,8 @@ namespace wmib.Extensions
                                     IRC.DeliverMessage(line, ts.channel);
                                 }
                             }
+                            DebugLog("Finished");
+                            proc.Close();
                         }
                         catch (Exception ef)
                         {
