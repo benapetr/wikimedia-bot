@@ -96,7 +96,6 @@ namespace wmib.Extensions
                     {
                         try
                         {
-                            DebugLog("Running " + ts.task.Path, 1);
                             Process proc = new Process
                             {
                                 StartInfo = new ProcessStartInfo
@@ -105,25 +104,28 @@ namespace wmib.Extensions
                                     Arguments = ts.parameters,
                                     UseShellExecute = false,
                                     RedirectStandardOutput = true,
+                                    RedirectStandardError = true,
                                     CreateNoWindow = true
                                 }
                             };
 
                             proc.Start();
-                            DebugLog("Reading output for " + ts.task.Path, 1);
-                            while (!proc.StandardOutput.EndOfStream)
+                            while (!proc.StandardOutput.EndOfStream && !proc.StandardError.EndOfStream)
                             {
-                                string line = proc.StandardOutput.ReadLine();
-                                DebugLog(line);
+                                string line;
+                                if (!proc.StandardOutput.EndOfStream)
+                                    line = proc.StandardOutput.ReadLine();
+                                else
+                                    line = proc.StandardError.ReadLine();
                                 if (ts.channel == null)
                                 {
                                     // send back to channel
-                                    IRC.DeliverMessage(line, ts.channel);
+                                    IRC.DeliverMessage(line, ts.user);
                                 }
                                 else
                                 {
                                     // to user
-                                    IRC.DeliverMessage(line, ts.user);
+                                    IRC.DeliverMessage(line, ts.channel);
                                 }
                             }
                         }
