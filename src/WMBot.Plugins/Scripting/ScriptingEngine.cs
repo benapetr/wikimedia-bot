@@ -137,8 +137,7 @@ namespace wmib.Extensions
                                     IRC.DeliverMessage(line, ts.channel);
                                 }
                             }
-                            if (!proc.HasExited)
-                                proc.Kill();
+                            proc.WaitForExit();
                             proc.Close();
                             proc.Dispose();
                         }
