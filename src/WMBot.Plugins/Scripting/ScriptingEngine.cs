@@ -111,7 +111,7 @@ namespace wmib.Extensions
 
                             DebugLog("Starts");
                             proc.Start();
-                            while (!proc.StandardOutput.EndOfStream && !proc.StandardError.EndOfStream)
+                            while (!proc.StandardOutput.EndOfStream || !proc.StandardError.EndOfStream)
                             {
                                 string line;
                                 if (!proc.StandardOutput.EndOfStream)
