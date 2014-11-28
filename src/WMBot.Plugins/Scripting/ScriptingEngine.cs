@@ -23,6 +23,7 @@ namespace wmib.Extensions
             public string Path;
             public string Command;
             public string Parameters;
+            public bool RequireParameters = false;
             public bool AcceptInput = false;
             public string Permission = "trust";
 
@@ -37,6 +38,14 @@ namespace wmib.Extensions
                         tx.channel = pm.SourceChannel;
                     tx.task = this;
                     tx.parameters = this.Parameters;
+                    if (this.RequireParameters && string.IsNullOrEmpty(pm.Parameters))
+                    {
+                        if (pm.SourceUser != null)
+                            IRC.DeliverMessage("You need to provide some parameters", pm.SourceUser);
+                        else
+                            IRC.DeliverMessage("You need to provide some parameters", pm.SourceChannel);
+                        return;
+                    }
                     if (this.AcceptInput)
                         tx.parameters += " " + pm.Parameters;
                     Tasks.Add(tx);
@@ -109,7 +118,6 @@ namespace wmib.Extensions
                                 }
                             };
 
-                            DebugLog("Starts");
                             proc.Start();
                             while (!proc.StandardOutput.EndOfStream || !proc.StandardError.EndOfStream)
                             {
@@ -118,7 +126,6 @@ namespace wmib.Extensions
                                     line = proc.StandardOutput.ReadLine();
                                 else
                                     line = proc.StandardError.ReadLine();
-                                Log(line);
                                 if (ts.channel == null)
                                 {
                                     // send back to channel
@@ -130,8 +137,10 @@ namespace wmib.Extensions
                                     IRC.DeliverMessage(line, ts.channel);
                                 }
                             }
-                            DebugLog("Finished");
+                            if (!proc.HasExited)
+                                proc.Kill();
                             proc.Close();
+                            proc.Dispose();
                         }
                         catch (Exception ef)
                         {
