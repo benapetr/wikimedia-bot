@@ -28,7 +28,6 @@ namespace wmib.Extensions
 
             public void Exec(CommandParams pm)
             {
-                Syslog.Log(this.Command);
                 lock (Tasks)
                 {
                     Task tx = new Task();
@@ -93,11 +92,10 @@ namespace wmib.Extensions
                         tasks.AddRange(Tasks);
                         Tasks.Clear();
                     }
-                    foreach (Task ts in Tasks)
+                    foreach (Task ts in tasks)
                     {
                         try
                         {
-                            DebugLog("Running " + ts.task.Path, 1);
                             Process proc = new Process
                             {
                                 StartInfo = new ProcessStartInfo
@@ -111,7 +109,6 @@ namespace wmib.Extensions
                             };
 
                             proc.Start();
-                            DebugLog("Reading output for " + ts.task.Path, 1);
                             while (!proc.StandardOutput.EndOfStream)
                             {
                                 string line = proc.StandardOutput.ReadLine();
