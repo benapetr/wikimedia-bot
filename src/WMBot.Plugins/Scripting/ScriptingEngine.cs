@@ -96,6 +96,7 @@ namespace wmib.Extensions
                     {
                         try
                         {
+                            DebugLog("Running " + ts.task.Path, 1);
                             Process proc = new Process
                             {
                                 StartInfo = new ProcessStartInfo
@@ -109,6 +110,7 @@ namespace wmib.Extensions
                             };
 
                             proc.Start();
+                            DebugLog("Reading output for " + ts.task.Path, 1);
                             while (!proc.StandardOutput.EndOfStream)
                             {
                                 string line = proc.StandardOutput.ReadLine();
