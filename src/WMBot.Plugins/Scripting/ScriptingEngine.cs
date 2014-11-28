@@ -28,6 +28,7 @@ namespace wmib.Extensions
 
             public void Exec(CommandParams pm)
             {
+                Syslog.Log(this.Command);
                 lock (Tasks)
                 {
                     Task tx = new Task();
