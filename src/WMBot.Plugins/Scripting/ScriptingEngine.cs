@@ -131,12 +131,13 @@ namespace wmib.Extensions
                                     line = proc.StandardOutput.ReadLine();
                                 else
                                     line = proc.StandardError.ReadLine();
-                                output += line + "\n";
                                 if (write_file || (ts.task.OneLine && !string.IsNullOrEmpty(output)))
                                 {
+                                    output += line + "\n";
                                     write_file = true;
                                     continue;
                                 }
+                                output += line + "\n";
                                 if (ts.channel == null)
                                 {
                                     // send back to channel
