@@ -157,7 +157,7 @@ namespace wmib.Extensions
                                 string filename = Path.GetTempFileName();
                                 File.WriteAllText(filename, output);
 #if __MonoCS__
-                                Mono.Unix.Native.Syscall.chmod(filename, FilePermissions.S_IROTH);
+                                Mono.Unix.Native.Syscall.chmod(filename, Mono.Unix.Native.FilePermissions.S_IROTH);
 #endif
                                 if (ts.channel == null)
                                 {
