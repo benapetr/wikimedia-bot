@@ -585,7 +585,7 @@ namespace wmib
         private static bool HasPrivilege(string privilege, string role)
         {
             // this is just a performance hack
-            if (role == "root")
+            if (role == "root" || privilege == "null")
                 return true;
             if (Roles.ContainsKey(role))
             {
