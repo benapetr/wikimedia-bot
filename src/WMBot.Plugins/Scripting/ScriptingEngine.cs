@@ -163,7 +163,7 @@ namespace wmib.Extensions
                                 else
                                 {
                                     // to user
-                                    IRC.DeliverMessage("The command produced multiline output, see " + Configuration.WebPages.WebpageURL + filename, ts.user);
+                                    IRC.DeliverMessage("The command produced multiline output, see " + Configuration.WebPages.WebpageURL + filename, ts.channel);
                                 }
                             }
                         }
