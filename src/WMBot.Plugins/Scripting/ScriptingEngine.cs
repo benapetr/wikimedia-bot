@@ -71,7 +71,7 @@ namespace wmib.Extensions
                     if (this.Escape)
                         parameters = parameters.Replace("'", "\\'").Replace("\"", "\\\"");
                     if (this.AcceptInput)
-                        tx.parameters += " " + pm.Parameters;
+                        tx.parameters += " " + parameters;
                     Tasks.Add(tx);
                 }
             }
