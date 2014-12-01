@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Deployment;
+using System.Threading;
 using System.Diagnostics;
 using System.Xml.Serialization;
 using System.Text;
@@ -23,6 +25,7 @@ namespace wmib.Extensions
             public string Path;
             public string Command;
             public string Parameters;
+            public bool OneLine = true;
             public bool RequireParameters = false;
             public bool AcceptInput = false;
             public string Permission = "trust";
@@ -119,6 +122,8 @@ namespace wmib.Extensions
                             };
 
                             proc.Start();
+                            string output = "";
+                            bool write_file = false;
                             while (!proc.StandardOutput.EndOfStream || !proc.StandardError.EndOfStream)
                             {
                                 string line;
@@ -126,6 +131,12 @@ namespace wmib.Extensions
                                     line = proc.StandardOutput.ReadLine();
                                 else
                                     line = proc.StandardError.ReadLine();
+                                output += line + "\n";
+                                if (write_file || (ts.task.OneLine && !string.IsNullOrEmpty(output)))
+                                {
+                                    write_file = true;
+                                    continue;
+                                }
                                 if (ts.channel == null)
                                 {
                                     // send back to channel
@@ -140,6 +151,25 @@ namespace wmib.Extensions
                             proc.WaitForExit();
                             proc.Close();
                             proc.Dispose();
+                            if (write_file)
+                            {
+                                string filename = Path.GetTempFileName();
+                                File.WriteAllText(filename, output);
+                                if (ts.channel == null)
+                                {
+                                    // send back to channel
+                                    IRC.DeliverMessage("The command produced multiline output, see " + Configuration.WebPages.WebpageURL + filename, ts.user);
+                                }
+                                else
+                                {
+                                    // to user
+                                    IRC.DeliverMessage("The command produced multiline output, see " + Configuration.WebPages.WebpageURL + filename, ts.user);
+                                }
+                            }
+                        }
+                        catch (ThreadAbortException)
+                        {
+                            return;
                         }
                         catch (Exception ef)
                         {
