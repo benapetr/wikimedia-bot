@@ -43,6 +43,7 @@ namespace wmib.Extensions
             public string Parameters;
             public bool OneLine = true;
             public bool RequireParameters = false;
+            public bool Escape = true;
             public bool AcceptInput = false;
             public string Help = null;
             public string Permission = "trust";
@@ -66,6 +67,9 @@ namespace wmib.Extensions
                             IRC.DeliverMessage("You need to provide some parameters", pm.SourceChannel);
                         return;
                     }
+                    string parameters = pm.Parameters;
+                    if (this.Escape)
+                        parameters = parameters.Replace("'", "\\'").Replace("\"", "\\\"");
                     if (this.AcceptInput)
                         tx.parameters += " " + pm.Parameters;
                     Tasks.Add(tx);
