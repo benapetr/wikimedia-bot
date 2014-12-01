@@ -155,6 +155,11 @@ namespace wmib.Extensions
                             if (write_file)
                             {
                                 string filename = Path.GetTempFileName();
+                                if (filename.EndsWith(".tmp"))
+                                {
+                                    filename = filename.Substring(0, filename.Length - 3);
+                                    filename += "txt";
+                                }
                                 File.WriteAllText(filename, output);
 #if __MonoCS__
                                 Mono.Unix.Native.Syscall.chmod(filename, Mono.Unix.Native.FilePermissions.S_IROTH);
