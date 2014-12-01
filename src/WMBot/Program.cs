@@ -15,8 +15,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+#if __MonoCS__
 using Mono.Unix.Native;
 using Mono.Unix;
+#endif
 
 namespace wmib
 {
@@ -199,15 +201,18 @@ namespace wmib
                 Security.Global();
                 Syslog.Log("Connecting");
                 IRC.Connect();
-                UnixSignal[] signals = 
+                #if __MonoCS__
+UnixSignal[] signals = 
                 {
                     new UnixSignal (Signum.SIGINT),
                     new UnixSignal (Signum.SIGTERM),
                     new UnixSignal (Signum.SIGQUIT),
                     new UnixSignal (Signum.SIGHUP)
                 };
+#endif
                 while(Core.IsRunning)
                 {
+#if __MonoCS__
                     int index = UnixSignal.WaitAny (signals,-1);
                     Signum signal = signals [index].Signum;
                     switch (signal)
@@ -220,6 +225,7 @@ namespace wmib
                             Core.Kill();
                             goto exit;
                     }
+#endif
                     Thread.Sleep(200);
                 }
                 exit:
