@@ -1,4 +1,17 @@
-﻿using System;
+﻿//This program is free software: you can redistribute it and/or modify
+//it under the terms of the GNU General Public License as published by
+//the Free Software Foundation, either version 3 of the License, or
+//(at your option) any later version.
+
+//This program is distributed in the hope that it will be useful,
+//but WITHOUT ANY WARRANTY; without even the implied warranty of
+//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//GNU General Public License for more details.
+
+// This module allows to run a 3rd scripts by a bot so that you can extend it with
+// scripts written in different languages
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Deployment;
@@ -19,6 +32,9 @@ namespace wmib.Extensions
             public Script task;
         }
 
+        /// <summary>
+        /// Script that is run by a bot
+        /// </summary>
         [Serializable]
         public class Script
         {
@@ -28,6 +44,7 @@ namespace wmib.Extensions
             public bool OneLine = true;
             public bool RequireParameters = false;
             public bool AcceptInput = false;
+            public string Help = null;
             public string Permission = "trust";
 
             public void Exec(CommandParams pm)
@@ -78,6 +95,10 @@ namespace wmib.Extensions
             reader.Close();
             foreach (Script script in files)
             {
+                string help = script.Help;
+                if (help == null)
+                    help = "Run " + script.Path;
+                Core.Help.Register(script.Command, help);
                 RegisterCommand(new GenericCommand(script.Command, script.Exec, true, script.Permission));
             }
             return base.Hook_OnRegister();
@@ -87,6 +108,7 @@ namespace wmib.Extensions
         {
             foreach (Script sc in files)
             {
+                Core.Help.Unregister(sc.Command);
                 UnregisterCommand(sc.Command);
             }
             return base.Hook_OnUnload();
