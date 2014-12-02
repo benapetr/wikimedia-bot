@@ -46,6 +46,7 @@ namespace wmib.Extensions
             public bool Escape = true;
             public bool AcceptInput = false;
             public string Help = null;
+            public bool SingleParameter = false;
             public string Permission = "trust";
 
             public void Exec(CommandParams pm)
@@ -68,9 +69,11 @@ namespace wmib.Extensions
                         return;
                     }
                     string parameters = pm.Parameters;
-                    if (this.Escape)
+                    if (this.SingleParameter && parameters != null)
+                        parameters = "\"" + parameters.Replace("'", "\\'").Replace("\"", "\\\"") + "\"";
+                    else if (this.Escape && parameters != null)
                         parameters = parameters.Replace("'", "\\'").Replace("\"", "\\\"");
-                    if (this.AcceptInput)
+                    if (this.AcceptInput && parameters != null)
                         tx.parameters += " " + parameters;
                     Tasks.Add(tx);
                 }
