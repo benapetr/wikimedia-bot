@@ -191,9 +191,9 @@ namespace wmib.Extensions
             }
         }
 
-        public override void Hook_Nick(Channel channel, libirc.UserInfo Target, string OldNick)
+        public override void Hook_Nick(Channel channel, libirc.UserInfo Target, string OldNick, string NewNick)
         {
-            WriteStatus(OldNick, Target.Host, channel.Name, item.Action.Nick, Target.Nick);
+            WriteStatus(OldNick, Target.Host, channel.Name, item.Action.Nick, NewNick);
         }
 
         public override void Hook_Kick(Channel channel, libirc.UserInfo source, string user)

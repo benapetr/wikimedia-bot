@@ -133,7 +133,7 @@ namespace wmib.Extensions
             return 2;
         }
 
-        public override void Hook_Nick(Channel channel, libirc.UserInfo Target, string OldNick)
+        public override void Hook_Nick(Channel channel, libirc.UserInfo Target, string OldNick, string NewNick)
         {
             if (GetConfig(channel, "Logging.Enabled", false))
             {
@@ -144,7 +144,7 @@ namespace wmib.Extensions
                 item.message = OldNick;
                 item.time = DateTime.Now;
                 item.type = 6;
-                item.username = Target.Nick;
+                item.username = NewNick;
                 lock (DJ)
                 {
                     DJ.Add(item);

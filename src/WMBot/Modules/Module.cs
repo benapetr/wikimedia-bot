@@ -317,7 +317,7 @@ namespace wmib
         /// <param name="channel"></param>
         /// <param name="Target"></param>
         /// <param name="OldNick"></param>
-        public virtual void Hook_Nick(Channel channel, libirc.UserInfo Target, string OldNick)
+        public virtual void Hook_Nick(Channel channel, libirc.UserInfo Target, string OldNick, string NewNick)
         {
         }
 

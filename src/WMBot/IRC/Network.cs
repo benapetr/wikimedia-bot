@@ -159,7 +159,7 @@ namespace wmib
                         try
                         {
                             if (extension_.IsWorking)
-                                extension_.Hook_Nick(channel, args.SourceInfo, args.OldNick);
+                                extension_.Hook_Nick(channel, args.SourceInfo, args.OldNick, args.NewNick);
 
                         }
                         catch (Exception fail)

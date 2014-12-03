@@ -52,13 +52,13 @@ namespace wmib.Extensions
             }
         }
 
-        public override void Hook_Nick(Channel channel, libirc.UserInfo Target, string OldNick)
+        public override void Hook_Nick(Channel channel, libirc.UserInfo Target, string OldNick, string NewNick)
         {
-            Notification result = Notification.RetrieveTarget(Target.Nick);
+            Notification result = Notification.RetrieveTarget(NewNick);
             while (result != null)
             {
                 IRC.DeliverMessage(result.Source_Name + "! " + OldNick + " just changed nicknames to " + 
-                                   Target.Nick + " which you wanted to talk with, in " + channel.Name + 
+                                   NewNick + " which you wanted to talk with, in " + channel.Name + 
                                    ". This message was delivered to you because you asked me to notify"+
                                    "you about this user's activity. For more information, see "+
                                    "http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
@@ -66,7 +66,7 @@ namespace wmib.Extensions
                 {
                     Notification.NotificationList.Remove(result);
                 }
-                result = Notification.RetrieveTarget(Target.Nick);
+                result = Notification.RetrieveTarget(NewNick);
             }
             result = Notification.RetrieveTarget(OldNick);
             while (result != null)
@@ -82,12 +82,12 @@ namespace wmib.Extensions
                 }
                 result = Notification.RetrieveTarget(OldNick);
             }
-            if (Target.Nick.ToLower() != OldNick.ToLower())
+            if (NewNick.ToLower() != OldNick.ToLower())
             {
                 result = Notification.RetrieveSource(OldNick);
                 while (result != null)
                 {
-                    result.Source_Name = Target.Nick;
+                    result.Source_Name = NewNick;
                     result = Notification.RetrieveSource(OldNick);
                 }
             }
