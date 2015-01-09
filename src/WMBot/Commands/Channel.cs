@@ -55,6 +55,7 @@ namespace wmib
                 }
                 IRC.DeliverMessage("Attempting to join " + channel_name + " using " + channel.PrimaryInstance.Nick, parameters.SourceChannel.Name);
                 Configuration.Save();
+                Syslog.DebugLog("Sending join " + channel_name);
                 channel.PrimaryInstance.Network.Join(channel_name);
                 Thread.Sleep(100);
                 Channel Chan = Core.GetChannel(channel_name);
