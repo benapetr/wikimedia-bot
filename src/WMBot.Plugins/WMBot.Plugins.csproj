@@ -65,6 +65,7 @@
     <Compile Include="Seen\Seen.cs" />
     <Compile Include="Slap\Slap.cs" />
     <Compile Include="Statistics\Statistics.cs" />
+    <Compile Include="SystemInfo\Info.cs" />
     <Compile Include="Thanks\Thanks.cs" />
     <Compile Include="DynamicRole\DynamicRoles.cs" />
     <Compile Include="Translate\Translate.cs" />
