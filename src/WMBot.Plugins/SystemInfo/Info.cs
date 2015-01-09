@@ -40,6 +40,7 @@ namespace wmib.Extensions
         public override bool Construct()
         {
             this.Version = new Version(1, 0, 0, 0);
+            this.HasSeparateThreadInstance = false;
             return base.Construct();
         }
 
