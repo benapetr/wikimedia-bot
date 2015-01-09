@@ -24,7 +24,7 @@ namespace wmib.Extensions
 {
     public class SystemInfo : Module
     {
-        public void DisplayInfo(CommandParams pm)
+        private void DisplayInfo(CommandParams pm)
         {
             if (pm.SourceChannel.Name == Configuration.System.DebugChan)
             {
@@ -41,7 +41,7 @@ namespace wmib.Extensions
         {
             this.Version = new Version(1, 0, 0, 0);
             this.HasSeparateThreadInstance = false;
-            return base.Construct();
+            return true;
         }
 
         public override bool Hook_OnUnload()
