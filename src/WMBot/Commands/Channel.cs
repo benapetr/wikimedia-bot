@@ -53,6 +53,7 @@ namespace wmib
                 {
                     Configuration.Channels.Add(channel);
                 }
+                IRC.DeliverMessage("Attempting to join " + channel_name + " using " + channel.PrimaryInstance.Nick, parameters.SourceChannel.Name);
                 Configuration.Save();
                 channel.PrimaryInstance.Network.Join(channel_name);
                 Thread.Sleep(100);
