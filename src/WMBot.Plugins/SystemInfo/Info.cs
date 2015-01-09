@@ -22,7 +22,7 @@ using System.Xml;
 
 namespace wmib.Extensions
 {
-    class SystemInfo : Module
+    public class SystemInfo : Module
     {
         public void DisplayInfo(CommandParams pm)
         {
