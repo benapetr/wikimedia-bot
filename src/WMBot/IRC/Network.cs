@@ -22,6 +22,9 @@ namespace wmib
         {
             this.instance = Instance;
             this.Config.TrafficInterval = Configuration.IRC.Interval;
+            this.Config.Nick = Instance.Nick;
+            if (Configuration.IRC.UsingBouncer)
+                this.IsLoaded = true;
         }
 
         protected override void __evt_CTCP(NetworkCTCPEventArgs args)
