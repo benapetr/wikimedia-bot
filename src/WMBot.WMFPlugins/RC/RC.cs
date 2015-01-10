@@ -373,26 +373,33 @@ namespace wmib
         /// </summary>
         public void Save()
         {
+            int line = 0;
             string dbn = Variables.ConfigurationDirectory + "/" + channel.Name + ".list";
             try
             {
                 string content = "";
+                line++;
                 Core.BackupData(dbn);
+                line++;
                 lock (MonitoredPages)
                 {
+                line++;
                     foreach (IWatch values in MonitoredPages)
                     {
                         content = content + values.URL.name + "|" + values.Page.Replace("|", "<separator>") + "|" +
                                   values.Channel + "\n";
                     }
                 }
+                line++;
                 File.WriteAllText(dbn, content);
+                line++;
                 File.Delete(Configuration.TempName(dbn));
+                line++;
             }
             catch (Exception er)
             {
                 ModuleRC.ptrModule.Log("Error while saving to: " + channel.Name + ".list");
-                Core.HandleException(er, "RC");
+                Core.HandleException(er, "RC (" + line + ")");
                 Core.RecoverFile(dbn, channel.Name);
             }
         }
