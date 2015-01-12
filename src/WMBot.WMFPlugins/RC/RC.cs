@@ -382,6 +382,8 @@ namespace wmib
                 {
                     foreach (IWatch values in MonitoredPages)
                     {
+                        if (values == null || values.URL == null || values.Page == null || values.Channel == null)
+                            continue;
                         content = content + values.URL.name + "|" + values.Page.Replace("|", "<separator>") + "|" +
                                   values.Channel + "\n";
                     }
