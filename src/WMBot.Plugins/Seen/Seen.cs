@@ -30,6 +30,7 @@ namespace wmib.Extensions
             public string nick;
             public string source;
             public bool rg;
+            public bool hostname_check = false;
             public ChannelRequest(string _nick, string _source, Channel Channel, bool regexp)
             {
                 rg = regexp;
@@ -88,10 +89,9 @@ namespace wmib.Extensions
         public Channel chan;
         public string temp_source;
 
-
         public override bool Construct()
         {
-            Version = new Version(2, 2, 1, 0);
+            Version = new Version(2, 3, 0, 0);
             return true;
         }
 
@@ -137,6 +137,7 @@ namespace wmib.Extensions
             RegisterCommand(new GenericCommand("seen", this.cmSeen));
             RegisterCommand(new GenericCommand("seen-on", this.cmSeenOn, true, "admin"));
             RegisterCommand(new GenericCommand("seen-off", this.cmSeenOff, true, "admin"));
+            RegisterCommand(new GenericCommand("seen-host", this.cmSeenHost));
             return base.Hook_OnRegister();
         }
 
@@ -150,6 +151,14 @@ namespace wmib.Extensions
             SetConfig(parameters.SourceChannel, "Seen.Enabled", true);
             parameters.SourceChannel.SaveConfig();
             IRC.DeliverMessage(messages.Localize("seen-on", parameters.SourceChannel.Language), parameters.SourceChannel.Name);
+        }
+
+        private void cmSeenHost(CommandParams parameters)
+        {
+            if (parameters.Parameters == null)
+                return;
+            if (GetConfig(parameters.SourceChannel, "Seen.Enabled", false) && parameters.Parameters != "")
+                RetrieveStatusOfHost(parameters.Parameters, parameters.SourceChannel, parameters.User.Nick);
         }
 
         private void cmSeen(CommandParams parameters)
@@ -166,6 +175,7 @@ namespace wmib.Extensions
             UnregisterCommand("seenrx");
             UnregisterCommand("seen-on");
             UnregisterCommand("seen-off");
+            UnregisterCommand("seen-host");
             return base.Hook_OnUnload();
         }
 
@@ -459,7 +469,7 @@ namespace wmib.Extensions
                                 RegEx2(ch.nick, ch.channel, ch.source);
                                 continue;
                             }
-                            RetrieveStatus2(ch.nick, ch.channel, ch.source);
+                            RetrieveStatus2(ch.nick, ch.channel, ch.source, ch.hostname_check);
                         }
                         Requests.Clear();
                     }
@@ -523,6 +533,16 @@ namespace wmib.Extensions
             }
         }
 
+        public void RetrieveStatusOfHost(string nick, Channel channel, string source)
+        {
+            lock (requests)
+            {
+                ChannelRequest rq = new ChannelRequest(nick, source, channel, false);
+                rq.hostname_check = true;
+                requests.Add(rq);
+            }
+        }
+
         public item getItem(string nick)
         {
             nick = nick.ToUpper();
@@ -544,7 +564,7 @@ namespace wmib.Extensions
             html += "<br /><p>Seen data: " + GlobalList.Count + "</p>";
         }
 
-        public void RetrieveStatus2(string nick, Channel channel, string source)
+        public void RetrieveStatus2(string nick, Channel channel, string source, bool by_host)
         {
             try
             {
@@ -555,9 +575,10 @@ namespace wmib.Extensions
                 {
                     foreach (item xx in GlobalList)
                     {
-                        if (nick.ToUpper() == xx.nick.ToUpper())
+                        if ((!by_host && (nick.ToUpper() == xx.nick.ToUpper())) || (by_host && (nick.ToUpper() == xx.hostname.ToUpper())))
                         {
                             found = true;
+                            nick = xx.nick;
                             Channel last;
                             switch (xx.LastAc)
                             {
@@ -651,19 +672,19 @@ namespace wmib.Extensions
                 {
                     target = channel.Name;
                 }
-                if (nick.ToUpper() == source.ToUpper())
+                if (!by_host && nick.ToUpper() == source.ToUpper())
                 {
                     response = "are you really looking for yourself?";
                     IRC.DeliverMessage(source + ": " + response, target);
                     return;
                 }
-                if (nick.ToUpper() == Configuration.IRC.NickName.ToUpper())
+                if (!by_host && nick.ToUpper() == Configuration.IRC.NickName.ToUpper())
                 {
                     response = "I am right here";
                     IRC.DeliverMessage(source + ": " + response, target);
                     return;
                 }
-                if (channel != null)
+                if (!by_host && channel != null)
                 {
                     if (channel.ContainsUser(nick))
                     {
@@ -671,7 +692,7 @@ namespace wmib.Extensions
                         found = true;
                     }
                 }
-                if (!found)
+                if (!by_host && !found)
                 {
                     foreach (Channel Item in Configuration.ChannelList)
                     {
