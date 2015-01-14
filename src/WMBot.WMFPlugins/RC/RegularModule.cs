@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Xml;
 using System.Web;
 
 namespace wmib
@@ -59,7 +60,6 @@ namespace wmib
         public override string Extension_DumpHtml(Channel channel)
         {
             string HTML = "";
-
             if (GetConfig(channel, "RC.Enabled", false))
             {
                 RecentChanges rc = (RecentChanges)channel.RetrieveObject("RC");
@@ -73,6 +73,9 @@ namespace wmib
 
         public override void Hook_ChannelDrop(Channel chan)
         {
+            RecentChanges rc = (RecentChanges)chan.RetrieveObject("RC");
+            if (rc != null && RecentChanges.recentChangesList.Contains(rc))
+                RecentChanges.recentChangesList.Remove(rc);
             if (File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + chan.Name + ".list"))
             {
                 Log("Removing db of " + chan.Name + " RC feed");
@@ -93,6 +96,7 @@ namespace wmib
                     }
                 }
             }
+            RecentChanges.recentChangesList.Clear();
             return ok;
         }
 
@@ -273,8 +277,6 @@ namespace wmib
 
         public string Format(string name_url, string url, string page, string username, string link, string summary, Channel chan, bool bot, bool New, bool minor)
         {
-
-
             if (GetConfig(chan, "RC.Template", "") == "")
             {
                 if (!New)
@@ -283,14 +285,10 @@ namespace wmib
                 }
                 return messages.Localize("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", url + "?title=" + HttpUtility.UrlEncode(page), summary });
             }
-
             string action = "modified";
             string flags = "";
-
             if (minor)
-            {
                 flags += "minor edit, ";
-            }
 
             if (New)
             {
@@ -299,20 +297,14 @@ namespace wmib
             }
 
             if (bot)
-            {
                 flags += "bot edit";
-            }
 
             if (flags.EndsWith(", "))
-            {
                 flags = flags.Substring(0, flags.Length - 2);
-            }
 
             string fu = url + "?diff=" + link;
             if (New)
-            {
                 fu = url + "?title=" + HttpUtility.UrlEncode(page);
-            }
 
             return GetConfig(chan, "RC.Template", "").Replace("$wiki", name_url)
                    .Replace("$encoded_wiki_page", HttpUtility.UrlEncode(page).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%23", "#").Replace("%28", "(").Replace("%29", ")"))
@@ -331,136 +323,104 @@ namespace wmib
 
         public static Change String2Change(string text)
         {
-            // get a page
-            if (!text.Contains(Variables.ColorChar + "14[["))
+            if (text == "pong" || text == "OK")
+                return null;
+            XmlDocument xml = new XmlDocument();
+            // split the site
+            if (!text.Contains("|"))
+                return null;
+
+            string site = text.Substring(0, text.IndexOf("|"));
+            string data = text.Substring(text.IndexOf("|") + 1);
+            xml.LoadXml(data);
+            if (xml.DocumentElement.Name != "edit")
             {
-                ptrModule.DebugLog("Parser error #1", 6);
+                ModuleRC.ptrModule.Log("Invalid node: " + xml.DocumentElement.Name, true);
                 return null;
             }
-            Change change = new Change("", "", "");
-
-            if (text.Contains(Variables.ColorChar + "4 "))
-            {
-                string flags = text.Substring(text.IndexOf(Variables.ColorChar + "4 ") + 3);
-                if (flags.Contains(Variables.ColorChar))
-                {
-                    flags = flags.Substring(0, flags.IndexOf(Variables.ColorChar));
-                }
-                if (flags.Contains("N"))
-                {
-                    change.New = true;
-                }
-
-                if (flags.Contains("M"))
-                {
-                    change.Minor = true;
-                }
-                if (flags.Contains("B"))
-                {
-                    change.Bot = true;
-                }
-            }
-            
-            change.Page = text.Substring(text.IndexOf(Variables.ColorChar + "14[[") + 5);
-            change.Page = change.Page.Substring(3);
-            if (!change.Page.Contains(Variables.ColorChar + "14]]"))
-            {
-                ptrModule.DebugLog("Parser error #2", 6);
+            if (xml.DocumentElement.Attributes["type"].Value != "edit" && xml.DocumentElement.Attributes["type"].Value != "new")
                 return null;
-            }
+            Change change = new Change(xml.DocumentElement.Attributes["title"].Value, xml.DocumentElement.Attributes["summary"].Value, xml.DocumentElement.Attributes["user"].Value);
+            change.New = xml.DocumentElement.Attributes["type"].Value == "new";
+            change.Site = site;
+            change.Minor = bool.Parse(xml.DocumentElement.Attributes["minor"].Value);
+            change.Bot = bool.Parse(xml.DocumentElement.Attributes["bot"].Value);
+            if (xml.DocumentElement.Attributes["oldid"] != null)
+                change.oldid = xml.DocumentElement.Attributes["oldid"].Value;
+            if (xml.DocumentElement.Attributes["revid"] != null)
+                change.diff = xml.DocumentElement.Attributes["revid"].Value;
 
-            change.Page = change.Page.Substring(0, change.Page.IndexOf(Variables.ColorChar + "14"));
+            change.Size = "unknown";
 
-            text = text.Substring(text.IndexOf(Variables.ColorChar + "14]]") + 5);
-
-            if (text.Contains("?oldid="))
+            if (!change.New && xml.DocumentElement.Attributes["length_old"] != null && xml.DocumentElement.Attributes["length_new"] != null)
             {
-                change.oldid = text.Substring(text.IndexOf("?oldid=") + 7);
-
-                if (!change.oldid.Contains("&") && !change.oldid.Contains(" "))
-                {
-                    ptrModule.DebugLog("Parser error #4", 6);
-                    return null;
-                }
-
-                if (change.oldid.Contains(" "))
-                {
-                    change.oldid = change.oldid.Substring(0, change.oldid.IndexOf(" "));
-                }
-
-                if (change.oldid.Contains("&"))
-                {
-                    change.oldid = change.oldid.Substring(0, change.oldid.IndexOf("&"));
-                }
+                int size = int.Parse(xml.DocumentElement.Attributes["length_new"].Value) - int.Parse(xml.DocumentElement.Attributes["length_old"].Value);
+                change.Size = size.ToString();
+                if (size > 0)
+                    change.Size = "+" + change.Size;
             }
-
-            if (text.Contains("?diff="))
-            {
-                change.diff = text.Substring(text.IndexOf("?diff=") + 6);
-
-                if (!change.diff.Contains("&"))
-                {
-                    ptrModule.DebugLog("Parser error #4", 6);
-                    return null;
-                }
-                change.diff = change.diff.Substring(0, change.diff.IndexOf("&"));
-            }
-
-
-            text = text.Substring(text.IndexOf("?diff=") + 6);
-
-            if (!text.Contains(Variables.ColorChar + "03"))
-            {
-                ptrModule.DebugLog("Parser error #5", 6);
-                return null;
-            }
-
-            change.User = text.Substring(text.IndexOf(Variables.ColorChar + "03") + 3);
-
-            if (!change.User.Contains(Variables.ColorChar + " " + Variables.ColorChar + "5*"))
-            {
-                ptrModule.DebugLog("Parser error #6", 6);
-                return null;
-            }
-
-            change.User = change.User.Substring(0, change.User.IndexOf(Variables.ColorChar + " " + Variables.ColorChar + "5*"));
-
-            if (!text.Contains(Variables.ColorChar + "5"))
-            {
-                ptrModule.DebugLog("Parser error #7", 6);
-                return null;
-            }
-
-            text = text.Substring(text.IndexOf(Variables.ColorChar + "5"));
-
-            if (text.Contains("("))
-            {
-                change.Size = text.Substring(text.IndexOf("(") + 1);
-
-                if (!change.Size.Contains(")"))
-                {
-                    ptrModule.DebugLog("Parser error #10", 6);
-                    return null;
-                }
-
-                change.Size = change.Size.Substring(0, change.Size.IndexOf(")"));
-            }
-
-            if (!text.Contains(Variables.ColorChar + "10"))
-            {
-                ptrModule.DebugLog("Parser error #14", 6);
-                return null;
-            }
-
-            change.Summary = text.Substring(text.IndexOf(Variables.ColorChar + "10") + 3);
-            if (change.Summary.EndsWith(Variables.ColorChar))
-            {
-                change.Summary = change.Summary.Substring(0, change.Summary.Length - 1);
-            }
-
             change.Special = change.Page.StartsWith("Special:");
-
             return change;
+        }
+
+        private void Loop()
+        {
+            while (!RecentChanges.streamReader.EndOfStream)
+            {
+                string message = RecentChanges.streamReader.ReadLine();
+                Change edit = String2Change(message);
+                if (edit == null)
+                {
+                    Thread.Sleep(200);
+                    continue;
+                }
+                List<RecentChanges> recentChanges = new List<RecentChanges>();
+                lock (RecentChanges.recentChangesList)
+                {
+                    recentChanges.AddRange(RecentChanges.recentChangesList);
+                }
+                foreach (RecentChanges curr in recentChanges)
+                {
+                    if (edit.Special && !GetConfig(curr.channel, "RC.Special", false))
+                    {
+                        continue;
+                    }
+                    if (GetConfig(curr.channel, "RC.Enabled", false))
+                    {
+                        lock (curr.MonitoredPages)
+                        {
+                            foreach (RecentChanges.IWatch iwatch in curr.MonitoredPages)
+                            {
+                                RecentChanges.wiki wiki_ = iwatch.URL;
+                                if (iwatch.Channel == edit.Site || iwatch.Channel == "all")
+                                {
+                                    if (iwatch.Channel == "all")
+                                        wiki_ = RecentChanges.WikiFromChannelID(edit.Site);
+
+                                    if (edit.Page == iwatch.Page)
+                                    {
+                                        if (edit.Size != null)
+                                            edit.Summary = "[" + edit.Size + "] " + edit.Summary;
+                                        if (iwatch.URL == null)
+                                            DebugLog("NULL pointer on idata 1", 2);
+                                        IRC.DeliverMessage(Format(wiki_.name, wiki_.url, edit.Page, edit.User, edit.diff, edit.Summary,
+                                            curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, libirc.Defs.Priority.Low);
+                                    }
+                                    else if (iwatch.Page.EndsWith("*") && edit.Page.StartsWith(iwatch.Page.Replace("*", "")))
+                                    {
+                                        if (iwatch.URL == null)
+                                        {
+                                            DebugLog("NULL pointer on idata 2", 2);
+                                        }
+                                        IRC.DeliverMessage(Format(wiki_.name, wiki_.url, edit.Page, edit.User, edit.diff, edit.Summary, curr.channel, edit.Bot,
+                                                edit.New, edit.Minor), curr.channel.Name, libirc.Defs.Priority.Low);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public override void Load()
@@ -470,13 +430,12 @@ namespace wmib
                 RecentChanges.channels = new List<string>();
                 if (!File.Exists(RecentChanges.WikiFile))
                 {
-                    File.WriteAllText(RecentChanges.WikiFile, "#mediawiki.wikipedia");
+                    File.WriteAllText(RecentChanges.WikiFile, "mediawiki.org");
                 }
-                string message = "";
                 try
                 {
                     string[] list = File.ReadAllLines(RecentChanges.WikiFile);
-                    Log("Loading feed", false);
+                    Log("Loading feed");
                     lock (RecentChanges.channels)
                     {
                         foreach (string chan in list)
@@ -485,100 +444,11 @@ namespace wmib
                         }
                     }
                     RecentChanges.Connect();
-                    Log("Loaded feed", false);
                     while (Core.IsRunning)
                     {
                         try
                         {
-                            if (RecentChanges.RD == null)
-                            {
-                                return;
-                            }
-                            while (!RecentChanges.RD.EndOfStream)
-                            {
-                                message = RecentChanges.RD.ReadLine();
-                                if (!message.Contains(" PRIVMSG "))
-                                {
-                                    continue;
-                                }
-                                Change edit = String2Change(message);
-                                //Match Edit = RecentChanges.line.Match(message);
-                                if (edit != null)
-                                {
-                                    string _channel = message.Substring(message.IndexOf("PRIVMSG"));
-                                    _channel = _channel.Substring(_channel.IndexOf("#"));
-                                    _channel = _channel.Substring(0, _channel.IndexOf(" "));
-                                    List<RecentChanges> R = new List<RecentChanges>();
-                                    lock (RecentChanges.rc)
-                                    {
-                                        R.AddRange(RecentChanges.rc);
-                                    }
-                                    foreach (RecentChanges curr in R)
-                                    {
-                                        if (curr != null)
-                                        {
-                                            if (edit.Special && !GetConfig(curr.channel, "RC.Special", false))
-                                            {
-                                                continue;
-                                            }
-                                            if (GetConfig(curr.channel, "RC.Enabled", false))
-                                            {
-                                                lock (curr.MonitoredPages)
-                                                {
-                                                    foreach (RecentChanges.IWatch w in curr.MonitoredPages)
-                                                    {
-                                                        if (w != null)
-                                                        {
-                                                            RecentChanges.wiki wiki_ = w.URL;
-                                                            if (w.Channel == _channel || w.Channel == "all")
-                                                            {
-
-                                                                if (w.Channel == "all")
-                                                                {
-                                                                    wiki_ = RecentChanges.WikiFromChannelID(_channel);
-                                                                }
-                                                                if (edit.Page == w.Page)
-                                                                {
-                                                                    if (edit.Size != null)
-                                                                    {
-                                                                        edit.Summary = "[" + edit.Size + "] " + edit.Summary;
-                                                                    }
-                                                                    if (w.URL == null)
-                                                                    {
-                                                                        DebugLog("NULL pointer on idata 1", 2);
-                                                                    }
-                                                                    IRC.DeliverMessage(Format(wiki_.name, wiki_.url, edit.Page, edit.User, edit.diff, edit.Summary, 
-                                                                      curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, libirc.Defs.Priority.Low);
-                                                                }
-                                                                else
-                                                                {
-                                                                    if (w.Page.EndsWith("*"))
-                                                                    {
-                                                                        if (edit.Page.StartsWith(w.Page.Replace("*", "")))
-                                                                        {
-                                                                            if (w.URL == null)
-                                                                            {
-                                                                                DebugLog("NULL pointer on idata 2", 2);
-                                                                            }
-                                                                            IRC.DeliverMessage(Format(wiki_.name, wiki_.url, edit.Page, edit.User, edit.diff, edit.Summary, curr.channel, edit.Bot,
-                                                                                   edit.New, edit.Minor), curr.channel.Name, libirc.Defs.Priority.Low);
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    DebugLog("Error on: " + message);
-                                }
-                                Thread.Sleep(10);
-                            }
+                            this.Loop();
                             Thread.Sleep(100);
                         }
                         catch (ThreadAbortException)
@@ -591,7 +461,6 @@ namespace wmib
                         }
                         catch (Exception fail)
                         {
-                            Core.LastText = message;
                             HandleException(fail);
                         }
                     }

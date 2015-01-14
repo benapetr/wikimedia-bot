@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using System.Xml;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Web;
@@ -23,6 +24,7 @@ namespace wmib
 {
     public class Change
     {
+        public string Site;
         public string Page;
         public string Summary;
         public string User;
@@ -73,65 +75,19 @@ namespace wmib
         }
 
         private static readonly wiki all = new wiki("all", "all", "unknown");
-
-        /// <summary>
-        /// List of pages
-        /// </summary>
+        public static string Server = "huggle-rc.wmflabs.org";
         public List<IWatch> MonitoredPages = new List<IWatch>();
-
-        /// <summary>
-        /// Wiki
-        /// </summary>
         private static readonly List<wiki> wikiinfo = new List<wiki>();
-
-        /// <summary>
-        /// Nickname in feed
-        /// </summary>
-        private static string Nick;
-
         private static bool Loaded;
-
-        /// <summary>
-        /// Channels
-        /// </summary>
         public static List<string> channels = new List<string>();
-
         public static bool terminated = false;
-
-        /// <summary>
-        /// feed
-        /// </summary>
-        public static List<RecentChanges> rc = new List<RecentChanges>();
-
-        /// <summary>
-        /// Stream reader
-        /// </summary>
-        public static StreamReader RD;
-
+        public static List<RecentChanges> recentChangesList = new List<RecentChanges>();
+        public static StreamReader streamReader;
         public static string WikiFile = Variables.ConfigurationDirectory + "/feed";
-        public static StreamWriter WD;
-        public static NetworkStream stream;
-
-        public static Regex RegexIrc =
-            new Regex(":rc-pmtpa!~rc-pmtpa@[^ ]* PRIVMSG #[^:]*:14\\[\\[07([^]*)14\\]\\]4 N?(M?)(B?)10 02.*di" +
-                      "ff=([^&]*)&oldid=([^]*) 5\\* 03([^]*) 5\\* \\(?([^]*)?\\) 10([^]*)?");
+        public static StreamWriter streamWriter;
+        public static NetworkStream networkStream;
 
         public Channel channel;
-
-        ~RecentChanges()
-        {
-            try
-            {
-                lock (rc)
-                {
-                    rc.Remove(this);
-                }
-            }
-            catch (Exception er)
-            {
-                Core.HandleException(er, "RC");
-            }
-        }
 
         public string ToTable()
         {
@@ -157,8 +113,12 @@ namespace wmib
 
         public static bool Send(string _n)
         {
-            WD.WriteLine(_n);
-            Core.TrafficLog("RX >>>>>>" + _n);
+            lock (streamWriter)
+            {
+                streamWriter.WriteLine(_n);
+                streamWriter.Flush();
+            }
+
             return true;
         }
 
@@ -166,9 +126,9 @@ namespace wmib
         {
             channel = _channel;
             Load();
-            lock (rc)
+            lock (recentChangesList)
             {
-                rc.Add(this);
+                recentChangesList.Add(this);
             }
         }
 
@@ -222,8 +182,7 @@ namespace wmib
                     return false;
                 }
                 channels.Add(web.channel);
-                WD.WriteLine("JOIN " + web.channel);
-                WD.Flush();
+                Send("S " + web.channel);
                 File.WriteAllText(WikiFile, "");
                 foreach (string x in channels)
                 {
@@ -272,8 +231,8 @@ namespace wmib
                     return false;
                 }
                 channels.Remove(W.channel);
-                Send("PART " + W.channel);
-                WD.Flush();
+                Send("D " + W.channel);
+                streamWriter.Flush();
                 File.WriteAllText(WikiFile, "");
                 foreach (string x in channels)
                 {
@@ -288,32 +247,24 @@ namespace wmib
         }
 
         /// <summary>
-        /// Connect to wm irc
+        /// Connect to huggle XmlRcs
         /// </summary>
         public static void Connect()
         {
             if (!terminated)
             {
-                Random rand = new Random(DateTime.Now.Millisecond);
-                int random_number = rand.Next(10000);
-                Nick = "wm-bot" + random_number;
-                ModuleRC.ptrModule.Log("Connecting to wikimedia recent changes feed as " + Nick + ", hold on");
-                stream = new TcpClient("irc.wikimedia.org", 6667).GetStream();
-                WD = new StreamWriter(stream);
-                RD = new StreamReader(stream, Encoding.UTF8);
+                ModuleRC.ptrModule.Log("Connecting to huggle XmlRcs");
+                networkStream = new TcpClient(Server, 8822).GetStream();
+                streamWriter = new StreamWriter(networkStream);
+                streamReader = new StreamReader(networkStream, Encoding.UTF8);
                 Thread pinger = new Thread(Pong) {Name = "Module:RC/Pinger"};
                 Core.ThreadManager.RegisterThread(pinger);
-                Send("USER " + "wm-bot" + " 8 * :" + "wm-bot");
-                Send("NICK " + Nick);
-                WD.Flush();
                 pinger.Start();
                 lock (channels)
                 {
                     foreach (string b in channels)
                     {
-                        Thread.Sleep(800);
-                        Send("JOIN " + b);
-                        WD.Flush();
+                        Send("S " + b);
                     }
                 }
                 ModuleRC.ptrModule.Log("Connected to feed - OK");
@@ -405,8 +356,7 @@ namespace wmib
             {
                 while (Core.IsRunning)
                 {
-                    Send("PING irc.wikimedia.org");
-                    WD.Flush();
+                    Send("ping");
                     Thread.Sleep(12000);
                 }
             }
@@ -479,8 +429,8 @@ namespace wmib
             {
                 ModuleRC.ptrModule.Log("There is no sites file, skipping load", true);
             }
-            wikiinfo.Add(new wiki("#mediawiki.wikipedia", "https://www.mediawiki.org/w/index.php", "mediawiki"));
-            wikiinfo.Add(new wiki("#test.wikipedia", "https://test.wikipedia.org/w/index.php", "test_wikipedia"));
+            wikiinfo.Add(new wiki("mediawiki.org", "https://www.mediawiki.org/w/index.php", "mediawiki"));
+            wikiinfo.Add(new wiki("test.wikipedia.org", "https://test.wikipedia.org/w/index.php", "test_wikipedia"));
             return 0;
         }
 
