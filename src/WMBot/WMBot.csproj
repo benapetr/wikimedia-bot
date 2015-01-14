@@ -44,7 +44,6 @@
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="Mono.Posix">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Mono-3.2.3\lib\mono\2.0\Mono.Posix.dll</HintPath>
     </Reference>
     <Reference Include="libirc">
       <HintPath>libirc.dll</HintPath>
