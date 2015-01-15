@@ -113,6 +113,7 @@ namespace wmib
 
         public static bool Send(string _n)
         {
+            ModuleRC.ptrModule.DebugLog("Sending: " + _n);
             lock (streamWriter)
             {
                 streamWriter.WriteLine(_n);

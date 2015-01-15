@@ -324,6 +324,7 @@ namespace wmib
 
         public static Change String2Change(string text)
         {
+            ModuleRC.ptrModule.DebugLog(text);
             XmlDocument xml = new XmlDocument();
             xml.LoadXml(text);
             string name = xml.DocumentElement.Name;
