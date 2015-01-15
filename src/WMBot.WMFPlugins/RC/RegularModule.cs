@@ -375,6 +375,7 @@ namespace wmib
             while (!RecentChanges.streamReader.EndOfStream)
             {
                 string message = RecentChanges.streamReader.ReadLine();
+                RecentChanges.LastMessage = DateTime.Now;
                 Change edit = String2Change(message);
                 if (edit == null)
                 {

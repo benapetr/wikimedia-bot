@@ -82,6 +82,7 @@ namespace wmib
         public static List<string> channels = new List<string>();
         public static bool terminated = false;
         public static List<RecentChanges> recentChangesList = new List<RecentChanges>();
+        public static DateTime LastMessage = DateTime.Now;
         public static StreamReader streamReader;
         public static string WikiFile = Variables.ConfigurationDirectory + "/feed";
         public static StreamWriter streamWriter;
@@ -119,7 +120,6 @@ namespace wmib
                 streamWriter.WriteLine(_n);
                 streamWriter.Flush();
             }
-
             return true;
         }
 
@@ -357,8 +357,15 @@ namespace wmib
             {
                 while (Core.IsRunning)
                 {
+                    if (LastMessage < DateTime.Now.AddSeconds(-20))
+                    {
+                        // we got disconnected
+                        Syslog.ErrorLog("RecentChanges disconnected from XmlRpc, trying to reconnect");
+                        RecentChanges.LastMessage = DateTime.Now;
+                        Connect();
+                    }
                     Send("ping");
-                    Thread.Sleep(12000);
+                    Thread.Sleep(8000);
                 }
             }
             catch (IOException)
