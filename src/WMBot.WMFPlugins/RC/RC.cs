@@ -363,6 +363,7 @@ namespace wmib
                         Syslog.ErrorLog("RecentChanges disconnected from XmlRpc, trying to reconnect");
                         RecentChanges.LastMessage = DateTime.Now;
                         Connect();
+                        goto exit;
                     }
                     Send("ping");
                     Thread.Sleep(8000);
@@ -378,6 +379,8 @@ namespace wmib
             {
                 Core.HandleException(fail, "RC");
             }
+            exit:
+                Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
         }
 
         public bool removeString(string WS, string Page)
