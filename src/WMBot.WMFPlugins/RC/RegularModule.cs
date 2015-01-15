@@ -32,6 +32,7 @@ namespace wmib
 
         public override bool Hook_OnRegister()
         {
+            RecentChanges.Server = Configuration.RetrieveConfig("xmlrcs_host", RecentChanges.Server);
             RecentChanges.InsertSite();
             lock (Configuration.Channels)
             {
@@ -326,8 +327,13 @@ namespace wmib
             XmlDocument xml = new XmlDocument();
             xml.LoadXml(text);
             string name = xml.DocumentElement.Name;
-            if (name == "ok")
+            if (name == "ok" || name == "pong")
                 return null;
+            if (name == "error")
+            {
+                ModuleRC.ptrModule.Log("Error: " + xml.DocumentElement.InnerText);
+                return null;
+            }
             if (xml.DocumentElement.Name != "edit")
             {
                 ModuleRC.ptrModule.Log("Invalid node: " + xml.DocumentElement.Name, true);
