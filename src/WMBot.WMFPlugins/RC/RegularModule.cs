@@ -327,6 +327,11 @@ namespace wmib
             XmlDocument xml = new XmlDocument();
             xml.LoadXml(text);
             string name = xml.DocumentElement.Name;
+            if (name == "ping")
+            {
+                RecentChanges.Send("pong");
+                return null;
+            }
             if (name == "ok" || name == "pong")
                 return null;
             if (name == "error")
