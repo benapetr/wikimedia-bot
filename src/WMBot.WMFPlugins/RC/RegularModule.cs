@@ -456,22 +456,21 @@ namespace wmib
                         {
                             return;
                         }
-                        catch (IOException)
-                        {
-                            RecentChanges.Connect();
-                        }
                         catch (Exception fail)
                         {
                             HandleException(fail);
+                            RecentChanges.Connect();
                         }
                     }
                 }
                 catch (ThreadAbortException)
                 {
+                    return;
                 }
                 catch (Exception fail)
                 {
                     HandleException(fail);
+                    return;
                     // abort
                 }
             }
