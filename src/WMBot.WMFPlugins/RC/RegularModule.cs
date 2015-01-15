@@ -323,16 +323,8 @@ namespace wmib
 
         public static Change String2Change(string text)
         {
-            if (text == "pong" || text == "OK")
-                return null;
             XmlDocument xml = new XmlDocument();
-            // split the site
-            if (!text.Contains("|"))
-                return null;
-
-            string site = text.Substring(0, text.IndexOf("|"));
-            string data = text.Substring(text.IndexOf("|") + 1);
-            xml.LoadXml(data);
+            xml.LoadXml(text);
             if (xml.DocumentElement.Name != "edit")
             {
                 ModuleRC.ptrModule.Log("Invalid node: " + xml.DocumentElement.Name, true);
@@ -342,7 +334,7 @@ namespace wmib
                 return null;
             Change change = new Change(xml.DocumentElement.Attributes["title"].Value, xml.DocumentElement.Attributes["summary"].Value, xml.DocumentElement.Attributes["user"].Value);
             change.New = xml.DocumentElement.Attributes["type"].Value == "new";
-            change.Site = site;
+            change.Site = xml.DocumentElement.Attributes["server_name"].Value;
             change.Minor = bool.Parse(xml.DocumentElement.Attributes["minor"].Value);
             change.Bot = bool.Parse(xml.DocumentElement.Attributes["bot"].Value);
             if (xml.DocumentElement.Attributes["oldid"] != null)
