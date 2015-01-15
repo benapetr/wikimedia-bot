@@ -325,6 +325,9 @@ namespace wmib
         {
             XmlDocument xml = new XmlDocument();
             xml.LoadXml(text);
+            string name = xml.DocumentElement.Name;
+            if (name == "ok")
+                return null;
             if (xml.DocumentElement.Name != "edit")
             {
                 ModuleRC.ptrModule.Log("Invalid node: " + xml.DocumentElement.Name, true);
