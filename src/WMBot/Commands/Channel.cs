@@ -61,7 +61,16 @@ namespace wmib
                 Channel Chan = Core.GetChannel(channel_name);
                 if (!existing)
                     Chan.SystemUsers.AddUser("admin", Security.EscapeUser(parameters.User.Nick) + "!.*@" + Security.EscapeUser(parameters.User.Host));
-
+                if (Chan.Extension_GetConfig("generic.founder") == null)
+                {
+                    Chan.Extension_SetConfig("generic.founder", parameters.User.ToString());
+                    Chan.Extension_SetConfig("generic.owner", parameters.User.ToString());
+                }
+                else
+                {
+                    Chan.Extension_SetConfig("generic.owner", parameters.User.ToString());
+                }
+                Chan.Extension_SetConfig("generic.joindate", DateTime.Now.ToString());
                 return;
             }
             IRC.DeliverMessage(messages.Localize("InvalidName", parameters.SourceChannel.Language), parameters.SourceChannel);

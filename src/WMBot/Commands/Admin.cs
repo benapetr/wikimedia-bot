@@ -44,6 +44,35 @@ namespace wmib
             CommandPool.RegisterCommand(new GenericCommand("verbosity--", Commands.VerbosityDown, true, "root"));
             CommandPool.RegisterCommand(new GenericCommand("verbosity++", Commands.VerbosityUp, true, "root"));
             CommandPool.RegisterCommand(new GenericCommand("whoami", Commands.Whoami));
+            CommandPool.RegisterCommand(new GenericCommand("channel-info", Commands.ChannelOverview));
+        }
+
+        private static void ChannelOverview(CommandParams parameters)
+        {
+            if (string.IsNullOrEmpty(parameters.Parameters))
+            {
+                IRC.DeliverMessage("You need to provide exactly 1 parameter", parameters.SourceChannel);
+                return;
+            }
+
+            string channel_name = parameters.Parameters.Trim();
+            Channel channel = Core.GetChannel(channel_name);
+            if (channel == null)
+            {
+                IRC.DeliverMessage("Unknown channel: " + channel_name, parameters.SourceChannel);
+                return;
+            }
+            string founder = channel.Extension_GetConfig("generic.owner");
+            if (founder != null)
+                founder += " (original founder: " + channel.Extension_GetConfig("generic.founder", "N/A") + ")";
+            else if (founder == null)
+                founder = channel.Extension_GetConfig("generic.founder");
+
+            if (founder == null)
+                founder = "N/A";
+            
+            IRC.DeliverMessage("Channel " + channel.Name + " was joined " + channel.Extension_GetConfig("generic.joindate", "unknown time") + ", requested by " +
+                founder, parameters.SourceChannel);
         }
 
         private static void CommandList(CommandParams parameters)
@@ -87,6 +116,7 @@ namespace wmib
             if (string.IsNullOrEmpty(parameters.Parameters))
             {
                 IRC.DeliverMessage("You need to provide at least 1 parameters", parameters.SourceChannel);
+                return;
             }
             string module = parameters.Parameters;
             Module _m = ExtensionHandler.RetrieveModule(module);

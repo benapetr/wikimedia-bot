@@ -218,7 +218,7 @@ namespace wmib
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public string Extension_GetConfig(string key)
+        public string Extension_GetConfig(string key, string missing = null)
         {
             lock (ExtensionData)
             {
@@ -227,7 +227,7 @@ namespace wmib
                     return ExtensionData[key];
                 }
             }
-            return null;
+            return missing;
         }
 
         /// <summary>
