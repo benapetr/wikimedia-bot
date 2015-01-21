@@ -71,6 +71,7 @@ namespace wmib
                     Chan.Extension_SetConfig("generic.owner", parameters.User.ToString());
                 }
                 Chan.Extension_SetConfig("generic.joindate", DateTime.Now.ToString());
+                Chan.SaveConfig();
                 return;
             }
             IRC.DeliverMessage(messages.Localize("InvalidName", parameters.SourceChannel.Language), parameters.SourceChannel);
@@ -158,6 +159,7 @@ namespace wmib
                         {
                             channel.Remove();
                         }
+                        channel.SaveConfig();
                         Configuration.Save();
                         return;
                     }
