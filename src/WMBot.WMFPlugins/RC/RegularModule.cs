@@ -17,7 +17,7 @@ using System.Threading;
 using System.Xml;
 using System.Web;
 
-namespace wmib
+namespace wmib.Extensions
 {
     public class ModuleRC : Module
     {
@@ -41,6 +41,7 @@ namespace wmib
                     channel.RegisterObject(new RecentChanges(channel), "RC");
                 }
             }
+            RegisterCommand(new GenericCommand("rc-ping", LastPing));
             return true;
         }
 
@@ -97,8 +98,14 @@ namespace wmib
                     }
                 }
             }
+            UnregisterCommand("rc-ping");
             RecentChanges.recentChangesList.Clear();
             return ok;
+        }
+
+        private void LastPing(CommandParams info)
+        {
+            IRC.DeliverMessage(RecentChanges.LastMessage.ToString(), info.SourceChannel);
         }
 
         public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)

@@ -20,30 +20,8 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Web;
 
-namespace wmib
+namespace wmib.Extensions
 {
-    public class Change
-    {
-        public string Site;
-        public string Page;
-        public string Summary;
-        public string User;
-        public bool Bot = false;
-        public bool Minor = false;
-        public string Size = null;
-        public bool New = false;
-        public string oldid = null;
-        public string diff = null;
-        public bool Special = true;
-
-        public Change(string _Page, string _Description, string _User)
-        {
-            Summary = _Description;
-            User = _User;
-            Page = _Page;
-        }
-    }
-
     public class RecentChanges
     {
         public class IWatch
@@ -80,7 +58,6 @@ namespace wmib
         private static readonly List<wiki> wikiinfo = new List<wiki>();
         private static bool Loaded;
         public static List<string> channels = new List<string>();
-        public static bool terminated = false;
         public static List<RecentChanges> recentChangesList = new List<RecentChanges>();
         public static DateTime LastMessage = DateTime.Now;
         public static StreamReader streamReader;
@@ -135,7 +112,7 @@ namespace wmib
 
         public static wiki WikiFromChannelID(string channel)
         {
-            lock(wikiinfo)
+            lock (wikiinfo)
             {
                 foreach (wiki w in wikiinfo)
                 {
@@ -252,25 +229,22 @@ namespace wmib
         /// </summary>
         public static void Connect()
         {
-            if (!terminated)
+            ModuleRC.ptrModule.Log("Connecting to huggle XmlRcs");
+            networkStream = new TcpClient(Server, 8822).GetStream();
+            streamWriter = new StreamWriter(networkStream);
+            streamReader = new StreamReader(networkStream, Encoding.UTF8);
+            Thread pinger = new Thread(Pong) { Name = "Module:RC/Pinger" };
+            Core.ThreadManager.RegisterThread(pinger);
+            pinger.Start();
+            lock (channels)
             {
-                ModuleRC.ptrModule.Log("Connecting to huggle XmlRcs");
-                networkStream = new TcpClient(Server, 8822).GetStream();
-                streamWriter = new StreamWriter(networkStream);
-                streamReader = new StreamReader(networkStream, Encoding.UTF8);
-                Thread pinger = new Thread(Pong) {Name = "Module:RC/Pinger"};
-                Core.ThreadManager.RegisterThread(pinger);
-                pinger.Start();
-                lock (channels)
+                foreach (string b in channels)
                 {
-                    foreach (string b in channels)
-                    {
-                        Send("S " + b);
-                    }
+                    Send("S " + b);
                 }
-                ModuleRC.ptrModule.Log("Connected to feed - OK");
-                Loaded = true;
             }
+            ModuleRC.ptrModule.Log("Connected to feed - OK");
+            Loaded = true;
         }
 
         /// <summary>
@@ -281,9 +255,8 @@ namespace wmib
         private static wiki getWiki(string Name)
         {
             if (Name == "all")
-            {
                 return all;
-            }
+
             foreach (wiki curr in wikiinfo)
             {
                 if (curr.name == Name)
@@ -302,19 +275,18 @@ namespace wmib
         {
             string name = Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + channel.Name + ".list";
             Core.RecoverFile(name, channel.Name);
-            if (File.Exists(name))
+            if (!File.Exists(name))
+                return;
+            string[] content = File.ReadAllLines(name);
+            lock (MonitoredPages)
             {
-                string[] content = File.ReadAllLines(name);
-                lock (MonitoredPages)
+                MonitoredPages.Clear();
+                foreach (string value in content)
                 {
-                    MonitoredPages.Clear();
-                    foreach (string value in content)
+                    string[] values = value.Split('|');
+                    if (values.Length == 3)
                     {
-                        string[] values = value.Split('|');
-                        if (values.Length == 3)
-                        {
-                            MonitoredPages.Add(new IWatch(getWiki(values[0]), values[1].Replace("<separator>", "|"), values[2]));
-                        }
+                        MonitoredPages.Add(new IWatch(getWiki(values[0]), values[1].Replace("<separator>", "|"), values[2]));
                     }
                 }
             }
@@ -351,6 +323,18 @@ namespace wmib
             }
         }
 
+        private static void Disconnect()
+        {
+            try
+            {
+                networkStream.Close();
+            }
+            catch (Exception error)
+            {
+                Core.HandleException(error);
+            }
+        }
+
         private static void Pong()
         {
             try
@@ -360,10 +344,11 @@ namespace wmib
                     if (LastMessage < DateTime.Now.AddSeconds(-20))
                     {
                         // we got disconnected
-                        Syslog.ErrorLog("RecentChanges disconnected from XmlRpc, trying to reconnect");
+                        Syslog.ErrorLog("RecentChanges timeout @XmlRpc, trying to reconnect");
                         RecentChanges.LastMessage = DateTime.Now;
+                        Disconnect();
                         Connect();
-                        goto exit;
+                        break;
                     }
                     Send("ping");
                     Thread.Sleep(8000);
@@ -379,8 +364,7 @@ namespace wmib
             {
                 Core.HandleException(fail, "RC");
             }
-            exit:
-                Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
+            Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
         }
 
         public bool removeString(string WS, string Page)
