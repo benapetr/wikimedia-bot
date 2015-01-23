@@ -405,24 +405,28 @@ namespace wmib.Extensions
                         {
                             foreach (RecentChanges.IWatch iwatch in curr.MonitoredPages)
                             {
-                                RecentChanges.wiki wiki_ = iwatch.URL;
-                                if (iwatch.URL.channel == edit.Site || iwatch.URL.channel == "all")
+                                if (iwatch.Site == null)
+                                    throw new WmibException("iwatch.Site must not be null");
+                                RecentChanges.wiki wiki_ = iwatch.Site;
+                                if (iwatch.Site.channel == null)
+                                    throw new WmibException("iwatch.Site.channel must not be null");
+                                if (iwatch.Site.channel == edit.Site || iwatch.Site.channel == "all")
                                 {
-                                    if (iwatch.URL.channel == "all")
+                                    if (iwatch.Site.channel == "all")
                                         wiki_ = RecentChanges.WikiFromChannelID(edit.Site);
 
                                     if (edit.Page == iwatch.Page)
                                     {
                                         if (edit.Size != null)
                                             edit.Summary = "[" + edit.Size + "] " + edit.Summary;
-                                        if (iwatch.URL == null)
+                                        if (iwatch.Site == null)
                                             DebugLog("NULL pointer on idata 1", 2);
                                         IRC.DeliverMessage(Format(wiki_.name, wiki_.url, edit.Page, edit.User, edit.diff, edit.Summary,
                                             curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, libirc.Defs.Priority.Low);
                                     }
                                     else if (iwatch.Page.EndsWith("*") && edit.Page.StartsWith(iwatch.Page.Replace("*", "")))
                                     {
-                                        if (iwatch.URL == null)
+                                        if (iwatch.Site == null)
                                         {
                                             DebugLog("NULL pointer on idata 2", 2);
                                         }

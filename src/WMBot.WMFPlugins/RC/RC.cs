@@ -27,12 +27,12 @@ namespace wmib.Extensions
         public class IWatch
         {
             public string Page;
-            public wiki URL;
+            public wiki Site;
 
             public IWatch(wiki site, string page)
             {
                 Page = page;
-                URL = site;
+                Site = site;
             }
         }
 
@@ -53,7 +53,7 @@ namespace wmib.Extensions
         public static readonly wiki all = new wiki("all", "all", "unknown");
         public static string Server = "huggle-rc.wmflabs.org";
         public List<IWatch> MonitoredPages = new List<IWatch>();
-        private static readonly List<wiki> wikiinfo = new List<wiki>();
+        private static readonly List<wiki> Wikis = new List<wiki>();
         private static bool Loaded;
         public static List<string> channels = new List<string>();
         public static List<RecentChanges> recentChangesList = new List<RecentChanges>();
@@ -75,10 +75,10 @@ namespace wmib.Extensions
                     foreach (IWatch b in MonitoredPages)
                     {
                         string wiki;
-                        if (b.URL == null || b.URL.channel == null)
+                        if (b.Site == null || b.Site.channel == null)
                             wiki = "unknown";
                         else
-                            wiki = b.URL.channel;
+                            wiki = b.Site.channel;
                         output = output + "<tr><td>" + wiki + "</td><td>" + HttpUtility.HtmlEncode(b.Page) + "</td></tr>\n";
                     }
                     output = output + "</table>";
@@ -115,9 +115,9 @@ namespace wmib.Extensions
 
         public static wiki WikiFromChannelID(string channel)
         {
-            lock (wikiinfo)
+            lock (Wikis)
             {
-                foreach (wiki w in wikiinfo)
+                foreach (wiki w in Wikis)
                 {
                     if (w.channel == channel)
                     {
@@ -144,7 +144,7 @@ namespace wmib.Extensions
                     IRC.DeliverMessage(messages.Localize("rcfeed13", target.Language), target.Name);
                     return false;
                 }
-                foreach (wiki site in wikiinfo)
+                foreach (wiki site in Wikis)
                 {
                     if (name == site.name)
                     {
@@ -193,7 +193,7 @@ namespace wmib.Extensions
             }
             try
             {
-                foreach (wiki site in wikiinfo)
+                foreach (wiki site in Wikis)
                 {
                     if (WikiName == site.name)
                     {
@@ -260,7 +260,7 @@ namespace wmib.Extensions
             if (Name == "all")
                 return all;
 
-            foreach (wiki curr in wikiinfo)
+            foreach (wiki curr in Wikis)
             {
                 if (curr.name == Name)
                 {
@@ -289,7 +289,10 @@ namespace wmib.Extensions
                     string[] values = value.Split('|');
                     if (values.Length > 2)
                     {
-                        MonitoredPages.Add(new IWatch(getWiki(values[0]), values[1].Replace("<separator>", "|")));
+                        wiki Wiki = getWiki(values[0]);
+                        if (Wiki == null)
+                            continue;
+                        MonitoredPages.Add(new IWatch(Wiki, values[1].Replace("<separator>", "|")));
                     }
                 }
             }
@@ -309,9 +312,9 @@ namespace wmib.Extensions
                 {
                     foreach (IWatch values in MonitoredPages)
                     {
-                        if (values == null || values.URL == null || values.Page == null)
+                        if (values == null || values.Site == null || values.Page == null)
                             continue;
-                        content = content + values.URL.name + "|" + values.Page.Replace("|", "<separator>") + "\n";
+                        content = content + values.Site.name + "|" + values.Page.Replace("|", "<separator>") + "\n";
                     }
                 }
                 File.WriteAllText(dbn, content);
@@ -382,7 +385,7 @@ namespace wmib.Extensions
                     {
                         foreach (IWatch iw in MonitoredPages)
                         {
-                            if (iw.Page == Page && site.channel == iw.URL.channel)
+                            if (iw.Page == Page && site.channel == iw.Site.channel)
                             {
                                 currpage = iw;
                                 break;
@@ -417,7 +420,7 @@ namespace wmib.Extensions
                     string[] values = a.Split('|');
                     if (values.Length == 3)
                     {
-                        wikiinfo.Add(new wiki(values[0], values[1], values[2]));
+                        Wikis.Add(new wiki(values[0], values[1], values[2]));
                     }
                 }
                 ModuleRC.ptrModule.Log("Loaded wiki " + content.Length);
@@ -426,8 +429,8 @@ namespace wmib.Extensions
             {
                 ModuleRC.ptrModule.Log("There is no sites file, skipping load", true);
             }
-            wikiinfo.Add(new wiki("mediawiki.org", "https://www.mediawiki.org/w/index.php", "mediawiki"));
-            wikiinfo.Add(new wiki("test.wikipedia.org", "https://test.wikipedia.org/w/index.php", "test_wikipedia"));
+            Wikis.Add(new wiki("mediawiki.org", "https://www.mediawiki.org/w/index.php", "mediawiki"));
+            Wikis.Add(new wiki("test.wikipedia.org", "https://test.wikipedia.org/w/index.php", "test_wikipedia"));
             return 0;
         }
 
@@ -444,7 +447,7 @@ namespace wmib.Extensions
                     {
                         foreach (IWatch iw in MonitoredPages)
                         {
-                            if (iw.URL.channel == site.channel && iw.Page == Page)
+                            if (iw.Site.channel == site.channel && iw.Page == Page)
                             {
                                 currpage = iw;
                                 break;
