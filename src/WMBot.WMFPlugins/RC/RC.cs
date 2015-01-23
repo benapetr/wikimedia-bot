@@ -74,7 +74,12 @@ namespace wmib.Extensions
                 {
                     foreach (IWatch b in MonitoredPages)
                     {
-                        output = output + "<tr><td>" + b.URL.channel + "</td><td>" + HttpUtility.HtmlEncode(b.Page) + "</td></tr>\n";
+                        string wiki;
+                        if (b.URL == null || b.URL.channel == null)
+                            wiki = "unknown";
+                        else
+                            wiki = b.URL.channel;
+                        output = output + "<tr><td>" + wiki + "</td><td>" + HttpUtility.HtmlEncode(b.Page) + "</td></tr>\n";
                     }
                     output = output + "</table>";
                 }
