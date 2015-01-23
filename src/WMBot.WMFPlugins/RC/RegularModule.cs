@@ -406,9 +406,9 @@ namespace wmib.Extensions
                             foreach (RecentChanges.IWatch iwatch in curr.MonitoredPages)
                             {
                                 RecentChanges.wiki wiki_ = iwatch.URL;
-                                if (iwatch.Channel == edit.Site || iwatch.Channel == "all")
+                                if (iwatch.URL.channel == edit.Site || iwatch.URL.channel == "all")
                                 {
-                                    if (iwatch.Channel == "all")
+                                    if (iwatch.URL.channel == "all")
                                         wiki_ = RecentChanges.WikiFromChannelID(edit.Site);
 
                                     if (edit.Page == iwatch.Page)

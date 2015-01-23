@@ -26,13 +26,11 @@ namespace wmib.Extensions
     {
         public class IWatch
         {
-            public string Channel;
             public string Page;
             public wiki URL;
 
-            public IWatch(wiki site, string page, string channel)
+            public IWatch(wiki site, string page)
             {
-                Channel = channel;
                 Page = page;
                 URL = site;
             }
@@ -52,7 +50,7 @@ namespace wmib.Extensions
             }
         }
 
-        private static readonly wiki all = new wiki("all", "all", "unknown");
+        public static readonly wiki all = new wiki("all", "all", "unknown");
         public static string Server = "huggle-rc.wmflabs.org";
         public List<IWatch> MonitoredPages = new List<IWatch>();
         private static readonly List<wiki> wikiinfo = new List<wiki>();
@@ -76,7 +74,7 @@ namespace wmib.Extensions
                 {
                     foreach (IWatch b in MonitoredPages)
                     {
-                        output = output + "<tr><td>" + b.Channel + "</td><td>" + HttpUtility.HtmlEncode(b.Page) + "</td></tr>\n";
+                        output = output + "<tr><td>" + b.URL.channel + "</td><td>" + HttpUtility.HtmlEncode(b.Page) + "</td></tr>\n";
                     }
                     output = output + "</table>";
                 }
@@ -284,13 +282,9 @@ namespace wmib.Extensions
                 foreach (string value in content)
                 {
                     string[] values = value.Split('|');
-                    if (values.Length == 3)
+                    if (values.Length > 2)
                     {
-                        // remove leading hash
-                        string wiki = values[2];
-                        if (wiki.StartsWith("#"))
-                            wiki = wiki.Substring(1);
-                        MonitoredPages.Add(new IWatch(getWiki(values[0]), values[1].Replace("<separator>", "|"), wiki));
+                        MonitoredPages.Add(new IWatch(getWiki(values[0]), values[1].Replace("<separator>", "|")));
                     }
                 }
             }
@@ -310,10 +304,9 @@ namespace wmib.Extensions
                 {
                     foreach (IWatch values in MonitoredPages)
                     {
-                        if (values == null || values.URL == null || values.Page == null || values.Channel == null)
+                        if (values == null || values.URL == null || values.Page == null)
                             continue;
-                        content = content + values.URL.name + "|" + values.Page.Replace("|", "<separator>") + "|" +
-                                  values.Channel + "\n";
+                        content = content + values.URL.name + "|" + values.Page.Replace("|", "<separator>") + "\n";
                     }
                 }
                 File.WriteAllText(dbn, content);
@@ -384,7 +377,7 @@ namespace wmib.Extensions
                     {
                         foreach (IWatch iw in MonitoredPages)
                         {
-                            if (iw.Page == Page && site.channel == iw.Channel)
+                            if (iw.Page == Page && site.channel == iw.URL.channel)
                             {
                                 currpage = iw;
                                 break;
@@ -446,7 +439,7 @@ namespace wmib.Extensions
                     {
                         foreach (IWatch iw in MonitoredPages)
                         {
-                            if (iw.Channel == site.channel && iw.Page == Page)
+                            if (iw.URL.channel == site.channel && iw.Page == Page)
                             {
                                 currpage = iw;
                                 break;
@@ -468,7 +461,7 @@ namespace wmib.Extensions
                     }
                     lock (MonitoredPages)
                     {
-                        MonitoredPages.Add(new IWatch(site, Page, site.channel));
+                        MonitoredPages.Add(new IWatch(site, Page));
                     }
                     IRC.DeliverMessage(messages.Localize("rcfeed10", channel.Language), channel);
                     Module.SetConfig(channel, "HTML.Update", true);
