@@ -286,7 +286,11 @@ namespace wmib.Extensions
                     string[] values = value.Split('|');
                     if (values.Length == 3)
                     {
-                        MonitoredPages.Add(new IWatch(getWiki(values[0]), values[1].Replace("<separator>", "|"), values[2]));
+                        // remove leading hash
+                        string wiki = values[2];
+                        if (wiki.StartsWith("#"))
+                            wiki = wiki.Substring(1);
+                        MonitoredPages.Add(new IWatch(getWiki(values[0]), values[1].Replace("<separator>", "|"), wiki));
                     }
                 }
             }
