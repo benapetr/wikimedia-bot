@@ -291,7 +291,10 @@ namespace wmib.Extensions
                     {
                         wiki Wiki = getWiki(values[0]);
                         if (Wiki == null)
+                        {
+                            Syslog.WarningLog("Unknown wiki: " + values[0] + " dropping subscription from " + this.channel.Name);
                             continue;
+                        }
                         MonitoredPages.Add(new IWatch(Wiki, values[1].Replace("<separator>", "|")));
                     }
                 }
