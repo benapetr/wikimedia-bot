@@ -67,7 +67,7 @@ namespace wmib.Extensions
 
         public string ToTable()
         {
-            string output = "<table align=\"left\" border=1>\n";
+            string output = "<h2>Recent changes</h2>\n\n<table align=\"left\" border=1>\n";
             try
             {
                 lock (MonitoredPages)
