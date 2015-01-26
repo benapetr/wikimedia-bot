@@ -68,28 +68,20 @@ namespace wmib.Extensions
         public string ToTable()
         {
             string output = "<h2>Recent changes</h2>\n\n<table align=\"left\" border=1>\n";
-            try
+            lock (MonitoredPages)
             {
-                lock (MonitoredPages)
+                foreach (IWatch b in MonitoredPages)
                 {
-                    foreach (IWatch b in MonitoredPages)
-                    {
-                        string wiki;
-                        if (b.Site == null || b.Site.channel == null)
-                            wiki = "unknown";
-                        else
-                            wiki = b.Site.channel;
-                        output = output + "<tr><td>" + wiki + "</td><td>" + HttpUtility.HtmlEncode(b.Page) + "</td></tr>\n";
-                    }
-                    output = output + "</table>";
+                    string wiki;
+                    if (b.Site == null || b.Site.channel == null)
+                        wiki = "unknown";
+                    else
+                        wiki = b.Site.channel;
+                    output += "<tr><td>" + wiki + "</td><td>" + HttpUtility.HtmlEncode(b.Page) + "</td></tr>\n";
                 }
-                return output;
+                output = output + "</table>";
             }
-            catch (Exception fail)
-            {
-                Core.HandleException(fail, "RC");
-                return "";
-            }
+            return output;
         }
 
         public static bool Send(string _n)

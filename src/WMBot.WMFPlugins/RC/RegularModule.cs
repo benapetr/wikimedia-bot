@@ -63,17 +63,28 @@ namespace wmib.Extensions
         {
             string HTML = "";
             DebugLog("Getting html for " + channel.Name);
-            if (GetConfig(channel, "RC.Enabled", false))
+            try
             {
-                RecentChanges rc = (RecentChanges)channel.RetrieveObject("RC");
-                if (rc != null)
+                if (GetConfig(channel, "RC.Enabled", false))
                 {
-                    HTML = rc.ToTable();
+                    RecentChanges rc = (RecentChanges)channel.RetrieveObject("RC");
+                    if (rc != null)
+                    {
+                        HTML = rc.ToTable();
+                    }
+                    else
+                    {
+                        Syslog.ErrorLog("NULL rc for " + channel.Name);
+                    }
                 }
                 else
                 {
-                    Syslog.ErrorLog("NULL rc for " + channel.Name);
+                    DebugLog("RC is disabled for " + channel.Name, 2);
                 }
+            }
+            catch (Exception fail)
+            {
+                HandleException(fail);
             }
             return HTML;
         }
