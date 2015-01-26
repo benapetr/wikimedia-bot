@@ -62,12 +62,17 @@ namespace wmib.Extensions
         public override string Extension_DumpHtml(Channel channel)
         {
             string HTML = "";
+            DebugLog("Getting html for " + channel.Name);
             if (GetConfig(channel, "RC.Enabled", false))
             {
                 RecentChanges rc = (RecentChanges)channel.RetrieveObject("RC");
                 if (rc != null)
                 {
                     HTML = rc.ToTable();
+                }
+                else
+                {
+                    Syslog.ErrorLog("NULL rc for " + channel.Name);
                 }
             }
             return HTML;
