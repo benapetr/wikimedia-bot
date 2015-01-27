@@ -249,7 +249,7 @@ namespace wmib.Extensions
         /// <returns></returns>
         private static wiki getWiki(string Name)
         {
-            if (Name == "all")
+            if (Name == "all" || Name == "unknown")
                 return all;
 
             foreach (wiki curr in Wikis)
