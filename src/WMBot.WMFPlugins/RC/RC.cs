@@ -356,6 +356,10 @@ namespace wmib.Extensions
             }
             catch (IOException)
             {
+                Syslog.ErrorLog("RecentChanges IO exception @XmlRpc, trying to reconnect");
+                RecentChanges.LastMessage = DateTime.Now;
+                Disconnect();
+                Connect();
             }
             catch (ThreadAbortException)
             {
