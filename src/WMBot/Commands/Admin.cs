@@ -21,18 +21,19 @@ namespace wmib
         public static void InitAdminCommands()
         {
             CommandPool.RegisterCommand(new GenericCommand("add", Commands.AddChannel, false, "join"));
-            CommandPool.RegisterCommand(new GenericCommand("join", Commands.AddChannel, false, "join"));
             CommandPool.RegisterCommand(new GenericCommand("commands", Commands.CommandList, true, null, false));
             CommandPool.RegisterCommand(new GenericCommand("configure", Commands.Configure, false, "admin"));
             CommandPool.RegisterCommand(new GenericCommand("channellist", Commands.ChannelList));
             CommandPool.RegisterCommand(new GenericCommand("drop", Commands.Drop, false));
             CommandPool.RegisterCommand(new GenericCommand("help", Commands.Help));
+            CommandPool.RegisterCommand(new GenericCommand("join", Commands.AddChannel, false, "join"));
             CommandPool.RegisterCommand(new GenericCommand("language", Commands.Language, true, "admin"));
             CommandPool.RegisterCommand(new GenericCommand("info", Commands.Info));
             CommandPool.RegisterCommand(new GenericCommand("instance", Commands.Instance, false, "root"));
             CommandPool.RegisterCommand(new GenericCommand("part", Commands.Part, false));
             CommandPool.RegisterCommand(new GenericCommand("reload", Commands.Reload, true, "admin"));
             CommandPool.RegisterCommand(new GenericCommand("restart", Commands.Restart, true, "root"));
+            CommandPool.RegisterCommand(new GenericCommand("reauth", Commands.Reauth, false, "root"));
             CommandPool.RegisterCommand(new GenericCommand("traffic-off", Commands.TrafficOff, true, "root"));
             CommandPool.RegisterCommand(new GenericCommand("traffic-on", Commands.TrafficOn, true, "root"));
             CommandPool.RegisterCommand(new GenericCommand("trustadd", Commands.TrustAdd, false, "trustadd"));
@@ -92,6 +93,20 @@ namespace wmib
                 IRC.DeliverMessage("I know: " + commands, parameters.SourceChannel);
             else if (parameters.SourceUser != null)
                 IRC.DeliverMessage("I know: " + commands, parameters.SourceUser);
+        }
+
+        private static void Reauth(CommandParams parameters)
+        {
+            if (string.IsNullOrEmpty(parameters.Parameters))
+            {
+                IRC.DeliverMessage("You need to provide exactly 1 parameter", parameters.SourceChannel);
+                return;
+            }
+
+            if (wmib.Instance.Instances.ContainsKey(parameters.Parameters))
+                wmib.Instance.Instances[parameters.Parameters].Protocol.Authenticate(false);
+            else
+                IRC.DeliverMessage("Unknown bot: " + parameters.Parameters, parameters.SourceChannel);
         }
 
         private static void VerbosityDown(CommandParams parameters)
