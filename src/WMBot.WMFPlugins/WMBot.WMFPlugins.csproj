@@ -41,6 +41,9 @@
     <Reference Include="libirc">
       <HintPath>..\WMBot\libirc.dll</HintPath>
     </Reference>
+    <Reference Include="XmlRcs">
+      <HintPath>.\XmlRcs.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Labs\Labs.cs" />

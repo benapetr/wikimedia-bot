@@ -11,11 +11,9 @@
 // Created by Petr Bena
 
 using System;
+using System.Web;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
-using System.Xml;
-using System.Web;
 
 namespace wmib.Extensions
 {
@@ -34,6 +32,7 @@ namespace wmib.Extensions
         {
             RecentChanges.Server = Configuration.RetrieveConfig("xmlrcs_host", RecentChanges.Server);
             RecentChanges.InsertSite();
+            XmlRcs.Configuration.Server = RecentChanges.Server;
             lock (Configuration.Channels)
             {
                 foreach (Channel channel in Configuration.Channels)
@@ -345,110 +344,55 @@ namespace wmib.Extensions
                    .Replace("$action", action);
         }
 
-        public static Change String2Change(string text)
+        private void OnChange(object sender, XmlRcs.EditEventArgs ex)
         {
-            XmlDocument xml = new XmlDocument();
-            xml.LoadXml(text);
-            string name = xml.DocumentElement.Name;
-            if (name == "ping")
+            ex.Change.EmptyNulls();
+            XmlRcs.RecentChange edit = ex.Change;
+            List<RecentChanges> recentChanges = new List<RecentChanges>();
+            lock (RecentChanges.recentChangesList)
             {
-                RecentChanges.Send("pong");
-                return null;
+                recentChanges.AddRange(RecentChanges.recentChangesList);
             }
-            if (name == "ok" || name == "pong")
-                return null;
-            if (name == "error")
+            foreach (RecentChanges curr in recentChanges)
             {
-                ModuleRC.ptrModule.Log("Error: " + xml.DocumentElement.InnerText);
-                return null;
-            }
-            if (xml.DocumentElement.Name != "edit")
-            {
-                ModuleRC.ptrModule.Log("Invalid node: " + xml.DocumentElement.Name, true);
-                return null;
-            }
-            if (xml.DocumentElement.Attributes["type"].Value != "edit" && xml.DocumentElement.Attributes["type"].Value != "new")
-                return null;
-            Change change = new Change(xml.DocumentElement.Attributes["title"].Value, xml.DocumentElement.Attributes["summary"].Value, xml.DocumentElement.Attributes["user"].Value);
-            change.New = xml.DocumentElement.Attributes["type"].Value == "new";
-            change.Site = xml.DocumentElement.Attributes["server_name"].Value;
-            change.Minor = bool.Parse(xml.DocumentElement.Attributes["minor"].Value);
-            change.Bot = bool.Parse(xml.DocumentElement.Attributes["bot"].Value);
-            if (xml.DocumentElement.Attributes["oldid"] != null)
-                change.oldid = xml.DocumentElement.Attributes["oldid"].Value;
-            if (xml.DocumentElement.Attributes["revid"] != null)
-                change.diff = xml.DocumentElement.Attributes["revid"].Value;
-
-            change.Size = "unknown";
-
-            if (!change.New && xml.DocumentElement.Attributes["length_old"] != null && xml.DocumentElement.Attributes["length_new"] != null)
-            {
-                int size = int.Parse(xml.DocumentElement.Attributes["length_new"].Value) - int.Parse(xml.DocumentElement.Attributes["length_old"].Value);
-                change.Size = size.ToString();
-                if (size > 0)
-                    change.Size = "+" + change.Size;
-            }
-            change.Special = change.Page.StartsWith("Special:");
-            return change;
-        }
-
-        private void Loop()
-        {
-            while (!RecentChanges.streamReader.EndOfStream)
-            {
-                string message = RecentChanges.streamReader.ReadLine();
-                RecentChanges.LastMessage = DateTime.Now;
-                Change edit = String2Change(message);
-                if (edit == null)
+                if (GetConfig(curr.channel, "RC.Enabled", false))
                 {
-                    Thread.Sleep(200);
-                    continue;
-                }
-                List<RecentChanges> recentChanges = new List<RecentChanges>();
-                lock (RecentChanges.recentChangesList)
-                {
-                    recentChanges.AddRange(RecentChanges.recentChangesList);
-                }
-                foreach (RecentChanges curr in recentChanges)
-                {
-                    if (edit.Special && !GetConfig(curr.channel, "RC.Special", false))
+                    lock (curr.MonitoredPages)
                     {
-                        continue;
-                    }
-                    if (GetConfig(curr.channel, "RC.Enabled", false))
-                    {
-                        lock (curr.MonitoredPages)
+                        foreach (RecentChanges.IWatch iwatch in curr.MonitoredPages)
                         {
-                            foreach (RecentChanges.IWatch iwatch in curr.MonitoredPages)
+                            if (iwatch.Site == null)
+                                throw new WmibException("iwatch.Site must not be null");
+                            RecentChanges.wiki wiki_ = iwatch.Site;
+                            if (iwatch.Site.channel == null)
+                                throw new WmibException("iwatch.Site.channel must not be null");
+                            if (iwatch.Site.channel == edit.ServerName || iwatch.Site.channel == "all")
                             {
-                                if (iwatch.Site == null)
-                                    throw new WmibException("iwatch.Site must not be null");
-                                RecentChanges.wiki wiki_ = iwatch.Site;
-                                if (iwatch.Site.channel == null)
-                                    throw new WmibException("iwatch.Site.channel must not be null");
-                                if (iwatch.Site.channel == edit.Site || iwatch.Site.channel == "all")
+                                if (iwatch.Site.channel == "all")
+                                    wiki_ = RecentChanges.WikiFromChannelID(edit.ServerName);
+                                if (edit.Title == iwatch.Page)
                                 {
-                                    if (iwatch.Site.channel == "all")
-                                        wiki_ = RecentChanges.WikiFromChannelID(edit.Site);
-
-                                    if (edit.Page == iwatch.Page)
+                                    if (edit.LengthNew != 0 || edit.LengthOld != 0)
                                     {
-                                        if (edit.Size != null)
-                                            edit.Summary = "[" + edit.Size + "] " + edit.Summary;
-                                        if (iwatch.Site == null)
-                                            DebugLog("NULL pointer on idata 1", 2);
-                                        IRC.DeliverMessage(Format(wiki_.name, wiki_.url, edit.Page, edit.User, edit.diff, edit.Summary,
-                                            curr.channel, edit.Bot, edit.New, edit.Minor), curr.channel.Name, libirc.Defs.Priority.Low);
+                                        int size = edit.LengthNew - edit.LengthOld;
+                                        string sx = size.ToString();
+                                        if (size >= 0)
+                                            sx = "+" + sx;
+                                        edit.Summary = "[" + sx + "] " + edit.Summary;
                                     }
-                                    else if (iwatch.Page.EndsWith("*") && edit.Page.StartsWith(iwatch.Page.Replace("*", "")))
+                                    if (iwatch.Site == null)
+                                        DebugLog("NULL pointer on idata 1", 2);
+                                    IRC.DeliverMessage(Format(wiki_.name, wiki_.url, edit.Title, edit.User, edit.RevID.ToString(), edit.Summary,
+                                        curr.channel, edit.Bot, edit.Type == XmlRcs.RecentChange.ChangeType.New, edit.Minor), curr.channel.Name, libirc.Defs.Priority.Low);
+                                }
+                                else if (iwatch.Page.EndsWith("*") && edit.Title.StartsWith(iwatch.Page.Replace("*", "")))
+                                {
+                                    if (iwatch.Site == null)
                                     {
-                                        if (iwatch.Site == null)
-                                        {
-                                            DebugLog("NULL pointer on idata 2", 2);
-                                        }
-                                        IRC.DeliverMessage(Format(wiki_.name, wiki_.url, edit.Page, edit.User, edit.diff, edit.Summary, curr.channel, edit.Bot,
-                                                edit.New, edit.Minor), curr.channel.Name, libirc.Defs.Priority.Low);
+                                        DebugLog("NULL pointer on idata 2", 2);
                                     }
+                                    IRC.DeliverMessage(Format(wiki_.name, wiki_.url, edit.Title, edit.User, edit.RevID.ToString(), edit.Summary, curr.channel, edit.Bot,
+                                            edit.Type == XmlRcs.RecentChange.ChangeType.New, edit.Minor), curr.channel.Name, libirc.Defs.Priority.Low);
                                 }
                             }
                         }
@@ -466,48 +410,23 @@ namespace wmib.Extensions
                 {
                     File.WriteAllText(RecentChanges.WikiFile, "mediawiki.org");
                 }
-                try
+                string[] list = File.ReadAllLines(RecentChanges.WikiFile);
+                Log("Loading feed");
+                lock (RecentChanges.channels)
                 {
-                    string[] list = File.ReadAllLines(RecentChanges.WikiFile);
-                    Log("Loading feed");
-                    lock (RecentChanges.channels)
+                    foreach (string chan in list)
                     {
-                        foreach (string chan in list)
-                        {
-                            RecentChanges.channels.Add(chan);
-                        }
-                    }
-                    RecentChanges.Connect();
-                    while (Core.IsRunning)
-                    {
-                        try
-                        {
-                            this.Loop();
-                            Thread.Sleep(100);
-                        }
-                        catch (ThreadAbortException)
-                        {
-                            return;
-                        }
-                        catch (Exception fail)
-                        {
-                            HandleException(fail);
-                            RecentChanges.Connect();
-                        }
+                        RecentChanges.channels.Add(chan);
                     }
                 }
-                catch (ThreadAbortException)
+                RecentChanges.Connect();
+                RecentChanges.Provider.On_Change += OnChange;
+                while (Core.IsRunning)
                 {
-                    return;
-                }
-                catch (Exception fail)
-                {
-                    HandleException(fail);
-                    return;
-                    // abort
+                    System.Threading.Thread.Sleep(200);
                 }
             }
-            catch (ThreadAbortException)
+            catch (System.Threading.ThreadAbortException)
             {
             }
             catch (Exception fail)

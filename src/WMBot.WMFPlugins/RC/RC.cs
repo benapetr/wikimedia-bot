@@ -13,12 +13,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Sockets;
-using System.Text;
-using System.Xml;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Web;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace wmib.Extensions
 {
@@ -54,14 +51,11 @@ namespace wmib.Extensions
         public static string Server = "huggle-rc.wmflabs.org";
         public List<IWatch> MonitoredPages = new List<IWatch>();
         private static readonly List<wiki> Wikis = new List<wiki>();
-        private static bool Loaded;
         public static List<string> channels = new List<string>();
         public static List<RecentChanges> recentChangesList = new List<RecentChanges>();
         public static DateTime LastMessage = DateTime.Now;
-        public static StreamReader streamReader;
         public static string WikiFile = Variables.ConfigurationDirectory + "/feed";
-        public static StreamWriter streamWriter;
-        public static NetworkStream networkStream;
+        public static XmlRcs.Provider Provider = null;
 
         public Channel channel;
 
@@ -82,17 +76,6 @@ namespace wmib.Extensions
                 output = output + "</table>";
             }
             return output;
-        }
-
-        public static bool Send(string _n)
-        {
-            ModuleRC.ptrModule.DebugLog("Sending: " + _n);
-            lock (streamWriter)
-            {
-                streamWriter.WriteLine(_n);
-                streamWriter.Flush();
-            }
-            return true;
         }
 
         public RecentChanges(Channel _channel)
@@ -131,11 +114,6 @@ namespace wmib.Extensions
             try
             {
                 wiki web = null;
-                if (Loaded == false)
-                {
-                    IRC.DeliverMessage(messages.Localize("rcfeed13", target.Language), target.Name);
-                    return false;
-                }
                 foreach (wiki site in Wikis)
                 {
                     if (name == site.name)
@@ -155,7 +133,7 @@ namespace wmib.Extensions
                     return false;
                 }
                 channels.Add(web.channel);
-                Send("S " + web.channel);
+                RecentChanges.Provider.Subscribe(web.channel);
                 File.WriteAllText(WikiFile, "");
                 foreach (string x in channels)
                 {
@@ -178,11 +156,6 @@ namespace wmib.Extensions
         public static bool DeleteChannel(Channel target, string WikiName)
         {
             wiki W = null;
-            if (Loaded == false)
-            {
-                IRC.DeliverMessage(messages.Localize("rcfeed13", target.Language), target);
-                return false;
-            }
             try
             {
                 foreach (wiki site in Wikis)
@@ -204,8 +177,7 @@ namespace wmib.Extensions
                     return false;
                 }
                 channels.Remove(W.channel);
-                Send("D " + W.channel);
-                streamWriter.Flush();
+                RecentChanges.Provider.Unsubscribe(W.channel);
                 File.WriteAllText(WikiFile, "");
                 foreach (string x in channels)
                 {
@@ -225,21 +197,15 @@ namespace wmib.Extensions
         public static void Connect()
         {
             ModuleRC.ptrModule.Log("Connecting to huggle XmlRcs");
-            networkStream = new TcpClient(Server, 8822).GetStream();
-            streamWriter = new StreamWriter(networkStream);
-            streamReader = new StreamReader(networkStream, Encoding.UTF8);
-            Thread pinger = new Thread(Pong) { Name = "Module:RC/Pinger" };
-            Core.ThreadManager.RegisterThread(pinger);
-            pinger.Start();
+            RecentChanges.Provider = new XmlRcs.Provider(true, true);
             lock (channels)
             {
                 foreach (string b in channels)
                 {
-                    Send("S " + b);
+                    RecentChanges.Provider.Subscribe(b);
                 }
             }
             ModuleRC.ptrModule.Log("Connected to feed - OK");
-            Loaded = true;
         }
 
         /// <summary>
@@ -321,54 +287,6 @@ namespace wmib.Extensions
                 Core.HandleException(er, "RC");
                 Core.RecoverFile(dbn, channel.Name);
             }
-        }
-
-        private static void Disconnect()
-        {
-            try
-            {
-                networkStream.Close();
-            }
-            catch (Exception error)
-            {
-                Core.HandleException(error);
-            }
-        }
-
-        private static void Pong()
-        {
-            try
-            {
-                while (Core.IsRunning)
-                {
-                    if (LastMessage < DateTime.Now.AddSeconds(-20))
-                    {
-                        // we got disconnected
-                        Syslog.ErrorLog("RecentChanges timeout @XmlRpc, trying to reconnect");
-                        RecentChanges.LastMessage = DateTime.Now;
-                        Disconnect();
-                        Connect();
-                        break;
-                    }
-                    Send("ping");
-                    Thread.Sleep(8000);
-                }
-            }
-            catch (IOException)
-            {
-                Syslog.ErrorLog("RecentChanges IO exception @XmlRpc, trying to reconnect");
-                RecentChanges.LastMessage = DateTime.Now;
-                Disconnect();
-                Connect();
-            }
-            catch (ThreadAbortException)
-            {
-            }
-            catch (Exception fail)
-            {
-                Core.HandleException(fail, "RC");
-            }
-            Core.ThreadManager.UnregisterThread(Thread.CurrentThread);
         }
 
         public bool removeString(string WS, string Page)
