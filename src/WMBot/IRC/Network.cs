@@ -175,6 +175,16 @@ namespace wmib
             }
         }
 
+        protected override void __evt_JOINERROR(libirc.Network.NetworkJoinErrorEventArgs args)
+        {
+            if (!string.IsNullOrEmpty(Configuration.System.DebugChan))
+            {
+                IRC.DeliverMessage("Join error: " + args.Message + " channel: " + args.ParameterLine + " reason: " + args.Error.ToString(),
+                                   Configuration.System.DebugChan);
+            }
+            base.__evt_JOINERROR(args);
+        }
+
         protected override void __evt_FinishChannelParseUser(NetworkChannelDataEventArgs args)
         {
             Channel channel = Core.GetChannel(args.ChannelName);
