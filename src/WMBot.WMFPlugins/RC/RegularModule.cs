@@ -344,6 +344,17 @@ namespace wmib.Extensions
                    .Replace("$action", action);
         }
 
+        private void OnError(object sender, XmlRcs.ErrorEventArgs ex)
+        {
+            if (!string.IsNullOrEmpty(Configuration.System.DebugChan))
+            {
+                if (ex.Fatal)
+                    IRC.DeliverMessage("DEBUG XmlRcs FATAL: " + ex.Message, Configuration.System.DebugChan);
+                else
+                    IRC.DeliverMessage("DEBUG XmlRcs ERROR: " + ex.Message, Configuration.System.DebugChan);
+            }
+        }
+
         private void OnChange(object sender, XmlRcs.EditEventArgs ex)
         {
             ex.Change.EmptyNulls();
@@ -420,6 +431,7 @@ namespace wmib.Extensions
                     }
                 }
                 RecentChanges.Connect();
+                RecentChanges.Provider.On_Error += OnError;
                 RecentChanges.Provider.On_Change += OnChange;
                 while (Core.IsRunning)
                 {

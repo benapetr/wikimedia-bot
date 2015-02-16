@@ -49,7 +49,6 @@
     <Compile Include="Labs\Labs.cs" />
     <Compile Include="Link\Link.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RC\Change.cs" />
     <Compile Include="RC\RC.cs" />
     <Compile Include="RC\RegularModule.cs" />
     <Compile Include="Replag\Rl.cs" />
