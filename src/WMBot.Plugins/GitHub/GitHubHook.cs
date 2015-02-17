@@ -54,12 +54,19 @@ namespace wmib.Extensions
                     if (Core.DB.ErrorBuffer != null)
                     {
                         error = Core.DB.ErrorBuffer;
-                        Log("Unable to connect to SQL server: " + Core.DB.ErrorBuffer + " retrying in 20 seconds");
                     }
                     IRC.DeliverMessage("Unable to connect to SQL: " + error, p.SourceChannel);
                     return;
                 }
-
+                // first check if repository isn't already there
+                List<List<string>> result = Core.DB.Select("github_repo_info", "name, channel", "name = '" + Core.DB.EscapeInput(p.Parameters) + "' AND channel = '" +
+                    Core.DB.EscapeInput(p.SourceChannel.Name) + "'", 2);
+                if (result.Count != 0)
+                {
+                    IRC.DeliverMessage("This repository is already in DB", p.SourceChannel);
+                    Core.DB.Disconnect();
+                    return;
+                }
                 Database.Row row = new Database.Row();
                 row.Values.Add(new Database.Row.Value(0));
                 row.Values.Add(new Database.Row.Value(p.Parameters, Database.DataType.Varchar));
@@ -82,7 +89,40 @@ namespace wmib.Extensions
 
         private void github_Remove(CommandParams p)
         {
-            
+            if (string.IsNullOrEmpty(p.Parameters))
+            {
+                IRC.DeliverMessage("This command requires exactly 1 parameter", p.SourceChannel);
+                return;
+            }
+            lock (Core.DB.DatabaseLock)
+            {
+                string error = "unknown";
+                Core.DB.Connect();
+                if (!Core.DB.IsConnected)
+                {
+                    if (Core.DB.ErrorBuffer != null)
+                    {
+                        error = Core.DB.ErrorBuffer;
+                    }
+                    IRC.DeliverMessage("Unable to connect to SQL: " + error, p.SourceChannel);
+                    return;
+                }
+                // first check if repository isn't already there
+                List<List<string>> result = Core.DB.Select("github_repo_info", "name, channel", "name = '" + Core.DB.EscapeInput(p.Parameters) + "' AND channel = '" +
+                    Core.DB.EscapeInput(p.SourceChannel.Name) + "'", 2);
+                if (result.Count == 0)
+                {
+                    IRC.DeliverMessage("This repository is not in DB", p.SourceChannel);
+                    Core.DB.Disconnect();
+                    return;
+                }
+                Core.DB.Delete("github_repo_info", "name = '" + Core.DB.EscapeInput(p.Parameters)
+                    + "' AND channel = '"
+                    + Core.DB.EscapeInput(p.SourceChannel.Name) + "'");
+                Core.DB.Commit();
+                Core.DB.Disconnect();
+            }
+            IRC.DeliverMessage("Hooks from " + p.Parameters + " were disabled for this channel", p.SourceChannel);
         }
 
         private void github_On(CommandParams p)

@@ -164,9 +164,8 @@ namespace wmib
             }
         }
 
-        public override string Select(string table, string rows, string query, int columns, char separator = '|')
+        public override List<List<string>> Select(string table, string rows, string query, int columns, char separator = '|')
         {
-            StringBuilder result = new StringBuilder();
             lock (DatabaseLock)
             {
                 if (!IsConnected)
@@ -178,24 +177,19 @@ namespace wmib
                 MySqlCommand xx = Connection.CreateCommand();
                 xx.CommandText = sql;
                 MySqlDataReader r = xx.ExecuteReader();
+                List<List<string>> result = new List<List<string>>();
                 while (r.Read())
                 {
+                    List<string> row = new List<string>();
                     int i = 0;
                     while (i < columns)
                     {
-                        if (result.Length == 0)
-                        {
-                            result.Append(r.GetString(i));
-                        }
-                        else
-                        {
-                            result.Append(separator);
-                            result.Append(r.GetString(i));
-                        }
+                        row.Add(r.GetString(i));
                         i++;
                     }
+                    result.Add(row);
                 }
-                return result.ToString();
+                return result;
             }
         }
 
@@ -271,6 +265,33 @@ namespace wmib
         public override int CacheSize()
         {
             return unwritten.PendingRows.Count;
+        }
+
+        public override string EscapeInput(string data)
+        {
+            return MySqlHelper.EscapeString(data);
+        }
+
+        public override int Delete(string table, string query)
+        {
+            int result = 0;
+            string sql = "DELETE FROM " + table;
+            if (!String.IsNullOrEmpty(query))
+                sql += " WHERE " + query;
+            lock (DatabaseLock)
+            {
+                try
+                {
+                    MySqlCommand mySqlCommand = Connection.CreateCommand();
+                    mySqlCommand.CommandText = sql;
+                    mySqlCommand.BeginExecuteNonQuery();
+                }
+                catch (MySqlException me)
+                {
+                    ErrorBuffer = me.Message;
+                }
+            }
+            return result;
         }
 
         private void FlushRows()

@@ -117,11 +117,15 @@ namespace wmib
 
         public virtual void Connect() { }
 
+        public virtual string EscapeInput(string data) { return data; }
+
         public virtual void Disconnect() { }
 
         public virtual void Commit() { }
 
         public virtual void Rollback() { }
+
+        public virtual int Delete(string table, string query) { return 0; }
 
         public virtual int CacheSize()
         {
@@ -143,7 +147,7 @@ namespace wmib
         /// <param name="columns"></param>
         /// <param name="separator"></param>
         /// <returns></returns>
-        public virtual string Select(string table, string rows, string query, int columns, char separator = '|')
+        public virtual List<List<string>> Select(string table, string rows, string query, int columns, char separator = '|')
         {
             ErrorBuffer = "SELECT: function is not implemented";
             return null;
