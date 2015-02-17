@@ -71,7 +71,10 @@ namespace wmib.Extensions
                 row.Values.Add(new Database.Row.Value(0));
                 row.Values.Add(new Database.Row.Value(p.Parameters, Database.DataType.Varchar));
                 row.Values.Add(new Database.Row.Value(p.SourceChannel.Name, Database.DataType.Varchar));
-                row.Values.Add(new Database.Row.Value("", Database.DataType.Varchar));
+                if (GetConfig(p.SourceChannel, "NetCat.Token", false))
+                    row.Values.Add(new Database.Row.Value(GetConfig(p.SourceChannel, "NetCat.TokenData", ""), Database.DataType.Varchar));
+                else
+                    row.Values.Add(new Database.Row.Value("", Database.DataType.Varchar));
                 row.Values.Add(new Database.Row.Value(true));
                 if (!Core.DB.InsertRow("github_repo_info", row))
                 {
