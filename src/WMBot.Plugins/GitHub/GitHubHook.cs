@@ -23,8 +23,8 @@ namespace wmib.Extensions
             Version = new Version(1, 0, 0, 0);
             RegisterCommand(new GenericCommand("github-on", github_On, true, "admin"));
             RegisterCommand(new GenericCommand("github-off", github_Off, true, "admin"));
-            RegisterCommand(new GenericCommand("github-", github_Remove, true, "trusted"));
-            RegisterCommand(new GenericCommand("github+", github_Insert, true, "trusted"));
+            RegisterCommand(new GenericCommand("github-", github_Remove, true, "trust"));
+            RegisterCommand(new GenericCommand("github+", github_Insert, true, "trust"));
             HasSeparateThreadInstance = false;
             return true;
         }
