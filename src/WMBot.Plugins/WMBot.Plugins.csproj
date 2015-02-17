@@ -49,6 +49,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GitHub\GitHubHook.cs" />
     <Compile Include="HtmlDump\HtmlDump.cs" />
     <Compile Include="Infobot\Definitions.cs" />
     <Compile Include="Infobot\Infobot.cs" />
