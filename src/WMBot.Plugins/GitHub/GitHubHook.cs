@@ -80,6 +80,8 @@ namespace wmib.Extensions
                         error = Core.DB.ErrorBuffer;
                     }
                     IRC.DeliverMessage("Failed to insert row: " + error, p.SourceChannel);
+                    Core.DB.Disconnect();
+                    return;
                 }
                 Core.DB.Commit();
                 Core.DB.Disconnect();

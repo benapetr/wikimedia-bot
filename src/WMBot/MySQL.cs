@@ -189,6 +189,7 @@ namespace wmib
                     }
                     result.Add(row);
                 }
+                r.Close();
                 return result;
             }
         }
