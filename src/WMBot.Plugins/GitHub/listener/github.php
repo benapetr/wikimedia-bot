@@ -43,7 +43,7 @@ class GitHub
 
     private function getHeader()
     {
-        return chr(2) . "GitHub".chr(2)." [" . chr(3) . "4" . $this->repo_name . chr(3) . "] ";
+        return chr(2) . "GitHub".chr(2)." [" . chr(3) . "8" . $this->repo_name . chr(3) . "] ";
     }
 
     private function process_msgs()
@@ -52,11 +52,11 @@ class GitHub
         {
             $this->commits = $this->pCommitInfo();
             if (array_key_exists("pusher", $this->priv_json))
-                array_push($this->messages, $this->getHeader() . " " . chr(2) . $this->priv_json["pusher"]["name"] . chr(2) . " pushed " . count($this->commits) . " commits: " . $this->priv_json["compare"]);
+                array_push($this->messages, $this->getHeader() . chr(2) . $this->priv_json["pusher"]["name"] . chr(2) . " pushed " . count($this->commits) . " commits: " . $this->priv_json["compare"]);
 
             foreach ($this->commits as $commit)
             {
-               $message = $this->getHeader() . " commit by " . chr(2) . $commit->commit_user . " (" . $commit->commit_author . ")" . chr(2) . " " . $commit->github . " " . $commit->commit_message; 
+               $message = $this->getHeader() . "commit by " . chr(2) . $commit->commit_user . " (" . $commit->commit_author . ")" . chr(2) . " " . $commit->github . " " . $commit->commit_message; 
                array_push($this->messages, $message);
             }
         }
