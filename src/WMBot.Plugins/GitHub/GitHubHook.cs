@@ -67,6 +67,8 @@ namespace wmib.Extensions
                     Core.DB.Disconnect();
                     return;
                 }
+                Core.DB.Disconnect();
+                Core.DB.Connect();
                 Database.Row row = new Database.Row();
                 row.Values.Add(new Database.Row.Value(0));
                 row.Values.Add(new Database.Row.Value(p.Parameters, Database.DataType.Varchar));
@@ -112,6 +114,9 @@ namespace wmib.Extensions
                 // first check if repository isn't already there
                 List<List<string>> result = Core.DB.Select("github_repo_info", "name, channel", "WHERE name = '" + Core.DB.EscapeInput(p.Parameters) + "' AND channel = '" +
                     Core.DB.EscapeInput(p.SourceChannel.Name) + "'", 2);
+                // for some reason we need to reconnect db otherwise it stuck for like 20 seconds
+                Core.DB.Disconnect();
+                Core.DB.Connect();
                 if (result.Count == 0)
                 {
                     IRC.DeliverMessage("This repository is not in DB", p.SourceChannel);
