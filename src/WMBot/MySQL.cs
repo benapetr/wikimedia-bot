@@ -284,7 +284,7 @@ namespace wmib
                 {
                     MySqlCommand mySqlCommand = Connection.CreateCommand();
                     mySqlCommand.CommandText = sql;
-                    mySqlCommand.BeginExecuteNonQuery();
+                    result = mySqlCommand.ExecuteNonQuery();
                 }
                 catch (MySqlException me)
                 {
