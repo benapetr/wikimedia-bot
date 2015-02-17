@@ -189,6 +189,7 @@ namespace wmib
                     }
                     result.Add(row);
                 }
+                r.Close();
                 return result;
             }
         }
@@ -277,7 +278,7 @@ namespace wmib
             int result = 0;
             string sql = "DELETE FROM " + table;
             if (!String.IsNullOrEmpty(query))
-                sql += " WHERE " + query;
+                sql += " " + query;
             lock (DatabaseLock)
             {
                 try

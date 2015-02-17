@@ -118,7 +118,7 @@ namespace wmib.Extensions
                     Core.DB.Disconnect();
                     return;
                 }
-                Core.DB.Delete("github_repo_info", "name = '" + Core.DB.EscapeInput(p.Parameters)
+                Core.DB.Delete("github_repo_info", "WHERE name = '" + Core.DB.EscapeInput(p.Parameters)
                     + "' AND channel = '"
                     + Core.DB.EscapeInput(p.SourceChannel.Name) + "'");
                 Core.DB.Commit();
