@@ -360,6 +360,7 @@ namespace wmib.Extensions
             ex.Change.EmptyNulls();
             XmlRcs.RecentChange edit = ex.Change;
             List<RecentChanges> recentChanges = new List<RecentChanges>();
+            RecentChanges.LastMessage = DateTime.Now;
             lock (RecentChanges.recentChangesList)
             {
                 recentChanges.AddRange(RecentChanges.recentChangesList);
