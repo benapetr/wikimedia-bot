@@ -206,6 +206,7 @@ namespace wmib
 
         /// <summary>
         /// List of channels the bot is in, you should never need to use this, use ChannelList instead
+        /// WARNING: this is thread unsafe, you always need to lock this object before you access it
         /// </summary>
         public static List<Channel> Channels = new List<Channel>();
 

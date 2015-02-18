@@ -22,7 +22,7 @@ This bot is very flexible and extendible some of bot features:
 * Support for different interface languages per channel
 
 For further help and usage instructions (for users, not maintainers of bot),
-please consult the [documentation onM eta-Wiki](http://meta.wikimedia.org/wiki/Wm-bot).
+please consult the [documentation on Meta-Wiki](http://meta.wikimedia.org/wiki/Wm-bot).
 
 How to build
 ===============

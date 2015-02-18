@@ -24,21 +24,22 @@ namespace wmib.Extensions
 {
     public class NetCat : Module
     {
-        public readonly int Port = 64834;
+        public int Port = 64834;
 
         public override bool Construct()
         {
             Version = new Version(1, 0, 2, 0);
+            this.Port = Configuration.RetrieveConfig("netcat.port", this.Port);
             return true;
         }
 
-        public void SendMessage(ref StreamWriter writer, string text)
+        private void SendMessage(ref StreamWriter writer, string text)
         {
             writer.WriteLine(text);
             writer.Flush();
         }
 
-        public void Client(object data)
+        private void Client(object data)
         {
             try
             {
@@ -140,7 +141,7 @@ namespace wmib.Extensions
             }
         }
 
-        public static string GenerateToken()
+        private static string GenerateToken()
         {
             Random random = new Random((int)DateTime.Now.Ticks);
             StringBuilder builder = new StringBuilder();

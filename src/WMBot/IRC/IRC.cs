@@ -19,10 +19,10 @@ namespace wmib
 {
     public partial class IRC
     {
+        private static bool finishedJoining = false;
         /// <summary>
         /// If this is not true it means bot did not yet finish connecting or joining to all networks
         /// </summary>
-        private static bool finishedJoining = false;
         public static bool FinishedJoining
         {
             get
@@ -31,6 +31,12 @@ namespace wmib
             }
         }
 
+        /// <summary>
+        /// Send a message to a given target
+        /// </summary>
+        /// <param name="text">Text of a message</param>
+        /// <param name="target">Channel</param>
+        /// <param name="priority">Priority</param>
         public static void DeliverMessage(string text, Channel target, libirc.Defs.Priority priority = libirc.Defs.Priority.Normal)
         {
             if (!target.Suppress)
@@ -40,6 +46,12 @@ namespace wmib
             }
         }
 
+        /// <summary>
+        /// Send a message to a given target
+        /// </summary>
+        /// <param name="text">Message</param>
+        /// <param name="target">User</param>
+        /// <param name="priority">Priority</param>
         public static void DeliverMessage(string text, libirc.UserInfo target, libirc.Defs.Priority priority = libirc.Defs.Priority.Normal)
         {
             // this is a private message
@@ -54,6 +66,17 @@ namespace wmib
             Instance.PrimaryInstance.Network.Message(text, target.Nick, priority);
         }
 
+        public static void DeliverMessage(string text, string target, libirc.Defs.Priority priority = libirc.Defs.Priority.Normal)
+        {
+            dm(text, target, priority);
+        }
+
+        /// <summary>
+        /// Send a /me action to a given target
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="target"></param>
+        /// <param name="priority"></param>
         public static void DeliverAction(string text, Channel target, libirc.Defs.Priority priority = libirc.Defs.Priority.Normal)
         {
             if (!target.Suppress)
@@ -61,6 +84,11 @@ namespace wmib
                 SelfAct(text, target);
                 target.PrimaryInstance.Network.Act(text, target.Name, priority);
             }
+        }
+
+        public static void DeliverAction(string text, string target, libirc.Defs.Priority priority = libirc.Defs.Priority.Normal)
+        {
+            dm(text, target, priority, true);
         }
 
         private static void dm(string text, string target, libirc.Defs.Priority priority = libirc.Defs.Priority.Normal, bool is_act = false)
@@ -115,16 +143,6 @@ namespace wmib
                 else
                     Instance.PrimaryInstance.Network.Act(text, target, priority);
             }
-        }
-
-        public static void DeliverAction(string text, string target, libirc.Defs.Priority priority = libirc.Defs.Priority.Normal)
-        {
-            dm(text, target, priority, true);
-        }
-
-        public static void DeliverMessage(string text, string target, libirc.Defs.Priority priority = libirc.Defs.Priority.Normal)
-        {
-            dm(text, target, priority);
         }
 
         /// <summary>
