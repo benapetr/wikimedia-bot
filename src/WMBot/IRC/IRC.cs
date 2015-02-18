@@ -145,6 +145,16 @@ namespace wmib
             }
         }
 
+        private static string GetSelfHost(Channel channel)
+        {
+            // try to get own hostname, if we can't find it, use default from configuration files
+            string hostname = Configuration.IRC.Hostname;
+            libirc.User self = channel.RetrieveUser(channel.PrimaryInstance.Nick);
+            if (self != null)
+                hostname = self.Host;
+            return hostname;
+        }
+
         /// <summary>
         /// Write a self message to modules
         /// </summary>
@@ -157,7 +167,8 @@ namespace wmib
                 {
                     if (module.IsWorking)
                     {
-                        module.Hook_OnSelf(channel, new libirc.UserInfo(Configuration.IRC.NickName, "wmib", "wikimedia/bot/wm-bot"), message);
+                        
+                        module.Hook_OnSelf(channel, new libirc.UserInfo(Configuration.IRC.NickName, Configuration.IRC.Ident, GetSelfHost(channel)), message);
                     }
                 }
                 catch (Exception fail)
@@ -175,7 +186,7 @@ namespace wmib
                 {
                     if (module.IsWorking)
                     {
-                        module.Hook_OnSelf(channel, new libirc.UserInfo(Configuration.IRC.NickName, "wmib", "wikimedia/bot/wm-bot"), message, true);
+                        module.Hook_OnSelf(channel, new libirc.UserInfo(Configuration.IRC.NickName, Configuration.IRC.Ident, GetSelfHost(channel)), message, true);
                     }
                 }
                 catch (Exception fail)

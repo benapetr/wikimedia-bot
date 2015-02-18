@@ -146,8 +146,6 @@ namespace wmib
         /// <param name="table">name of table</param>
         /// <param name="rows">Rows separated by comma</param>
         /// <param name="query">Conditions</param>
-        /// <param name="columns"></param>
-        /// <param name="separator"></param>
         /// <returns></returns>
         public virtual List<List<string>> Select(string table, string rows, string query)
         {

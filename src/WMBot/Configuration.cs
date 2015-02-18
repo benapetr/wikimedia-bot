@@ -79,6 +79,7 @@ namespace wmib
             /// </summary>
             public static string NickName = "wm-bot";
             public static string Ident = "wm-bot";
+            public static string Hostname = "wikimedia/bot/wm-bot";
             /// <summary>
             /// Login name
             /// </summary>
@@ -138,7 +139,7 @@ namespace wmib
             /// <summary>
             /// Version
             /// </summary>
-            public static string Version = "wikimedia bot v. 2.6.2.0";
+            public static string Version = "wikimedia bot v. 2.6.3.0";
             /// <summary>
             /// This is a limit for role level that can be granted, this is used to
             /// prevent users from granting roles like "root" by default
@@ -352,6 +353,7 @@ namespace wmib
             IRC.NetworkHost = RetrieveConfig("network");
             IRC.NickName = RetrieveConfig("nick");
             IRC.LoginNick = RetrieveConfig("nick");
+            IRC.Hostname = RetrieveConfig("host", "wikimedia/bot/wm-bot");
             System.DebugChan = RetrieveConfig("debug");
             System.MaxGrantableRoleLevel = RetrieveConfig("maximal_grantable_role_level", System.MaxGrantableRoleLevel);
             System.ModulesToLoad = RetrieveConfig("modules", "");
