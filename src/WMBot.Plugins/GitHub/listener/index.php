@@ -4,7 +4,11 @@ require ("db.php");
 require ("irc.php");
 require ("github.php");
 
-$payload = new GitHub(file_get_contents('php://input'));
+$input = file_get_contents('php://input');
+if (empty($input))
+    die("This is a webhook for github. You can only use it as a webhook, displaying in a browser is not supported. See https://meta.wikimedia.org/wiki/Wm-bot#Git_Hub");
+
+$payload = new GitHub($input);
 if (!$payload->IsKnown())
     die("Unknown payload");
 // for debugging only
