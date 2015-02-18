@@ -164,7 +164,17 @@ namespace wmib
             }
         }
 
-        public override List<List<string>> Select(string table, string rows, string query, int columns, char separator = '|')
+        public override void ExecuteNonQuery(string sql)
+        {
+            if (!IsConnected)
+                throw new WmibException("The database is not connected");
+
+            MySqlCommand ms = Connection.CreateCommand();
+            ms.CommandText = sql;
+            ms.ExecuteNonQuery();
+        }
+
+        public override List<List<string>> Select(string sql)
         {
             lock (DatabaseLock)
             {
@@ -173,7 +183,6 @@ namespace wmib
                     ErrorBuffer = "Not connected";
                     return null;
                 }
-                string sql = "SELECT " + rows + " FROM " + table + " " + query;
                 MySqlCommand xx = Connection.CreateCommand();
                 xx.CommandText = sql;
                 MySqlDataReader r = xx.ExecuteReader();
@@ -182,7 +191,7 @@ namespace wmib
                 {
                     List<string> row = new List<string>();
                     int i = 0;
-                    while (i < columns)
+                    while (i < r.FieldCount)
                     {
                         row.Add(r.GetString(i));
                         i++;
@@ -192,6 +201,12 @@ namespace wmib
                 r.Close();
                 return result;
             }
+        }
+
+        public override List<List<string>> Select(string table, string rows, string query)
+        {
+            string sql = "SELECT " + rows + " FROM " + table + " " + query;
+            return Select(sql);
         }
 
         /// <summary>

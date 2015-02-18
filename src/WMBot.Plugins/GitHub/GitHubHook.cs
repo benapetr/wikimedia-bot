@@ -60,7 +60,7 @@ namespace wmib.Extensions
                 }
                 // first check if repository isn't already there
                 List<List<string>> result = Core.DB.Select("github_repo_info", "name, channel", "WHERE name = '" + Core.DB.EscapeInput(p.Parameters) + "' AND channel = '" +
-                    Core.DB.EscapeInput(p.SourceChannel.Name) + "'", 2);
+                    Core.DB.EscapeInput(p.SourceChannel.Name) + "'");
                 if (result.Count != 0)
                 {
                     IRC.DeliverMessage("This repository is already in DB", p.SourceChannel);
@@ -114,7 +114,7 @@ namespace wmib.Extensions
                 }
                 // first check if repository isn't already there
                 List<List<string>> result = Core.DB.Select("github_repo_info", "name, channel", "WHERE name = '" + Core.DB.EscapeInput(p.Parameters) + "' AND channel = '" +
-                    Core.DB.EscapeInput(p.SourceChannel.Name) + "'", 2);
+                    Core.DB.EscapeInput(p.SourceChannel.Name) + "'");
                 if (result.Count == 0)
                 {
                     IRC.DeliverMessage("This repository is not in DB", p.SourceChannel);

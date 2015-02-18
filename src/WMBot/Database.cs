@@ -127,6 +127,8 @@ namespace wmib
 
         public virtual int Delete(string table, string query) { return 0; }
 
+        public virtual void ExecuteNonQuery(string sql) { }
+
         public virtual int CacheSize()
         {
             return 0;
@@ -147,11 +149,13 @@ namespace wmib
         /// <param name="columns"></param>
         /// <param name="separator"></param>
         /// <returns></returns>
-        public virtual List<List<string>> Select(string table, string rows, string query, int columns, char separator = '|')
+        public virtual List<List<string>> Select(string table, string rows, string query)
         {
             ErrorBuffer = "SELECT: function is not implemented";
             return null;
         }
+
+        public virtual List<List<string>> Select(string sql) { return null; }
 
         /// <summary>
         /// Data type
