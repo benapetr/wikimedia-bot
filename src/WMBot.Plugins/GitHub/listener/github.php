@@ -14,6 +14,9 @@ class Git_Commit
         $this->github = $data["url"];
         $this->commit_id = $data["id"];
         $this->commit_message = $data["message"];
+        $this->commit_message = str_replace("\n", " ", $this->commit_message);
+        if (strlen($this->commit_message > 100))
+            $this->commit_message = substr($this->commit_message, 0, 100) . "...";
         $this->commit_user = $data["author"]["username"];
         $this->commit_author = $data["author"]["name"];
         $this->commit_author_mail = $data["author"]["email"];
