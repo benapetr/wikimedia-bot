@@ -28,8 +28,15 @@ class GitHub
     private $priv_json = array();
     private $payload_type;
     private $repo_name;
+    private $repo_branch = "unknown";
     private $commits = array();
     private $messages = array();
+
+    private static function startsWith($haystack, $needle)
+    {
+        // search backwards starting from haystack length characters from the end
+        return $needle === "" || strrpos($haystack, $needle, -strlen($haystack)) !== FALSE;
+    }
 
     function __construct($json)
     {
@@ -41,6 +48,14 @@ class GitHub
         $this->repo_name = $this->priv_json['repository']['full_name'];
         if (array_key_exists("commits", $this->priv_json))
             $this->payload_type = 1;
+        if (array_key_exists("ref", $this->priv_json))
+        {
+            // get a name of branch this is about
+            $branch = $this->priv_json['ref'];
+            if (GitHub::startsWith($branch, "refs/heads/"))
+                $branch = substr($branch, 11);
+            $this->repo_branch = $branch;
+        }
         $this->process_msgs();
     }
 
@@ -55,11 +70,15 @@ class GitHub
         {
             $this->commits = $this->pCommitInfo();
             if (array_key_exists("pusher", $this->priv_json))
-                array_push($this->messages, $this->getHeader() . chr(2) . $this->priv_json["pusher"]["name"] . chr(2) . " pushed " . count($this->commits) . " commits: " . $this->priv_json["compare"]);
+                array_push($this->messages, $this->getHeader() . chr(2) . $this->priv_json["pusher"]["name"]
+                                            . chr(2) . " pushed " . count($this->commits)
+                                            . " commits into branch " . chr(2) . $this->repo_branch
+                                            . chr(2) . ": " . $this->priv_json["compare"]);
 
             foreach ($this->commits as $commit)
             {
-               $message = $this->getHeader() . "commit by " . chr(2) . $commit->commit_user . " (" . $commit->commit_author . ")" . chr(2) . " " . $commit->github . " " . $commit->commit_message; 
+               $message = $this->getHeader() . "commit by " . chr(2) . $commit->commit_user . " (" . $commit->commit_author . ")" . chr(2)
+                             . " " . $commit->github . " " . $commit->commit_message; 
                array_push($this->messages, $message);
             }
         }
