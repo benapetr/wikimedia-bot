@@ -149,11 +149,11 @@ class GitHub
                         throw new Exception('There is no user blob inside of comment json');
                     $user = $comment['user']['login'];
                     $url = $comment['html_url'];
-                    $message = $this->getHeader() . chr(2) . $user . (chr2) . " commented on issue " . chr(2) . $name . chr(2) . ": " . $url;
+                    $message = $this->getHeader() . chr(2) . $user . chr(2) . " commented on issue " . chr(2) . $name . chr(2) . ": " . $url;
                     array_push($this->messages, $message);
                 } else if ($this->payload_type == 4)
                 {
-                    $message = $this->getHeader() . chr(2) . $this->sender->login . (chr2) . " closed issue " . chr(2) . $name . chr(2) . ": " . $url;
+                    $message = $this->getHeader() . chr(2) . $this->sender->login . chr(2) . " closed issue " . chr(2) . $name . chr(2) . ": " . $url;
                     array_push($this->messages, $message);
                 }
             }
