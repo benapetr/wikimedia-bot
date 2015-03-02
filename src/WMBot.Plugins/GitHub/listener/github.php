@@ -71,7 +71,7 @@ class GitHub
         $this->priv_json = json_decode($json, true);
         if ($this->priv_json === null)
             die("Unable to decode: " . $json);
-        if (array_key_exists("sender"))
+        if (array_key_exists("sender"), $this->priv_json)
             $this->sender = new GitHub_SenderInfo($this->priv_json['sender']);
         $this->repo_name = $this->priv_json['repository']['full_name'];
         if (array_key_exists("ref", $this->priv_json))
