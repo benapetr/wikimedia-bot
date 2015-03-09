@@ -337,17 +337,15 @@ namespace wmib
         public static int Load()
         {
             if (Directory.Exists(Variables.ConfigurationDirectory) == false)
-            {
                 Directory.CreateDirectory(Variables.ConfigurationDirectory);
-            }
-            if (!File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar
-                             + Paths.ConfigFile))
+
+            if (!File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + Paths.ConfigFile))
             {
-                Console.WriteLine("Error: unable to find config file in configuration/"
-                    + Paths.ConfigFile);
+                Console.WriteLine("Error: unable to find config file in configuration/" + Paths.ConfigFile);
                 Console.WriteLine("You can get a configuration file here: https://github.com/benapetr/wikimedia-bot/blob/master/configuration/wmib.conf");
                 return 2;
             }
+
             ConfigurationData = File2Dict();
             IRC.Username = RetrieveConfig("username");
             IRC.NetworkHost = RetrieveConfig("network");
@@ -360,7 +358,7 @@ namespace wmib
             Network.BouncerPort = RetrieveConfig("bouncerp", Network.BouncerPort);
             WebPages.WebpageURL = RetrieveConfig("web", "");
             IRC.LoginPw = RetrieveConfig("password", "");
-            IRC.Interval = RetrieveConfig("interval", 800);
+            IRC.Interval = RetrieveConfig("interval", IRC.Interval);
             MySQL.MysqlPw = RetrieveConfig("mysql_pw");
             MySQL.Mysqldb = RetrieveConfig("mysql_db", MySQL.Mysqldb);
             MySQL.MysqlUser = RetrieveConfig("mysql_user");
@@ -443,9 +441,8 @@ namespace wmib
             Syslog.Log("Channel db's working");
 
             if (!Directory.Exists(Paths.DumpDir))
-            {
                 Directory.CreateDirectory(Paths.DumpDir);
-            }
+
             return 0;
         }
     }

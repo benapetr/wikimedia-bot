@@ -146,13 +146,18 @@ namespace wmib
         /// <param name="table">name of table</param>
         /// <param name="rows">Rows separated by comma</param>
         /// <param name="query">Conditions</param>
-        /// <returns></returns>
+        /// <returns>Matrix of returned data in string format or null on failure</returns>
         public virtual List<List<string>> Select(string table, string rows, string query)
         {
             ErrorBuffer = "SELECT: function is not implemented";
             return null;
         }
 
+        /// <summary>
+        /// Select a data from db
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <returns>Matrix of returned data in string format or null if there is error</returns>
         public virtual List<List<string>> Select(string sql) { return null; }
 
         /// <summary>

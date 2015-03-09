@@ -1,0 +1,230 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>XmlRcs</name>
+    </assembly>
+    <members>
+        <member name="T:XmlRcs.Configuration">
+            <summary>
+            This class contains all runtime configuration of XmlRcs provider
+            </summary>
+        </member>
+        <member name="M:XmlRcs.Configuration.UnixTimeStampToDateTime(System.Double)">
+            <summary>
+            Convert unix
+            </summary>
+            <param name="unixTimeStamp"></param>
+            <returns></returns>
+        </member>
+        <member name="F:XmlRcs.Configuration.Version">
+            <summary>
+            Version of XmlRcs
+            </summary>
+        </member>
+        <member name="F:XmlRcs.Configuration.Server">
+            <summary>
+            Server of XmlRcs you will need to reconnect the provider in order to apply change to this settings
+            </summary>
+        </member>
+        <member name="F:XmlRcs.Configuration.Port">
+            <summary>
+            Port
+            </summary>
+        </member>
+        <member name="F:XmlRcs.Configuration.PingTimeout">
+            <summary>
+            If there is no response from server for this time it will be considered timed out
+            </summary>
+        </member>
+        <member name="F:XmlRcs.Configuration.PingWait">
+            <summary>
+            The client will send ping requests every PingWait time
+            </summary>
+        </member>
+        <member name="T:XmlRcs.ErrorEventArgs">
+            <summary>
+            Information about error
+            </summary>
+        </member>
+        <member name="M:XmlRcs.ErrorEventArgs.#ctor(System.Boolean,System.String)">
+            <summary>
+            Creates a new instance of this
+            </summary>
+            <param name="fatal"></param>
+            <param name="ex"></param>
+        </member>
+        <member name="P:XmlRcs.ErrorEventArgs.Fatal">
+            <summary>
+            Whether the error was fatal or not,
+            fatal errors mean that XmlRcs
+            daemon stopped working
+            </summary>
+        </member>
+        <member name="P:XmlRcs.ErrorEventArgs.Message">
+            <summary>
+            Message of the error
+            </summary>
+        </member>
+        <member name="T:XmlRcs.MessageEventArgs">
+            <summary>
+            Event args used when only a single string needs to be passed to client
+            </summary>
+        </member>
+        <member name="T:XmlRcs.EditEventArgs">
+            <summary>
+            Contains information about the RC item
+            </summary>
+        </member>
+        <member name="M:XmlRcs.Provider.#ctor(System.Boolean,System.Boolean)">
+            <summary>
+            Creates a new provider
+            </summary>
+            <param name="autoreconnect">if true the provider will automatically try to reconnect in case it wasn't connected</param>
+            <param name="autoresubscribe"></param>
+        </member>
+        <member name="M:XmlRcs.Provider.Connect">
+            <summary>
+            Connect to XmlRcs server, this function needs to be called before you can start subscribing to changes on wiki
+            </summary>
+            <returns>True on success</returns>
+        </member>
+        <member name="M:XmlRcs.Provider.Subscribe(System.String)">
+            <summary>
+            Subscribe to a wiki, you can also use a magic word "all" in order to subscribe to all wikis
+            </summary>
+            <param name="wiki"></param>
+            <returns></returns>
+        </member>
+        <member name="M:XmlRcs.Provider.Unsubscribe(System.String)">
+            <summary>
+            Remove a subscription to a site, if you use magic word "all" you will remove subscription to "all wikis" except wikis you explicitly requested
+            in a separate "Subscribe" calls
+            </summary>
+            <param name="wiki"></param>
+            <returns></returns>
+        </member>
+        <member name="M:XmlRcs.Provider.Disconnect">
+            <summary>
+            Disconnect from server
+            </summary>
+        </member>
+        <member name="M:XmlRcs.Provider.Reconnect">
+            <summary>
+            Reconnect to XmlRcs server, alias to Disconnect and Connect
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:XmlRcs.RecentChange">
+            <summary>
+            Recent change item as provided by XmlRcs, if any string was not provided, it will be null
+            You can also run EmptyNulls() in order to initialize all null strings with empty string
+            </summary>
+        </member>
+        <member name="M:XmlRcs.RecentChange.EmptyNulls">
+            <summary>
+            Set all strings that contained unknown value to empty string, this can be useful in case you don't care if value
+            was known or not
+            </summary>
+        </member>
+        <member name="F:XmlRcs.RecentChange.Wiki">
+            <summary>
+            Internal name of wiki
+            </summary>
+        </member>
+        <member name="F:XmlRcs.RecentChange.ServerName">
+            <summary>
+            Name of server
+            </summary>
+        </member>
+        <member name="F:XmlRcs.RecentChange.Title">
+            <summary>
+            Name of page
+            </summary>
+        </member>
+        <member name="F:XmlRcs.RecentChange.Namespace">
+            <summary>
+            Namespace
+            </summary>
+        </member>
+        <member name="F:XmlRcs.RecentChange.RevID">
+            <summary>
+            Revision id
+            </summary>
+        </member>
+        <member name="F:XmlRcs.RecentChange.OldID">
+            <summary>
+            Old id, this is ID
+            </summary>
+        </member>
+        <member name="F:XmlRcs.RecentChange.User">
+            <summary>
+            Name of user who did this change
+            </summary>
+        </member>
+        <member name="F:XmlRcs.RecentChange.Bot">
+            <summary>
+            Whether the change was flagged as bot edit
+            </summary>
+        </member>
+        <member name="F:XmlRcs.RecentChange.Patrolled">
+            <summary>
+            Patrolled
+            </summary>
+        </member>
+        <member name="F:XmlRcs.RecentChange.Minor">
+            <summary>
+            Minor
+            </summary>
+        </member>
+        <member name="F:XmlRcs.RecentChange.LengthNew">
+            <summary>
+            New length of a change
+            </summary>
+        </member>
+        <member name="F:XmlRcs.RecentChange.LengthOld">
+            <summary>
+            Old length of a change
+            </summary>
+        </member>
+        <member name="F:XmlRcs.RecentChange.Summary">
+            <summary>
+            Summary of change
+            </summary>
+        </member>
+        <member name="F:XmlRcs.RecentChange.OriginalXml">
+            <summary>
+            RAW XML text
+            </summary>
+        </member>
+        <member name="F:XmlRcs.RecentChange.Timestamp">
+            <summary>
+            If no timestamp was provided this will equal minimal time
+            </summary>
+        </member>
+        <member name="T:XmlRcs.RecentChange.ChangeType">
+            <summary>
+            Type of a change
+            </summary>
+        </member>
+        <member name="F:XmlRcs.RecentChange.ChangeType.Edit">
+            <summary>
+            Regular edit
+            </summary>
+        </member>
+        <member name="F:XmlRcs.RecentChange.ChangeType.Log">
+            <summary>
+            Log
+            </summary>
+        </member>
+        <member name="F:XmlRcs.RecentChange.ChangeType.New">
+            <summary>
+            New page
+            </summary>
+        </member>
+        <member name="F:XmlRcs.RecentChange.ChangeType.Unknown">
+            <summary>
+            Unknown type of change
+            </summary>
+        </member>
+    </members>
+</doc>
