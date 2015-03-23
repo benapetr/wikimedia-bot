@@ -169,6 +169,11 @@ namespace wmib.Extensions
                         }
                         string wiki = a[1];
                         string Page = a[2];
+                        if (wiki.Contains("_"))
+                        {
+                            IRC.DeliverMessage("Underscore in wiki name is not supported, new format is for example: en.wikipedia.org instead of en_wikipedia", channel);
+                            return;
+                        }
                         RecentChanges rc = (RecentChanges)channel.RetrieveObject("RC");
                         if (rc != null)
                         {
