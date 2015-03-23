@@ -329,8 +329,7 @@ namespace wmib
         {
             try
             {
-                TcpListener server = new TcpListener(IPAddress.Any,
-                                                                         Configuration.Network.SystemPort);
+                TcpListener server = new TcpListener(IPAddress.Any, Configuration.Network.SystemPort);
                 server.Start();
                 Online = true;
                 Syslog.WriteNow("Network console is online on port: " + Configuration.Network.SystemPort);

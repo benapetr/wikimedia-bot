@@ -31,7 +31,6 @@ namespace wmib.Extensions
         public override bool Hook_OnRegister()
         {
             RecentChanges.Server = Configuration.RetrieveConfig("xmlrcs_host", RecentChanges.Server);
-            RecentChanges.InsertSite();
             XmlRcs.Configuration.Server = RecentChanges.Server;
             lock (Configuration.Channels)
             {
@@ -142,38 +141,7 @@ namespace wmib.Extensions
                         RecentChanges rc = (RecentChanges)channel.RetrieveObject("RC");
                         if (rc != null)
                         {
-                            rc.removeString(wiki, Page);
-                        }
-                        return;
-                    }
-                    IRC.DeliverMessage(messages.Localize("Feed3", channel.Language), channel);
-                    return;
-                }
-                if (!channel.SuppressWarnings)
-                {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
-                }
-                return;
-            }
-
-            if (message.StartsWith(Configuration.System.CommandPrefix + "recentchanges- "))
-            {
-                if (channel.SystemUsers.IsApproved(invoker, "root"))
-                {
-                    if (GetConfig(channel, "RC.Enabled", false))
-                    {
-                        if (!message.Contains(" "))
-                        {
-                            if (!channel.SuppressWarnings)
-                            {
-                                IRC.DeliverMessage(messages.Localize("InvalidWiki", channel.Language), channel);
-                            }
-                            return;
-                        }
-                        string _channel = message.Substring(message.IndexOf(" ") + 1);
-                        if (RecentChanges.DeleteChannel(channel, _channel))
-                        {
-                            IRC.DeliverMessage(messages.Localize("Wiki-", channel.Language), channel);
+                            rc.RemovePage(wiki, Page);
                         }
                         return;
                     }
@@ -204,7 +172,7 @@ namespace wmib.Extensions
                         RecentChanges rc = (RecentChanges)channel.RetrieveObject("RC");
                         if (rc != null)
                         {
-                            rc.insertString(wiki, Page);
+                            rc.MonitorPage(wiki, Page);
                         }
                         return;
                     }
@@ -259,36 +227,6 @@ namespace wmib.Extensions
                 }
                 return;
             }
-
-            if (message.StartsWith(Configuration.System.CommandPrefix + "recentchanges+"))
-            {
-                if (channel.SystemUsers.IsApproved(invoker, "recentchanges-manage"))
-                {
-                    if (GetConfig(channel, "RC.Enabled", false))
-                    {
-                        if (!message.Contains(" "))
-                        {
-                            if (!channel.SuppressWarnings)
-                            {
-                                IRC.DeliverMessage(messages.Localize("InvalidWiki", channel.Language), channel);
-                            }
-                            return;
-                        }
-                        string _channel = message.Substring(message.IndexOf(" ") + 1);
-                        if (RecentChanges.InsertChannel(channel, _channel))
-                        {
-                            IRC.DeliverMessage(messages.Localize("Wiki+", channel.Language), channel);
-                        }
-                        return;
-                    }
-                    IRC.DeliverMessage(messages.Localize("Feed3", channel.Language), channel);
-                    return;
-                }
-                if (!channel.SuppressWarnings)
-                {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
-                }
-            }
         }
 
         public override bool Construct()
@@ -304,9 +242,9 @@ namespace wmib.Extensions
             {
                 if (!New)
                 {
-                    return messages.Localize("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "modified", "" + username + "", url + "?diff=" + link, summary });
+                    return messages.Localize("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "modified", "" + username + "", "https://" + url + "/w/index.php?diff=" + link, summary });
                 }
-                return messages.Localize("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", url + "?title=" + HttpUtility.UrlEncode(page), summary });
+                return messages.Localize("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", "https://" + url + "/wiki/" + HttpUtility.UrlEncode(page), summary });
             }
             string action = "modified";
             string flags = "";
@@ -359,6 +297,13 @@ namespace wmib.Extensions
         {
             ex.Change.EmptyNulls();
             XmlRcs.RecentChange edit = ex.Change;
+            if (edit.Type != XmlRcs.RecentChange.ChangeType.Edit && edit.Type != XmlRcs.RecentChange.ChangeType.New)
+                return;
+            if (edit.Type == XmlRcs.RecentChange.ChangeType.Edit && edit.RevID < 1)
+            {
+                Syslog.ErrorLog("RC: Invalid revid: " + edit.OriginalXml);
+                return;
+            }
             List<RecentChanges> recentChanges = new List<RecentChanges>();
             RecentChanges.LastMessage = DateTime.Now;
             lock (RecentChanges.recentChangesList)
@@ -373,15 +318,8 @@ namespace wmib.Extensions
                     {
                         foreach (RecentChanges.IWatch iwatch in curr.MonitoredPages)
                         {
-                            if (iwatch.Site == null)
-                                throw new WmibException("iwatch.Site must not be null");
-                            RecentChanges.wiki wiki_ = iwatch.Site;
-                            if (iwatch.Site.channel == null)
-                                throw new WmibException("iwatch.Site.channel must not be null");
-                            if (iwatch.Site.channel == edit.ServerName || iwatch.Site.channel == "all")
+                            if (iwatch.Site == edit.ServerName || iwatch.Site == "*")
                             {
-                                if (iwatch.Site.channel == "all")
-                                    wiki_ = RecentChanges.WikiFromChannelID(edit.ServerName);
                                 if (edit.Title == iwatch.Page)
                                 {
                                     if (edit.LengthNew != 0 || edit.LengthOld != 0)
@@ -394,7 +332,7 @@ namespace wmib.Extensions
                                     }
                                     if (iwatch.Site == null)
                                         DebugLog("NULL pointer on idata 1", 2);
-                                    IRC.DeliverMessage(Format(wiki_.name, wiki_.url, edit.Title, edit.User, edit.RevID.ToString(), edit.Summary,
+                                    IRC.DeliverMessage(Format(edit.ServerName, edit.ServerName, edit.Title, edit.User, edit.RevID.ToString(), edit.Summary,
                                         curr.channel, edit.Bot, edit.Type == XmlRcs.RecentChange.ChangeType.New, edit.Minor), curr.channel.Name, libirc.Defs.Priority.Low);
                                 }
                                 else if (iwatch.Page.EndsWith("*") && edit.Title.StartsWith(iwatch.Page.Replace("*", "")))
@@ -403,7 +341,7 @@ namespace wmib.Extensions
                                     {
                                         DebugLog("NULL pointer on idata 2", 2);
                                     }
-                                    IRC.DeliverMessage(Format(wiki_.name, wiki_.url, edit.Title, edit.User, edit.RevID.ToString(), edit.Summary, curr.channel, edit.Bot,
+                                    IRC.DeliverMessage(Format(edit.ServerName, edit.ServerName, edit.Title, edit.User, edit.RevID.ToString(), edit.Summary, curr.channel, edit.Bot,
                                             edit.Type == XmlRcs.RecentChange.ChangeType.New, edit.Minor), curr.channel.Name, libirc.Defs.Priority.Low);
                                 }
                             }
@@ -417,20 +355,7 @@ namespace wmib.Extensions
         {
             try
             {
-                RecentChanges.channels = new List<string>();
-                if (!File.Exists(RecentChanges.WikiFile))
-                {
-                    File.WriteAllText(RecentChanges.WikiFile, "mediawiki.org");
-                }
-                string[] list = File.ReadAllLines(RecentChanges.WikiFile);
                 Log("Loading feed");
-                lock (RecentChanges.channels)
-                {
-                    foreach (string chan in list)
-                    {
-                        RecentChanges.channels.Add(chan);
-                    }
-                }
                 RecentChanges.Connect();
                 RecentChanges.Provider.On_Error += OnError;
                 RecentChanges.Provider.On_Change += OnChange;
