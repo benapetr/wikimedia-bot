@@ -296,6 +296,7 @@ namespace wmib.Extensions
                 else
                     IRC.DeliverMessage("DEBUG XmlRcs ERROR: " + ex.Message, Configuration.System.DebugChan);
             }
+            ErrorLog(ex.Message);
         }
 
         private void OnChange(object sender, XmlRcs.EditEventArgs ex)
@@ -376,6 +377,11 @@ namespace wmib.Extensions
             {
                 HandleException(fail);
             }
+        }
+
+        public void ExceptionHandler(object sender, XmlRcs.ExEventArgs args)
+        {
+            ErrorLog(args.Exception.ToString());
         }
 
         public override bool Hook_GetConfig(Channel chan, libirc.UserInfo invoker, string config)

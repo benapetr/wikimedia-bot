@@ -349,6 +349,11 @@ namespace wmib
             return invalid;
         }
 
+        public void ErrorLog(string text)
+        {
+            Syslog.ErrorLog(Name + ": " + text);
+        }
+
         /// <summary>
         /// Debug log
         /// </summary>
@@ -356,7 +361,7 @@ namespace wmib
         /// <param name="verbosity"></param>
         public void DebugLog(string text, int verbosity = 1)
         {
-            Syslog.DebugLog(text, verbosity);
+            Syslog.DebugLog(Name + ": " + text, verbosity);
         }
 
         /// <summary>

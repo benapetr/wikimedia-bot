@@ -277,7 +277,7 @@ namespace wmib
         {
             if (string.IsNullOrEmpty(parameters.Parameters) || !parameters.Parameters.Contains(" "))
             {
-                IRC.DeliverMessage("This command need 2 parameters", parameters.SourceChannel);
+                IRC.DeliverMessage("This command needs 2 parameters", parameters.SourceChannel);
                 return;
             }
             string channel = parameters.Parameters.Substring(parameters.Parameters.IndexOf(" ") + 1);
