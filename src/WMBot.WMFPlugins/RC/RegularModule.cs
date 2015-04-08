@@ -365,6 +365,8 @@ namespace wmib.Extensions
                 RecentChanges.Connect();
                 RecentChanges.Provider.On_Error += OnError;
                 RecentChanges.Provider.On_Change += OnChange;
+                RecentChanges.Provider.On_Timeout += Provider_On_Timeout;
+                RecentChanges.Provider.On_Exception += Provider_On_Exception;
                 while (Core.IsRunning)
                 {
                     System.Threading.Thread.Sleep(200);
@@ -377,6 +379,16 @@ namespace wmib.Extensions
             {
                 HandleException(fail);
             }
+        }
+
+        void Provider_On_Exception(object sender, XmlRcs.ExEventArgs args)
+        {
+            HandleException(args.Exception);
+        }
+
+        void Provider_On_Timeout(object sender, EventArgs args)
+        {
+            ErrorLog("timed out");
         }
 
         public void ExceptionHandler(object sender, XmlRcs.ExEventArgs args)
