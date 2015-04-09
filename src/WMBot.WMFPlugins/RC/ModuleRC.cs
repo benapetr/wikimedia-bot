@@ -20,6 +20,14 @@ namespace wmib.Extensions
     public class ModuleRC : Module
     {
         public static Module ptrModule = null;
+
+        public override bool Construct()
+        {
+            ptrModule = this;
+            Version = new Version(1, 2, 0, 8);
+            return true;
+        }
+
         public override void Hook_Channel(Channel channel)
         {
             if (channel.RetrieveObject("RC") == null)
@@ -39,8 +47,39 @@ namespace wmib.Extensions
                     channel.RegisterObject(new RecentChanges(channel), "RC");
                 }
             }
+            RegisterCommand(new GenericCommand("recentchanges-on", cmd_on, true, "recentchanges-manage"));
+            RegisterCommand(new GenericCommand("recentchanges-off", cmd_off, true, "recentchanges-manage"));
             RegisterCommand(new GenericCommand("rc-ping", LastPing));
+            RegisterCommand(new GenericCommand("rc-restart", cmd_restart, true, "root"));
             return true;
+        }
+
+        public override bool Hook_OnUnload()
+        {
+            bool ok = true;
+            lock (Configuration.Channels)
+            {
+                foreach (Channel channel in Configuration.Channels)
+                {
+                    if (!channel.UnregisterObject("RC"))
+                    {
+                        ok = false;
+                    }
+                }
+            }
+            UnregisterCommand("rc-ping");
+            UnregisterCommand("rc-restart");
+            UnregisterCommand("recentchanges-on");
+            UnregisterCommand("recentchanges-off");
+            RecentChanges.recentChangesList.Clear();
+            return ok;
+        }
+
+        private void cmd_restart(CommandParams pm)
+        {
+            IRC.DeliverMessage("Reconnecting to RC feed", pm.SourceChannel);
+            RecentChanges.Provider.Disconnect();
+            RecentChanges.Provider.Connect();
         }
 
         public override void RegisterPermissions()
@@ -97,24 +136,6 @@ namespace wmib.Extensions
                 Log("Removing db of " + chan.Name + " RC feed");
                 File.Delete(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + chan.Name + ".list");
             }
-        }
-
-        public override bool Hook_OnUnload()
-        {
-            bool ok = true;
-            lock (Configuration.Channels)
-            {
-                foreach (Channel channel in Configuration.Channels)
-                {
-                    if (!channel.UnregisterObject("RC"))
-                    {
-                        ok = false;
-                    }
-                }
-            }
-            UnregisterCommand("rc-ping");
-            RecentChanges.recentChangesList.Clear();
-            return ok;
         }
 
         private void LastPing(CommandParams info)
@@ -190,55 +211,30 @@ namespace wmib.Extensions
                 }
                 return;
             }
-
-            if (message == Configuration.System.CommandPrefix + "recentchanges-off")
-            {
-                if (channel.SystemUsers.IsApproved(invoker, "recentchanges-manage"))
-                {
-                    if (!GetConfig(channel, "RC.Enabled", false))
-                    {
-                        IRC.DeliverMessage(messages.Localize("Feed6", channel.Language), channel);
-                        return;
-                    }
-                    IRC.DeliverMessage(messages.Localize("Feed7", channel.Language), channel);
-                    SetConfig(channel, "RC.Enabled", false);
-                    channel.SaveConfig();
-                    return;
-                }
-                if (!channel.SuppressWarnings)
-                {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
-                }
-                return;
-            }
-
-            if (message == Configuration.System.CommandPrefix + "recentchanges-on")
-            {
-                if (channel.SystemUsers.IsApproved(invoker, "recentchanges-manage"))
-                {
-                    if (GetConfig(channel, "RC.Enabled", false))
-                    {
-                        IRC.DeliverMessage(messages.Localize("Feed1", channel.Language), channel);
-                        return;
-                    }
-                    IRC.DeliverMessage(messages.Localize("Feed2", channel.Language), channel);
-                    SetConfig(channel, "RC.Enabled", true);
-                    channel.SaveConfig();
-                    return;
-                }
-                if (!channel.SuppressWarnings)
-                {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
-                }
-                return;
-            }
         }
 
-        public override bool Construct()
+        private void cmd_on(CommandParams pm)
         {
-            ptrModule = this;
-            Version = new Version(1, 2, 0, 6);
-            return true;
+            if (GetConfig(pm.SourceChannel, "RC.Enabled", false))
+            {
+                IRC.DeliverMessage(messages.Localize("Feed1", pm.SourceChannel.Language), pm.SourceChannel);
+                return;
+            }
+            IRC.DeliverMessage(messages.Localize("Feed2", pm.SourceChannel.Language), pm.SourceChannel);
+            SetConfig(pm.SourceChannel, "RC.Enabled", true);
+            pm.SourceChannel.SaveConfig();
+        }
+
+        private void cmd_off(CommandParams pm)
+        {
+            if (!GetConfig(pm.SourceChannel, "RC.Enabled", false))
+            {
+                IRC.DeliverMessage(messages.Localize("Feed6", pm.SourceChannel.Language), pm.SourceChannel);
+                return;
+            }
+            IRC.DeliverMessage(messages.Localize("Feed7", pm.SourceChannel.Language), pm.SourceChannel);
+            SetConfig(pm.SourceChannel, "RC.Enabled", false);
+            pm.SourceChannel.SaveConfig();
         }
 
         public string Format(string name_url, string url, string page, string username, string link, string summary, Channel chan, bool bot, bool New, bool minor)
