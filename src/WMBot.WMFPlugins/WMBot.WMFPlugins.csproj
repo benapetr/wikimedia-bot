@@ -49,8 +49,8 @@
     <Compile Include="Labs\Labs.cs" />
     <Compile Include="Link\Link.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RC\RC.cs" />
-    <Compile Include="RC\RegularModule.cs" />
+    <Compile Include="RC\RecentChanges.cs" />
+    <Compile Include="RC\ModuleRC.cs" />
     <Compile Include="Replag\Rl.cs" />
     <Compile Include="Requests\Request.cs" />
   </ItemGroup>
