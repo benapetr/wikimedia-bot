@@ -19,6 +19,7 @@ namespace wmib
     public class CommandPool
     {
         private static Dictionary<string, GenericCommand> commands = new Dictionary<string, GenericCommand>();
+        private static Dictionary<string, string> aliases = new Dictionary<string, string>();
         public static Dictionary<string, GenericCommand> CommandsList
         {
             get
@@ -27,9 +28,22 @@ namespace wmib
             }
         }
 
+        public static Dictionary<string, string> AliasesList
+        {
+            get
+            {
+                return new Dictionary<string, string>(aliases);
+            }
+        }
+
         public static bool Exists(string command)
         {
             return commands.ContainsKey(command);
+        }
+
+        public static bool AliasExists(string name)
+        {
+            return aliases.ContainsKey(name);
         }
 
         public static GenericCommand GetCommand(string command)
@@ -38,8 +52,28 @@ namespace wmib
             {
                 if (commands.ContainsKey(command))
                     return commands[command];
+                else if (aliases.ContainsKey(command) && commands.ContainsKey(aliases[command]))
+                    return commands[aliases[command]];
                 else
                     return null;
+            }
+        }
+
+        public static void RegisterAlias(string name, string target, string module = null)
+        {
+            lock (aliases)
+            {
+                if (aliases.ContainsKey(name))
+                {
+                    throw new WmibException("This alias is already registered: " + name);
+                }
+                if (module != null)
+                    Syslog.DebugLog("Module " + module + " registered alias " + name + " for command " + target);
+                else
+                    Syslog.DebugLog("Registered alias " + name + " for command " + target);
+                if (!commands.ContainsKey(target))
+                    Syslog.WarningLog("Alias " + name + " points to command " + target + " which doesn't exist");
+                aliases.Add(name, target);
             }
         }
 
@@ -72,6 +106,18 @@ namespace wmib
 
                 commands.Remove(command.Name);
                 Syslog.DebugLog("Unregistered command: " + command.Name);
+            }
+        }
+
+        public static void UnregisterAlias(string name)
+        {
+            lock (aliases)
+            {
+                if (!aliases.ContainsKey(name))
+                    throw new WmibException("There is no such an alias in pool: " + name);
+
+                aliases.Remove(name);
+                Syslog.DebugLog("Unregistered alias: " + name);
             }
         }
 

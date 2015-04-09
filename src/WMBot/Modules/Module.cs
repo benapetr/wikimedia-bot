@@ -136,6 +136,17 @@ namespace wmib
                 CommandPool.UnregisterCommand(command);
         }
 
+        protected void RegisterAlias(string name, string target)
+        {
+            CommandPool.RegisterAlias(name, target, this.Name);
+        }
+
+        protected void UnregisterAlias(string target)
+        {
+            if (CommandPool.AliasExists(target))
+                CommandPool.UnregisterAlias(target);
+        }
+
         public virtual void RegisterPermissions() { }
         public virtual void UnregisterPermissions() { }
         /// <summary>

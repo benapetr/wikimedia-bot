@@ -58,13 +58,13 @@ namespace wmib
             if (string.IsNullOrEmpty(module.Name))
             {
                 Syslog.Log("This module has invalid name and was terminated to prevent troubles", true);
-                throw new Exception("Invalid name");
+                throw new WmibException("Invalid name");
             }
             module.Date = DateTime.Now;
             if (Module.Exist(module.Name))
             {
                 Syslog.Log("This module is already registered " + module.Name + " this new instance was terminated to prevent troubles", true);
-                throw new Exception("This module is already registered");
+                throw new WmibException("This module is already registered");
             }
             try
             {

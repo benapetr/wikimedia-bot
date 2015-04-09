@@ -71,6 +71,7 @@ namespace wmib.Extensions
             UnregisterCommand("rc-restart");
             UnregisterCommand("recentchanges-on");
             UnregisterCommand("recentchanges-off");
+            
             RecentChanges.recentChangesList.Clear();
             return ok;
         }
