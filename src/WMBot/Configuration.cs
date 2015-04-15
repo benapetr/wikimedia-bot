@@ -416,7 +416,8 @@ namespace wmib
                 Console.WriteLine("Error there is no channel file (" + Paths.GetChannelFile() + ") to load channels from");
                 return 20;
             }
-            foreach (string x in File.ReadAllLines(Paths.GetChannelFile()))
+            List<string> channels = new List<string>(File.ReadAllLines(Paths.GetChannelFile()));
+            foreach (string x in channels)
             {
                 string name = x.Replace(" ", "");
                 if (!string.IsNullOrEmpty(name))
@@ -425,6 +426,13 @@ namespace wmib
                     {
                         Channels.Add(new Channel(name));
                     }
+                }
+            }
+            if (!string.IsNullOrEmpty(Configuration.System.DebugChan) && !channels.Contains(Configuration.System.DebugChan))
+            {
+                lock (Channels)
+                {
+                    Channels.Add(new Channel(Configuration.System.DebugChan));
                 }
             }
             Syslog.Log("Channels were all loaded, linking databases");
