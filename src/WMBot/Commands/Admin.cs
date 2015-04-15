@@ -46,6 +46,20 @@ namespace wmib
             CommandPool.RegisterCommand(new GenericCommand("verbosity++", Commands.VerbosityUp, true, "root"));
             CommandPool.RegisterCommand(new GenericCommand("whoami", Commands.Whoami));
             CommandPool.RegisterCommand(new GenericCommand("channel-info", Commands.ChannelOverview));
+            CommandPool.RegisterCommand(new GenericCommand("changepass", Commands.ChangePass, false, "admin"));
+        }
+
+        private static void ChangePass(CommandParams parameters)
+        {
+            if (string.IsNullOrEmpty(parameters.Parameters))
+            {
+                IRC.DeliverMessage("You need to provide exactly 1 parameter", parameters.SourceChannel);
+                return;
+            }
+
+            parameters.SourceChannel.Password = parameters.Parameters.Trim();
+            parameters.SourceChannel.SaveConfig();
+            IRC.DeliverMessage("Password updated", parameters.SourceChannel);
         }
 
         private static void ChannelOverview(CommandParams parameters)

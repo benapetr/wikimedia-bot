@@ -139,7 +139,7 @@ namespace wmib
             /// <summary>
             /// Version
             /// </summary>
-            public static string Version = "wikimedia bot v. 2.6.3.0";
+            public static string Version = "wikimedia bot v. 2.6.4.0";
             /// <summary>
             /// This is a limit for role level that can be granted, this is used to
             /// prevent users from granting roles like "root" by default

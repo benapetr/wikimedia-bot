@@ -11,6 +11,7 @@
 // Copyright 2013 - 2014 Petr Bena (benapetr@gmail.com)
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 
@@ -30,7 +31,16 @@ namespace wmib
                     Syslog.Log("Postponing request to join " + parameters.Parameters + " because bot is still loading", true);
                     Thread.Sleep(2000);
                 }
-                string channel_name = parameters.Parameters.Trim();
+                List<string> pm = new List<string>(parameters.Parameters.Trim().Split(' '));
+                if (pm.Count > 2 || pm.Count == 0)
+                {
+                    IRC.DeliverMessage("Invalid number of parameters, please provide up to 2 parameters (name, password)", parameters.SourceChannel);
+                    return;
+                }
+                string channel_name = pm[0];
+                string password = null;
+                if (pm.Count > 1)
+                    password = pm[1];
                 if (!Core.ValidFile(channel_name) || !channel_name.StartsWith("#"))
                 {
                     IRC.DeliverMessage(messages.Localize("InvalidName", parameters.SourceChannel.Language), parameters.SourceChannel);
@@ -49,6 +59,7 @@ namespace wmib
                 }
                 bool existing = Channel.ConfigExists(channel_name);
                 Channel channel = new Channel(channel_name);
+                channel.Password = password;
                 lock (Configuration.Channels)
                 {
                     Configuration.Channels.Add(channel);
@@ -56,7 +67,7 @@ namespace wmib
                 IRC.DeliverMessage("Attempting to join " + channel_name + " using " + channel.PrimaryInstance.Nick, parameters.SourceChannel.Name);
                 Configuration.Save();
                 Syslog.DebugLog("Sending join " + channel_name);
-                channel.PrimaryInstance.Network.Join(channel_name);
+                channel.PrimaryInstance.Network.Join(channel_name, password);
                 Channel Chan = Core.GetChannel(channel_name);
                 if (!existing)
                     Chan.SystemUsers.AddUser("admin", Security.EscapeUser(parameters.User.Nick) + "!.*@" + Security.EscapeUser(parameters.User.Host));

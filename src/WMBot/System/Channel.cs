@@ -89,6 +89,7 @@ namespace wmib
         /// Default instance this channel belongs to
         /// </summary>
         public string DefaultInstance = "any";
+        public string Password = null;
         /// <summary>
         /// Current instance
         /// </summary>
@@ -381,6 +382,9 @@ namespace wmib
                         case "defaultbot":
                             DefaultInstance = xx.Attributes[1].Value;
                             break;
+                        case "password":
+                            Password = xx.Attributes[1].Value;
+                            break;
                     }
                 }
             }
@@ -420,6 +424,8 @@ namespace wmib
                 InsertData("suppress-warnings", SuppressWarnings.ToString(), ref data, ref xmlnode);
                 InsertData("respond_wait", RespondWait.ToString(), ref data, ref xmlnode);
                 InsertData("sharedinfo", SharedDB, ref data, ref xmlnode);
+                if (!String.IsNullOrEmpty(this.Password))
+                    InsertData("password", Password, ref data, ref xmlnode);
                 InsertData("defaultbot", DefaultInstance, ref data, ref xmlnode);
                 if (!(SharedLinkedChan.Count < 1))
                     foreach (Channel current in SharedLinkedChan)
