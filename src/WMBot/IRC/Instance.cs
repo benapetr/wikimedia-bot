@@ -303,7 +303,7 @@ namespace wmib
                         if (channel.Name.Length > 0 && channel.Name != Configuration.System.DebugChan)
                         {
                             Syslog.DebugLog("Joining " + channel.Name + " on " + Nick);
-                            this.Network.Join(channel.Name);
+                            this.Network.Join(channel.Name, channel.Password);
                             Thread.Sleep(1000);
                         }
                     }
