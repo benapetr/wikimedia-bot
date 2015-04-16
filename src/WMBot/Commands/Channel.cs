@@ -43,7 +43,7 @@ namespace wmib
                     password = pm[1];
                 if (!Core.ValidFile(channel_name) || !channel_name.StartsWith("#"))
                 {
-                    IRC.DeliverMessage(messages.Localize("InvalidName", parameters.SourceChannel.Language), parameters.SourceChannel);
+                    IRC.DeliverMessage(messages.Localize("InvalidName", parameters.SourceChannel.Language, new List<string> { channel_name }), parameters.SourceChannel);
                     return;
                 }
                 lock (Configuration.Channels)
