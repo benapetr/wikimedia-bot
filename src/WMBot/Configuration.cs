@@ -434,6 +434,7 @@ namespace wmib
                 {
                     Channels.Add(new Channel(Configuration.System.DebugChan));
                 }
+                Syslog.DebugLog("Debug channel was missing in channel list (fixed by join)");
             }
             Syslog.Log("Channels were all loaded, linking databases");
 
