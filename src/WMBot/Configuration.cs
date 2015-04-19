@@ -139,7 +139,7 @@ namespace wmib
             /// <summary>
             /// Version
             /// </summary>
-            public static string Version = "wikimedia bot v. 2.6.4.0";
+            public static string Version = "wikimedia bot v. 2.8.0.0";
             /// <summary>
             /// This is a limit for role level that can be granted, this is used to
             /// prevent users from granting roles like "root" by default
@@ -185,6 +185,15 @@ namespace wmib
             /// Mysql port
             /// </summary>
             public static int MysqlPort = 3306;
+        }
+
+        public class Postgres
+        {
+            public static string User = null;
+            public static string Pass = null;
+            public static int Port = 5432;
+            public static string Host = null;
+            public static string DBNM = null;
         }
 
         public class Network
@@ -366,6 +375,11 @@ namespace wmib
             MySQL.MysqlHost = RetrieveConfig("mysql_host");
             WebPages.Css = RetrieveConfig("style_html_file", "");
             Network.SystemPort = RetrieveConfig("system_port", Network.SystemPort);
+            Postgres.DBNM = RetrieveConfig("pg_name");
+            Postgres.Host = RetrieveConfig("pg_host");
+            Postgres.Pass = RetrieveConfig("pg_pass");
+            Postgres.Port = RetrieveConfig("pg_port", Postgres.Port);
+            Postgres.User = RetrieveConfig("pg_user");
             if (string.IsNullOrEmpty(IRC.LoginNick))
             {
                 Console.WriteLine("Error there is no login for bot (nick key is missing?)");

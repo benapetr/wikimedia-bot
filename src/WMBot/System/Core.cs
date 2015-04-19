@@ -40,6 +40,7 @@ namespace wmib
         /// Database server
         /// </summary>
         public static Database DB = null;
+        public static PostgreSQL PostgreDB = null;
         /// <summary>
         /// Last line of text received on irc
         /// </summary>

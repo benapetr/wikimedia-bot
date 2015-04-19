@@ -58,7 +58,7 @@ namespace wmib.Extensions
                         return;
                     }
 
-                    if (ms == "is anyone here" || ms == "is anybody here" || ms == "is anybody there" || ms == "is some one there" || ms == "is someone there" || ms == "is someone here")
+                    if (ms == "is anyone here" || ms == "is anybody here" || ms == "is anybody there" || ms == "is some one there" || ms == "is someone there" || ms == "is someone here" || ms == "anyone here" || ms == "someone here")
                     {
                         IRC.DeliverMessage("Hi " + invoker.Nick + ", I am here, if you need anything, please ask, otherwise no one is going to help you... Thank you", channel);
                         return;

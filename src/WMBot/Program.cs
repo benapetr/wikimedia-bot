@@ -193,6 +193,12 @@ namespace wmib
                     Syslog.Log("Initializing MySQL");
                     Core.DB = new WMIBMySQL();
                 }
+                if (PostgreSQL.IsWorking)
+                {
+                    Syslog.Log("Opening connection to PostgreDB");
+                    Core.PostgreDB = new PostgreSQL();
+                    Core.PostgreDB.Connect();
+                }
                 // register all commands
                 Commands.InitAdminCommands();
                 Syslog.Log("Loading modules");
