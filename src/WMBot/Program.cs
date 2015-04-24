@@ -228,7 +228,9 @@ UnixSignal[] signals =
 #endif
                     Thread.Sleep(200);
                 }
+#if __MonoCS__
                 exit:
+#endif
                     // memory cleanup
                     if (Core.DB != null)
                         ((WMIBMySQL)Core.DB).Dispose();
