@@ -112,13 +112,9 @@ namespace wmib
                 {
                     Self(text, ch);
                     if (!is_act)
-                    {
                         ch.PrimaryInstance.Network.Message(text, target, priority);
-                    }
                     else
-                    {
                         ch.PrimaryInstance.Network.Act(text, target, priority);
-                    }
                 }
             }
             else
@@ -128,13 +124,9 @@ namespace wmib
                     if (Instance.TargetBuffer.ContainsKey(target))
                     {
                         if (is_act)
-                        {
                             Instance.TargetBuffer[target].Network.Act(text, target, priority);
-                        }
                         else
-                        {
                             Instance.TargetBuffer[target].Network.Message(text, target, priority);
-                        }
                         return;
                     }
                 }
@@ -166,10 +158,7 @@ namespace wmib
                 try
                 {
                     if (module.IsWorking)
-                    {
-                        
                         module.Hook_OnSelf(channel, new libirc.UserInfo(Configuration.IRC.NickName, Configuration.IRC.Ident, GetSelfHost(channel)), message);
-                    }
                 }
                 catch (Exception fail)
                 {
