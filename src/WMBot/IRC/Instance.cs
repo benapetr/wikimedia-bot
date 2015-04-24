@@ -157,7 +157,7 @@ namespace wmib
         /// <returns></returns>
         public static Instance GetInstance()
         {
-            int lowest = 99999999;
+            int lowest = int.MaxValue;
             Instance instance = null;
             // first try to get instance which is online
             foreach (Instance xx in Instances.Values)
