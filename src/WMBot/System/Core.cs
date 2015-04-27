@@ -183,6 +183,11 @@ namespace wmib
             return null;
         }
 
+        public static string WikiEncode(string url)
+        {
+            return HttpUtility.UrlEncode(url).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%23", "#").Replace("%28", "(").Replace("%29", ")");
+        }
+
         /// <summary>
         /// Called on action
         /// </summary>

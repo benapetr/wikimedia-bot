@@ -246,7 +246,7 @@ namespace wmib.Extensions
                 {
                     return messages.Localize("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "modified", "" + username + "", "https://" + url + "/w/index.php?diff=" + link, summary });
                 }
-                return messages.Localize("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", "https://" + url + "/wiki/" + HttpUtility.UrlEncode(page), summary });
+                return messages.Localize("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", "https://" + url + "/wiki/" + Core.WikiEncode(page), summary });
             }
             string action = "modified";
             string flags = "";
@@ -270,7 +270,7 @@ namespace wmib.Extensions
                 fu = url + "?title=" + HttpUtility.UrlEncode(page);
 
             return GetConfig(chan, "RC.Template", "").Replace("$wiki", name_url)
-                   .Replace("$encoded_wiki_page", HttpUtility.UrlEncode(page).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%23", "#").Replace("%28", "(").Replace("%29", ")"))
+                   .Replace("$encoded_wiki_page", Core.WikiEncode(page))
                    .Replace("$encoded_wiki_username", HttpUtility.UrlEncode(username).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%23", "#").Replace("%28", "(").Replace("%29", ")"))
                    .Replace("$encoded_page", HttpUtility.UrlEncode(page))
                    .Replace("$encoded_username", HttpUtility.UrlEncode(username))
