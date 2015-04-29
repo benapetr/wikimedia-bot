@@ -240,6 +240,9 @@ namespace wmib.Extensions
 
         public string Format(string name_url, string url, string page, string username, string link, string summary, Channel chan, bool bot, bool New, bool minor)
         {
+            // this is a hack that adds /wiki or /w to full url, it does work only for wikis that use recommended settings
+            // should there ever be a need to support some hand made url's we would need to make this user configureable
+            string full_url = "http://" + url + "/w/";
             if (GetConfig(chan, "RC.Template", "") == "")
             {
                 if (!New)
@@ -265,9 +268,9 @@ namespace wmib.Extensions
             if (flags.EndsWith(", "))
                 flags = flags.Substring(0, flags.Length - 2);
 
-            string fu = url + "?diff=" + link;
+            string fu = full_url + "?diff=" + link;
             if (New)
-                fu = url + "?title=" + HttpUtility.UrlEncode(page);
+                fu = full_url + "?title=" + HttpUtility.UrlEncode(page);
 
             return GetConfig(chan, "RC.Template", "").Replace("$wiki", name_url)
                    .Replace("$encoded_wiki_page", Core.WikiEncode(page))
