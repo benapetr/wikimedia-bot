@@ -66,6 +66,7 @@ namespace wmib.Extensions
             /// <param name="time"></param>
             /// <param name="Number"></param>
             /// <param name="RAW"></param>
+            /// <param name="act"></param>
             public InfobotKey(string key, string text, string _User, string Lock = "false", string date = "", string time = "", int Number = 0, bool RAW = false, bool act = false)
             {
                 this.Text = text;

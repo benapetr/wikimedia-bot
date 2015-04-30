@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace wmib
 {
     public partial class Commands
@@ -12,10 +8,12 @@ namespace wmib
             {
                 if (!message.StartsWith(Configuration.System.CommandPrefix))
                     return;
-                CommandParams p = new CommandParams();
-                p.SourceChannel = chan;
-                p.User = new libirc.UserInfo(nick, ident, host);
-                p.Message = message;
+                CommandParams p = new CommandParams
+                {
+                    SourceChannel = chan,
+                    User = new libirc.UserInfo(nick, ident, host),
+                    Message = message
+                };
                 message = message.Substring(1);
                 p.Command = message;
                 if (message.Contains(" "))

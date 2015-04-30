@@ -10,12 +10,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
-using System.Net;
 using System.Threading;
-using System.Web;
 
 namespace wmib
 {
@@ -46,7 +43,7 @@ namespace wmib
             }
         }
 
-        public WmIrcProtocol(string ServerHost, string bouncerHost, int bouncerPort) : base()
+        public WmIrcProtocol(string ServerHost, string bouncerHost, int bouncerPort)
         {
             this.Server = ServerHost;
             this.BouncerPort = bouncerPort;
@@ -131,15 +128,13 @@ namespace wmib
                 NetworkInit();
             if (!this.ManualThreads)
             {
-                this.TKeep = new Thread(_Ping);
-                this.TKeep.Name = "Instance:" + this.Server + "/pinger";
+                this.TKeep = new Thread(_Ping) {Name = "Instance:" + this.Server + "/pinger"};
                 Core.ThreadManager.RegisterThread(TKeep);
                 TKeep.Start();
             }
             if (!this.ManualThreads)
             {
-                TDeliveryQueue = new System.Threading.Thread(Messages.Run);
-                TDeliveryQueue.Name = "Instance:" + this.Server + "/queue";
+                TDeliveryQueue = new Thread(Messages.Run) {Name = "Instance:" + this.Server + "/queue"};
                 Core.ThreadManager.RegisterThread(TDeliveryQueue);
                 TDeliveryQueue.Start();
             }
@@ -186,18 +181,16 @@ namespace wmib
                 {
                     Syslog.Log("Bouncer connected to " + Server + " on: " + this.IRCNetwork.Nickname);
                     return true;
-                } else
-                {
-                    retries++;
-                    if (retries > 6)
-                    {
-                        Syslog.WarningLog("Bouncer failed to connect to the network within 10 seconds, disconnecting it: "
-                                          + this.IRCNetwork.Nickname);
-                        this.Send("CONTROL: DISCONNECT");
-                        return false;
-                    }
-                    Syslog.Log("Still waiting for bouncer (trying " + retries.ToString() + "/6) on " + this.IRCNetwork.Nickname + " " + response);
                 }
+                retries++;
+                if (retries > 6)
+                {
+                    Syslog.WarningLog("Bouncer failed to connect to the network within 10 seconds, disconnecting it: "
+                                      + this.IRCNetwork.Nickname);
+                    this.Send("CONTROL: DISCONNECT");
+                    return false;
+                }
+                Syslog.Log("Still waiting for bouncer (trying " + retries.ToString() + "/6) on " + this.IRCNetwork.Nickname + " " + response);
             }
             return true;
         }
@@ -315,8 +308,7 @@ namespace wmib
 
         public override Thread Open()
         {
-            this.main = new Thread(ThreadExec);
-            this.main.Name = "Instance:" + this.IRCNetwork.Nickname + "/IRC";
+            this.main = new Thread(ThreadExec) {Name = "Instance:" + this.IRCNetwork.Nickname + "/IRC"};
             Core.ThreadManager.RegisterThread(main);
             this.main.Start();
             return this.main;

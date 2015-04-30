@@ -14,11 +14,6 @@
 //  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading;
-using System.Xml;
 
 namespace wmib.Extensions
 {

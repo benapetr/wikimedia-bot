@@ -79,7 +79,7 @@ namespace wmib
 
         private static void TrustDel(CommandParams parameters)
         {
-            if (parameters.Parameters == null || parameters.Parameters.Length == 0)
+            if (string.IsNullOrEmpty(parameters.Parameters))
             {
                 IRC.DeliverMessage(messages.Localize("InvalidUser", parameters.SourceChannel.Language), parameters.SourceChannel);
                 return;

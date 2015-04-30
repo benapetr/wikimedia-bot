@@ -140,8 +140,7 @@ namespace wmib
             {
                 foreach (KeyValuePair<string, Role> role in Roles)
                 {
-                    RoleInfo i = new RoleInfo(role.Value);
-                    i.Name = role.Key;
+                    RoleInfo i = new RoleInfo(role.Value) {Name = role.Key};
                     this.Roles.Add(i);
                 }
             }

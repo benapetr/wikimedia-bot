@@ -11,13 +11,11 @@
 // Created by Petr Bena <benapetr@gmail.com>
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 
 namespace wmib
 {
-    public partial class IRC
+    public class IRC
     {
         private static bool finishedJoining = false;
         /// <summary>
@@ -197,8 +195,7 @@ namespace wmib
 
         private static void InitialiseList()
         {
-            Thread thread = new Thread(ChannelList);
-            thread.Name = "IRC/ChannelList";
+            Thread thread = new Thread(ChannelList) {Name = "IRC/ChannelList"};
             Core.ThreadManager.RegisterThread(thread);
             thread.Start();
         }

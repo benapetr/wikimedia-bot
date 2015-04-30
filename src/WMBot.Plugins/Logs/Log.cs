@@ -137,14 +137,16 @@ namespace wmib.Extensions
         {
             if (GetConfig(channel, "Logging.Enabled", false))
             {
-                Item item = new Item();
-                item.channel = channel;
-                item.act = false;
-                item.host = Target.Host;
-                item.message = OldNick;
-                item.time = DateTime.Now;
-                item.type = 6;
-                item.username = NewNick;
+                Item item = new Item
+                {
+                    channel = channel,
+                    act = false,
+                    host = Target.Host,
+                    message = OldNick,
+                    time = DateTime.Now,
+                    type = 6,
+                    username = NewNick
+                };
                 lock (DJ)
                 {
                     DJ.Add(item);
@@ -156,14 +158,16 @@ namespace wmib.Extensions
         {
             if (GetConfig(channel, "Logging.Enabled", false))
             {
-                Item item = new Item();
-                item.channel = channel;
-                item.act = false;
-                item.host = user.Host;
-                item.message = "";
-                item.time = DateTime.Now;
-                item.type = 3;
-                item.username = user.Nick;
+                Item item = new Item
+                {
+                    channel = channel,
+                    act = false,
+                    host = user.Host,
+                    message = "",
+                    time = DateTime.Now,
+                    type = 3,
+                    username = user.Nick
+                };
                 lock (DJ)
                 {
                     DJ.Add(item);
@@ -175,14 +179,16 @@ namespace wmib.Extensions
         {
             if (GetConfig(channel, "Logging.Enabled", false))
             {
-                Item item = new Item();
-                item.channel = channel;
-                item.act = false;
-                item.host = user.Host;
-                item.message = mesg;
-                item.time = DateTime.Now;
-                item.type = 1;
-                item.username = user.Nick;
+                Item item = new Item
+                {
+                    channel = channel,
+                    act = false,
+                    host = user.Host,
+                    message = mesg,
+                    time = DateTime.Now,
+                    type = 1,
+                    username = user.Nick
+                };
                 lock (DJ)
                 {
                     DJ.Add(item);
@@ -194,14 +200,16 @@ namespace wmib.Extensions
         {
             if (GetConfig(channel, "Logging.Enabled", false))
             {
-                Item item = new Item();
-                item.channel = channel;
-                item.act = false;
-                item.host = source.Host;
-                item.message = source.Nick;
-                item.time = DateTime.Now;
-                item.type = 4;
-                item.username = user;
+                Item item = new Item
+                {
+                    channel = channel,
+                    act = false,
+                    host = source.Host,
+                    message = source.Nick,
+                    time = DateTime.Now,
+                    type = 4,
+                    username = user
+                };
                 lock (DJ)
                 {
                     DJ.Add(item);
@@ -213,14 +221,16 @@ namespace wmib.Extensions
         {
             if (GetConfig(channel, "Logging.Enabled", false))
             {
-                Item item = new Item();
-                item.channel = channel;
-                item.act = false;
-                item.host = user.Host;
-                item.message = "";
-                item.time = DateTime.Now;
-                item.type = 2;
-                item.username = user.Nick;
+                Item item = new Item
+                {
+                    channel = channel,
+                    act = false,
+                    host = user.Host,
+                    message = "",
+                    time = DateTime.Now,
+                    type = 2,
+                    username = user.Nick
+                };
                 lock (DJ)
                 {
                     DJ.Add(item);
@@ -333,8 +343,7 @@ namespace wmib.Extensions
                 Log("Creating a directory for text logs");
                 Directory.CreateDirectory(TextPath);
             }
-            Thread sql = new Thread(Writer);
-            sql.Name = "Module:Logs/SqlWriter";
+            Thread sql = new Thread(Writer) {Name = "Module:Logs/SqlWriter"};
             Core.ThreadManager.RegisterThread(sql);
             sql.Start();
             Log("Writer thread started");
@@ -438,24 +447,28 @@ namespace wmib.Extensions
                             TDToString(time.Second) + "] " + "<" +
                             user + ">\t " + message + "\n";
                     }
-                    Job line = new Job();
-                    line.channel = channel;
-                    line.time = time;
-                    line.message = log;
+                    Job line = new Job
+                    {
+                        channel = channel,
+                        time = time,
+                        message = log
+                    };
                     lock (jobs)
                     {
                         jobs.Add(line);
                     }
                     if (Core.DatabaseServerIsAvailable)
                     {
-                        Item item = new Item();
-                        item.channel = channel;
-                        item.time = time;
-                        item.username = user;
-                        item.act = !noac;
-                        item.host = host;
-                        item.type = 0;
-                        item.message = message;
+                        Item item = new Item
+                        {
+                            channel = channel,
+                            time = time,
+                            username = user,
+                            act = !noac,
+                            host = host,
+                            type = 0,
+                            message = message
+                        };
                         lock (DJ)
                         {
                             DJ.Add(item);
