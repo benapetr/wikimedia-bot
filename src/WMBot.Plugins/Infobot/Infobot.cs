@@ -358,7 +358,6 @@ namespace wmib.Extensions
         /// <param name="message">Message</param>
         /// <param name="user">User</param>
         /// <param name="chan">Channel</param>
-        /// <param name="host">Host name</param>
         /// <returns></returns>
         public bool InfobotExec(string message, libirc.UserInfo user, Channel chan)
         {
@@ -853,7 +852,7 @@ namespace wmib.Extensions
             Channel data = null;
             if (chan == null)
             {
-                return chan;
+                return null;
             }
             if (chan.SharedDB == "local" || chan.SharedDB == "")
             {
@@ -912,6 +911,7 @@ namespace wmib.Extensions
         /// <param name="key">Key</param>
         /// <param name="user">User who created it</param>
         /// <param name="chan"></param>
+        /// <param name="isact"></param>
         public void SetKey(string Text, string key, string user, Channel chan, bool isact)
         {
             lock (this)

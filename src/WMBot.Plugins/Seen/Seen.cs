@@ -492,8 +492,7 @@ namespace wmib.Extensions
                 temp_nick = nick;
                 temp_source = source;
                 chan = channel;
-                SearchThread = new Thread(Search);
-                SearchThread.Name = "Module:Seen/Search";
+                SearchThread = new Thread(Search) {Name = "Module:Seen/Search"};
                 wmib.Core.ThreadManager.RegisterThread(SearchThread);
                 SearchThread.Start();
                 Working = true;
@@ -537,8 +536,7 @@ namespace wmib.Extensions
         {
             lock (requests)
             {
-                ChannelRequest rq = new ChannelRequest(nick, source, channel, false);
-                rq.hostname_check = true;
+                ChannelRequest rq = new ChannelRequest(nick, source, channel, false) {hostname_check = true};
                 requests.Add(rq);
             }
         }
@@ -790,8 +788,7 @@ namespace wmib.Extensions
 
         public void LoadData()
         {
-            SearchHostThread = new Thread(StartRegex);
-            SearchHostThread.Name = "Module:Seen/SearchHostThread";
+            SearchHostThread = new Thread(StartRegex) {Name = "Module:Seen/SearchHostThread"};
             Core.ThreadManager.RegisterThread(SearchHostThread);
             SearchHostThread.Start();
             try

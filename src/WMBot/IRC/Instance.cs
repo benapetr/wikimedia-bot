@@ -242,12 +242,14 @@ namespace wmib
         {
             Nick = name;
             Port = port;
-            this.Protocol = new WmIrcProtocol(Configuration.IRC.NetworkHost, Hostname, Port);
-            this.Network = new Network(Configuration.IRC.NetworkHost, this, this.Protocol);
-            this.Network.Nickname = Nick;
-            this.Network.UserName = Configuration.IRC.Username;
-            this.Network.Ident = Configuration.IRC.Ident;
-            this.Protocol.IRCNetwork = this.Network;
+            Protocol = new WmIrcProtocol(Configuration.IRC.NetworkHost, Hostname, Port);
+            Network = new Network(Configuration.IRC.NetworkHost, this, this.Protocol)
+            {
+                Nickname = Nick,
+                UserName = Configuration.IRC.Username,
+                Ident = Configuration.IRC.Ident
+            };
+            Protocol.IRCNetwork = Network;
         }
 
         /// <summary>

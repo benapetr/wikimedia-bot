@@ -10,9 +10,7 @@
 
 // Copyright 2013 - 2014 Petr Bena (benapetr@gmail.com)
 
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace wmib
 {

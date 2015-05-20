@@ -58,8 +58,7 @@ namespace wmib
                     }
                 }
                 bool existing = Channel.ConfigExists(channel_name);
-                Channel channel = new Channel(channel_name);
-                channel.Password = password;
+                Channel channel = new Channel(channel_name) {Password = password};
                 lock (Configuration.Channels)
                 {
                     Configuration.Channels.Add(channel);
