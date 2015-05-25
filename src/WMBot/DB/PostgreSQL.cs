@@ -38,7 +38,7 @@ namespace wmib
             conn.UserName = Configuration.Postgres.User;
             conn.Port = Configuration.Postgres.Port;
             conn.Password = Configuration.Postgres.Pass;
-            this.connection = new Npgsql.NpgsqlConnection(conn);
+            this.connection = new Npgsql.NpgsqlConnection(conn.ConnectionString);
             //this.connection.Open();
         }
 
@@ -62,7 +62,7 @@ namespace wmib
         {
             get
             {
-                return this.connection.FullState == System.Data.ConnectionState.Open;
+                return this.connection.State == System.Data.ConnectionState.Open;
             }
         }
 
@@ -112,14 +112,13 @@ namespace wmib
                 {
                     if (!IsConnected)
                     {
-                        /*Syslog.DebugLog("Postponing request to insert a row into database which is not connected");
-                        lock(unwritten.PendingRows)
-                        {
-                            unwritten.PendingRows.Add(new SerializedRow(table, row));
-                        }
+                        Syslog.DebugLog("Postponing request to insert a row into database which is not connected");
+                        //lock(unwritten.PendingRows)
+                        //{
+                        //    unwritten.PendingRows.Add(new SerializedRow(table, row));
+                        //}
                         //FlushRows();
                         return false;
-                        */
                     }
                     Npgsql.NpgsqlCommand s = new Npgsql.NpgsqlCommand();
                     s.Connection = this.connection;
@@ -142,15 +141,15 @@ namespace wmib
                                 break;
                                 case DataType.Varchar:
                                 s.Parameters.Add(new Npgsql.NpgsqlParameter("v" + cv.ToString(), NpgsqlTypes.NpgsqlDbType.Varchar));
-                                s.Parameters[cv] = value.Data;
+                                s.Parameters[cv].Value = value.Data;
                                 break;
                                 case DataType.Text:
                                 s.Parameters.Add(new Npgsql.NpgsqlParameter("v" + cv.ToString(), NpgsqlTypes.NpgsqlDbType.Text));
-                                s.Parameters[cv] = value.Data;
+                                s.Parameters[cv].Value = value.Data;
                                 break;
                                 case DataType.Date:
                                 s.Parameters.Add(new Npgsql.NpgsqlParameter("v" + cv.ToString(), NpgsqlTypes.NpgsqlDbType.Date));
-                                s.Parameters[cv] = DateTime.Parse(value.Data);
+                                s.Parameters[cv].Value = DateTime.Parse(value.Data);
                                 break;
                         }
                         cv++;

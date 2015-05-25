@@ -38,9 +38,14 @@ namespace wmib
         }
         /// <summary>
         /// Database server
+        /// the bot is connected to multiple DB's this is a pointer to preferred one
         /// </summary>
         public static Database DB = null;
+        /// <summary>
+        /// The postgre DB
+        /// </summary>
         public static PostgreSQL PostgreDB = null;
+        public static WMIBMySQL MysqlDB = null;
         /// <summary>
         /// Last line of text received on irc
         /// </summary>
@@ -77,26 +82,6 @@ namespace wmib
             {
                 StorageWriter.InsertLine("trafficlog.dat", DateTime.Now + ": " + text, false);
             }
-        }
-
-        /// <summary>
-        /// Encode a data before saving it to a file
-        /// </summary>
-        /// <param name="text">Text</param>
-        /// <returns></returns>
-        public static string encode2(string text)
-        {
-            return text.Replace("|", "<separator>");
-        }
-
-        /// <summary>
-        /// Decode
-        /// </summary>
-        /// <param name="text">String</param>
-        /// <returns></returns>
-        public static string decode2(string text)
-        {
-            return text.Replace("<separator>", "|");
         }
 
         /// <summary>

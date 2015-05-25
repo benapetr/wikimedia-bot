@@ -355,7 +355,7 @@ namespace wmib
                     {
                         string[] info = x.Split(Char.Parse(Configuration.System.Separator));
                         string level = info[1];
-                        string name = Core.decode2(info[0]);
+                        string name = info[0];
                         SystemUser user = new SystemUser(level, name);
                         if (info.Length > 3)
                         {
