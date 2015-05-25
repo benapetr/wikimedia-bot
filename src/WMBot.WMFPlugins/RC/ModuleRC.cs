@@ -240,13 +240,16 @@ namespace wmib.Extensions
 
         public string Format(string name_url, string url, string page, string username, string link, string summary, Channel chan, bool bot, bool New, bool minor)
         {
+            // this is a hack that adds /wiki or /w to full url, it does work only for wikis that use recommended settings
+            // should there ever be a need to support some hand made url's we would need to make this user configureable
+            string full_url = "http://" + url + "/w/";
             if (GetConfig(chan, "RC.Template", "") == "")
             {
                 if (!New)
                 {
                     return messages.Localize("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "modified", "" + username + "", "https://" + url + "/w/index.php?diff=" + link, summary });
                 }
-                return messages.Localize("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", "https://" + url + "/wiki/" + HttpUtility.UrlEncode(page), summary });
+                return messages.Localize("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", "https://" + url + "/wiki/" + Core.WikiEncode(page), summary });
             }
             string action = "modified";
             string flags = "";
@@ -265,12 +268,12 @@ namespace wmib.Extensions
             if (flags.EndsWith(", "))
                 flags = flags.Substring(0, flags.Length - 2);
 
-            string fu = url + "?diff=" + link;
+            string fu = full_url + "?diff=" + link;
             if (New)
-                fu = url + "?title=" + HttpUtility.UrlEncode(page);
+                fu = full_url + "?title=" + HttpUtility.UrlEncode(page);
 
             return GetConfig(chan, "RC.Template", "").Replace("$wiki", name_url)
-                   .Replace("$encoded_wiki_page", HttpUtility.UrlEncode(page).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%23", "#").Replace("%28", "(").Replace("%29", ")"))
+                   .Replace("$encoded_wiki_page", Core.WikiEncode(page))
                    .Replace("$encoded_wiki_username", HttpUtility.UrlEncode(username).Replace("+", "_").Replace("%3a", ":").Replace("%2f", "/").Replace("%23", "#").Replace("%28", "(").Replace("%29", ")"))
                    .Replace("$encoded_page", HttpUtility.UrlEncode(page))
                    .Replace("$encoded_username", HttpUtility.UrlEncode(username))

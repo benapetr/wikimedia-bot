@@ -64,7 +64,7 @@ namespace wmib
             }
             // now we check if role that user is to grant doesn't have higher level than the role they have
             // if we didn't do that, users with low roles could grant admin to someone and exploit this
-            // to grant admins to themselve
+            // to grant admins to themselves
             if (level > parameters.SourceChannel.SystemUsers.GetLevel(parameters.User))
             {
                 IRC.DeliverMessage(messages.Localize("RoleMismatch", parameters.SourceChannel.Language), parameters.SourceChannel);
@@ -79,7 +79,7 @@ namespace wmib
 
         private static void TrustDel(CommandParams parameters)
         {
-            if (parameters.Parameters == null || parameters.Parameters.Length == 0)
+            if (string.IsNullOrEmpty(parameters.Parameters))
             {
                 IRC.DeliverMessage(messages.Localize("InvalidUser", parameters.SourceChannel.Language), parameters.SourceChannel);
                 return;

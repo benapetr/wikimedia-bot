@@ -11,13 +11,11 @@
 // Created by Petr Bena <benapetr@gmail.com>
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 
 namespace wmib
 {
-    public partial class IRC
+    public class IRC
     {
         private static bool finishedJoining = false;
         /// <summary>
@@ -112,13 +110,9 @@ namespace wmib
                 {
                     Self(text, ch);
                     if (!is_act)
-                    {
                         ch.PrimaryInstance.Network.Message(text, target, priority);
-                    }
                     else
-                    {
                         ch.PrimaryInstance.Network.Act(text, target, priority);
-                    }
                 }
             }
             else
@@ -128,13 +122,9 @@ namespace wmib
                     if (Instance.TargetBuffer.ContainsKey(target))
                     {
                         if (is_act)
-                        {
                             Instance.TargetBuffer[target].Network.Act(text, target, priority);
-                        }
                         else
-                        {
                             Instance.TargetBuffer[target].Network.Message(text, target, priority);
-                        }
                         return;
                     }
                 }
@@ -166,10 +156,7 @@ namespace wmib
                 try
                 {
                     if (module.IsWorking)
-                    {
-                        
                         module.Hook_OnSelf(channel, new libirc.UserInfo(Configuration.IRC.NickName, Configuration.IRC.Ident, GetSelfHost(channel)), message);
-                    }
                 }
                 catch (Exception fail)
                 {
@@ -208,8 +195,7 @@ namespace wmib
 
         private static void InitialiseList()
         {
-            Thread thread = new Thread(ChannelList);
-            thread.Name = "IRC/ChannelList";
+            Thread thread = new Thread(ChannelList) {Name = "IRC/ChannelList"};
             Core.ThreadManager.RegisterThread(thread);
             thread.Start();
         }

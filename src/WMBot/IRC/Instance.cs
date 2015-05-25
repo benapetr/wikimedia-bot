@@ -157,7 +157,7 @@ namespace wmib
         /// <returns></returns>
         public static Instance GetInstance()
         {
-            int lowest = 99999999;
+            int lowest = int.MaxValue;
             Instance instance = null;
             // first try to get instance which is online
             foreach (Instance xx in Instances.Values)
@@ -242,12 +242,14 @@ namespace wmib
         {
             Nick = name;
             Port = port;
-            this.Protocol = new WmIrcProtocol(Configuration.IRC.NetworkHost, Hostname, Port);
-            this.Network = new Network(Configuration.IRC.NetworkHost, this, this.Protocol);
-            this.Network.Nickname = Nick;
-            this.Network.UserName = Configuration.IRC.Username;
-            this.Network.Ident = Configuration.IRC.Ident;
-            this.Protocol.IRCNetwork = this.Network;
+            Protocol = new WmIrcProtocol(Configuration.IRC.NetworkHost, Hostname, Port);
+            Network = new Network(Configuration.IRC.NetworkHost, this, this.Protocol)
+            {
+                Nickname = Nick,
+                UserName = Configuration.IRC.Username,
+                Ident = Configuration.IRC.Ident
+            };
+            Protocol.IRCNetwork = Network;
         }
 
         /// <summary>
