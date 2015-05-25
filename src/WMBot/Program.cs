@@ -192,18 +192,30 @@ namespace wmib
                 {
                     Syslog.Log("Initializing MySQL");
                     Core.MysqlDB = new WMIBMySQL();
+                } else
+                {
+                    Syslog.Log("Mysql is not configured, disabling it");
                 }
                 if (PostgreSQL.IsWorking)
                 {
                     Syslog.Log("Opening connection to PostgreDB");
                     Core.PostgreDB = new PostgreSQL();
                     Core.PostgreDB.Connect();
+                } else
+                {
+                    Syslog.Log("Postgres is not configured, not using");
                 }
                 // let's use postgre as default
                 if (Core.PostgreDB != null)
+                {
+                    Syslog.Log("Using Postgres as a default SQL provider");
                     Core.DB = Core.PostgreDB;
-                else
+                }
+                else if (Core.MysqlDB != null)
+                {
+                    Syslog.Log("Using MySQL as a default SQL");
                     Core.DB = Core.MysqlDB;
+                }
                 // register all commands
                 Commands.InitAdminCommands();
                 Syslog.Log("Loading modules");
