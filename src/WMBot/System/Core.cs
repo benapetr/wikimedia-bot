@@ -102,7 +102,7 @@ namespace wmib
             }
             catch (Exception fail)
             {
-                // exception happened while we tried to handle another one, ignore that (probably issue with logging
+                // exception happened while we tried to handle another one, ignore that (probably issue with logging)
                 Console.WriteLine(fail.ToString());
             }
         }

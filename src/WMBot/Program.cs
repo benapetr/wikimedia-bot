@@ -191,7 +191,7 @@ namespace wmib
                 if (Core.DatabaseServerIsAvailable)
                 {
                     Syslog.Log("Initializing MySQL");
-                    Core.DB = new WMIBMySQL();
+                    Core.MysqlDB = new WMIBMySQL();
                 }
                 if (PostgreSQL.IsWorking)
                 {
@@ -199,6 +199,11 @@ namespace wmib
                     Core.PostgreDB = new PostgreSQL();
                     Core.PostgreDB.Connect();
                 }
+                // let's use postgre as default
+                if (Core.PostgreDB != null)
+                    Core.DB = Core.PostgreDB;
+                else
+                    Core.DB = Core.MysqlDB;
                 // register all commands
                 Commands.InitAdminCommands();
                 Syslog.Log("Loading modules");
