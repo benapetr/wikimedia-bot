@@ -253,15 +253,10 @@ namespace wmib.Extensions
         {
             try
             {
-                if (!PostgreSQL.IsWorking)
+                if (Core.DB == null)
                 {
                     Log("No sql server is available, closing DB log writer");
                     return;
-                }
-                if (Core.PostgreDB == null)
-                {
-                    Log("PostgreDB is null", true);
-					return;
                 }
                 DebugLog("The SQL writer started");
                 while (Core.IsRunning)
@@ -278,17 +273,17 @@ namespace wmib.Extensions
                                 db.AddRange(DJ);
                                 DJ.Clear();
                             }
-                            lock (Core.PostgreDB.DatabaseLock)
+                            lock (Core.DB.DatabaseLock)
                             {
-                                Core.PostgreDB.Connect();
-                                while (!Core.PostgreDB.IsConnected)
+                                Core.DB.Connect();
+                                while (!Core.DB.IsConnected)
                                 {
-                                    if (Core.PostgreDB.ErrorBuffer != null)
+                                    if (Core.DB.ErrorBuffer != null)
                                     {
-                                        Log("Unable to connect to SQL server: " + Core.PostgreDB.ErrorBuffer + " retrying in 20 seconds");
+                                        Log("Unable to connect to SQL server: " + Core.DB.ErrorBuffer + " retrying in 20 seconds");
                                     }
                                     Thread.Sleep(20000);
-                                    Core.PostgreDB.Connect();
+                                    Core.DB.Connect();
                                 }
                                 foreach (Item item in db)
                                 {
@@ -307,18 +302,15 @@ namespace wmib.Extensions
                                         Log("Failed to insert row: " + message);
                                     }
                                 }
-                                Core.PostgreDB.Commit();
+                                Core.DB.Commit();
                                 //Core.DB.Disconnect();
                             }
                         }
                     }
                     catch (ThreadAbortException)
                     {
-                        if (Core.DatabaseServerIsAvailable)
-                        {
-                            Core.PostgreDB.Commit();
-                            Core.PostgreDB.Disconnect();
-                        }
+                        Core.DB.Commit();
+                        Core.DB.Disconnect();
                         Log("SQL Writer is shut down with " + DJ.Count + " unfinished lines");
                         return;
                     }
@@ -458,7 +450,7 @@ namespace wmib.Extensions
                     {
                         jobs.Add(line);
                     }
-                    if (Core.DatabaseServerIsAvailable)
+                    if (Core.DB != null)
                     {
                         Item item = new Item
                         {

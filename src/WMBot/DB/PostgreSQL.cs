@@ -19,7 +19,7 @@ namespace wmib
     {
         private Npgsql.NpgsqlConnection connection;
 
-        public static bool IsWorking
+        public static bool IsAvailable
         {
             get
             {
@@ -44,6 +44,8 @@ namespace wmib
 
         public override void Connect()
         {
+            if (this.IsConnected)
+                return;
             this.connection.Open();
         }
 
@@ -62,7 +64,15 @@ namespace wmib
         {
             get
             {
-                return this.connection.State == System.Data.ConnectionState.Open;
+                switch (this.connection.State)
+                {
+                    case System.Data.ConnectionState.Open:
+                    case System.Data.ConnectionState.Connecting:
+                    case System.Data.ConnectionState.Fetching:
+                    case System.Data.ConnectionState.Executing:
+                        return true;
+                }
+                return false;
             }
         }
 

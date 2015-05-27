@@ -68,6 +68,18 @@ namespace wmib
 
         private bool connected;
 
+        public static bool IsAvailable
+        {
+            get
+            {
+                if (Configuration.MySQL.MysqlHost == null || Configuration.MySQL.MysqlUser == null)
+                {
+                    return false;
+                }
+                return true;
+            }
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposing)

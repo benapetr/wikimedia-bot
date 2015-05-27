@@ -23,20 +23,6 @@ namespace wmib
     public partial class Core : MarshalByRefObject
     {
         /// <summary>
-        /// Return true if database server is available
-        /// </summary>
-        public static bool DatabaseServerIsAvailable
-        {
-            get
-            {
-                if (Configuration.MySQL.MysqlHost == null || Configuration.MySQL.MysqlUser == null)
-                {
-                    return false;
-                }
-                return true;
-            }
-        }
-        /// <summary>
         /// Database server
         /// the bot is connected to multiple DB's this is a pointer to preferred one
         /// </summary>

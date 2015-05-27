@@ -188,7 +188,7 @@ namespace wmib
                 Core.ThreadManager.RegisterThread(Core.WriterThread);
                 Core.WriterThread.Name = "Writer";
                 Core.WriterThread.Start();
-                if (Core.DatabaseServerIsAvailable)
+                if (WMIBMySQL.IsAvailable)
                 {
                     Syslog.Log("Initializing MySQL");
                     Core.MysqlDB = new WMIBMySQL();
@@ -196,7 +196,7 @@ namespace wmib
                 {
                     Syslog.Log("Mysql is not configured, disabling it");
                 }
-                if (PostgreSQL.IsWorking)
+                if (PostgreSQL.IsAvailable)
                 {
                     Syslog.Log("Opening connection to PostgreDB");
                     Core.PostgreDB = new PostgreSQL();

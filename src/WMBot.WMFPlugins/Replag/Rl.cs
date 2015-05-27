@@ -17,10 +17,6 @@ namespace wmib
         {
             try
             {
-                if (!Core.DatabaseServerIsAvailable)
-                {
-                    return "There is no database server to retrieve data from";
-                }
                 Core.DB.Connect();
                 string time = Core.DB.Select("recentchanges", "rc_timestamp", "order by rc_timestamp desc limit 1")[0][0];
                 Core.DB.Disconnect();
