@@ -43,26 +43,26 @@ namespace wmib.Extensions
                 IRC.DeliverMessage("This command requires exactly 1 parameter", p.SourceChannel);
                 return;
             }
-            lock (Core.DB.DatabaseLock)
+            lock (Core.MysqlDB.DatabaseLock)
             {
                 string error = "unknown";
-                Core.DB.Connect();
-                if (!Core.DB.IsConnected)
+                Core.MysqlDB.Connect();
+                if (!Core.MysqlDB.IsConnected)
                 {
-                    if (Core.DB.ErrorBuffer != null)
+                    if (Core.MysqlDB.ErrorBuffer != null)
                     {
-                        error = Core.DB.ErrorBuffer;
+                        error = Core.MysqlDB.ErrorBuffer;
                     }
                     IRC.DeliverMessage("Unable to connect to SQL: " + error, p.SourceChannel);
                     return;
                 }
                 // first check if repository isn't already there
-                List<List<string>> result = Core.DB.Select("github_repo_info", "name, channel", "WHERE name = '" + Core.DB.EscapeInput(p.Parameters) + "' AND channel = '" +
-                    Core.DB.EscapeInput(p.SourceChannel.Name) + "'");
+                List<List<string>> result = Core.MysqlDB.Select("github_repo_info", "name, channel", "WHERE name = '" + Core.MysqlDB.EscapeInput(p.Parameters) + "' AND channel = '" +
+                    Core.MysqlDB.EscapeInput(p.SourceChannel.Name) + "'");
                 if (result.Count != 0)
                 {
                     IRC.DeliverMessage("This repository is already in DB", p.SourceChannel);
-                    Core.DB.Disconnect();
+                    Core.MysqlDB.Disconnect();
                     return;
                 }
                 Database.Row row = new Database.Row();
@@ -74,18 +74,18 @@ namespace wmib.Extensions
                 else
                     row.Values.Add(new Database.Row.Value("", Database.DataType.Varchar));
                 row.Values.Add(new Database.Row.Value(true));
-                if (!Core.DB.InsertRow("github_repo_info", row))
+                if (!Core.MysqlDB.InsertRow("github_repo_info", row))
                 {
-                    if (Core.DB.ErrorBuffer != null)
+                    if (Core.MysqlDB.ErrorBuffer != null)
                     {
                         error = Core.DB.ErrorBuffer;
                     }
                     IRC.DeliverMessage("Failed to insert row: " + error, p.SourceChannel);
-                    Core.DB.Disconnect();
+                    Core.MysqlDB.Disconnect();
                     return;
                 }
-                Core.DB.Commit();
-                Core.DB.Disconnect();
+                Core.MysqlDB.Commit();
+                Core.MysqlDB.Disconnect();
             }
             IRC.DeliverMessage("Hooks from " + p.Parameters + " will be now displayed in this channel", p.SourceChannel);
         }
@@ -97,33 +97,33 @@ namespace wmib.Extensions
                 IRC.DeliverMessage("This command requires exactly 1 parameter", p.SourceChannel);
                 return;
             }
-            lock (Core.DB.DatabaseLock)
+            lock (Core.MysqlDB.DatabaseLock)
             {
                 string error = "unknown";
-                Core.DB.Connect();
-                if (!Core.DB.IsConnected)
+                Core.MysqlDB.Connect();
+                if (!Core.MysqlDB.IsConnected)
                 {
-                    if (Core.DB.ErrorBuffer != null)
+                    if (Core.MysqlDB.ErrorBuffer != null)
                     {
-                        error = Core.DB.ErrorBuffer;
+                        error = Core.MysqlDB.ErrorBuffer;
                     }
                     IRC.DeliverMessage("Unable to connect to SQL: " + error, p.SourceChannel);
                     return;
                 }
                 // first check if repository isn't already there
-                List<List<string>> result = Core.DB.Select("github_repo_info", "name, channel", "WHERE name = '" + Core.DB.EscapeInput(p.Parameters) + "' AND channel = '" +
-                    Core.DB.EscapeInput(p.SourceChannel.Name) + "'");
+                List<List<string>> result = Core.MysqlDB.Select("github_repo_info", "name, channel", "WHERE name = '" + Core.MysqlDB.EscapeInput(p.Parameters) + "' AND channel = '" +
+                    Core.MysqlDB.EscapeInput(p.SourceChannel.Name) + "'");
                 if (result.Count == 0)
                 {
                     IRC.DeliverMessage("This repository is not in DB", p.SourceChannel);
-                    Core.DB.Disconnect();
+                    Core.MysqlDB.Disconnect();
                     return;
                 }
-                Core.DB.Delete("github_repo_info", "WHERE name = '" + Core.DB.EscapeInput(p.Parameters)
+                Core.MysqlDB.Delete("github_repo_info", "WHERE name = '" + Core.MysqlDB.EscapeInput(p.Parameters)
                     + "' AND channel = '"
-                    + Core.DB.EscapeInput(p.SourceChannel.Name) + "'");
-                Core.DB.Commit();
-                Core.DB.Disconnect();
+                    + Core.MysqlDB.EscapeInput(p.SourceChannel.Name) + "'");
+                Core.MysqlDB.Commit();
+                Core.MysqlDB.Disconnect();
             }
             IRC.DeliverMessage("Hooks from " + p.Parameters + " were disabled for this channel", p.SourceChannel);
         }
