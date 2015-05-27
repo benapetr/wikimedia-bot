@@ -289,14 +289,14 @@ namespace wmib.Extensions
                                 {
                                     Database.Row row = new Database.Row();
                                     message = item.message;
-                                    row.Values.Add(new Database.Row.Value(0));
-                                    row.Values.Add(new Database.Row.Value(item.channel.Name, Database.DataType.Varchar));
-                                    row.Values.Add(new Database.Row.Value(item.username, Database.DataType.Varchar));
-                                    row.Values.Add(new Database.Row.Value(item.time));
-                                    row.Values.Add(new Database.Row.Value(item.act));
-                                    row.Values.Add(new Database.Row.Value(item.message, Database.DataType.Varchar));
-                                    row.Values.Add(new Database.Row.Value(item.type));
-                                    row.Values.Add(new Database.Row.Value(item.host, Database.DataType.Varchar));
+                                    //row.Values.Add(new Database.Row.Value(0));
+                                    row.Values.Add(new Database.Row.Value(item.channel.Name, Database.DataType.Varchar, "channel"));
+                                    row.Values.Add(new Database.Row.Value(item.username, Database.DataType.Varchar, "nick"));
+                                    row.Values.Add(new Database.Row.Value(item.time, "time"));
+                                    row.Values.Add(new Database.Row.Value(item.act, "act"));
+                                    row.Values.Add(new Database.Row.Value(item.message, Database.DataType.Varchar, "contents"));
+                                    row.Values.Add(new Database.Row.Value(item.type, "type"));
+                                    row.Values.Add(new Database.Row.Value(item.host, Database.DataType.Varchar, "host"));
                                     if (!Core.PostgreDB.InsertRow("logs", row))
                                     {
                                         Log("Failed to insert row: " + message);

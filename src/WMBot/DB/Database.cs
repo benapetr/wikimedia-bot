@@ -35,6 +35,7 @@ namespace wmib
                 /// Data
                 /// </summary>
                 public string Data;
+                public string Column = null;
 
                 public Value()
                 {
@@ -46,32 +47,35 @@ namespace wmib
                 /// Creates a new value of type int
                 /// </summary>
                 /// <param name="number"></param>
-                public Value(int number)
+                public Value(int number, string column = null)
                 {
                     Data = number.ToString();
                     Type = DataType.Integer;
+                    Column = column;
                 }
 
                 /// <summary>
                 /// Creates a new value of type date
                 /// </summary>
                 /// <param name="date"></param>
-                public Value(DateTime date)
+                public Value(DateTime date, string column = null)
                 {
                     Data = date.Year + "-" + date.Month.ToString().PadLeft(2, '0') + "-" 
                         + date.Day.ToString().PadLeft(2, '0') + " " + date.Hour.ToString().PadLeft(2, '0') + ":" 
                         + date.Minute.ToString().PadLeft(2, '0') + ":" + date.Second.ToString().PadLeft(2, '0');
                     Type = DataType.Date;
+                    Column = column;
                 }
 
                 /// <summary>
                 /// Creates a new value of type bool
                 /// </summary>
                 /// <param name="text"></param>
-                public Value(bool text)
+                public Value(bool text, string column = null)
                 {
                     Data = text.ToString();
                     Type = DataType.Boolean;
+                    Column = column;
                 }
 
                 /// <summary>
@@ -79,12 +83,13 @@ namespace wmib
                 /// </summary>
                 /// <param name="text"></param>
                 /// <param name="type"></param>
-                public Value(string text, DataType type)
+                public Value(string text, DataType type, string column = null)
                 {
                     if (text == null)
                         throw new NullReferenceException("Text can't be null");
                     Data = text;
                     Type = type;
+                    Column = column;
                 }
             }
 

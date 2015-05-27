@@ -134,6 +134,24 @@ namespace wmib
                     s.Connection = this.connection;
                     sql.Append("INSERT INTO ");
                     sql.Append(table);
+                    // let's check if there are headers
+                    bool headers = true;
+                    string header = "";
+                    foreach (Row.Value value in row.Values)
+                    {
+                        if (value.Column == null)
+                        {
+                            headers = false;
+                            break;
+                        }
+                        header += value.Column + ", ";
+                    }
+                    if (header.EndsWith(", "))
+                        header = header.Substring(0, header.Length - 2);
+                    if (headers)
+                    {
+                        sql.Append(" (" + header + ")");
+                    }
                     sql.Append(" VALUES (");
                     int cv = 0;
                     foreach (Row.Value value in row.Values)
