@@ -297,7 +297,7 @@ namespace wmib.Extensions
                                     row.Values.Add(new Database.Row.Value(item.message, Database.DataType.Varchar, "contents"));
                                     row.Values.Add(new Database.Row.Value(item.type, "type"));
                                     row.Values.Add(new Database.Row.Value(item.host, Database.DataType.Varchar, "host"));
-                                    if (!Core.PostgreDB.InsertRow("logs", row))
+                                    if (!Core.DB.InsertRow("logs", row))
                                     {
                                         Log("Failed to insert row: " + message);
                                     }
