@@ -49,7 +49,7 @@
       <HintPath>libirc.dll</HintPath>
     </Reference>
     <Reference Include="Npgsql">
-      <HintPath>Npgsql.dll</HintPath>
+      <HintPath>..\..\..\Visual Studio 2013\Projects\SELU\SELU\Npgsql.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -127,7 +127,5 @@
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
-  <ItemGroup>
-    <Folder Include="DB\" />
-  </ItemGroup>
+  <ItemGroup />
 </Project>
