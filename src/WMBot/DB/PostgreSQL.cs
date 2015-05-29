@@ -17,6 +17,8 @@ namespace wmib
 {
     public class PostgreSQL : Database
     {
+        private static readonly string LocalName = "PostgreSQL";
+
         private Npgsql.NpgsqlConnection connection;
 
         public static bool IsAvailable
@@ -56,6 +58,7 @@ namespace wmib
 
         public override void Commit()
         {
+            SystemHooks.OnSQL(LocalName, "commit;");
             Npgsql.NpgsqlCommand c = new Npgsql.NpgsqlCommand("commit;", this.connection);
             c.ExecuteNonQuery();
         }
@@ -76,9 +79,43 @@ namespace wmib
             }
         }
 
-        public override void ExecuteNonQuery(string sql)
+        public override void ExecuteNonQuery(string sql, List<Bind> bind_var = null)
         {
+            if (!this.IsConnected)
+                throw new WmibException("The database is not connected");
+
             Npgsql.NpgsqlCommand c = new Npgsql.NpgsqlCommand(sql, this.connection);
+            if (bind_var != null)
+            {
+                int n = 0;
+                foreach (Bind bind in bind_var)
+                {
+                    switch (bind.Type)
+                    {
+                        case DataType.Boolean:
+                            c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Boolean));
+                            c.Parameters[n++].Value = bool.Parse(bind.Value);
+                            break;
+                        case DataType.Integer:
+                            c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Integer));
+                            c.Parameters[n++].Value = bool.Parse(bind.Value);
+                            break;
+                        case DataType.Varchar:
+                            c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Varchar));
+                            c.Parameters[n++].Value = bool.Parse(bind.Value);
+                            break;
+                        case DataType.Text:
+                            c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Text));
+                            c.Parameters[n++].Value = bool.Parse(bind.Value);
+                            break;
+                        case DataType.Date:
+                            c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Timestamp));
+                            c.Parameters[n++].Value = bool.Parse(bind.Value);
+                            break;
+                    }
+                }
+            }
+            SystemHooks.OnSQL(LocalName, sql);
             c.ExecuteNonQuery();
         }
 
@@ -98,6 +135,7 @@ namespace wmib
             string sql = "DELETE FROM " + table;
             if (!String.IsNullOrEmpty(query))
                 sql += " " + query;
+            SystemHooks.OnSQL(LocalName, sql);
             lock (DatabaseLock)
             {
                 try
@@ -188,6 +226,7 @@ namespace wmib
                     }
                     sql.Append(");");
                     s.CommandText = sql.ToString();
+                    SystemHooks.OnSQL(LocalName, sql.ToString());
                     s.ExecuteNonQuery();
                     return true;
                 } catch (Npgsql.NpgsqlException me)

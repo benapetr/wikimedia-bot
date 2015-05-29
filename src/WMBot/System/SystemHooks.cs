@@ -58,6 +58,11 @@ namespace wmib
         public static void SystemLog(string Message, Syslog.Type MessageType)
         {
         }
+
+        public static void OnSQL(string name, string sql)
+        {
+            
+        }
     }
 }
 

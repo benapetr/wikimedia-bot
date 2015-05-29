@@ -50,6 +50,11 @@ namespace wmib.Extensions
         private readonly List<Job> jobs = new List<Job>();
         private readonly List<Item> DJ = new List<Item>();
 
+        private static void UpdateConfig(Channel channel)
+        {
+            
+        }
+
         public override void Hook_ACTN(Channel channel, libirc.UserInfo invoker, string message)
         {
             ChanLog(message, channel, invoker.Nick, invoker.Host, false);
@@ -70,6 +75,7 @@ namespace wmib.Extensions
                     IRC.DeliverMessage(messages.Localize("LoggingOn", channel.Language), channel.Name);
                     SetConfig(channel, "Logging.Enabled", true);
                     channel.SaveConfig();
+                    UpdateConfig(channel);
                     return;
                 }
                 if (!channel.SuppressWarnings)
@@ -90,6 +96,7 @@ namespace wmib.Extensions
                     }
                     SetConfig(channel, "Logging.Enabled", false);
                     channel.SaveConfig();
+                    UpdateConfig(channel);
                     IRC.DeliverMessage(messages.Localize("NotLogged", channel.Language), channel.Name);
                     return;
                 }
@@ -405,6 +412,34 @@ namespace wmib.Extensions
                 Console.WriteLine(er.Message);
             }
             return false;
+        }
+
+        public override bool Hook_OnRegister()
+        {
+            foreach (Channel channel in Configuration.ChannelList)
+            {
+                UpdateConfig(channel);
+            }
+            return base.Hook_OnRegister();
+        }
+
+        public override void Hook_ChannelDrop(Channel chan)
+        {
+            try
+            {
+                // delete from sql
+                if (Core.DB != null)
+                {
+                    string SQL = "delete from logs_meta where channel = :channel;\n";
+                    Core.DB.ExecuteNonQuery(SQL, new List<Database.Bind> { new Database.Bind(":channel", chan.Name, Database.DataType.Text) });
+                    Core.DB.Commit();
+                }
+            }
+            catch (Exception fail)
+            {
+                ErrorLog("Unable to delete metadata of " + chan.Name + " from SQL, error was: " + fail.Message);
+                HandleException(fail);
+            }
         }
 
         /// <summary>

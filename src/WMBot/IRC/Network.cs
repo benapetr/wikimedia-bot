@@ -126,6 +126,7 @@ namespace wmib
                     }
                     catch (Exception fail)
                     {
+                        Syslog.Log("MODULE: exception at Hook_Part in " + module.Name, true);
                         Core.HandleException(fail);
                     }
                 }
@@ -167,7 +168,7 @@ namespace wmib
                         }
                         catch (Exception fail)
                         {
-                            Syslog.Log("Error on hook in " + extension_.Name, true);
+                            Syslog.Log("MODULE: exception in Hook_Nick in " + extension_.Name, true);
                             Core.HandleException(fail);
                         }
                     }

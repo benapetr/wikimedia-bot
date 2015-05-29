@@ -15,6 +15,20 @@ namespace wmib
 {
     public class Database
     {
+        public class Bind
+        {
+            public DataType Type;
+            public string Value;
+            public string Name;
+
+            public Bind(string name, string value, DataType type)
+            {
+                this.Value = value;
+                this.Type = type;
+                this.Name = name;
+            }
+        }
+
         /// <summary>
         /// One row in a database
         /// </summary>
@@ -132,7 +146,7 @@ namespace wmib
 
         public virtual int Delete(string table, string query) { return 0; }
 
-        public virtual void ExecuteNonQuery(string sql) { }
+        public virtual void ExecuteNonQuery(string sql, List<Bind> bind_var = null) { }
 
         public virtual int CacheSize()
         {

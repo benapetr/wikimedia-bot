@@ -176,7 +176,7 @@ namespace wmib
             }
         }
 
-        public override void ExecuteNonQuery(string sql)
+        public override void ExecuteNonQuery(string sql, List<Bind> bind_var = null)
         {
             if (!IsConnected)
                 throw new WmibException("The database is not connected");
