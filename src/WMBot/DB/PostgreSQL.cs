@@ -79,6 +79,37 @@ namespace wmib
             }
         }
 
+        private void BindVars(string sql, List<Bind> bind_var, Npgsql.NpgsqlCommand c)
+        {
+            int n = 0;
+            foreach (Bind bind in bind_var)
+            {
+                switch (bind.Type)
+                {
+                    case DataType.Boolean:
+                        c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Boolean));
+                        c.Parameters[n++].Value = bool.Parse(bind.Value);
+                        break;
+                    case DataType.Integer:
+                        c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Integer));
+                        c.Parameters[n++].Value = bool.Parse(bind.Value);
+                        break;
+                    case DataType.Varchar:
+                        c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Varchar));
+                        c.Parameters[n++].Value = bool.Parse(bind.Value);
+                        break;
+                    case DataType.Text:
+                        c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Text));
+                        c.Parameters[n++].Value = bool.Parse(bind.Value);
+                        break;
+                    case DataType.Date:
+                        c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Timestamp));
+                        c.Parameters[n++].Value = bool.Parse(bind.Value);
+                        break;
+                }
+            }
+        }
+
         public override void ExecuteNonQuery(string sql, List<Bind> bind_var = null)
         {
             if (!this.IsConnected)
@@ -86,35 +117,7 @@ namespace wmib
 
             Npgsql.NpgsqlCommand c = new Npgsql.NpgsqlCommand(sql, this.connection);
             if (bind_var != null)
-            {
-                int n = 0;
-                foreach (Bind bind in bind_var)
-                {
-                    switch (bind.Type)
-                    {
-                        case DataType.Boolean:
-                            c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Boolean));
-                            c.Parameters[n++].Value = bool.Parse(bind.Value);
-                            break;
-                        case DataType.Integer:
-                            c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Integer));
-                            c.Parameters[n++].Value = bool.Parse(bind.Value);
-                            break;
-                        case DataType.Varchar:
-                            c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Varchar));
-                            c.Parameters[n++].Value = bool.Parse(bind.Value);
-                            break;
-                        case DataType.Text:
-                            c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Text));
-                            c.Parameters[n++].Value = bool.Parse(bind.Value);
-                            break;
-                        case DataType.Date:
-                            c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Timestamp));
-                            c.Parameters[n++].Value = bool.Parse(bind.Value);
-                            break;
-                    }
-                }
-            }
+                BindVars(sql, bind_var, c);
             SystemHooks.OnSQL(LocalName, sql);
             c.ExecuteNonQuery();
         }
@@ -127,6 +130,29 @@ namespace wmib
         public override int CacheSize()
         {
             return base.CacheSize();
+        }
+
+        public override List<List<string>> Select(string sql, List<Database.Bind> bind_var = null)
+        {
+            if (!this.IsConnected)
+                throw new WmibException("The database is not connected");
+
+            Npgsql.NpgsqlCommand command = new Npgsql.NpgsqlCommand(sql, this.connection);
+            if (bind_var != null)
+                BindVars(sql, bind_var, command);
+            SystemHooks.OnSQL(LocalName, sql);
+            Npgsql.NpgsqlDataReader dr = command.ExecuteReader();
+            List<List<string>> results = new List<List<string>>();
+            while (dr.Read())
+            {
+                List<string> line = new List<string>();
+                results.Add(line);
+                foreach (object value in dr)
+                {
+                    line.Add(value.ToString());
+                }
+            }
+            return results;
         }
 
         public override int Delete(string table, string query)

@@ -52,7 +52,21 @@ namespace wmib.Extensions
 
         private static void UpdateConfig(Channel channel)
         {
-            
+            // we need to check if this channel exist in database
+            List<List<string>> results = Core.DB.Select("SELECT count(1) FROM logs_meta WHERE channel = :channel;\nCOMMIT;", new List<Database.Bind> { new Database.Bind("channel", channel.Name, Database.DataType.Text) });
+            int result = int.Parse(results[0][0]);
+            if (result == 0)
+            {
+                Database.Row r = new Database.Row();
+                r.Values.Add(new Database.Row.Value(channel.Name, Database.DataType.Text, "channel"));
+                r.Values.Add(new Database.Row.Value("enabled", Database.DataType.Text, "name"));
+                r.Values.Add(new Database.Row.Value(GetConfig(channel, "Logging.Enabled", false).ToString(), Database.DataType.Text, "value"));
+                Core.DB.InsertRow("logs_meta", r);
+            }
+            else
+            {
+                Core.DB.ExecuteNonQuery("UPDATE logs_meta SET value = '" + GetConfig(channel, "Logging.Enabled", false).ToString() + "' where name = 'enabled' and channel = :channel;\ncommit;", new List<Database.Bind> { new Database.Bind("channel", channel.Name, Database.DataType.Text) });
+            }
         }
 
         public override void Hook_ACTN(Channel channel, libirc.UserInfo invoker, string message)

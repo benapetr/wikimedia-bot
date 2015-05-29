@@ -186,7 +186,7 @@ namespace wmib
             ms.ExecuteNonQuery();
         }
 
-        public override List<List<string>> Select(string sql)
+        public override List<List<string>> Select(string sql, List<Database.Bind> bind_var = null)
         {
             lock (DatabaseLock)
             {

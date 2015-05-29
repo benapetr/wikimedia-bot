@@ -177,7 +177,7 @@ namespace wmib
         /// </summary>
         /// <param name="sql"></param>
         /// <returns>Matrix of returned data in string format or null if there is error</returns>
-        public virtual List<List<string>> Select(string sql) { return null; }
+        public virtual List<List<string>> Select(string sql, List<Bind> bind_var = null) { return null; }
 
         /// <summary>
         /// Data type
