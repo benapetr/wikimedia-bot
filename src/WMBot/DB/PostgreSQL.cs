@@ -147,9 +147,9 @@ namespace wmib
             {
                 List<string> line = new List<string>();
                 results.Add(line);
-                foreach (object value in dr)
+                for (int i = 0; i < dr.FieldCount; i++)
                 {
-                    line.Add(value.ToString());
+                    line.Add(dr[i].ToString());
                 }
             }
             return results;

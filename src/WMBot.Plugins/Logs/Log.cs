@@ -53,7 +53,7 @@ namespace wmib.Extensions
         private static void UpdateConfig(Channel channel)
         {
             // we need to check if this channel exist in database
-            List<List<string>> results = Core.DB.Select("SELECT count(1) FROM logs_meta WHERE channel = :channel;", new List<Database.Bind> { new Database.Bind("channel", channel.Name, Database.DataType.Text) });
+            List<List<string>> results = Core.DB.Select("SELECT count(1) FROM logs_meta WHERE channel = :channel and name = 'enabled';", new List<Database.Bind> { new Database.Bind("channel", channel.Name, Database.DataType.Text) });
             int result = int.Parse(results[0][0]);
             if (result == 0)
             {
@@ -444,9 +444,8 @@ namespace wmib.Extensions
                 // delete from sql
                 if (Core.DB != null)
                 {
-                    string SQL = "delete from logs_meta where channel = :channel;\n";
-                    Core.DB.ExecuteNonQuery(SQL, new List<Database.Bind> { new Database.Bind(":channel", chan.Name, Database.DataType.Text) });
-                    Core.DB.Commit();
+                    string SQL = "delete from logs_meta where channel = :channel;\ncommit;";
+                    Core.DB.ExecuteNonQuery(SQL, new List<Database.Bind> { new Database.Bind("channel", chan.Name, Database.DataType.Text) });
                 }
             }
             catch (Exception fail)
