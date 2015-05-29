@@ -92,19 +92,19 @@ namespace wmib
                         break;
                     case DataType.Integer:
                         c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Integer));
-                        c.Parameters[n++].Value = bool.Parse(bind.Value);
+                        c.Parameters[n++].Value = int.Parse(bind.Value);
                         break;
                     case DataType.Varchar:
                         c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Varchar));
-                        c.Parameters[n++].Value = bool.Parse(bind.Value);
+                        c.Parameters[n++].Value = bind.Value;
                         break;
                     case DataType.Text:
                         c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Text));
-                        c.Parameters[n++].Value = bool.Parse(bind.Value);
+                        c.Parameters[n++].Value = bind.Value;
                         break;
                     case DataType.Date:
                         c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Timestamp));
-                        c.Parameters[n++].Value = bool.Parse(bind.Value);
+                        c.Parameters[n++].Value = DateTime.Parse(bind.Value);
                         break;
                 }
             }
