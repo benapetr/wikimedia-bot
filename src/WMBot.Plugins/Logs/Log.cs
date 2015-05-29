@@ -53,7 +53,7 @@ namespace wmib.Extensions
         private static void UpdateConfig(Channel channel)
         {
             // we need to check if this channel exist in database
-            List<List<string>> results = Core.DB.Select("SELECT count(1) FROM logs_meta WHERE channel = :channel;\nCOMMIT;", new List<Database.Bind> { new Database.Bind("channel", channel.Name, Database.DataType.Text) });
+            List<List<string>> results = Core.DB.Select("SELECT count(1) FROM logs_meta WHERE channel = :channel;", new List<Database.Bind> { new Database.Bind("channel", channel.Name, Database.DataType.Text) });
             int result = int.Parse(results[0][0]);
             if (result == 0)
             {
