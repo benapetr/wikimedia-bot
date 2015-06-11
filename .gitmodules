@@ -1,6 +1,3 @@
 [submodule "public_html/logs/psf"]
 	path = public_html/logs/psf
 	url = http://github.com/benapetr/psf
-[submodule "public_html/logs/IRC2HTML"]
-	path = public_html/logs/IRC2HTML
-	url = http://github.com/Contex/IRC2HTML

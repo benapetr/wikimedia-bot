@@ -1,8 +1,6 @@
 <?php
 
-require( "includes/logswiki.php" );
-require( "../IRC2HTML/src/me/contex/functions.php" );
-
+require( "includes/logswiki.php");
 class LogsHtml
 {
     public static $data = " type = 0 and ";
@@ -68,7 +66,24 @@ class LogsHtml
 
     public static function ConvertColorsToHtml($string)
     {
-       return parseToHTML($string);
+        $x = explode("\r\n",$string);
+        $x = str_replace(chr(3) . "0", chr(3), $x);
+        $c = array("FFF","000","00007F","009000","FF0000","7F0000","9F009F","FF7F00","FFFF00","00F800","00908F","00FFFF","0000FF","FF00FF","7F7F7F","CFD0CF");
+
+        for ($i = 0; $i < count($c); $i++)
+        {
+            $n1 = 0;
+            $n2 = 0;
+            $n3 = 0;
+            $x[$i] = preg_replace("/\x03(\d\d?),(\d\d?)(.*?)(?(?=\x03)|$)/e", "'<span style=\"color: #'.\$c['$1'].';\">$3</span>'", $x[$i], -1, $n1);
+            $x[$i] = preg_replace("/\x03(\d\d?)(.*?)(?(?=\x03)|$)/e", "'<span style=\"color: #'.\$c['$1'].';\">$2</span>'", $x[$i], -1, $n2);
+            $x[$i] = preg_replace("/\x03|\x0F/", "<span style=\"color: #000;\">", $x[$i], -1, $n3);
+            $x[$i] = preg_replace("/\x02(.*?)((?=\x02)\x02|$)/", "<b>$1</b>", $x[$i]);
+            $x[$i] = preg_replace("/\x1F(.*?)((?=\x1F)\x1F|$)/", "<u>$1</u>", $x[$i]);
+            $y = $n1 + $n2 + $n3;
+            $x[$i] = $x[$i].str_repeat("</span>",$n3);
+       }
+       return implode("\r\n",$x);
     }
 
     public static function Remove($text)
