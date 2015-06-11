@@ -1,45 +1,40 @@
-<?
+<?php
 
 require("config.php");
-require("includes/logshtml.php");
 class Logs
 {
-    public static $title = "Wikimedia irc log browser";
-    public static $page = "index";
-    public static $channel;
-    public static $mysql;
+    public static $channel = NULL;
+    public static $pg;
 
     public static function Init()
     {
-        global $mysql_db, $mysql_user, $mysql_host, $mysql_pw;
-        self::$mysql = mysql_connect($mysql_host, $mysql_user, $mysql_pw);
-        mysql_select_db($mysql_db);
-        if (isset($_GET["data"]))
-        {
-            LogsHtml::$data = "";
-        }
-        if (isset($_GET["display"]))
-        {
-            self::$page = "display";
-            self::$channel = $_GET["display"];
-            return;
-        }
+        global $pg_us, $pg_pw, $pg_db, $pg_sv;
+        self::$pg = pg_connect( 'host=' . $pg_sv . ' dbname=' . $pg_db . ' user=' . $pg_us . ' password='. $pg_pw )
+                   or die( 'Could not connect: ' . pg_last_error() );
     }
 
     public static function GetChannels()
     {
+        global $recent;
         $list = array();
-        $query = mysql_query("SELECT DISTINCT(channel) FROM logs");
-        while($item = mysql_fetch_assoc($query))
+        if (isset($_GET['recent']))
+        {
+            if ($_GET['recent'] == "yes")
+                $recent = true;
+            else
+                $recent = false;
+            setcookie("recent", $_GET["recent"]);
+        }
+        if ($recent === NULL && isset($_COOKIE['recent']) && $_COOKIE['recent'] == "yes")
+            $recent = true;
+        if ($recent)
+            $query = pg_query("select distinct(channel) from logs where time > (current_timestamp - interval '3 days') and channel in (select channel from logs_meta where name = 'enabled' and value = 'True') ORDER by channel");
+        else
+            $query = pg_query("SELECT channel FROM logs_meta WHERE name = 'enabled' AND value = 'True' ORDER by channel");
+        while($item = pg_fetch_assoc($query))
         {
             $list[] = $item["channel"];
         }
         return $list;
-    }
-
-    public static function Render()
-    {
-        LogsHtml::Render();
-        mysql_close(self::$mysql);
     }
 }

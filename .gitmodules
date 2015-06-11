@@ -1,0 +1,3 @@
+[submodule "public_html/logs/psf"]
+	path = public_html/logs/psf
+	url = http://github.com/benapetr/psf
