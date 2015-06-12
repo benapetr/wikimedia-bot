@@ -1,4 +1,18 @@
-drop view bots_channel;
+create view logs_log as (
+SELECT logs.id,
+       logs.time as "timestamp",
+       logs.nick,
+       logs.contents as "text",
+       logs.act as "action",
+       '' as "command",
+       logs.contents as "raw",
+       logs.channel as "room",
+       0 as "search_index",
+       0 as bot_id,
+       bots_channel.id as "channel_id",
+       logs.host as "host" FROM logs, bots_channel
+);
+
 
 create view bots_channel as (
     SELECT channel_id as "id",
