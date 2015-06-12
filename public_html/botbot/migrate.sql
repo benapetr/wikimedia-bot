@@ -1,11 +1,11 @@
 drop view bots_channel;
 
 create view bots_channel as (
-    SELECT row_number() OVER(ORDER by channel ASC) as "id",
+    SELECT channel_id as "id",
            current_timestamp as "created",
            current_timestamp as "updated",
            channel as "name",
-           channel as "slug",
+           channel_id::text as "slug",
            NULL as "private_slug",
            NULL as "password",
            TRUE as "is_public",
@@ -17,6 +17,10 @@ create view bots_channel as (
            1 as "chatbot_id",
            '' as "notes"
     FROM (
-        SELECT DISTINCT(channel) FROM logs_meta WHERE value = 'True' AND name = 'enabled'
-    ) AS channels
+        SELECT row_number() OVER(ORDER by channel ASC) as "channel_id",
+               channel
+        FROM (
+            SELECT DISTINCT(channel) FROM logs_meta WHERE value = 'True' AND name = 'enabled'
+        ) AS channels
+    ) AS channels_sorted
 );
