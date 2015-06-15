@@ -63,7 +63,7 @@ function FetchLogs($channel)
     if ($display_joins)
         $sql = "SELECT * FROM logs WHERE channel = '" . pg_escape_string ($channel ) . "' and time > to_timestamp( '" . pg_escape_string($_GET["start"] . " 00:00:00"). "', 'MM/DD/YYYY HH24:MI:SS' ) and time < to_timestamp( '" . pg_escape_string($_GET["end"] . " 23:59:59") . "', 'MM/DD/YYYY HH24:MI:SS' ) order by time asc;";
     else
-        $sql = "SELECT * FROM logs WHERE channel = '" . pg_escape_string ($channel ) . "' and time > to_timestamp( '" . pg_escape_string($_GET["start"] . " 00:00:00"). "', 'MM/DD/YYYY HH24:MI:SS' ) and time < to_timestamp( '" . pg_escape_string($_GET["end"] . " 23:59:59") . "', 'MM/DD/YYYY HH24:MI:SS' ) and type == 0 order by time asc;";
+        $sql = "SELECT * FROM logs WHERE channel = '" . pg_escape_string ($channel ) . "' and time > to_timestamp( '" . pg_escape_string($_GET["start"] . " 00:00:00"). "', 'MM/DD/YYYY HH24:MI:SS' ) and time < to_timestamp( '" . pg_escape_string($_GET["end"] . " 23:59:59") . "', 'MM/DD/YYYY HH24:MI:SS' ) and type = 0 order by time asc;";
     $query = pg_query( $sql );
     if (!$query)
     {
