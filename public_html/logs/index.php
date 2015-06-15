@@ -65,7 +65,10 @@ $html->InternalJs[] = "$(function() {\n    $( \"#datepicker\" ).datepicker();\n}
 $html->InternalJs[] = "$(function() {\n    $( \"#datepicker2\" ).datepicker();\n});";
 $html->AppendHtml($layout->ToHtml());
 $html->AppendHtml("<p>This page is generated from SQL logs, you can also download static txt files from <a href=http://wm-bot.wmflabs.org/logs>here</a></p>");
-$html->PrintHtml();
+$tidy = new tidy;
+$config = array( 'indent' => true );
+$tidy->parseString($html->ToHtml(), $config, 'utf8');
+echo $tidy;
 
 $et = microtime() - $exec;
 echo ("<!-- finished in $et seconds -->");
