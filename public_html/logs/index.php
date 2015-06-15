@@ -10,7 +10,7 @@ require_once ("psf/psf.php");
 require_once ("includes/core.php");
 require_once ("includes/logshtml.php");
 require_once ("menu.php");
-$exec=microtime();
+$exec=microtime(true);
 
 // Initialize some variables
 Logs::Init();
@@ -65,10 +65,8 @@ $html->InternalJs[] = "$(function() {\n    $( \"#datepicker\" ).datepicker();\n}
 $html->InternalJs[] = "$(function() {\n    $( \"#datepicker2\" ).datepicker();\n});";
 $html->AppendHtml($layout->ToHtml());
 $html->AppendHtml("<p>This page is generated from SQL logs, you can also download static txt files from <a href=http://wm-bot.wmflabs.org/logs>here</a></p>");
-$tidy = new tidy;
-$config = array( 'indent' => true );
-$tidy->parseString($html->ToHtml(), $config, 'utf8');
-echo $tidy;
+$html->UseTidy = true;
+echo $html->ToHtml();
 
-$et = microtime() - $exec;
+$et = microtime(true) - $exec;
 echo ("<!-- finished in $et seconds -->");
