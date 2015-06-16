@@ -194,6 +194,7 @@ namespace wmib
             public static int Port = 5432;
             public static string Host = null;
             public static string DBNM = null;
+            public static string Unwritten = "postgres_failure.sql";
         }
 
         public class Network
@@ -378,6 +379,7 @@ namespace wmib
             Postgres.DBNM = RetrieveConfig("pg_name");
             Postgres.Host = RetrieveConfig("pg_host");
             Postgres.Pass = RetrieveConfig("pg_pass");
+            Postgres.Unwritten = RetrieveConfig("pg_unwritten_log", Postgres.Unwritten);
             Postgres.Port = RetrieveConfig("pg_port", Postgres.Port);
             Postgres.User = RetrieveConfig("pg_user");
             if (string.IsNullOrEmpty(IRC.LoginNick))

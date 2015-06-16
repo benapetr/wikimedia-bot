@@ -115,11 +115,19 @@ namespace wmib
             if (!this.IsConnected)
                 throw new WmibException("The database is not connected");
 
-            Npgsql.NpgsqlCommand c = new Npgsql.NpgsqlCommand(sql, this.connection);
-            if (bind_var != null)
-                BindVars(sql, bind_var, c);
-            SystemHooks.OnSQL(LocalName, sql);
-            c.ExecuteNonQuery();
+            try
+            {
+                Npgsql.NpgsqlCommand c = new Npgsql.NpgsqlCommand(sql, this.connection);
+                if (bind_var != null)
+                    BindVars(sql, bind_var, c);
+                SystemHooks.OnSQL(LocalName, sql);
+                c.ExecuteNonQuery();
+            }
+            catch (Npgsql.NpgsqlException me)
+            {
+                ErrorBuffer = me.Message;
+                HandleError(sql, bind_var);
+            }
         }
 
         public override string EscapeInput(string data)
@@ -155,6 +163,23 @@ namespace wmib
             return results;
         }
 
+        private void HandleError(string statement, List<Database.Bind> bind_var = null)
+        {
+            if (Configuration.Postgres.Unwritten == null)
+                return;
+            string text = "/* Recovery backup of query that has failed at " + DateTime.Now.ToString() + " */\n";
+            text += statement;
+            if (!statement.EndsWith(";"))
+                statement += ";";
+            statement += "\n";
+            if (bind_var != null)
+            {
+
+            }
+            Syslog.WarningLog("POSTGRESQL: Storing failed query into recovery file");
+            System.IO.File.AppendAllText(Configuration.Postgres.Unwritten, text);
+        }
+
         public override int Delete(string table, string query)
         {
             int result = 0;
@@ -172,6 +197,7 @@ namespace wmib
                 catch (Npgsql.NpgsqlException me)
                 {
                     ErrorBuffer = me.Message;
+                    HandleError(sql);
                 }
             }
             return result;
@@ -180,7 +206,7 @@ namespace wmib
         public override bool InsertRow(string table, Row row)
         {
             StringBuilder sql = new StringBuilder();
-            lock(DatabaseLock)
+            lock (DatabaseLock)
             {
                 try
                 {
@@ -227,19 +253,19 @@ namespace wmib
                                 s.Parameters.Add(new Npgsql.NpgsqlParameter("v" + cv.ToString(), NpgsqlTypes.NpgsqlDbType.Boolean));
                                 s.Parameters[cv].Value = bool.Parse(value.Data);
                                 break;
-                                case DataType.Integer:
+                            case DataType.Integer:
                                 s.Parameters.Add(new Npgsql.NpgsqlParameter("v" + cv.ToString(), NpgsqlTypes.NpgsqlDbType.Integer));
                                 s.Parameters[cv].Value = int.Parse(value.Data);
                                 break;
-                                case DataType.Varchar:
+                            case DataType.Varchar:
                                 s.Parameters.Add(new Npgsql.NpgsqlParameter("v" + cv.ToString(), NpgsqlTypes.NpgsqlDbType.Varchar));
                                 s.Parameters[cv].Value = value.Data;
                                 break;
-                                case DataType.Text:
+                            case DataType.Text:
                                 s.Parameters.Add(new Npgsql.NpgsqlParameter("v" + cv.ToString(), NpgsqlTypes.NpgsqlDbType.Text));
                                 s.Parameters[cv].Value = value.Data;
                                 break;
-                                case DataType.Date:
+                            case DataType.Date:
                                 s.Parameters.Add(new Npgsql.NpgsqlParameter("v" + cv.ToString(), NpgsqlTypes.NpgsqlDbType.Timestamp));
                                 s.Parameters[cv].Value = DateTime.Parse(value.Data);
                                 break;
@@ -255,11 +281,13 @@ namespace wmib
                     SystemHooks.OnSQL(LocalName, sql.ToString());
                     s.ExecuteNonQuery();
                     return true;
-                } catch (Npgsql.NpgsqlException me)
+                }
+                catch (Npgsql.NpgsqlException me)
                 {
                     ErrorBuffer = me.Message;
                     Syslog.Log("Error while storing a row to DB " + me, true);
-                    Syslog.DebugLog("SQL: " + sql);
+                    Syslog.DebugLog("SQL: " + sql.ToString());
+                    HandleError(sql.ToString());
                     /*lock(unwritten.PendingRows)
                     {
                         unwritten.PendingRows.Add(new SerializedRow(table, row));
