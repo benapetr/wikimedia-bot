@@ -207,7 +207,10 @@ namespace wmib.Extensions
             }
 
             if (message.StartsWith(Configuration.System.CommandPrefix + "notify "))
+            {
                 this.NotifyUser(message, user, user);
+                return true;
+            }
 
             return false;
         }
