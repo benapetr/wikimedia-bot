@@ -54,7 +54,7 @@ namespace wmib
         {
             this.Send("USER " + IRCNetwork.UserName + " 8 * :" + IRCNetwork.Ident);
             this.Send("NICK " + IRCNetwork.Nickname);
-
+            Thread.Sleep(800);
             Authenticate();
         }
 
