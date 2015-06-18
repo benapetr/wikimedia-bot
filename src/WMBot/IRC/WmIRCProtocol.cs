@@ -62,9 +62,14 @@ namespace wmib
         {
             if (!String.IsNullOrEmpty(Configuration.IRC.LoginPw))
             {
+                Syslog.DebugLog("Sending password to nickserv");
                 this.Send("PRIVMSG nickserv :identify " + Configuration.IRC.LoginNick + " " + Configuration.IRC.LoginPw);
                 if (wait)
                     Thread.Sleep(4000);
+            }
+            else
+            {
+                Syslog.DebugLog("Not sending password to nickserv");
             }
             return true;
         }
@@ -109,10 +114,12 @@ namespace wmib
                             }
                         }
                         break;
-                    } else if (response.StartsWith(":"))
+                    }
+                    else if (response.StartsWith(":"))
                     {
                         Backlog.Add(response);
-                    } else if (response == "CONTROL: FALSE")
+                    }
+                    else if (response == "CONTROL: FALSE")
                     {
                         Syslog.DebugLog("Bouncer is not connected, starting new session on " + IRCNetwork.Nickname);
                         if (!this.connectBnc())
