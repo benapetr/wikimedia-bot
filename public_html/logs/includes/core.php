@@ -28,7 +28,7 @@ class Logs
         if ($recent === NULL && isset($_COOKIE['recent']) && $_COOKIE['recent'] == "yes")
             $recent = true;
         if ($recent)
-            $query = pg_query("select distinct(channel) from logs where time > (current_timestamp - interval '3 days') and channel in (select channel from logs_meta where name = 'enabled' and value = 'True') ORDER by channel");
+            $query = pg_query("SELECT channel FROM active ORDER by channel");
         else
             $query = pg_query("SELECT channel FROM logs_meta WHERE name = 'enabled' AND value = 'True' ORDER by channel");
         while($item = pg_fetch_assoc($query))
