@@ -44,7 +44,7 @@ namespace wmib.Extensions
             public Channel channel;
         }
 
-        public string TextPath = "log" + Path.DirectorySeparatorChar;
+        public string TextPath = "channel_logs" + Path.DirectorySeparatorChar;
         //private List<char> Separator = new List<char> { ' ', ',', (char)3, '(', ')', '{', '}', (char)2, '<', '>' };
         private bool Unloading;
         private readonly List<Job> jobs = new List<Job>();
