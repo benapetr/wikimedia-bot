@@ -1,5 +1,13 @@
+body {
+    margin:25px;
+}
+
 td {
     vertical-align:top;
+}
+
+.layout > tbody > tr > td {
+    padding:1em;
 }
 
 ul {
@@ -12,6 +20,7 @@ ul {
 
 .header {
     background-color:#A6DCFD;
+    padding:.2em .5em;
 }
 
 .logs {
