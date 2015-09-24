@@ -251,6 +251,28 @@ namespace wmib
         }
 
         /// <summary>
+        /// Copy the selected file to a temporary file name
+        /// 
+        /// this function is used mostly for restore of corrupted data,
+        /// so that the corrupted version of file can be stored in /tmp
+        /// for debugging
+        /// </summary>
+        /// <param name='file'>
+        /// File
+        /// </param>
+        public static bool GetTempFileName(string file)
+        {
+            string path = Path.GetTempFileName();
+            File.Copy(file, path, true);
+            if (File.Exists(path))
+            {
+                Syslog.Log("Unfinished transaction from " + file + " was stored as " + path);
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Recover a file that was previously stored
         /// </summary>
         /// <param name="name"></param>
@@ -262,7 +284,7 @@ namespace wmib
             {
                 if (File.Exists(Configuration.TempName(name)))
                 {
-                    if (Program.Temp(name))
+                    if (Core.GetTempFileName(name))
                     {
                         Syslog.Log("Restoring unfinished transaction of " + ch + " for db_" + name);
                         File.Copy(Configuration.TempName(name), name, true);

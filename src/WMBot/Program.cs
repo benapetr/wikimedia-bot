@@ -25,28 +25,6 @@ namespace wmib
     internal class Program
     {
         /// <summary>
-        /// Copy the selected file to a temporary file name
-        /// 
-        /// this function is used mostly for restore of corrupted data,
-        /// so that the corrupted version of file can be stored in /tmp
-        /// for debugging
-        /// </summary>
-        /// <param name='file'>
-        /// File
-        /// </param>
-        public static bool Temp(string file)
-        {
-            string path = Path.GetTempFileName();
-            File.Copy(file, path, true);
-            if (File.Exists(path))
-            {
-                Syslog.Log("Unfinished transaction from " + file + " was stored as " + path);
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>
         /// This is used to handle UNIX signals
         /// </summary>
         /// <param name='sender'>Sender</param>
