@@ -201,11 +201,11 @@ namespace wmib.Extensions
                 builder.AppendLine("<tr><th>Channel name</th><th>Options</th></tr>");
                 foreach (Channel chan in Configuration.ChannelList)
                 {
-                    builder.AppendLine("<tr>");
+                    builder.AppendFormat("<tr id=\"{0}\">", chan.Name.Replace("#","H-"));
                     string user_count = "null";
                     if (chan.GetChannel() != null)
                         user_count = chan.GetChannel().UserCount.ToString();
-                    builder.AppendFormat("<td><a href=\"{0}.htm\">{1}</a> (" + user_count + ")</td><td>\n", HttpUtility.UrlEncode(chan.Name),
+                    builder.AppendFormat("<td><a href=\"{0}.htm\"><span class=\"channel-name\">{1}</span></a> (<span class=\"user-count\">" + user_count + "</span>)</td><td>\n", HttpUtility.UrlEncode(chan.Name),
                         chan.Name);
                     builder.AppendLine("infobot: " + Module.GetConfig(chan, "Infobot.Enabled", true)
                                        + ", Recent Changes: " + Module.GetConfig(chan, "RC.Enabled", false)

@@ -54,13 +54,27 @@ namespace wmib.Extensions
                 {
                     if (ms == "i have a question" || ms == "can i ask a question" || ms == "is anyone willing to help" || ms == "can i ask" || ms == "i got a question" || ms == "can i have a question" || ms == "can someone help me" || ms == "i need help")
                     {
-                        IRC.DeliverMessage("Hi " + invoker.Nick + ", just ask! There is no need to ask if you can ask", channel);
+                        IRC.DeliverMessage("Hi " + invoker.Nick + ", just ask! There is no need to ask if you can ask, if you already asked the question please wait for someone to respond", channel);
                         return;
                     }
 
                     if (ms == "is anyone here" || ms == "is anybody here" || ms == "is anybody there" || ms == "is some one there" || ms == "is someone there" || ms == "is someone here" || ms == "anyone here" || ms == "someone here")
                     {
                         IRC.DeliverMessage("Hi " + invoker.Nick + ", I am here, if you need anything, please ask, otherwise no one is going to help you... Thank you", channel);
+                        return;
+                    }
+                }
+            }
+
+            if (!message.StartsWith(Configuration.System.CommandPrefix) && GetConfig(channel, "Welcoming.Enabled", false))
+            {
+                if (!channel.SystemUsers.IsKnown(invoker))
+                {
+                    string ms = message.Trim().ToLower();
+
+                    if (ms == "hello?" || ms == "hi?")
+                    {
+                        IRC.DeliverMessage("Hi " + invoker.Nick + ", if you need any help, please state your question and please wait for someone to answer it.", channel);
                         return;
                     }
                 }

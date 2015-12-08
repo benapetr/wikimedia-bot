@@ -150,6 +150,27 @@ namespace wmib
                     Core.HandleException(fail);
                 }
             }
+            foreach (Channel channel in instance.ChannelList)
+            {
+                if (channel.ContainsUser(args.SourceInfo.Nick))
+                {
+                    foreach (Module module in ExtensionHandler.ExtensionList)
+                    {
+                        if (!module.IsWorking)
+                            continue;
+
+                        try
+                        {
+                            module.Hook_ChannelQuit(channel, args.SourceInfo, args.Message);
+                        }
+                        catch (Exception fail)
+                        {
+                            Syslog.Log("MODULE: exception at Hook_ChannelQuit in " + module.Name, true);
+                            Core.HandleException(fail);
+                        }
+                    }
+                }
+            }
         }
 
         protected override void __evt_NICK(NetworkNICKEventArgs args)
