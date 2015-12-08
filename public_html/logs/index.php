@@ -21,6 +21,8 @@ if (isset($_GET['display']))
      $selected_channel = $_GET['display'];
 
 $html = new HtmlPage("Wikimedia IRC logs browser");
+googlefonts_init($html);
+$html->Style->items['*']['font-family'] = 'Open Sans';
 
 // Github ribbon
 $github_ribbon = new GitHub_Ribbon();
