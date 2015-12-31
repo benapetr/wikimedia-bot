@@ -49,10 +49,18 @@ namespace wmib.Extensions
             }
             RegisterCommand(new GenericCommand("recentchanges-on", cmd_on, true, "recentchanges-manage"));
             RegisterCommand(new GenericCommand("recentchanges-off", cmd_off, true, "recentchanges-manage"));
-            RegisterCommand(new GenericCommand("minorchanges-on", minor_on, true, "recentchanges-manage"));
-            RegisterCommand(new GenericCommand("minorchanges-off", minor_off, true, "recentchanges-manage"));
-            RegisterCommand(new GenericCommand("botchanges-on", bot_on, true, "recentchanges-manage"));
-            RegisterCommand(new GenericCommand("botchanges-off", bot_off, true, "recentchanges-manage"));
+            RegisterCommand(new GenericCommand("recentchanges-minor-on", minor_on, true, "recentchanges-manage"));
+            RegisterCommand(new GenericCommand("recentchanges-minor-off", minor_off, true, "recentchanges-manage"));
+            RegisterCommand(new GenericCommand("recentchanges-bot-on", bot_on, true, "recentchanges-manage"));
+            RegisterCommand(new GenericCommand("recentchanges-bot-off", bot_off, true, "recentchanges-manage"));
+            // Some aliases for easy typing
+            RegisterAlias("rc-on", "recentchanges-on");
+        RegisterAlias("rc-off", "recentchanges-off");
+            RegisterAlias("rc-minor-on", "recentchanges-minor-on");
+            RegisterAlias("rc-minor-off", "recentchanges-minor-off");
+            RegisterAlias("rc-bot-on", "recentchanges-bot-on");
+            RegisterAlias("rc-bot-off", "recentchanges-bot-off");
+            // Maintenance commands
             RegisterCommand(new GenericCommand("rc-ping", LastPing));
             RegisterCommand(new GenericCommand("rc-restart", cmd_restart, true, "root"));
             return true;
@@ -75,10 +83,17 @@ namespace wmib.Extensions
             UnregisterCommand("rc-restart");
             UnregisterCommand("recentchanges-on");
             UnregisterCommand("recentchanges-off");
-            UnregisterCommand("minorchanges-on");
-            UnregisterCommand("minorchanges-off");
-            UnregisterCommand("botchanges-on");
-            UnregisterCommand("botchanges-off");
+            UnregisterCommand("recentchanges-minor-on");
+            UnregisterCommand("recentchanges-minor-off");
+            UnregisterCommand("recentchanges-bot-on");
+            UnregisterCommand("recentchanges-bot-off");
+            // Aliases
+        UnregisterAlias("rc-on");
+        UnregisterAlias("rc-off");
+            UnregisterAlias("rc-minor-on");
+            UnregisterAlias("rc-minor-off");
+            UnregisterAlias("rc-bot-on");
+            UnregisterAlias("rc-bot-off");
             RecentChanges.recentChangesList.Clear();
             return ok;
         }
@@ -381,10 +396,10 @@ namespace wmib.Extensions
                         {
                             if (iwatch.Site == edit.ServerName || iwatch.Site == "*")
                             {
-								if ((!edit.Minor && edit.Bot && GetConfig(curr.channel, "Bot.Enabled", true)) || (!edit.Bot && edit.Minor && GetConfig(curr.channel, "Minor.Enabled", true)) || (!edit.Bot && !edit.Minor) || (edit.Minor && GetConfig(curr.channel, "Minor.Enabled", true) && edit.Bot && GetConfig(curr.channel, "Bot.Enabled", true)))
-								{
-									if (edit.Title == iwatch.Page)
-									{
+                                if ((!edit.Minor && edit.Bot && GetConfig(curr.channel, "Bot.Enabled", true)) || (!edit.Bot && edit.Minor && GetConfig(curr.channel, "Minor.Enabled", true)) || (!edit.Bot && !edit.Minor) || (edit.Minor && GetConfig(curr.channel, "Minor.Enabled", true) && edit.Bot && GetConfig(curr.channel, "Bot.Enabled", true)))
+                                {
+                                    if (edit.Title == iwatch.Page)
+                                    {
                                         if (edit.LengthNew != 0 || edit.LengthOld != 0)
                                         {
                                             int size = edit.LengthNew - edit.LengthOld;
@@ -398,15 +413,15 @@ namespace wmib.Extensions
                                         IRC.DeliverMessage(Format(edit.ServerName, edit.ServerName, edit.Title, edit.User, edit.RevID.ToString(), edit.Summary,
                                             curr.channel, edit.Bot, edit.Type == XmlRcs.RecentChange.ChangeType.New, edit.Minor), curr.channel.Name, libirc.Defs.Priority.Low);
                                     }
-									else if (iwatch.Page.EndsWith("*") && edit.Title.StartsWith(iwatch.Page.Replace("*", "")))
-									{
-										if (iwatch.Site == null)
-										{
-											DebugLog("NULL pointer on idata 2", 2);
-										}
-										IRC.DeliverMessage(Format(edit.ServerName, edit.ServerName, edit.Title, edit.User, edit.RevID.ToString(), edit.Summary, curr.channel, edit.Bot,
-												edit.Type == XmlRcs.RecentChange.ChangeType.New, edit.Minor), curr.channel.Name, libirc.Defs.Priority.Low);
-									}
+                                    else if (iwatch.Page.EndsWith("*") && edit.Title.StartsWith(iwatch.Page.Replace("*", "")))
+                                    {
+                                        if (iwatch.Site == null)
+                                        {
+                                            DebugLog("NULL pointer on idata 2", 2);
+                                        }
+                                        IRC.DeliverMessage(Format(edit.ServerName, edit.ServerName, edit.Title, edit.User, edit.RevID.ToString(), edit.Summary, curr.channel, edit.Bot,
+                                                edit.Type == XmlRcs.RecentChange.ChangeType.New, edit.Minor), curr.channel.Name, libirc.Defs.Priority.Low);
+                                    }
                                 }
                             }
                         }
