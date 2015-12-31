@@ -17,6 +17,7 @@ This bot is very flexible and extendible some of bot features:
 * Can be extended with modules written in 3rd languages, like python or bash
 * Comes with telnet friendly operator interface
 * Role based permission system
+* Support for PostgreSQL databases
 * Support for MySQL databases
 * Basic installation comes with over 25 extensions
 * Support for different interface languages per channel
