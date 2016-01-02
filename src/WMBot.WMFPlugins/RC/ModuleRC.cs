@@ -49,6 +49,18 @@ namespace wmib.Extensions
             }
             RegisterCommand(new GenericCommand("recentchanges-on", cmd_on, true, "recentchanges-manage"));
             RegisterCommand(new GenericCommand("recentchanges-off", cmd_off, true, "recentchanges-manage"));
+            RegisterCommand(new GenericCommand("recentchanges-minor-on", minor_on, true, "recentchanges-manage"));
+            RegisterCommand(new GenericCommand("recentchanges-minor-off", minor_off, true, "recentchanges-manage"));
+            RegisterCommand(new GenericCommand("recentchanges-bot-on", bot_on, true, "recentchanges-manage"));
+            RegisterCommand(new GenericCommand("recentchanges-bot-off", bot_off, true, "recentchanges-manage"));
+            // Some aliases for easy typing
+            RegisterAlias("rc-on", "recentchanges-on");
+        RegisterAlias("rc-off", "recentchanges-off");
+            RegisterAlias("rc-minor-on", "recentchanges-minor-on");
+            RegisterAlias("rc-minor-off", "recentchanges-minor-off");
+            RegisterAlias("rc-bot-on", "recentchanges-bot-on");
+            RegisterAlias("rc-bot-off", "recentchanges-bot-off");
+            // Maintenance commands
             RegisterCommand(new GenericCommand("rc-ping", LastPing));
             RegisterCommand(new GenericCommand("rc-restart", cmd_restart, true, "root"));
             return true;
@@ -71,7 +83,17 @@ namespace wmib.Extensions
             UnregisterCommand("rc-restart");
             UnregisterCommand("recentchanges-on");
             UnregisterCommand("recentchanges-off");
-            
+            UnregisterCommand("recentchanges-minor-on");
+            UnregisterCommand("recentchanges-minor-off");
+            UnregisterCommand("recentchanges-bot-on");
+            UnregisterCommand("recentchanges-bot-off");
+            // Aliases
+        UnregisterAlias("rc-on");
+        UnregisterAlias("rc-off");
+            UnregisterAlias("rc-minor-on");
+            UnregisterAlias("rc-minor-off");
+            UnregisterAlias("rc-bot-on");
+            UnregisterAlias("rc-bot-off");
             RecentChanges.recentChangesList.Clear();
             return ok;
         }
@@ -238,6 +260,54 @@ namespace wmib.Extensions
             pm.SourceChannel.SaveConfig();
         }
 
+        private void minor_on(CommandParams pm)
+        {
+            if (GetConfig(pm.SourceChannel, "Minor.Enabled", false))
+            {
+                IRC.DeliverMessage(messages.Localize("Feed13", pm.SourceChannel.Language), pm.SourceChannel);
+                return;
+            }
+            IRC.DeliverMessage(messages.Localize("Feed9", pm.SourceChannel.Language), pm.SourceChannel);
+            SetConfig(pm.SourceChannel, "Minor.Enabled", true);
+            pm.SourceChannel.SaveConfig();
+        }
+
+        private void minor_off(CommandParams pm)
+        {
+            if (!GetConfig(pm.SourceChannel, "Minor.Enabled", false))
+            {
+                IRC.DeliverMessage(messages.Localize("Feed14", pm.SourceChannel.Language), pm.SourceChannel);
+                return;
+            }
+            IRC.DeliverMessage(messages.Localize("Feed10", pm.SourceChannel.Language), pm.SourceChannel);
+            SetConfig(pm.SourceChannel, "Minor.Enabled", false);
+            pm.SourceChannel.SaveConfig();
+        }
+
+        private void bot_on(CommandParams pm)
+        {
+            if (GetConfig(pm.SourceChannel, "Bot.Enabled", false))
+            {
+                IRC.DeliverMessage(messages.Localize("Feed15", pm.SourceChannel.Language), pm.SourceChannel);
+                return;
+            }
+            IRC.DeliverMessage(messages.Localize("Feed11", pm.SourceChannel.Language), pm.SourceChannel);
+            SetConfig(pm.SourceChannel, "Bot.Enabled", true);
+            pm.SourceChannel.SaveConfig();
+        }
+
+        private void bot_off(CommandParams pm)
+        {
+            if (!GetConfig(pm.SourceChannel, "Bot.Enabled", false))
+            {
+                IRC.DeliverMessage(messages.Localize("Feed16", pm.SourceChannel.Language), pm.SourceChannel);
+                return;
+            }
+            IRC.DeliverMessage(messages.Localize("Feed12", pm.SourceChannel.Language), pm.SourceChannel);
+            SetConfig(pm.SourceChannel, "Bot.Enabled", false);
+            pm.SourceChannel.SaveConfig();
+        }
+
         public string Format(string name_url, string url, string page, string username, string link, string summary, Channel chan, bool bot, bool New, bool minor)
         {
             // this is a hack that adds /wiki or /w to full url, it does work only for wikis that use recommended settings
@@ -326,29 +396,32 @@ namespace wmib.Extensions
                         {
                             if (iwatch.Site == edit.ServerName || iwatch.Site == "*")
                             {
-                                if (edit.Title == iwatch.Page)
+                                if ((!edit.Minor && edit.Bot && GetConfig(curr.channel, "Bot.Enabled", true)) || (!edit.Bot && edit.Minor && GetConfig(curr.channel, "Minor.Enabled", true)) || (!edit.Bot && !edit.Minor) || (edit.Minor && GetConfig(curr.channel, "Minor.Enabled", true) && edit.Bot && GetConfig(curr.channel, "Bot.Enabled", true)))
                                 {
-                                    if (edit.LengthNew != 0 || edit.LengthOld != 0)
+                                    if (edit.Title == iwatch.Page)
                                     {
-                                        int size = edit.LengthNew - edit.LengthOld;
-                                        string sx = size.ToString();
-                                        if (size >= 0)
+                                        if (edit.LengthNew != 0 || edit.LengthOld != 0)
+                                        {
+                                            int size = edit.LengthNew - edit.LengthOld;
+                                            string sx = size.ToString();
+                                            if (size >= 0)
                                             sx = "+" + sx;
-                                        edit.Summary = "[" + sx + "] " + edit.Summary;
+                                            edit.Summary = "[" + sx + "] " + edit.Summary;
+                                        }
+                                        if (iwatch.Site == null)
+                                            DebugLog("NULL pointer on idata 1", 2);
+                                        IRC.DeliverMessage(Format(edit.ServerName, edit.ServerName, edit.Title, edit.User, edit.RevID.ToString(), edit.Summary,
+                                            curr.channel, edit.Bot, edit.Type == XmlRcs.RecentChange.ChangeType.New, edit.Minor), curr.channel.Name, libirc.Defs.Priority.Low);
                                     }
-                                    if (iwatch.Site == null)
-                                        DebugLog("NULL pointer on idata 1", 2);
-                                    IRC.DeliverMessage(Format(edit.ServerName, edit.ServerName, edit.Title, edit.User, edit.RevID.ToString(), edit.Summary,
-                                        curr.channel, edit.Bot, edit.Type == XmlRcs.RecentChange.ChangeType.New, edit.Minor), curr.channel.Name, libirc.Defs.Priority.Low);
-                                }
-                                else if (iwatch.Page.EndsWith("*") && edit.Title.StartsWith(iwatch.Page.Replace("*", "")))
-                                {
-                                    if (iwatch.Site == null)
+                                    else if (iwatch.Page.EndsWith("*") && edit.Title.StartsWith(iwatch.Page.Replace("*", "")))
                                     {
-                                        DebugLog("NULL pointer on idata 2", 2);
+                                        if (iwatch.Site == null)
+                                        {
+                                            DebugLog("NULL pointer on idata 2", 2);
+                                        }
+                                        IRC.DeliverMessage(Format(edit.ServerName, edit.ServerName, edit.Title, edit.User, edit.RevID.ToString(), edit.Summary, curr.channel, edit.Bot,
+                                                edit.Type == XmlRcs.RecentChange.ChangeType.New, edit.Minor), curr.channel.Name, libirc.Defs.Priority.Low);
                                     }
-                                    IRC.DeliverMessage(Format(edit.ServerName, edit.ServerName, edit.Title, edit.User, edit.RevID.ToString(), edit.Summary, curr.channel, edit.Bot,
-                                            edit.Type == XmlRcs.RecentChange.ChangeType.New, edit.Minor), curr.channel.Name, libirc.Defs.Priority.Low);
                                 }
                             }
                         }
