@@ -70,6 +70,7 @@ c2|https://c2.com/cgi/wiki?$1
 c2find|https://c2.com/cgi/wiki?FindPage&value=$1
 ca|https://ca.wikipedia.org/wiki/$1
 cache|https://www.google.com/search?q=cache:$1
+calcwiki|https://calcwiki.org/$1
 canwiki|https://www.can-wiki.info/$1
 canyonwiki|https://www.canyonwiki.com/wiki/index.php/$1
 cbk-zam|https://cbk-zam.wikipedia.org/wiki/$1
