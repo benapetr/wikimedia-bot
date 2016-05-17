@@ -33,7 +33,7 @@ namespace wmib
             {
                 case "FINGER":
                     Transfer("NOTICE " + args.SourceInfo.Nick + " :" + _Protocol.Separator + "FINGER" +
-                             " I am a bot don't finger me");
+                             " I am a bot, don't finger me");
                     return;
                 case "TIME":
                     Transfer("NOTICE " + args.SourceInfo.Nick + " :" + _Protocol.Separator + "TIME " + DateTime.Now.ToString());
@@ -44,10 +44,10 @@ namespace wmib
                     return;
                 case "VERSION":
                     Transfer("NOTICE " + args.SourceInfo.Nick + " :" + _Protocol.Separator + "VERSION "
-                             + Configuration.System.Version + " http://meta.wikimedia.org/wiki/WM-Bot");
+                             + Configuration.System.Version + " http://meta.wikimedia.org/wiki/wm-bot");
                     return;
             }
-            Syslog.DebugLog("Ignoring uknown CTCP from " + args.Source + ": " + args.CTCP + args.Message);
+            Syslog.DebugLog("Ignoring unknown CTCP from " + args.Source + ": " + args.CTCP + args.Message);
         }
 
         protected override void __evt_KICK(NetworkKickEventArgs args)
@@ -59,7 +59,7 @@ namespace wmib
             SystemHooks.IrcKick(channel, args.SourceInfo, args.Target);
             if (this.Nickname.ToLower() == args.Target.ToLower())
             {
-                Syslog.Log("I was kicked from " + args.ChannelName + " by " + args.SourceInfo.Nick + " because of: " + args.Message);
+                Syslog.Log("I was kicked from " + args.ChannelName + " by " + args.SourceInfo.Nick + " with kick message: " + args.Message);
                 lock (Configuration.Channels)
                 {
                     if (Configuration.Channels.Contains(channel))
@@ -252,11 +252,11 @@ namespace wmib
                 }
                 if (respond)
                 {
-                    IRC.DeliverMessage("Hi, I am robot, this command was not understood." +
+                    IRC.DeliverMessage("Hi, I am a robot, this command was not understood." +
                                          " Please bear in mind that every message you send" +
-                                         " to me will be logged for debuging purposes. See" +
-                                         " documentation at http://meta.wikimedia.org/wiki" +
-                                         "/WM-Bot for explanation of commands", args.SourceInfo,
+                                         " to me will be logged for debugging purposes. See" +
+                                         " documentation for the bot at http://meta.wikimedia.org/wiki" +
+                                         "/wm-bot for explanation of the bot's commands.", args.SourceInfo,
                                          libirc.Defs.Priority.Low);
                     Syslog.Log("Ignoring private message: (" + args.SourceInfo.Nick + ") " + args.Message, false);
                 }
