@@ -167,7 +167,7 @@ namespace wmib
                         lock (Configuration.Channels)
                         {
                             channel.Remove();
-                            IRC.DeliverMessage("Successfully left channel.", channel);
+                            IRC.DeliverMessage("Successfully parted " + channel_name + ".");
                         }
                         channel.SaveConfig();
                         Configuration.Save();
