@@ -355,7 +355,7 @@ namespace wmib.Extensions
                                                 switch (nick.LastAc)
                                                 {
                                                     case item.Action.Exit:
-                                                        action += " because he quitted the network " + span3 + " ago. The nick change was done in";
+                                                        action += " because he quit the network " + span3 + " ago. The nick change was done in";
                                                         break;
                                                     case item.Action.Kick:
                                                         action += " because he was kicked from the channel " + span3 + " ago. The nick change was done in";
@@ -621,7 +621,7 @@ namespace wmib.Extensions
                                         switch (nick2.LastAc)
                                         {
                                             case item.Action.Exit:
-                                                action += " because he quitted the network " + span3 + " ago. The nick change was done in";
+                                                action += " because he quit the network " + span3 + " ago. The nick change was done in";
                                                 break;
                                             case item.Action.Kick:
                                                 action += " because he was kicked from the channel " + span3 + " ago. The nick change was done in";
