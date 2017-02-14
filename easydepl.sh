@@ -6,7 +6,7 @@ GREEN=$(tput setaf 2)
 NORMAL=$(tput sgr0)
 target=`pwd`
 parameters=/verbosity:quiet
-source=/mnt/share/wikimedia-bot
+source=/opt/repo/wikimedia-bot
 
 ok()
 {
