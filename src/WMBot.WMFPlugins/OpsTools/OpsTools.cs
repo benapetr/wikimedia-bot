@@ -16,7 +16,7 @@ namespace wmib
 
         public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
-            List<string> channels = new List<string> { "#huggle", "#wikidata", "#wikimedia", "#wikitech", "#wikipedia" };
+            List<string> channels = new List<string> { "#huggle", "#wikidata", "#wikimedia", "#wikitech", "#wikipedia", "#wm-bot" };
 
             if (message.StartsWith("!ops"))
             {
