@@ -53,6 +53,7 @@
     <Compile Include="RC\ModuleRC.cs" />
     <Compile Include="Replag\Rl.cs" />
     <Compile Include="Requests\Request.cs" />
+    <Compile Include="OpsTools\OpsTools.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WMBot\WMBot.csproj">

@@ -55,7 +55,7 @@ namespace wmib.Extensions
             RegisterCommand(new GenericCommand("recentchanges-bot-off", bot_off, true, "recentchanges-manage"));
             // Some aliases for easy typing
             RegisterAlias("rc-on", "recentchanges-on");
-        RegisterAlias("rc-off", "recentchanges-off");
+            RegisterAlias("rc-off", "recentchanges-off");
             RegisterAlias("rc-minor-on", "recentchanges-minor-on");
             RegisterAlias("rc-minor-off", "recentchanges-minor-off");
             RegisterAlias("rc-bot-on", "recentchanges-bot-on");
@@ -88,8 +88,8 @@ namespace wmib.Extensions
             UnregisterCommand("recentchanges-bot-on");
             UnregisterCommand("recentchanges-bot-off");
             // Aliases
-        UnregisterAlias("rc-on");
-        UnregisterAlias("rc-off");
+            UnregisterAlias("rc-on");
+            UnregisterAlias("rc-off");
             UnregisterAlias("rc-minor-on");
             UnregisterAlias("rc-minor-off");
             UnregisterAlias("rc-bot-on");

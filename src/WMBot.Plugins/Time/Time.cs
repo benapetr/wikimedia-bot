@@ -12,7 +12,8 @@ namespace wmib.Extensions
 		private void time(CommandParams p)
 		{
 			DateTime time = DateTime.UtcNow;
-			IRC.DeliverMessage(p.User.Nick + ": It is is " + time + " UTC", p.SourceChannel);
+			//DateTime eastern = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Eastern Standard Time");
+			IRC.DeliverMessage(p.User.Nick + ": It is " + time + " UTC", p.SourceChannel);
 		}
 
 		public override bool Hook_OnUnload()
