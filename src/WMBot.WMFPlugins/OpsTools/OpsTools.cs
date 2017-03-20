@@ -20,12 +20,13 @@ namespace wmib
 
             if (message.StartsWith("!ops"))
             {
+                string ln = channel.Name.ToLower();
                 foreach (string channel_name in channels)
                 {
-                    if (channel.Name.StartsWith(channel_name))
+                    if (ln.StartsWith(channel_name))
                     {
                         DebugLog(invoker.ToString() + " used !ops in " + channel.Name + " forwarding message to op bot");
-                        IRC.DeliverMessage("OPS " + invoker.ToString() + " " + message, "wmopbot");
+                        IRC.DeliverMessage("OPS " + invoker.ToString() + " in " + channel.Name + ": " + message, "wmopbot");
                         return;
                     }
                 }
