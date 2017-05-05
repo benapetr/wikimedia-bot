@@ -338,9 +338,9 @@ namespace wmib.Extensions
             if (flags.EndsWith(", "))
                 flags = flags.Substring(0, flags.Length - 2);
 
-            string fu = full_url + "?diff=" + link;
+            string fu = full_url + "/?diff=" + link;
             if (New)
-                fu = full_url + "?title=" + HttpUtility.UrlEncode(page);
+                fu = full_url + "/?title=" + HttpUtility.UrlEncode(page);
 
             return GetConfig(chan, "RC.Template", "").Replace("$wiki", name_url)
                    .Replace("$encoded_wiki_page", Core.WikiEncode(page))
