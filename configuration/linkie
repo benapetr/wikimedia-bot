@@ -164,6 +164,7 @@ eo|https://eo.wikipedia.org/wiki/$1
 eokulturcentro|https://esperanto.toulouse.free.fr/nova/wikini/wakka.php?wiki=$1
 epo|https://epo.wikipedia.org/wiki/$1
 es|https://es.wikipedia.org/wiki/$1
+estestwiki|https://es.publictestwiki.com/wiki/$1
 et|https://et.wikipedia.org/wiki/$1
 ethnologue|https://www.ethnologue.com/show_language.asp?code=$1
 eu|https://eu.wikipedia.org/wiki/$1
@@ -459,11 +460,10 @@ pmeg|https://www.bertilow.com/pmeg/$1
 pms|https://pms.wikipedia.org/wiki/$1
 pmwiki|https://old.porplemontage.com/wiki/index.php/$1
 pnt|https://pnt.wikipedia.org/wiki/$1
-pruebawiki|https://es.publictestwiki.com/wiki/$1
 ps|https://ps.wikipedia.org/wiki/$1
 psycle|https://psycle.sourceforge.net/wiki/$1
 pt|https://pt.wikipedia.org/wiki/$1
-publictestwiki|https://publictestwiki.com
+publictestwiki|https://publictestwiki.com/wiki/$1
 purlnet|https://purl.oclc.org/NET/$1
 pythoninfo|https://www.python.org/cgi-bin/moinmoin/$1
 pythonwiki|https://www.pythonwiki.de/$1
