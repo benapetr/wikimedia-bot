@@ -352,6 +352,7 @@ mh|https://mh.wikipedia.org/wiki/$1
 mi|https://mi.wikipedia.org/wiki/$1
 mineralienatlas|https://www.mineralienatlas.de/lexikon/index.php/$1
 minnan|https://minnan.wikipedia.org/wiki/$1
+miraheze|https://meta.miraheze.org/wiki/$1
 mk|https://mk.wikipedia.org/wiki/$1
 ml|https://ml.wikipedia.org/wiki/$1
 mn|https://mn.wikipedia.org/wiki/$1
@@ -458,9 +459,11 @@ pmeg|https://www.bertilow.com/pmeg/$1
 pms|https://pms.wikipedia.org/wiki/$1
 pmwiki|https://old.porplemontage.com/wiki/index.php/$1
 pnt|https://pnt.wikipedia.org/wiki/$1
+pruebawiki|https://es.publictestwiki.com/wiki/$1
 ps|https://ps.wikipedia.org/wiki/$1
 psycle|https://psycle.sourceforge.net/wiki/$1
 pt|https://pt.wikipedia.org/wiki/$1
+publictestwiki|https://publictestwiki.com
 purlnet|https://purl.oclc.org/NET/$1
 pythoninfo|https://www.python.org/cgi-bin/moinmoin/$1
 pythonwiki|https://www.pythonwiki.de/$1
