@@ -526,6 +526,7 @@ namespace wmib.Extensions
 
         public void RetrieveStatus(string nick, Channel channel, string source)
         {
+            nick = nick.Trim();
             lock (requests)
             {
                 requests.Add(new ChannelRequest(nick, source, channel, false));
