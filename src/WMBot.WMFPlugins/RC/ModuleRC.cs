@@ -362,7 +362,7 @@ namespace wmib.Extensions
             if (!string.IsNullOrEmpty(Configuration.System.DebugChan))
             {
                 if (ex.Fatal)
-                    IRC.DeliverMessage("DEBUG XmlRcs FATAL: " + ex.Message, Configuration.System.DebugChan);
+                    DebugLog("DEBUG XmlRcs FATAL: " + ex.Message);
                 else
                     IRC.DeliverMessage("DEBUG XmlRcs ERROR: " + ex.Message, Configuration.System.DebugChan);
             }
