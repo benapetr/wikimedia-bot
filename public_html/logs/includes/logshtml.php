@@ -117,13 +117,13 @@ class LogsHtml
             {
 		    if ( $blah["act"] == 1 )
 		    {
-		        $html .= "<tr><td width=120><b>" . $blah["time"] .
+		        $html .= "<tr><td width=160><b>" . $blah["time"] .
 			   "</b></td><td colspan=2>* <b>" . 
 			   $blah["nick"] . "</b> " . self::al($blah["contents"]) . 
 			   "</td></tr>\n";
 			continue;
 		    }
-	        $html .= ( "<tr><td width=120><b>" . $blah["time"] . 
+	        $html .= ( "<tr><td width=160><b>" . $blah["time"] . 
 			   "</b></td><td><b>&lt;" . $blah["nick"] . 
 			   "&gt;</b></td><td>" . self::al($blah["contents"]) . "</td></tr>\n" );
                 continue;
