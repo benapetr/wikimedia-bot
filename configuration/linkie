@@ -357,6 +357,7 @@ miraheze|https://meta.miraheze.org/wiki/$1
 mk|https://mk.wikipedia.org/wiki/$1
 ml|https://ml.wikipedia.org/wiki/$1
 mn|https://mn.wikipedia.org/wiki/$1
+mnc|https://incubator.wikimedia.org/wiki/Wp/mnc/$1
 mo|https://mo.wikipedia.org/wiki/$1
 moinmoin|https://moinmo.in/$1
 monstropedia|https://www.monstropedia.org/?title=$1
@@ -369,6 +370,7 @@ ms|https://ms.wikipedia.org/wiki/$1
 mt|https://mt.wikipedia.org/wiki/$1
 mus|https://mus.wikipedia.org/wiki/$1
 musicbrainz|https://wiki.musicbrainz.org/$1
+mvf|https://incubator.wikimedia.org/wiki/Wp/mvf/$1
 mw|https://www.mediawiki.org/wiki/$1
 mwod|https://www.merriam-webster.com/cgi-bin/dictionary?book=Dictionary&va=$1
 mwot|https://www.merriam-webster.com/cgi-bin/thesaurus?book=Thesaurus&va=$1
@@ -515,6 +517,7 @@ shakti|https://cgi.algonet.se/htbin/cgiwrap/pgd/ShaktiWiki/$1
 si|https://si.wikipedia.org/wiki/$1
 silcode|https://www.sil.org/iso639-3/documentation.asp?id=$1
 simple|https://simple.wikipedia.org/wiki/$1
+sjo|https://incubator.wikimedia.org/wiki/Wp/sjo/$1
 sk|https://sk.wikipedia.org/wiki/$1
 sl|https://sl.wikipedia.org/wiki/$1
 slashdot|https://slashdot.org/article.pl?sid=$1
