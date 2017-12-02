@@ -46,6 +46,24 @@ namespace wmib
                     IRC.DeliverMessage(messages.Localize("InvalidName", parameters.SourceChannel.Language, new List<string> { channel_name }), parameters.SourceChannel);
                     return;
                 }
+                if (Configuration.RestrictedChannels.ContainsKey(channel_name))
+                {
+                    int user_role_level = Security.Roles[parameters.SourceChannel.SystemUsers.GetUser(parameters.User).Role].Level;
+                    int restriction_level = Configuration.RestrictedChannels[channel_name];
+
+                    if (user_role_level >= restriction_level)
+                    {
+                        IRC.DeliverMessage(messages.Localize("ChannelUnblocking", parameters.SourceChannel.Language, new List<string> { channel_name }), parameters.SourceChannel);
+                        Configuration.RestrictedChannels.Remove(channel_name);
+                        Configuration.Save();
+                    }
+                    else
+                    {
+                        IRC.DeliverMessage(messages.Localize("ChannelRestricted", parameters.SourceChannel.Language, new List<string> { channel_name }), parameters.SourceChannel);
+                        return;
+                    }
+                }
+
                 lock (Configuration.Channels)
                 {
                     foreach (Channel cu in Configuration.Channels)
@@ -63,6 +81,7 @@ namespace wmib
                 {
                     Configuration.Channels.Add(channel);
                 }
+
                 IRC.DeliverMessage("Attempting to join " + channel_name + " using " + channel.PrimaryInstance.Nick, parameters.SourceChannel.Name);
                 Configuration.Save();
                 Syslog.DebugLog("Sending join " + channel_name);

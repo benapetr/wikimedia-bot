@@ -28,11 +28,13 @@ namespace wmib
             CommandPool.RegisterCommand(new GenericCommand("help", Commands.Help));
             CommandPool.RegisterCommand(new GenericCommand("join", Commands.AddChannel, false, "join"));
             CommandPool.RegisterCommand(new GenericCommand("language", Commands.Language, true, "admin"));
+            CommandPool.RegisterCommand(new GenericCommand("ignore", Commands.Ignore, true, "root"));
             CommandPool.RegisterCommand(new GenericCommand("info", Commands.Info));
             CommandPool.RegisterCommand(new GenericCommand("instance", Commands.Instance, false, "root"));
             CommandPool.RegisterCommand(new GenericCommand("part", Commands.Part, false));
             CommandPool.RegisterCommand(new GenericCommand("reload", Commands.Reload, true, "admin"));
             CommandPool.RegisterCommand(new GenericCommand("restart", Commands.Restart, true, "root"));
+            CommandPool.RegisterCommand(new GenericCommand("restrict", Commands.Restrict, true, "root"));
             CommandPool.RegisterCommand(new GenericCommand("reauth", Commands.Reauth, false, "root"));
             CommandPool.RegisterCommand(new GenericCommand("traffic-off", Commands.TrafficOff, true, "root"));
             CommandPool.RegisterCommand(new GenericCommand("traffic-on", Commands.TrafficOn, true, "root"));
@@ -80,12 +82,12 @@ namespace wmib
             string founder = channel.Extension_GetConfig("generic.owner");
             if (founder != null)
                 founder += " (original founder: " + channel.Extension_GetConfig("generic.founder", "N/A") + ")";
-            else 
+            else
                 founder = channel.Extension_GetConfig("generic.founder");
 
             if (founder == null)
                 founder = "N/A";
-            
+
             IRC.DeliverMessage("Channel " + channel.Name + " was joined " + channel.Extension_GetConfig("generic.joindate", "unknown time") + ", requested by " +
                 founder, parameters.SourceChannel);
         }
@@ -107,6 +109,94 @@ namespace wmib
                 IRC.DeliverMessage("I know: " + commands, parameters.SourceChannel);
             else if (parameters.SourceUser != null)
                 IRC.DeliverMessage("I know: " + commands, parameters.SourceUser);
+        }
+
+        private static void Ignore(CommandParams parameters)
+        {
+            if (string.IsNullOrEmpty(parameters.Parameters))
+            {
+                IRC.DeliverMessage("You need to provide exactly 1 parameter", parameters.SourceChannel);
+                return;
+            }
+
+            string hostmask = parameters.Parameters.Trim();
+            Configuration.IgnoredHostmasks.Add(hostmask);
+            Configuration.Save();
+
+            IRC.DeliverMessage("I will ignore all commands of user with hostmask " + hostmask, parameters.SourceChannel.Name);
+        }
+
+        private static void Restrict(CommandParams parameters)
+        {
+            if (string.IsNullOrEmpty(parameters.Parameters))
+            {
+                IRC.DeliverMessage("Please specify restrict action", parameters.SourceChannel);
+                return;
+            }
+
+            List<string> pm = new List<string>(parameters.Parameters.Trim().Split(' '));
+            switch (pm[0])
+            {
+                case "add":
+                    if (pm.Count == 1)
+                    {
+                        IRC.DeliverMessage("This command requires channel name to be specified", parameters.SourceChannel.Name);
+                        break;
+                    }
+
+                    string channel_name = pm[1];
+                    if (!Core.ValidFile(channel_name) || !channel_name.StartsWith("#"))
+                    {
+                        IRC.DeliverMessage(messages.Localize("InvalidName", parameters.SourceChannel.Language, new List<string> { channel_name }), parameters.SourceChannel);
+                        return;
+                    }
+                    if (Configuration.RestrictedChannels.ContainsKey(channel_name))
+                    {
+                        IRC.DeliverMessage("Channel " + channel_name + " is already restricted to join", parameters.SourceChannel.Name);
+                        return;
+                    }
+
+                    int restriction_level = Security.Roles["root"].Level;
+                    if (pm.Count >= 3)
+                    {
+                        if (Security.Roles.ContainsKey(pm[2]))
+                        {
+                            restriction_level = Security.Roles[pm[2]].Level;
+                        }
+                        else
+                        {
+                            IRC.DeliverMessage("Unknown user role: " + pm[2], parameters.SourceChannel.Name);
+                            return;
+                        }
+                    }
+
+                    foreach (KeyValuePair<string, Instance> instance in wmib.Instance.Instances)
+                    {
+                        foreach (Channel channel in instance.Value.ChannelList)
+                        {
+                            if (channel.Name == channel_name)
+                            {
+                                instance.Value.Network.Transfer("PART " + channel_name);
+                                break;
+                            }
+                        }
+                    }
+                    lock (Configuration.Channels)
+                    {
+                        Configuration.Channels.RemoveAll(c => c.Name == channel_name);
+                    }
+                    lock (Configuration.RestrictedChannels)
+                    {
+                        Configuration.RestrictedChannels[channel_name] = restriction_level;
+                    }
+                    Configuration.Save();
+
+                    IRC.DeliverMessage("I will not join " + channel_name + " anymore", parameters.SourceChannel.Name);
+                    break;
+                default:
+                    IRC.DeliverMessage("Unknown restrict action: " + pm[0], parameters.SourceChannel.Name);
+                    break;
+            }
         }
 
         private static void Reauth(CommandParams parameters)

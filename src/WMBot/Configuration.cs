@@ -35,9 +35,19 @@ namespace wmib
             public static string TransactionLog = "transaction.dat";
             public static string ConfigFile = "wmib.conf";
             public static string ChannelFile = "channels.conf";
+            public static string RestrictedChannelsFile = "restricted_channels.conf";
+            public static string IgnoredHostmasksFile = "ignored_hostmasks.conf";
             public static string GetChannelFile()
             {
                 return Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + ChannelFile;
+            }
+            public static string GetRestrictedChannelsFile()
+            {
+                return Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + RestrictedChannelsFile;
+            }
+            public static string GetIgnoredHostmasksFile()
+            {
+                return Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + IgnoredHostmasksFile;
             }
             public static string ModulesPath
             {
@@ -205,7 +215,7 @@ namespace wmib
             public static bool Logging = false;
             /// <summary>
             /// This is a port for default network bouncer
-            /// 
+            ///
             /// This is needed basically for single instance use only
             /// </summary>
             public static int BouncerPort = 6667;
@@ -237,10 +247,21 @@ namespace wmib
             }
         }
 
+        /// <summary>
+        /// List of channels restricted to join with restriction level specified
+        /// Only users with role level equal or higher than restriction level can unblock channel
+        /// </summary>
+        public static Dictionary<string, int> RestrictedChannels = new Dictionary<string, int>();
+
+        /// <summary>
+        /// Ignore all commands from users with these hostmasks
+        /// </summary>
+        public static List<string> IgnoredHostmasks = new List<string>();
+
         private static Dictionary<string, string> ConfigurationData;
 
         /// <summary>
-        /// Save a wm-bot channel list
+        /// Save a wm-bot channel list and ignored hostmasks
         /// </summary>
         public static void Save()
         {
@@ -254,6 +275,26 @@ namespace wmib
             }
             File.WriteAllText(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + Paths.ChannelFile,
                               text.ToString());
+
+            text.Length = 0;
+            lock (RestrictedChannels)
+            {
+                foreach (KeyValuePair<string, int> pair in RestrictedChannels)
+                {
+                    text.Append(pair.Key + " " + pair.Value + "\n");
+                }
+            }
+            File.WriteAllText(Paths.GetRestrictedChannelsFile(), text.ToString());
+
+            text.Length = 0;
+            lock (IgnoredHostmasks)
+            {
+                foreach (string hostmask in IgnoredHostmasks)
+                {
+                    text.Append(hostmask + "\n");
+                }
+            }
+            File.WriteAllText(Paths.GetIgnoredHostmasksFile(), text.ToString());
         }
 
         /// <summary>
@@ -464,6 +505,46 @@ namespace wmib
             }
 
             Syslog.Log("Channel db's working");
+
+            if (File.Exists(Paths.GetRestrictedChannelsFile()))
+            {
+                List<string> lines = new List<string>(File.ReadAllLines(Paths.GetRestrictedChannelsFile()));
+
+                foreach (string line in lines)
+                {
+                    if (!string.IsNullOrEmpty(line))
+                    {
+                        string[] parts = line.Split(' ');
+                        string channel_name = parts[0];
+                        int restriction_level = Int32.Parse(parts[1]);
+                        lock (RestrictedChannels)
+                        {
+                            RestrictedChannels[channel_name] = restriction_level;
+                        }
+                    }
+                }
+
+                Syslog.Log("Restricted channels loaded");
+            }
+
+            if (File.Exists(Paths.GetIgnoredHostmasksFile()))
+            {
+                List<string> hostmasks = new List<string>(File.ReadAllLines(Paths.GetIgnoredHostmasksFile()));
+
+                foreach (string x in hostmasks)
+                {
+                    string hostmask = x.Replace(" ", "");
+                    if (!string.IsNullOrEmpty(hostmask))
+                    {
+                        lock (IgnoredHostmasks)
+                        {
+                            IgnoredHostmasks.Add(hostmask);
+                        }
+                    }
+                }
+
+                Syslog.Log("Ignored hostmasks loaded");
+            }
 
             if (!Directory.Exists(Paths.DumpDir))
                 Directory.CreateDirectory(Paths.DumpDir);
