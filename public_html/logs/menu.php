@@ -49,7 +49,7 @@ function Generate_Picker($channel)
         $checked = "checked=on ";
     $picker->InsertRow(array("", "<label><input " . $checked . "type='checkbox' value='true' name='wiki'>Convert to wiki text</label>"));
     $picker->InsertRow(array("", "<label><input ". $show . "type='checkbox' value='true' name='data'>Show part / join / quit / kick / nick</label>"));
-    $html .= HtmlPage::IndentText($picker->ToHtml(), 4);
+    $html .= psf_indent_text($picker->ToHtml(), 4);
     $html .= "<input type='submit' value='Display'><input type='hidden' name='display' value=\"$channel\"></form>\n</div>\n";
     return $html;
 }

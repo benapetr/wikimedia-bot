@@ -56,7 +56,7 @@ if ($selected_channel === null)
     }
 }
 
-$layout->InsertRow(array(HtmlPage::IndentText(Generate_Menu(), 6), HtmlPage::IndentText($page, 6)));
+$layout->InsertRow(array(psf_indent_text(Generate_Menu(), 6), psf_indent_text($page, 6)));
 $layout->BorderSize=0;
 
 // We need to style the layout a bit as well
