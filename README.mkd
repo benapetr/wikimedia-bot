@@ -25,6 +25,10 @@ This bot is very flexible and extendible some of bot features:
 For further help and usage instructions (for users, not maintainers of bot),
 please consult the [documentation on Meta-Wiki](http://meta.wikimedia.org/wiki/Wm-bot).
 
+Dependencies
+===============
+* https://github.com/npgsql/npgsql (sudo apt-get install libmono-npgsql)
+
 How to build
 ===============
 

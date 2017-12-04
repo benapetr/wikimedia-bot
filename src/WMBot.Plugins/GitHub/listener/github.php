@@ -99,7 +99,7 @@ class GitHub
 
     private function getHeader()
     {
-        return chr(2) . "GitHub".chr(2)." [" . chr(3) . "8" . $this->repo_name . chr(3) . "] ";
+        return chr(2) . "GitHub".chr(2)." [" . chr(3) . "7" . $this->repo_name . chr(3) . "] ";
     }
 
     private function process_msgs()
