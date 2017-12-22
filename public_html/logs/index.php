@@ -21,7 +21,6 @@ if (isset($_GET['display']))
      $selected_channel = $_GET['display'];
 
 $html = new HtmlPage("Wikimedia IRC logs browser");
-googlefonts_init($html);
 $html->Style->items['*']['font-family'] = 'Open Sans';
 
 // Github ribbon
@@ -29,9 +28,9 @@ $github_ribbon = new GitHub_Ribbon();
 $github_ribbon->Repository = "benapetr/wikimedia-bot/tree/master/public_html/logs";
 $html->AppendHtml($github_ribbon->ToHtml());
 $html->ExternalCss[] = "style/style.css";
-$html->ExternalCss[] = "http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css";
-$html->ExternalJs[] = "http://code.jquery.com/jquery-1.9.1.js";
-$html->ExternalJs[] = "http://code.jquery.com/ui/1.10.3/jquery-ui.js";
+$html->ExternalCss[] = "https://tools-static.wmflabs.org/cdnjs/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.min.css";
+$html->ExternalJs[] = "https://tools-static.wmflabs.org/cdnjs/ajax/libs/jquery/1.9.1/jquery.min.js";
+$html->ExternalJs[] = "https://tools-static.wmflabs.org/cdnjs/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js";
 
 // Header
 $header = "Wikimedia IRC logs browser";
