@@ -24,7 +24,7 @@ $html = new HtmlPage("Wikimedia IRC logs browser");
 $html->Style->items['*']['font-family'] = 'Open Sans';
 
 // Github ribbon
-$html->AppendHtml('<a class="github-fork-ribbon right-top" href="https://github.com/benapetr/wikimedia-bot/tree/master/public_html/logs" data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>'->ToHtml());
+$html->AppendHtml('<a class="github-fork-ribbon right-top" href="https://github.com/benapetr/wikimedia-bot/tree/master/public_html/logs" data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>');
 $html->ExternalCss[] = "style/style.css";
 $html->ExternalCss[] = "https://tools-static.wmflabs.org/cdnjs/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.min.css";
 $html->ExternalJs[] = "https://tools-static.wmflabs.org/cdnjs/ajax/libs/jquery/1.9.1/jquery.min.js";
