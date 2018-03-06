@@ -60,6 +60,7 @@ namespace wmib
         {
             data.Add("cs", new container("cs"));
             data.Add("en", new container("en"));
+            data.Add("es", new container("es"));
             data.Add("zh", new container("zh"));
             data.Add("de", new container("de"));
             data.Add("ko", new container("ko"));
@@ -133,6 +134,9 @@ namespace wmib
             {
                 case "en":
                     text = Resources.english;
+                    break;
+                case "es":
+                    text = Resources.es_spanish;
                     break;
                 case "cs":
                     text = Resources.cs_czech;
