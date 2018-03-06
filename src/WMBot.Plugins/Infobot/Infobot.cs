@@ -796,15 +796,18 @@ namespace wmib.Extensions
 
         public void Find(string key, Channel Chan)
         {
-            if (Chan == null || !key.StartsWith(Configuration.System.CommandPrefix + "search"))
-            {
+            if (Chan == null)
                 return;
-            }
+
             if (key == Configuration.System.CommandPrefix + "search")
             {
                 IRC.DeliverMessage(messages.Localize("Search1", Chan.Language), Chan.Name);
                 return;
             }
+
+            if (!key.StartsWith(Configuration.System.CommandPrefix + "search "))
+                return;
+
             Channel data = RetrieveMasterDBChannel(Chan);
             bool Allowed = (data != null);
             if (!Allowed)
