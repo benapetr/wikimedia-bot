@@ -802,9 +802,9 @@ namespace wmib.Extensions
                 IRC.DeliverMessage(messages.Localize("db7", Chan.Language), Chan.Name);
                 return;
             }
-            if (key.Length < 9)
+            if (key.Length < 8)
             {
-                IRC.DeliverMessage(messages.Localize("Error1", Chan.Language), Chan.Name);
+                IRC.DeliverMessage(messages.Localize("Search1", Chan.Language), Chan.Name);
                 return;
             }
             key = key.Substring(8);
@@ -812,7 +812,7 @@ namespace wmib.Extensions
             Infobot infobot = (Infobot)data.RetrieveObject("Infobot");
             if (infobot == null)
             {
-                Syslog.Log("Unable to perform regsearch because the Infobot doesn't exist in " + Chan.Name, true);
+                Syslog.Log("Unable to perform search because the Infobot doesn't exist in " + Chan.Name, true);
                 return;
             }
             string results = "";
