@@ -134,7 +134,7 @@ namespace wmib.Extensions
         public override bool Hook_OnRegister()
         {
             RegisterCommand(new GenericCommand("seenrx", this.cmSeenrx));
-            RegisterCommand(new GenericCommand("seen", this.cmSeen));
+            RegisterCommand(new GenericCommand("seen", this.cmSeen, true, null, false));
             RegisterCommand(new GenericCommand("seen-on", this.cmSeenOn, true, "admin"));
             RegisterCommand(new GenericCommand("seen-off", this.cmSeenOff, true, "admin"));
             RegisterCommand(new GenericCommand("seen-host", this.cmSeenHost));
