@@ -134,6 +134,12 @@ namespace wmib.Properties {
             }
         }
         
+        internal static string es_spanish {
+            get {
+                return ResourceManager.GetString("es_spanish", resourceCulture);
+            }
+        }
+        
         /// <summary>
         ///   Looks up a localized string similar to InvalidName=존재하지 않는 이름입니다.;
         ///PermissionDenied=접근이 거부되었습니다.;
