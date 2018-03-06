@@ -744,14 +744,19 @@ namespace wmib.Extensions
         /// <param name="Chan"></param>
         public void RSearch(string key, Channel Chan)
         {
-            if (!key.StartsWith(Configuration.System.CommandPrefix + "regsearch"))
+            if (key == Configuration.System.CommandPrefix + "regsearch")
+            {
+                IRC.DeliverMessage(messages.Localize("Search1", Chan.Language), Chan.Name);
+                return;
+            }
+            if (!key.StartsWith(Configuration.System.CommandPrefix + "regsearch "))
                 return;
             if (!misc.IsValidRegex(key))
             {
                 IRC.DeliverMessage(messages.Localize("Error1", Chan.Language), Chan.Name);
                 return;
             }
-            if (key.Length < 11)
+            if (key.Length < 12)
             {
                 IRC.DeliverMessage(messages.Localize("Search1", Chan.Language), Chan.Name);
                 return;
@@ -793,6 +798,11 @@ namespace wmib.Extensions
         {
             if (Chan == null || !key.StartsWith(Configuration.System.CommandPrefix + "search"))
             {
+                return;
+            }
+            if (key == Configuration.System.CommandPrefix + "search")
+            {
+                IRC.DeliverMessage(messages.Localize("Search1", Chan.Language), Chan.Name);
                 return;
             }
             Channel data = RetrieveMasterDBChannel(Chan);
