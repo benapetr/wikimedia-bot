@@ -42,7 +42,7 @@ namespace wmib.Extensions
             Notification result = Notification.RetrieveTarget(user.Nick);
             while (result != null)
             {
-                IRC.DeliverMessage(result.Source_Name + "! " + user.Nick + " just joined " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
+                IRC.DeliverMessage(result.Source_Name + "! " + user.Nick + " just joined " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see https://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
                 this.Deliver(result);
                 lock (Notification.NotificationList)
                 {
@@ -61,7 +61,7 @@ namespace wmib.Extensions
                                    NewNick + " which you wanted to talk with, in " + channel.Name + 
                                    ". This message was delivered to you because you asked me to notify"+
                                    "you about this user's activity. For more information, see "+
-                                   "http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
+                                   "https://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
                 lock (Notification.NotificationList)
                 {
                     Notification.NotificationList.Remove(result);
@@ -75,7 +75,7 @@ namespace wmib.Extensions
                                    Target.Nick + " which you wanted to talk with, in " + channel.Name + 
                                    ". This message was delivered to you because you asked me to notify"+
                                    " you about this user's activity. For more information, see "+
-                                   "http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
+                                   "https://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
                 lock (Notification.NotificationList)
                 {
                     Notification.NotificationList.Remove(result);
@@ -98,7 +98,7 @@ namespace wmib.Extensions
             Notification result = Notification.RetrieveTarget(user);
             while (result != null)
             {
-                IRC.DeliverMessage(result.Source_Name + "! " + user + " just got kicked from " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
+                IRC.DeliverMessage(result.Source_Name + "! " + user + " just got kicked from " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see https://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
                 this.Deliver(result);
                 lock (Notification.NotificationList)
                 {
@@ -158,7 +158,7 @@ namespace wmib.Extensions
             Notification result = Notification.RetrieveTarget(invoker.Nick);
             while (result != null)
             {
-                IRC.DeliverMessage(result.Source_Name + "! " + invoker.Nick + " just said something in " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
+                IRC.DeliverMessage(result.Source_Name + "! " + invoker.Nick + " just said something in " + channel.Name + ". This message was delivered to you because you asked me to notify you about this user's activity. For more information, see https://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
                 this.Deliver(result);
                 lock (Notification.NotificationList)
                 {
@@ -197,7 +197,7 @@ namespace wmib.Extensions
             Notification result = Notification.RetrieveTarget(user.Nick);
             while (result != null)
             {
-                IRC.DeliverMessage(result.Source_Name + "! " + user.Nick + " just sent me a private message. This message was delivered to you because you asked me to notify you about this user's activity. For more information, see http://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
+                IRC.DeliverMessage(result.Source_Name + "! " + user.Nick + " just sent me a private message. This message was delivered to you because you asked me to notify you about this user's activity. For more information, see https://meta.wikimedia.org/wiki/WM-Bot", result.Source_Name);
                 this.Deliver(result);
                 lock (Notification.NotificationList)
                 {
