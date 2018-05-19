@@ -40,7 +40,7 @@ namespace wmib.Extensions
             }
         }
 
-        public class item
+        public class Item
         {
             public string nick;
             public string hostname;
@@ -59,7 +59,7 @@ namespace wmib.Extensions
                 Nick
             }
 
-            public item(string Nick, string Host, string LastPlace, Action action, string Date = null, string NewNick = "", string reason = "")
+            public Item(string Nick, string Host, string LastPlace, Action action, string Date = null, string NewNick = "", string reason = "")
             {
                 nick = Nick;
                 hostname = Host;
@@ -82,7 +82,7 @@ namespace wmib.Extensions
         public Thread SearchThread;
         public Thread SearchHostThread;
         public bool Working = false;
-        public List<item> GlobalList = new List<item>();
+        public List<Item> GlobalList = new List<Item>();
         private bool save;
 
         public string temp_nick;
@@ -97,12 +97,12 @@ namespace wmib.Extensions
 
         public override void Hook_ACTN(Channel channel, libirc.UserInfo invoker, string message)
         {
-            WriteStatus(invoker.Nick, invoker.Host, channel.Name, item.Action.Talk);
+            WriteStatus(invoker.Nick, invoker.Host, channel.Name, Item.Action.Talk);
         }
 
         public override bool Hook_OnPrivateFromUser(string message, libirc.UserInfo user)
         {
-            WriteStatus(user.Nick, user.Host, "<private message>", item.Action.Talk);
+            WriteStatus(user.Nick, user.Host, "<private message>", Item.Action.Talk);
             if (message.StartsWith(Configuration.System.CommandPrefix + "seen "))
             {
                 string parameter = message.Substring(message.IndexOf(" ") + 1);
@@ -123,12 +123,12 @@ namespace wmib.Extensions
 
         public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
-            WriteStatus(invoker.Nick, invoker.Host, channel.Name, item.Action.Talk);
+            WriteStatus(invoker.Nick, invoker.Host, channel.Name, Item.Action.Talk);
         }
 
         public override void Hook_Join(Channel channel, libirc.UserInfo user)
         {
-            WriteStatus(user.Nick, user.Host, channel.Name, item.Action.Join);
+            WriteStatus(user.Nick, user.Host, channel.Name, Item.Action.Join);
         }
 
         public override bool Hook_OnRegister()
@@ -203,22 +203,22 @@ namespace wmib.Extensions
 
         public override void Hook_Nick(Channel channel, libirc.UserInfo Target, string OldNick, string NewNick)
         {
-            WriteStatus(OldNick, Target.Host, channel.Name, item.Action.Nick, NewNick);
+            WriteStatus(OldNick, Target.Host, channel.Name, Item.Action.Nick, NewNick);
         }
 
         public override void Hook_Kick(Channel channel, libirc.UserInfo source, string user)
         {
-            WriteStatus(user, "", channel.Name, item.Action.Kick);
+            WriteStatus(user, "", channel.Name, Item.Action.Kick);
         }
 
         public override void Hook_Part(Channel channel, libirc.UserInfo user)
         {
-            WriteStatus(user.Nick, user.Host, channel.Name, item.Action.Part);
+            WriteStatus(user.Nick, user.Host, channel.Name, Item.Action.Part);
         }
 
         public override void Hook_Quit(libirc.UserInfo user, string Message)
         {
-            WriteStatus(user.Nick, user.Host, "N/A", item.Action.Exit, "", Message);
+            WriteStatus(user.Nick, user.Host, "N/A", Item.Action.Exit, "", Message);
         }
         
         public override void Load()
@@ -248,12 +248,12 @@ namespace wmib.Extensions
             }
         }
 
-        public void WriteStatus(string nick, string host, string place, item.Action action, string newnick = "", string reason = "")
+        public void WriteStatus(string nick, string host, string place, Item.Action action, string newnick = "", string reason = "")
         {
-            item user = null;
+            Item user = null;
             lock (GlobalList)
             {
-                foreach (item xx in GlobalList)
+                foreach (Item xx in GlobalList)
                 {
                     if (nick.ToUpper() == xx.nick.ToUpper())
                     {
@@ -263,7 +263,7 @@ namespace wmib.Extensions
                 }
                 if (user == null)
                 {
-                    user = new item(nick, host, place, action, null, newnick, reason);
+                    user = new Item(nick, host, place, action, null, newnick, reason);
                     GlobalList.Add(user);
                 }
                 else
@@ -295,7 +295,7 @@ namespace wmib.Extensions
                     string action = "quitting the network with reason " ;
                     lock (GlobalList)
                     {
-                        foreach (item xx in GlobalList)
+                        foreach (Item xx in GlobalList)
                         {
                             if (ex.IsMatch(xx.nick))
                             {
@@ -313,7 +313,7 @@ namespace wmib.Extensions
                                 Channel last;
                                 switch (xx.LastAc)
                                 {
-                                    case item.Action.Join:
+                                    case Item.Action.Join:
                                         action = "joining the channel";
                                         last = Core.GetChannel(xx.lastplace);
                                         if (last != null)
@@ -328,10 +328,10 @@ namespace wmib.Extensions
                                             }
                                         }
                                         break;
-                                    case item.Action.Kick:
+                                    case Item.Action.Kick:
                                         action = "kicked from the channel";
                                         break;
-                                    case item.Action.Nick:
+                                    case Item.Action.Nick:
                                         if (xx.newnick == null)
                                         {
                                             action = "error NULL pointer at record";
@@ -348,29 +348,29 @@ namespace wmib.Extensions
                                             {
                                                 action += ", but " + xx.newnick + " is no longer in channel";
                                             }
-                                            item nick = getItem(xx.newnick);
+                                            Item nick = getItem(xx.newnick);
                                             if (nick != null)
                                             {
                                                 TimeSpan span3 = DateTime.Now - nick.LastSeen;
                                                 switch (nick.LastAc)
                                                 {
-                                                    case item.Action.Exit:
+                                                    case Item.Action.Exit:
                                                         action += " because he quit the network " + span3 + " ago. The nick change was done in";
                                                         break;
-                                                    case item.Action.Kick:
+                                                    case Item.Action.Kick:
                                                         action += " because he was kicked from the channel " + span3 + " ago. The nick change was done in";
                                                         break;
-                                                    case item.Action.Part:
+                                                    case Item.Action.Part:
                                                         action += " because he left the channel " + span3 + " ago. The nick change was done in";
                                                         break;
                                                 }
                                             }
                                         }
                                         break;
-                                    case item.Action.Part:
+                                    case Item.Action.Part:
                                         action = "leaving the channel";
                                         break;
-                                    case item.Action.Talk:
+                                    case Item.Action.Talk:
                                         action = "talking in the channel";
                                         last = Core.GetChannel(xx.lastplace);
                                         if (last != null)
@@ -385,7 +385,7 @@ namespace wmib.Extensions
                                             }
                                         }
                                         break;
-                                    case item.Action.Exit:
+                                    case Item.Action.Exit:
                                         string reason = xx.quit;
                                         if (String.IsNullOrEmpty(reason))
                                         {
@@ -397,7 +397,7 @@ namespace wmib.Extensions
                                 TimeSpan span2 = DateTime.Now - xx.LastSeen;
                                 if (xx.lastplace == null)
                                     xx.lastplace = "N/A";
-                                if (xx.LastAc == item.Action.Exit)
+                                if (xx.LastAc == Item.Action.Exit)
                                     response = "Last time I saw " + xx.nick + " they were " + action + " at " + xx.LastSeen + " (" + FormatTimeSpan(span2) + " ago)";
                                 else
                                     response = "Last time I saw " + xx.nick + " they were " + action + " " + xx.lastplace + " at " + xx.LastSeen + " (" + FormatTimeSpan(span2) + " ago)";
@@ -542,12 +542,12 @@ namespace wmib.Extensions
             }
         }
 
-        public item getItem(string nick)
+        public Item getItem(string nick)
         {
             nick = nick.ToUpper();
             lock (GlobalList)
             {
-                foreach (item xx in GlobalList)
+                foreach (Item xx in GlobalList)
                 {
                     if (nick == xx.nick.ToUpper())
                     {
@@ -572,7 +572,7 @@ namespace wmib.Extensions
                 string action = "quiting the network";
                 lock (GlobalList)
                 {
-                    foreach (item xx in GlobalList)
+                    foreach (Item xx in GlobalList)
                     {
                         if ((!by_host && (nick.ToUpper() == xx.nick.ToUpper())) || (by_host && (nick.ToUpper() == xx.hostname.ToUpper())))
                         {
@@ -581,7 +581,7 @@ namespace wmib.Extensions
                             Channel last;
                             switch (xx.LastAc)
                             {
-                                case item.Action.Join:
+                                case Item.Action.Join:
                                     action = "joining the channel";
                                     last = Core.GetChannel(xx.lastplace);
                                     if (last != null)
@@ -596,10 +596,10 @@ namespace wmib.Extensions
                                         }
                                     }
                                     break;
-                                case item.Action.Kick:
+                                case Item.Action.Kick:
                                     action = "kicked from the channel";
                                     break;
-                                case item.Action.Nick:
+                                case Item.Action.Nick:
                                     if (xx.newnick == null)
                                     {
                                         action = "error NULL pointer at record";
@@ -615,28 +615,28 @@ namespace wmib.Extensions
                                     {
                                         action += ", but " + xx.newnick + " is no longer in channel";
                                     }
-                                    item nick2 = getItem(xx.newnick);
+                                    Item nick2 = getItem(xx.newnick);
                                     if (nick2 != null)
                                     {
                                         TimeSpan span3 = DateTime.Now - nick2.LastSeen;
                                         switch (nick2.LastAc)
                                         {
-                                            case item.Action.Exit:
+                                            case Item.Action.Exit:
                                                 action += " because he quit the network " + span3 + " ago. The nick change was done in";
                                                 break;
-                                            case item.Action.Kick:
+                                            case Item.Action.Kick:
                                                 action += " because he was kicked from the channel " + span3 + " ago. The nick change was done in";
                                                 break;
-                                            case item.Action.Part:
+                                            case Item.Action.Part:
                                                 action += " because he left the channel " + span3 + " ago. The nick change was done in";
                                                 break;
                                         }
                                     }
                                     break;
-                                case item.Action.Part:
+                                case Item.Action.Part:
                                     action = "leaving the channel";
                                     break;
-                                case item.Action.Talk:
+                                case Item.Action.Talk:
                                     action = "talking in the channel";
                                     last = Core.GetChannel(xx.lastplace);
                                     if (last != null)
@@ -651,7 +651,7 @@ namespace wmib.Extensions
                                         }
                                     }
                                     break;
-                                case item.Action.Exit:
+                                case Item.Action.Exit:
                                     string reason = xx.quit;
                                     if (reason == "")
                                     {
@@ -693,11 +693,11 @@ namespace wmib.Extensions
                 }
                 if (!by_host && !found)
                 {
-                    foreach (Channel Item in Configuration.ChannelList)
+                    foreach (Channel ch in Configuration.ChannelList)
                     {
-                        if (Item.ContainsUser(nick))
+                        if (ch.ContainsUser(nick))
                         {
-                            response = nick + " is in " + Item.Name + " right now";
+                            response = nick + " is in " + ch.Name + " right now";
                             break;
                         }
                     }
@@ -718,7 +718,7 @@ namespace wmib.Extensions
                 XmlNode xmlnode = stat.CreateElement("channel_stat");
                 lock (GlobalList)
                 {
-                    foreach (item curr in GlobalList)
+                    foreach (Item curr in GlobalList)
                     {
                         XmlAttribute name = stat.CreateAttribute("nick");
                         name.Value = curr.nick;
@@ -740,19 +740,19 @@ namespace wmib.Extensions
                         action.Value = "Exit";
                         switch (curr.LastAc)
                         {
-                            case item.Action.Nick:
+                            case Item.Action.Nick:
                                 action.Value = "Nick";
                                 break;
-                            case item.Action.Join:
+                            case Item.Action.Join:
                                 action.Value = "Join";
                                 break;
-                            case item.Action.Part:
+                            case Item.Action.Part:
                                 action.Value = "Part";
                                 break;
-                            case item.Action.Kick:
+                            case Item.Action.Kick:
                                 action.Value = "Kick";
                                 break;
-                            case item.Action.Talk:
+                            case Item.Action.Talk:
                                 action.Value = "Talk";
                                 break;
                         }
@@ -797,58 +797,53 @@ namespace wmib.Extensions
                 Core.RecoverFile(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "seen.db");
                 if (File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "seen.db"))
                 {
-                    GlobalList = new List<item>();
+                    GlobalList = new List<Item>();
                     lock (GlobalList)
                     {
                         XmlDocument stat = new XmlDocument();
                         stat.Load(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + "seen.db");
+                        uint invalid = 0;
                         if (stat.ChildNodes[0].ChildNodes.Count > 0)
                         {
                             foreach (XmlNode curr in stat.ChildNodes[0].ChildNodes)
                             {
                                 try
                                 {
-                                    string user = curr.Attributes[0].Value;
-                                    item.Action action = item.Action.Exit;
-                                    switch (curr.Attributes[3].Value)
+                                    string nick = curr.Attributes["nick"].Value;
+                                    Item.Action action = Item.Action.Exit;
+                                    switch (curr.Attributes["action"].Value)
                                     {
                                         case "Join":
-                                            action = item.Action.Join;
+                                            action = Item.Action.Join;
                                             break;
                                         case "Part":
-                                            action = item.Action.Part;
+                                            action = Item.Action.Part;
                                             break;
                                         case "Talk":
-                                            action = item.Action.Talk;
+                                            action = Item.Action.Talk;
                                             break;
                                         case "Kick":
-                                            action = item.Action.Kick;
+                                            action = Item.Action.Kick;
                                             break;
                                         case "Nick":
-                                            action = item.Action.Nick;
+                                            action = Item.Action.Nick;
                                             break;
+                                        default:
+                                            invalid++;
+                                            continue;
                                     }
-                                    string Newnick = "";
-                                    string Reason = "";
-                                    if (curr.Attributes.Count > 4)
+                                    string new_nick = "";
+                                    string Reason = curr.Attributes["reason"].Value;
+                                    if (action == Item.Action.Nick)
                                     {
-                                        if (curr.Attributes[4].Name == "newnick")
+                                        new_nick = curr.Attributes["newnick"].Value;
+                                        if (new_nick.Length == 0)
                                         {
-                                            Newnick = curr.Attributes[4].Value;
-                                        }
-                                        else if (curr.Attributes[4].Name == "reason")
-                                        {
-                                            Reason = curr.Attributes[5].Value;
+                                            invalid++;
+                                            continue;
                                         }
                                     }
-                                    if (curr.Attributes.Count > 5)
-                                    {
-                                        if (curr.Attributes[5].Name == "reason")
-                                        {
-                                            Reason = curr.Attributes[5].Value;
-                                        }
-                                    }
-                                    item User = new item(user, curr.Attributes[1].Value, curr.Attributes[2].Value, action, curr.Attributes[4].Value, Newnick, Reason);
+                                    Item User = new Item(nick, curr.Attributes[1].Value, curr.Attributes[2].Value, action, curr.Attributes[4].Value, new_nick, Reason);
                                     GlobalList.Add(User);
                                 }
                                 catch (Exception fail)
@@ -856,6 +851,8 @@ namespace wmib.Extensions
                                     HandleException(fail);
                                 }
                             }
+                            if (invalid > 0)
+                                ErrorLog("Removed " + invalid.ToString() + " malformed lines");
                         }
                     }
                 }
