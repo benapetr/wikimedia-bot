@@ -55,12 +55,9 @@ namespace wmib.Extensions
                 Statistics list = (Statistics) channel.RetrieveObject(NAME);
                 if (list != null)
                 {
-                    builder.AppendLine("<br />");
-                    builder.AppendLine("<h4>Most active users :)</h4>");
-                    builder.AppendLine("<br />");
-                    builder.AppendLine();
-                    builder.AppendLine("<table class=\"infobot\" width=100% border=1>");
-                    builder.AppendLine(
+                    StringBuilder table = new StringBuilder();
+                    table.AppendLine("<table class=\"infobot\" width=100% border=1>");
+                    table.AppendLine(
                         "<tr><td>N.</td><th>Nick</th><th>Messages (average / day)</th><th>Number of posted messages</th><th>Active since</th></tr>");
                     int id = 0;
                     int totalms = 0;
@@ -85,24 +82,30 @@ namespace wmib.Extensions
                             float average = (user.messages/(float) (uptime.Days + 1));
                             if (user.URL != "")
                             {
-                                builder.AppendFormat(
+                                table.AppendFormat(
                                     "<tr><td>{0}.</td><td><a target=\"_blank\" href=\"{1}\">{2}</a></td><td>{3}</td><td>{4}</td><td>{5}</td></tr>\n",
                                     id, user.URL, user.user, average, user.messages, user.logging_since
                                     );
                             }
                             else
                             {
-                                builder.AppendFormat("<tr><td>{0}.</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td></tr>\n",
+                                table.AppendFormat("<tr><td>{0}.</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td></tr>\n",
                                                    id, user.user, average, user.messages, user.logging_since);
                             }
-                            builder.AppendLine();
+                            table.AppendLine();
                         }
                     }
                     TimeSpan uptime_total = DateTime.Now - startime;
                     float average2 = (float) totalms/(1 + uptime_total.Days);
-                    builder.AppendFormat("<tr><td>N/A</td><th>Total:</th><th>{0}</th><th>{1}</th><td>N/A</td></tr>\n", average2, totalms);
+                    table.AppendFormat("<tr><td>N/A</td><th>Total:</th><th>{0}</th><th>{1}</th><td>N/A</td></tr>\n", average2, totalms);
+                    table.AppendLine();
+                    table.AppendLine("</table>");
+
+                    builder.AppendLine("<br />");
+                    builder.AppendFormat("<h4>Most active users :) (enabled: {0})</h4>\n", startime);
+                    builder.AppendLine("<br />");
                     builder.AppendLine();
-                    builder.AppendLine("</table>");
+                    builder.Append(table);
                 }
             }
             return builder.ToString();
