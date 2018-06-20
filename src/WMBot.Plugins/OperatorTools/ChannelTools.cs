@@ -95,11 +95,6 @@ namespace wmib.Extensions
 
         public void GetOp(Channel chan)
         {
-            if (!GetConfig(chan, "OP.Permanent", false))
-            {
-                chan.PrimaryInstance.Network.Transfer("CS op " + chan.Name, libirc.Defs.Priority.High);
-                return;
-            }
             // get our user
             libirc.User user = chan.RetrieveUser(chan.PrimaryInstance.Nick);
             if (user == null)
@@ -127,6 +122,11 @@ namespace wmib.Extensions
             // Set the topic
             GetOp(p.SourceChannel);
             p.SourceChannel.PrimaryInstance.Network.Transfer("TOPIC " + p.SourceChannel.Name + " :" + p.Parameters);
+            // Remove op if we don't use permanent ops
+            if (!GetConfig(p.SourceChannel, "OP.Permanent", false))
+            {
+                p.SourceChannel.PrimaryInstance.Network.Transfer("MODE " + p.SourceChannel.Name + " -o " + p.SourceChannel.PrimaryInstance.Nick, libirc.Defs.Priority.Low);
+            }
         }
 
         public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
