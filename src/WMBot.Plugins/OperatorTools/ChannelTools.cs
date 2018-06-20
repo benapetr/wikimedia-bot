@@ -118,7 +118,7 @@ namespace wmib.Extensions
             if (!GetConfig(p.SourceChannel, "OP.Enabled", false))
                 return;
 
-            if (p.Parameters.Length == 0)
+            if (string.IsNullOrEmpty(p.Parameters))
             {
                 IRC.DeliverMessage("You must provide some topic for this to work", p.SourceChannel);
                 return;
