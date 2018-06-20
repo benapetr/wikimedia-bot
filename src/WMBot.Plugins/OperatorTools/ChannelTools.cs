@@ -78,6 +78,7 @@ namespace wmib.Extensions
             UnregisterCommand("optools-off");
             UnregisterCommand("optools-permanent-on");
             UnregisterCommand("optools-permanent-off");
+            UnregisterCommand("topic");
             //UnregisterCommand("kick");
             return base.Hook_OnUnload();
         }
@@ -88,6 +89,7 @@ namespace wmib.Extensions
             RegisterCommand(new GenericCommand("optools-permanent-on", this.PermanentOn, true, "admin"));
             RegisterCommand(new GenericCommand("optools-permanent-off", this.PermanentOff, true, "admin"));
             RegisterCommand(new GenericCommand("optools-off", this.Off, true, "admin"));
+            RegisterCommand(new GenericCommand("topic", this.Topic, true, "admin"));
             return base.Hook_OnRegister();
         }
 
@@ -109,6 +111,22 @@ namespace wmib.Extensions
             {
                 chan.PrimaryInstance.Network.Transfer("CS op " + chan.Name, libirc.Defs.Priority.High);
             }
+        }
+
+        private void Topic(CommandParams p)
+        {
+            if (!GetConfig(p.SourceChannel, "OP.Enabled", false))
+                return;
+
+            if (p.Parameters.Length == 0)
+            {
+                IRC.DeliverMessage("You must provide some topic for this to work", p.SourceChannel);
+                return;
+            }
+
+            // Set the topic
+            GetOp(p.SourceChannel);
+            p.SourceChannel.PrimaryInstance.Network.Transfer("TOPIC " + p.SourceChannel.Name + " :" + p.Parameters);
         }
 
         public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
