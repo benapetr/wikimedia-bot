@@ -697,6 +697,7 @@ zh-classical|https://zh-classical.wikipedia.org/wiki/$1
 zh-cn|https://zh.wikipedia.org/wiki/$1
 zh-min-nan|https://zh-min-nan.wikipedia.org/wiki/$1
 zh-tw|https://zh.wikipedia.org/wiki/$1
+zhwikiversity|https://zh.wikipedia.org/wiki/$1
 zh-yue|https://zh-yue.wikipedia.org/wiki/$1
 zrhwiki|https://www.zrhwiki.ch/wiki/$1
 zu|https://zu.wikipedia.org/wiki/$1
