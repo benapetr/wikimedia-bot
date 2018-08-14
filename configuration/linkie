@@ -630,7 +630,8 @@ wikilemon|https://wiki.illemonati.com/$1
 wikilivres|https://wikilivres.info/wiki/$1
 wikimac-de|https://apfelwiki.de/wiki/Main/$1
 wikimac-fr|https://www.wikimac.org/index.php/$1
-wikimedia|https://wikimediafoundation.org/wiki/$1
+wikimania|https://wikimania.wikimedia.org/wiki/$1
+wikimedia|https://foundation.wikimedia.org/wiki/$1
 wikinews|https://en.wikinews.org/wiki/$1
 wikinfo|https://www.wikinfo.org/index.php/$1
 wikinurse|https://wikinurse.org/media/index.php?title=$1
@@ -671,7 +672,7 @@ wm2017|https://wikimania2017.wikimedia.org/wiki/$1
 wm2018|https://wikimania2018.wikimedia.org/wiki/$1
 wmania|https://wikimania.wikimedia.org/wiki/$1
 wmcz|https://meta.wikimedia.org/wiki/Wikimedia_Czech_Republic/$1
-wmf|https://wikimediafoundation.org/wiki/$1
+wmf|https://foundation.wikimedia.org/wiki/$1
 wmin|http://wiki.wikimedia.in/$1
 wmrs|https://rs.wikimedia.org/wiki/$1
 wmse|https://se.wikimedia.org/wiki/$1
