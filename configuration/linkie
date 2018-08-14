@@ -187,7 +187,7 @@ flyerwiki-de|https://de.flyerwiki.net/index.php/$1
 fo|https://fo.wikipedia.org/wiki/$1
 foldoc|https://www.foldoc.org/$1
 forthfreak|https://wiki.forthfreak.net/index.cgi?$1
-foundation|https://wikimediafoundation.org/wiki/$1
+foundation|https://foundation.wikimedia.org/wiki/$1
 foxwiki|https://fox.wikis.com/wc.dll?Wiki~$1
 fr|https://fr.wikipedia.org/wiki/$1
 freebio|https://freebiology.org/wiki/$1
