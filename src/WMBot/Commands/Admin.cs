@@ -41,12 +41,38 @@ namespace wmib
             CommandPool.RegisterCommand(new GenericCommand("trusted", Commands.TrustedList, false));
             CommandPool.RegisterCommand(new GenericCommand("suppress-on", Commands.SuppressOn, false, "suppress"));
             CommandPool.RegisterCommand(new GenericCommand("suppress-off", Commands.SuppressOff, false, "unsuppress"));
+            CommandPool.RegisterCommand(new GenericCommand("system-rejoin-all", Commands.SysRejoin, false, "root"));
             CommandPool.RegisterCommand(new GenericCommand("system-rm", Commands.SystemUnload, true, "root"));
             CommandPool.RegisterCommand(new GenericCommand("verbosity--", Commands.VerbosityDown, true, "root"));
             CommandPool.RegisterCommand(new GenericCommand("verbosity++", Commands.VerbosityUp, true, "root"));
             CommandPool.RegisterCommand(new GenericCommand("whoami", Commands.Whoami));
             CommandPool.RegisterCommand(new GenericCommand("channel-info", Commands.ChannelOverview));
             CommandPool.RegisterCommand(new GenericCommand("changepass", Commands.ChangePass, false, "admin"));
+        }
+
+        private static void SysRejoin(CommandParams parameters)
+        {
+            if (string.IsNullOrEmpty(parameters.Parameters))
+            {
+                IRC.DeliverMessage("You need to provide exactly 1 parameter", parameters.SourceChannel);
+                return;
+            }
+
+            if (wmib.Instance.Instances.ContainsKey(parameters.Parameters))
+            {
+                if (!wmib.Instance.Instances[parameters.Parameter].ChannelsJoined)
+                {
+                    IRC.DeliverMessage("Instance " + parameters.Parameters + " is still joining channels");
+                    return;
+                }
+                wmib.Instance.Instances[parameters.Parameters].ChannelsJoined = false;
+                wmib.Instance.Instances[parameters.Parameters].Join();
+                IRC.DeliverMessage("Rejoining all channels on instance " + parameters.Parameters);
+            }
+            else
+            {
+                IRC.DeliverMessage("Unknown bot: " + parameters.Parameters, parameters.SourceChannel);
+            }
         }
 
         private static void ChangePass(CommandParams parameters)
