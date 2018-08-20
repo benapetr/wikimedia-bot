@@ -62,12 +62,12 @@ namespace wmib
             {
                 if (!wmib.Instance.Instances[parameters.Parameters].ChannelsJoined)
                 {
-                    IRC.DeliverMessage("Instance " + parameters.Parameters + " is still joining channels");
+                    IRC.DeliverMessage("Instance " + parameters.Parameters + " is still joining channels", parameters.SourceChannel);
                     return;
                 }
                 wmib.Instance.Instances[parameters.Parameters].ChannelsJoined = false;
                 wmib.Instance.Instances[parameters.Parameters].Join();
-                IRC.DeliverMessage("Rejoining all channels on instance " + parameters.Parameters);
+                IRC.DeliverMessage("Rejoining all channels on instance " + parameters.Parameters, parameters.SourceChannel);
             }
             else
             {
