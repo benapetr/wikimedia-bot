@@ -60,7 +60,7 @@ namespace wmib
 
             if (wmib.Instance.Instances.ContainsKey(parameters.Parameters))
             {
-                if (!wmib.Instance.Instances[parameters.Parameter].ChannelsJoined)
+                if (!wmib.Instance.Instances[parameters.Parameters].ChannelsJoined)
                 {
                     IRC.DeliverMessage("Instance " + parameters.Parameters + " is still joining channels");
                     return;
