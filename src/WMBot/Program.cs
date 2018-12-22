@@ -172,7 +172,7 @@ namespace wmib
                     Core.MysqlDB = new WMIBMySQL();
                 } else
                 {
-                    Syslog.Log("Mysql is not configured, disabling it");
+                    Syslog.Log("Mysql is not configured, not using");
                 }
                 if (PostgreSQL.IsAvailable)
                 {
