@@ -37,7 +37,7 @@ namespace wmib
             Npgsql.NpgsqlConnectionStringBuilder conn = new Npgsql.NpgsqlConnectionStringBuilder();
             conn.Database = Configuration.Postgres.DBNM;
             conn.Host = Configuration.Postgres.Host;
-            conn.UserName = Configuration.Postgres.User;
+            conn.Username = Configuration.Postgres.User;
             conn.Port = Configuration.Postgres.Port;
             conn.Password = Configuration.Postgres.Pass;
             this.connection = new Npgsql.NpgsqlConnection(conn.ConnectionString);

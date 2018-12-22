@@ -22,7 +22,7 @@ using System.Threading;
 
 namespace wmib.Extensions
 {
-    public class NetCat : Module
+    public class NetCat : wmib.Module
     {
         public int Port = 64834;
 

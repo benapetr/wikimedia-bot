@@ -17,7 +17,7 @@ using System.Threading;
 
 namespace wmib.Extensions
 {
-    public class InfobotModule : Module
+    public class InfobotModule : wmib.Module
     {
         public static readonly string PermissionAdd = "infobot_add";
         public static readonly string PermissionDel = "infobot_del";

@@ -33,7 +33,7 @@ namespace wmib.Extensions
         public static string Css = "";
     }
 
-    public class HtmlDump : Module
+    public class HtmlDump : wmib.Module
     {
         public override bool Construct()
         {
