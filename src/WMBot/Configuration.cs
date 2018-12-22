@@ -352,7 +352,7 @@ namespace wmib
             if (!File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + Paths.ConfigFile))
             {
                 Console.WriteLine("Error: unable to find config file in configuration/" + Paths.ConfigFile);
-                Console.WriteLine("You can get a configuration file here: https://github.com/benapetr/wikimedia-bot/blob/master/configuration/wmib.conf");
+                Console.WriteLine("You can get a configuration file here: https://raw.githubusercontent.com/benapetr/wikimedia-bot/master/configuration/wmib.conf");
                 return 2;
             }
 
