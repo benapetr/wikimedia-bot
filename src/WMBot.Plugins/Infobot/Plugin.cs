@@ -167,6 +167,7 @@ namespace wmib.Extensions
                     }
                 }
             }
+            RegisterCommand(new GenericCommand("list-keys", this.list_keys));
             if (!success)
             {
                 Syslog.Log("Failed to register infobot objects in some channels", true);
@@ -177,6 +178,7 @@ namespace wmib.Extensions
         public override bool Hook_OnUnload()
         {
             bool success = true;
+            UnregisterCommand("list-keys");
             if (writer != null)
             {
                 writer.thread.Abort();
@@ -244,6 +246,30 @@ namespace wmib.Extensions
                 HTML += "</table><br />\n";
             }
             return HTML;
+        }
+
+        private void list_keys(CommandParams p)
+        {
+            Infobot info = (Infobot)p.SourceChannel.RetrieveObject("Infobot");
+            if (info == null)
+                return;
+
+            string result = "";
+            foreach (Infobot.InfobotKey key in info.Keys)
+            {
+                result += key.Key + ", ";
+            }
+
+            if (result.EndsWith(", ", StringComparison.InvariantCulture))
+            {
+                result = result.Substring(0, result.Length - 2);
+            }
+
+            if (result.Length > 450)
+            {
+                result = result.Substring(0, 450) + "...";
+            }
+            IRC.DeliverMessage(result, p.SourceChannel);
         }
 
         public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
