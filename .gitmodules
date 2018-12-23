@@ -4,3 +4,6 @@
 [submodule "npgsql"]
 	path = npgsql
 	url = https://github.com/npgsql/npgsql
+[submodule "libirc"]
+	path = libirc
+	url = https://github.com/pidgeonproject/libirc

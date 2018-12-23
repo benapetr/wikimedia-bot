@@ -37,9 +37,6 @@
     <Reference Include="System.Xml" />
     <Reference Include="Mono.Posix">
     </Reference>
-    <Reference Include="libirc">
-      <HintPath>libirc.dll</HintPath>
-    </Reference>
     <Reference Include="Npgsql">
       <HintPath>..\..\..\npgsql\src\Npgsql\bin\Release\net45\Npgsql.dll</HintPath>
     </Reference>
@@ -121,4 +118,10 @@
     </MonoDevelop>
   </ProjectExtensions>
   <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\..\libirc\libirc.csproj">
+      <Project>{944CB47E-0E2F-4371-8291-92CE2C4E68CA}</Project>
+      <Name>libirc</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

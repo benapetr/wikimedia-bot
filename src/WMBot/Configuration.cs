@@ -293,22 +293,22 @@ namespace wmib
             foreach (string line in xx)
             {
                 string content;
-                if (String.IsNullOrEmpty(line) || line.TrimStart(' ').StartsWith("//"))
+                if (String.IsNullOrEmpty(line) || line.TrimStart(' ').StartsWith("//", StringComparison.InvariantCulture))
                 {
                     continue;
                 }
                 Syslog.DebugWrite("Parsing line: " + line, 8);
                 if (LastName == null && line.Contains("="))
                 {
-                    LastName = line.Substring(0, line.IndexOf("="));
+                    LastName = line.Substring(0, line.IndexOf("=", StringComparison.InvariantCulture));
                     if (Values.ContainsKey(LastName))
                     {
                         throw new Exception("You can't redefine same value in configuration multiple times, error reading: " + LastName);
                     }
-                    content = line.Substring(line.IndexOf("=") + 1);
+                    content = line.Substring(line.IndexOf("=", StringComparison.InvariantCulture) + 1);
                     if (content.Contains(";"))
                     {
-                        content = content.Substring(0, content.IndexOf(";"));
+                        content = content.Substring(0, content.IndexOf(";", StringComparison.InvariantCulture));
                     }
                     Values.Add(LastName, content);
                     Syslog.DebugWrite("Stored config value: " + LastName + ": " + content);
@@ -329,7 +329,7 @@ namespace wmib
                     }
                     else
                     {
-                        content = content.Substring(0, content.IndexOf(";"));
+                        content = content.Substring(0, content.IndexOf(";", StringComparison.InvariantCulture));
                         Values[LastName] += "\n" + content;
                         Syslog.DebugWrite("Append config value: " + LastName + ": " + content);
                         LastName = null;

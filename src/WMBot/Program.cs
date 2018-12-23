@@ -116,7 +116,7 @@ namespace wmib
                     }
                     File.WriteAllText(parameters[i], Process.GetCurrentProcess().Id.ToString());
                 }
-                if (item.StartsWith("-v"))
+                if (item.StartsWith("-v", StringComparison.InvariantCulture))
                 {
                     foreach (char x in item)
                     {
