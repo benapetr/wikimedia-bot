@@ -23,9 +23,6 @@ namespace wmib.Extensions
 {
     public class AI : Module
     {
-        public string Server = "ns.insw.cz";
-        public uint Port = 8082;
-
         public AI()
         {
         }
@@ -38,41 +35,57 @@ namespace wmib.Extensions
             return true;
         }
 
+        public override bool Hook_OnUnload()
+        {
+            UnregisterCommand("ai-on");
+            UnregisterCommand("ai-off");
+            //UnregisterCommand("kick");
+            return base.Hook_OnUnload();
+        }
+
+        public override bool Hook_OnRegister()
+        {
+            RegisterCommand(new GenericCommand("ai-on", this.aion, false, "admin"));
+            RegisterCommand(new GenericCommand("ai-off", this.aioff, false, "admin"));
+            return base.Hook_OnRegister();
+        }
+
+        private void aion(CommandParams p)
+        {
+            if (GetConfig(p.SourceChannel, "AI.Enabled", false))
+            {
+                IRC.DeliverMessage("AI is already enabled", p.SourceChannel);
+                return;
+            }
+            IRC.DeliverMessage("AI enabled", p.SourceChannel.Name);
+            SetConfig(p.SourceChannel, "AI.Enabled", true);
+            p.SourceChannel.SaveConfig();
+        }
+
+        private void aioff(CommandParams p)
+        {
+            if (!GetConfig(p.SourceChannel, "AI.Enabled", false))
+            {
+                IRC.DeliverMessage("AI was already disabled", p.SourceChannel);
+                return;
+            }
+            IRC.DeliverMessage("AI disabled", p.SourceChannel.Name);
+            SetConfig(p.SourceChannel, "AI.Enabled", false);
+            p.SourceChannel.SaveConfig();
+        }
+
         public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
-            if (!message.StartsWith(channel.PrimaryInstance.Nick + ": "))
+            if (!GetConfig(channel, "AI.Enabled", false))
+                return;
+
+            // These are commands sent directly to bot
+            if (!message.StartsWith(channel.PrimaryInstance.Nick + ": ", StringComparison.InvariantCulture))
                 return;
 
             message = message.Substring(channel.PrimaryInstance.Nick.Length + 2);
 
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://" + this.Server + ":" + this.Port + "/cakechat_api/v1/actions/get_response");
-            request.ContentType = "application/json";
-            request.Method = "POST";
 
-            using (var streamWriter = new StreamWriter(request.GetRequestStream()))
-            {
-                string json = "{ \"context\": [\"" + message + "\"], \"emotion\": \"neutral\" }";
-
-                streamWriter.Write(json);
-                streamWriter.Flush();
-                streamWriter.Close();
-            }
-
-            var httpResponse = (HttpWebResponse)request.GetResponse();
-            using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-            {
-                string result = streamReader.ReadToEnd().Replace("\n", "");
-                // We don't have JSON in older .Net where bot is actually running, so let's do it hacky way
-                if (!result.Contains("\"response\":"))
-                {
-                    // error?
-                    return;
-                }
-                result = result.Substring(result.IndexOf("\"response\":") + 13);
-                result = result.Substring(0, result.Length - 2);
-
-                IRC.DeliverMessage(invoker.Nick + ": " + result, channel);
-            }
         }
     }
 }

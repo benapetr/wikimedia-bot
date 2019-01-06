@@ -16,7 +16,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\bin\debug\modules\</OutputPath>
+    <OutputPath>..\..\bin\mods</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -66,6 +66,8 @@
     <Compile Include="Translate\Translate.cs" />
     <Compile Include="OperatorTools\ChannelTools.cs" />
     <Compile Include="Time\Time.cs" />
+    <Compile Include="AI\AI.cs" />
+    <Compile Include="AI\UserInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

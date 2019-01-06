@@ -89,10 +89,22 @@ namespace wmib
             dm(text, target, priority, true);
         }
 
+        /// <summary>
+        /// Gets the maximal length of the message allowed by server for given bot instance
+        /// </summary>
+        /// <returns>The max message length.</returns>
+        /// <param name="target">Target.</param>
+        public static int GetMaxMessageLength(Channel target)
+        {
+            // Max message length is 512 bytes excluding: ":nick!ident@hostname PRIVMSG target :"
+            return 480 - (target.PrimaryInstance.Nick.Length + target.PrimaryInstance.Network.Ident.Length + target.PrimaryInstance.Hostname.Length +
+                          target.Name.Length + ": PRIVMSG !@".Length);
+        }
+
         private static void dm(string text, string target, libirc.Defs.Priority priority = libirc.Defs.Priority.Normal, bool is_act = false)
         {
             // get a target instance
-            if (target.StartsWith("#"))
+            if (target.StartsWith("#", StringComparison.InvariantCulture))
             {
                 // it's a channel
                 Channel ch = Core.GetChannel(target);

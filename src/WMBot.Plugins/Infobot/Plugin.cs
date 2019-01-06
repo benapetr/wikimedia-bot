@@ -167,7 +167,7 @@ namespace wmib.Extensions
                     }
                 }
             }
-            RegisterCommand(new GenericCommand("list-keys", this.list_keys));
+            RegisterCommand(new GenericCommand("infobot-keys", this.list_keys));
             if (!success)
             {
                 Syslog.Log("Failed to register infobot objects in some channels", true);
@@ -178,7 +178,7 @@ namespace wmib.Extensions
         public override bool Hook_OnUnload()
         {
             bool success = true;
-            UnregisterCommand("list-keys");
+            UnregisterCommand("infobot-keys");
             if (writer != null)
             {
                 writer.thread.Abort();
@@ -255,9 +255,17 @@ namespace wmib.Extensions
                 return;
 
             string result = "";
-            foreach (Infobot.InfobotKey key in info.Keys)
+
+            if (info.Keys.Count == 0)
             {
-                result += key.Key + ", ";
+                result = "No keys defined";
+            }
+            else
+            {
+                foreach (Infobot.InfobotKey key in info.Keys)
+                {
+                    result += key.Key + ", ";
+                }
             }
 
             if (result.EndsWith(", ", StringComparison.InvariantCulture))

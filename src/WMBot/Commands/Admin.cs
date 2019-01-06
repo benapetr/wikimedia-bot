@@ -126,13 +126,23 @@ namespace wmib
                 commands += command;
                 commands += ", ";
             }
-            if (commands.EndsWith(", "))
+            if (commands.EndsWith(", ", System.StringComparison.InvariantCulture))
                 commands = commands.Substring(0, commands.Length - 2);
 
             if (parameters.SourceChannel != null)
-                IRC.DeliverMessage("I know: " + commands, parameters.SourceChannel);
-            else if (parameters.SourceUser != null)
-                IRC.DeliverMessage("I know: " + commands, parameters.SourceUser);
+            {
+                int max_possible_length = IRC.GetMaxMessageLength (parameters.SourceChannel);
+                // "I know: "
+                max_possible_length -= 8;
+                if (commands.Length > max_possible_length)
+                {
+                    commands = commands.Substring (0, max_possible_length - 3) + "...";
+                }
+                IRC.DeliverMessage ("I know: " + commands, parameters.SourceChannel);
+            } else if (parameters.SourceUser != null)
+            {
+                IRC.DeliverMessage ("I know: " + commands, parameters.SourceUser);
+            }
         }
 
         private static void Reauth(CommandParams parameters)
@@ -189,10 +199,10 @@ namespace wmib
             if (string.IsNullOrEmpty(parameters.Parameters))
                 return;
 
-            if (parameters.Parameters.Contains("=") && !parameters.Parameters.EndsWith("="))
+            if (parameters.Parameters.Contains("=") && !parameters.Parameters.EndsWith("=", System.StringComparison.InvariantCulture))
             {
-                string name = parameters.Parameters.Substring(0, parameters.Parameters.IndexOf("="));
-                string value = parameters.Parameters.Substring(parameters.Parameters.IndexOf("=") + 1);
+                string name = parameters.Parameters.Substring(0, parameters.Parameters.IndexOf("=", System.StringComparison.InvariantCulture));
+                string value = parameters.Parameters.Substring(parameters.Parameters.IndexOf("=", System.StringComparison.InvariantCulture) + 1);
                 bool _temp_a;
                 switch (name)
                 {
