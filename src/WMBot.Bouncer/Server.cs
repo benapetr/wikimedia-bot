@@ -190,7 +190,7 @@ namespace WMBot.Bouncer
                             lastitem = Buffer.IncomingData[0];
                             foreach (BufferItem Item in Buffer.IncomingData)
                             {
-                                if (Item.important)
+                                if (Item.Important)
                                 {
                                     lastitem = Item;
                                     break;

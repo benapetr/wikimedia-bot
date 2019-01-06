@@ -17,7 +17,7 @@ using System.Threading;
 
 namespace wmib.Extensions
 {
-    public class LogsModule : Module
+    public class LogsModule : wmib.Module
     {
         public struct Job
         {

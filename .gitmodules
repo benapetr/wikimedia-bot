@@ -1,3 +1,9 @@
 [submodule "public_html/logs/psf"]
 	path = public_html/logs/psf
 	url = http://github.com/benapetr/psf
+[submodule "npgsql"]
+	path = npgsql
+	url = https://github.com/npgsql/npgsql
+[submodule "libirc"]
+	path = libirc
+	url = https://github.com/pidgeonproject/libirc

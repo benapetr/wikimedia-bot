@@ -1,4 +1,4 @@
-//  This program is free software; you can redistribute it and/or modify
+﻿//  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
 //  the Free Software Foundation; either version 2 of the License, or   
 //  (at your option) version 3.                                         
@@ -13,24 +13,13 @@
 //  Free Software Foundation, Inc.,                                     
 //  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-namespace WMBot.Bouncer
+using System;
+namespace wmib.Extensions
 {
-    class Program
+    public class UserInfo
     {
-        static void Main(string[] args)
+        public UserInfo()
         {
-            if (args.Length > 1)
-                Server.network = args[1];
-            if (args.Length > 0)
-                Server.port = int.Parse(args[0]);
-            if (args.Length > 2)
-            {
-                // pid file
-                System.IO.File.WriteAllText(args[2], System.Diagnostics.Process.GetCurrentProcess().Id.ToString());
-            }
-            Syslog.Log("wm-bnc v. 1.0.0.1");
-            
-            Server.Connect();
         }
     }
 }

@@ -20,11 +20,11 @@ using System.Xml.Serialization;
 
 namespace wmib.Extensions
 {
-    public class ScriptingEngine : Module
+    public class ScriptingEngine : wmib.Module
     {
         class Task
         {
-            public Channel channel = null;
+            public wmib.Channel channel = null;
             public libirc.UserInfo user = null;
             public string parameters = "";
             public Script task;
@@ -47,7 +47,7 @@ namespace wmib.Extensions
             public bool SingleParameter = false;
             public string Permission = "trust";
 
-            public void Exec(CommandParams pm)
+            public void Exec(wmib.CommandParams pm)
             {
                 lock (Tasks)
                 {

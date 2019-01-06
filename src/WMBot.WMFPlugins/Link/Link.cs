@@ -11,7 +11,7 @@ namespace wmib
 
         public override bool Construct()
         {
-            Version = new System.Version(1, 0, 0, 2);
+            Version = new System.Version(1, 0, 0, 3);
             return true;
         }
 
@@ -20,12 +20,12 @@ namespace wmib
             string original = prefix;
             if (prefix.Contains(":"))
             {
-                string link = prefix.Substring(prefix.IndexOf(":") + 1);
-                if (!link.StartsWith("User:"))
+                string link = prefix.Substring(prefix.IndexOf(":", System.StringComparison.InvariantCulture) + 1);
+                if (!link.StartsWith("User:", System.StringComparison.InvariantCulture))
                 {
                     link = "Template:" + link;
                 }
-                prefix = prefix.Substring(0, prefix.IndexOf(":"));
+                prefix = prefix.Substring(0, prefix.IndexOf(":", System.StringComparison.InvariantCulture));
                 lock (Wiki)
                 {
                     if (Wiki.ContainsKey(prefix))
@@ -45,7 +45,7 @@ namespace wmib
                     return Wiki[Default].Replace("$1", "Template:" + original);
                 }
             }
-            return "http://enwp.org/Template:" + original;
+            return "https://enwp.org/Template:" + original;
         }
 
         public static string URL(string prefix, string Default)
@@ -53,8 +53,8 @@ namespace wmib
             string original = prefix;
             if (prefix.Contains(":"))
             {
-                string link = prefix.Substring(prefix.IndexOf(":") + 1);
-                prefix = prefix.Substring(0, prefix.IndexOf(":"));
+                string link = prefix.Substring(prefix.IndexOf(":", System.StringComparison.InvariantCulture) + 1);
+                prefix = prefix.Substring(0, prefix.IndexOf(":", System.StringComparison.InvariantCulture));
                 lock (Wiki)
                 {
                     if (Wiki.ContainsKey(prefix))
@@ -74,17 +74,17 @@ namespace wmib
                     return Wiki[Default].Replace("$1", original);
                 }
             }
-            return "http://enwp.org/" + original;
+            return "https://enwp.org/" + original;
         }
 
         private static string MakeTemplate(string text, string Default, bool Ignore)
         {
             if (text.Contains("{{"))
             {
-                string link = text.Substring(text.IndexOf("{{") + 2);
+                string link = text.Substring(text.IndexOf("{{", System.StringComparison.InvariantCulture) + 2);
                 if (link.Contains("}}"))
                 {
-                    string second = link.Substring(link.IndexOf("}}") + 2);
+                    string second = link.Substring(link.IndexOf("}}", System.StringComparison.InvariantCulture) + 2);
                     if (second.Contains("{{"))
                     {
                         second = MakeLink(second, Default, Ignore);
@@ -93,10 +93,10 @@ namespace wmib
                     {
                         second = null;
                     }
-                    link = link.Substring(0, link.IndexOf("}}"));
+                    link = link.Substring(0, link.IndexOf("}}", System.StringComparison.InvariantCulture));
                     if (link.Contains("|"))
                     {
-                        link = link.Substring(0, link.IndexOf("|"));
+                        link = link.Substring(0, link.IndexOf("|", System.StringComparison.InvariantCulture));
                     }
                     link = HttpUtility.UrlEncode(link).Replace("%2f", "/")
                         .Replace("%3a", ":")
@@ -115,10 +115,10 @@ namespace wmib
         {
             if (text.Contains("[["))
             {
-                string link = text.Substring(text.IndexOf("[[") + 2);
+                string link = text.Substring(text.IndexOf("[[", System.StringComparison.InvariantCulture) + 2);
                 if (link.Contains("]]"))
                 {
-                    string second = link.Substring(link.IndexOf("]]") + 2);
+                    string second = link.Substring(link.IndexOf("]]", System.StringComparison.InvariantCulture) + 2);
                     if (second.Contains("[["))
                     {
                         second = MakeLink(second, Default, Ignore);
@@ -127,10 +127,10 @@ namespace wmib
                     {
                         second = null;
                     }
-                    link = link.Substring(0, link.IndexOf("]]"));
+                    link = link.Substring(0, link.IndexOf("]]", System.StringComparison.InvariantCulture));
                     if (link.Contains("|"))
                     {
-                        link = link.Substring(0, link.IndexOf("|"));
+                        link = link.Substring(0, link.IndexOf("|", System.StringComparison.InvariantCulture));
                     }
                     link = HttpUtility.UrlEncode(link).Replace("%2f", "/")
                         .Replace("%3a", ":")
@@ -150,14 +150,14 @@ namespace wmib
         {
             if (message.Contains("{{"))
             {
-                if (message.Substring(message.IndexOf("{{") + 2).Contains("}}"))
+                if (message.Substring(message.IndexOf("{{", System.StringComparison.InvariantCulture) + 2).Contains("}}"))
                 {
                     return true;
                 }
             }
             if (message.Contains("[["))
             {
-                if (message.Substring(message.IndexOf("[[") + 2).Contains("]]"))
+                if (message.Substring(message.IndexOf("[[", System.StringComparison.InvariantCulture) + 2).Contains("]]"))
                 {
                     return true;
                 }
@@ -165,54 +165,50 @@ namespace wmib
             return false;
         }
 
+        private void linkie_off(CommandParams p)
+        {
+            if (GetConfig(p.SourceChannel, "Link.Enable", false))
+            {
+                SetConfig(p.SourceChannel, "Link.Enable", false);
+                p.SourceChannel.SaveConfig();
+                IRC.DeliverMessage(messages.Localize("Linkie-Off", p.SourceChannel.Language), p.SourceChannel);
+            }
+            else
+            {
+                IRC.DeliverMessage(messages.Localize("Linkie-Off2", p.SourceChannel.Language), p.SourceChannel);
+            }
+        }
+
+        private void linkie_on(CommandParams p)
+        {
+            if (!GetConfig(p.SourceChannel, "Link.Enable", false))
+            {
+                SetConfig(p.SourceChannel, "Link.Enable", true);
+                p.SourceChannel.SaveConfig();
+                IRC.DeliverMessage(messages.Localize("Linkie-On", p.SourceChannel.Language), p.SourceChannel);
+            }
+            else
+            {
+                IRC.DeliverMessage(messages.Localize("Linkie-On2", p.SourceChannel.Language), p.SourceChannel);
+            }
+        }
+
+        public override bool Hook_OnUnload()
+        {
+            UnregisterCommand("linkie-on");
+            UnregisterCommand("linkie-off");
+            return base.Hook_OnUnload();
+        }
+
+        public override bool Hook_OnRegister()
+        {
+            RegisterCommand(new GenericCommand("linkie-on", this.linkie_on, false, "admin"));
+            RegisterCommand(new GenericCommand("linkie-off", this.linkie_off, false, "admin"));
+            return base.Hook_OnRegister();
+        }
+
         public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
-            if (message == Configuration.System.CommandPrefix + "linkie-off")
-            {
-                if (channel.SystemUsers.IsApproved(invoker, "admin"))
-                {
-                    if (GetConfig(channel, "Link.Enable", false))
-                    {
-                        SetConfig(channel, "Link.Enable", false);
-                        channel.SaveConfig();
-                        IRC.DeliverMessage(messages.Localize("Linkie-Off", channel.Language), channel);
-                    }
-                    else
-                    {
-                        IRC.DeliverMessage(messages.Localize("Linkie-Off2", channel.Language), channel);
-                    }
-                    return;
-                }
-                if (!channel.SuppressWarnings)
-                {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
-                }
-                return;
-            }
-
-            if (message == Configuration.System.CommandPrefix + "linkie-on")
-            {
-                if (channel.SystemUsers.IsApproved(invoker, "admin"))
-                {
-                    if (!GetConfig(channel, "Link.Enable", false))
-                    {
-                        SetConfig(channel, "Link.Enable", true);
-                        channel.SaveConfig();
-                        IRC.DeliverMessage(messages.Localize("Linkie-On", channel.Language), channel);
-                    }
-                    else
-                    {
-                        IRC.DeliverMessage(messages.Localize("Linkie-On2", channel.Language), channel);
-                    }
-                    return;
-                }
-                if (!channel.SuppressWarnings)
-                {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
-                }
-                return;
-            }
-
             if (message == Configuration.System.CommandPrefix + "link")
             {
                 if (GetConfig(channel, "Link.Last", "") == "")
@@ -230,7 +226,7 @@ namespace wmib
                 return;
             }
 
-            if (message.StartsWith(Configuration.System.CommandPrefix + "link "))
+            if (message.StartsWith(Configuration.System.CommandPrefix + "link ", System.StringComparison.InvariantCulture))
             {
                 string link = message.Substring(6);
                 string xx = MakeTemplate(link, GetConfig(channel, "Link.Default", "en"), false) + MakeLink(link, GetConfig(channel, "Link.Default", "en"), true);
@@ -291,8 +287,8 @@ namespace wmib
                 {
                     if (line.Contains("|"))
                     {
-                        string prefix = line.Substring(0, line.IndexOf("|"));
-                        string link = line.Substring(line.IndexOf("|") + 1);
+                        string prefix = line.Substring(0, line.IndexOf("|", System.StringComparison.InvariantCulture));
+                        string link = line.Substring(line.IndexOf("|", System.StringComparison.InvariantCulture) + 1);
                         if (!Wiki.ContainsKey(prefix))
                         {
                             Wiki.Add(prefix, link);

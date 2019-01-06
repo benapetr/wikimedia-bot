@@ -269,7 +269,7 @@ namespace wmib.Extensions
                 }
                 if (original.Contains ("|") && !raw)
                 {
-                    original = original.Substring (0, original.IndexOf ("|"));
+                    original = original.Substring (0, original.IndexOf ("|", StringComparison.InvariantCulture));
                     original = original.Trim ();
                 }
                 text = text.Replace("$*", original);
@@ -303,7 +303,7 @@ namespace wmib.Extensions
             string ignore_test = name;
             if (ignore_test.Contains(" "))
             {
-                ignore_test = ignore_test.Substring(0, ignore_test.IndexOf(" "));
+                ignore_test = ignore_test.Substring(0, ignore_test.IndexOf(" ", StringComparison.InvariantCulture));
             }
             return (channel.Infobot_IgnoredNames.Contains(ignore_test));
         }
@@ -318,17 +318,17 @@ namespace wmib.Extensions
             string text = OriginalText;
             // we remove the key name from message so that only parameters remain
             if (text.Contains(" "))
-                text = text.Substring(text.IndexOf(" ") + 1);
+                text = text.Substring(text.IndexOf(" ", StringComparison.InvariantCulture) + 1);
             else
                 text = "";
             if (text.Contains("|"))
             {
-                Target_ = OriginalText.Substring(OriginalText.IndexOf("|") + 1);
+                Target_ = OriginalText.Substring(OriginalText.IndexOf("|", StringComparison.InvariantCulture) + 1);
                 if (Module.GetConfig(chan, "Infobot.Trim-white-space-in-name", true))
                 {
                     Target_ = Target_.Trim();
                 }
-                text = text.Substring(0, text.IndexOf("|"));
+                text = text.Substring(0, text.IndexOf("|", StringComparison.InvariantCulture));
             }
             List<string> Parameters = new List<string>(text.Split(' '));
             string value_ = ParseInfo(Parameters, text, Key, fu);
@@ -364,7 +364,7 @@ namespace wmib.Extensions
             try
             {
                 // check if it starts with the prefix
-                if (!message.StartsWith(prefix))
+                if (!message.StartsWith(prefix, StringComparison.InvariantCulture))
                 {
                     return true;
                 }
@@ -413,11 +413,11 @@ namespace wmib.Extensions
                             string key;
                             if (!isAct)
                             {
-                                key = message.Substring(message.IndexOf(" is") + 4);
+                                key = message.Substring(message.IndexOf(" is", StringComparison.InvariantCulture) + 4);
                             }
                             else
                             {
-                                key = message.Substring(message.IndexOf(" act") + 5);
+                                key = message.Substring(message.IndexOf(" act", StringComparison.InvariantCulture) + 5);
                             }
                             if (infobot != null)
                             {
@@ -451,7 +451,7 @@ namespace wmib.Extensions
                                 return true;
                             }
                             // get a key name
-                            string key = message.Substring(message.IndexOf(" replace") + 9);
+                            string key = message.Substring(message.IndexOf(" replace", StringComparison.InvariantCulture) + 9);
                             if (infobot != null)
                             {
                                 infobot.replaceKey(key, Parameters[0], user.Nick, chan);
@@ -492,7 +492,7 @@ namespace wmib.Extensions
                             }
                             if (infobot != null)
                             {
-                                infobot.aliasKey(message.Substring(message.IndexOf(" alias") + 7), Parameters[0], "", chan, force);
+                                infobot.aliasKey(message.Substring(message.IndexOf(" alias", StringComparison.InvariantCulture) + 7), Parameters[0], "", chan, force);
                                 return true;
                             }
                         }
@@ -620,14 +620,14 @@ namespace wmib.Extensions
                         {
                             foreach (InfobotKey f in infobot.Keys)
                             {
-                                if (!results.Contains(f.Key) && f.Key.StartsWith(Parameters[0]))
+                                if (!results.Contains(f.Key) && f.Key.StartsWith(Parameters[0], StringComparison.InvariantCulture))
                                 {
                                     results.Add(f.Key);
                                 }
                             }
                             foreach (InfobotAlias f in infobot.Aliases)
                             {
-                                if (!results.Contains(f.Key) && f.Key.StartsWith(Parameters[0]))
+                                if (!results.Contains(f.Key) && f.Key.StartsWith(Parameters[0], StringComparison.InvariantCulture))
                                 {
                                     results.Add(f.Key);
                                 }
@@ -749,7 +749,7 @@ namespace wmib.Extensions
                 IRC.DeliverMessage(messages.Localize("Search1", Chan.Language), Chan.Name);
                 return;
             }
-            if (!key.StartsWith(Configuration.System.CommandPrefix + "regsearch "))
+            if (!key.StartsWith(Configuration.System.CommandPrefix + "regsearch ", StringComparison.InvariantCulture))
                 return;
             if (!misc.IsValidRegex(key))
             {
@@ -805,7 +805,7 @@ namespace wmib.Extensions
                 return;
             }
 
-            if (!key.StartsWith(Configuration.System.CommandPrefix + "search "))
+            if (!key.StartsWith(Configuration.System.CommandPrefix + "search ", StringComparison.InvariantCulture))
                 return;
 
             Channel data = RetrieveMasterDBChannel(Chan);

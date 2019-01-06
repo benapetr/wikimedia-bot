@@ -22,7 +22,7 @@ using System.Threading;
 
 namespace wmib.Extensions
 {
-    public class NetCat : Module
+    public class NetCat : wmib.Module
     {
         public int Port = 64834;
 
@@ -60,8 +60,8 @@ namespace wmib.Extensions
                         SendMessage(ref _StreamWriter, "ERROR1 (invalid text): " + text);
                         continue;
                     }
-                    string channel = text.Substring(0, text.IndexOf(" "));
-                    string value = text.Substring(text.IndexOf(" ") + 1);
+                    string channel = text.Substring(0, text.IndexOf(" ", StringComparison.InvariantCulture));
+                    string value = text.Substring(text.IndexOf(" ", StringComparison.InvariantCulture) + 1);
                     DebugLog("Request to send text to channel " + channel + " text: " + value, 4);
                     Channel ch = Core.GetChannel(channel);
                     if (ch == null)
@@ -85,8 +85,8 @@ namespace wmib.Extensions
                             SendMessage(ref _StreamWriter, "ERROR4 (invalid token): " + channel + " :" + value);
                             continue;
                         }
-                        string token = value.Substring(0, value.IndexOf(" "));
-                        value = value.Substring(value.IndexOf(" ") + 1);
+                        string token = value.Substring(0, value.IndexOf(" ", StringComparison.InvariantCulture));
+                        value = value.Substring(value.IndexOf(" ", StringComparison.InvariantCulture) + 1);
                         if (token != GetConfig(ch, "NetCat.TokenData", "<invalid>"))
                         {
                             DebugLog("Channel requires the token for relay " + channel, 6);
@@ -154,103 +154,76 @@ namespace wmib.Extensions
             return builder.ToString();
         }
 
-        public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
+        public override bool Hook_OnUnload()
         {
-            if (message == Configuration.System.CommandPrefix + "relay-off")
+            UnregisterCommand("relay-on");
+            UnregisterCommand("relay-off");
+            UnregisterCommand("token-on");
+            UnregisterCommand("token-off");
+            UnregisterCommand("token-remind");
+            return base.Hook_OnUnload();
+        }
+
+        public override bool Hook_OnRegister()
+        {
+            RegisterCommand(new GenericCommand("relay-on", this.relay_on, false, "admin"));
+            RegisterCommand(new GenericCommand("relay-off", this.relay_off, false, "admin"));
+            RegisterCommand(new GenericCommand("token-remind", this.token_remind, true, "admin"));
+            RegisterCommand(new GenericCommand("token-on", this.token_on, false, "admin"));
+            RegisterCommand(new GenericCommand("token-off", this.token_off, false, "admin"));
+            return base.Hook_OnRegister();
+        }
+
+        private void token_off(CommandParams p)
+        {
+            SetConfig(p.SourceChannel, "NetCat.Token", false);
+            p.SourceChannel.SaveConfig();
+            IRC.DeliverMessage("This channel will no longer require a token in order to relay messages into it", p.SourceChannel.Name);
+        }
+
+        private void token_on(CommandParams p)
+        {
+            string token = GenerateToken();
+            SetConfig(p.SourceChannel, "NetCat.Token", true);
+            SetConfig(p.SourceChannel, "NetCat.TokenData", token);
+            p.SourceChannel.SaveConfig();
+            IRC.DeliverMessage("New token was generated for this channel, and it was sent to you in a private message", p.SourceChannel.Name);
+            IRC.DeliverMessage("Token for " + p.SourceChannel.Name + " is: " + token, p.SourceUser.Nick);
+        }
+
+        private void token_remind(CommandParams p)
+        {
+            if (!GetConfig(p.SourceChannel, "NetCat.Token", false))
             {
-                if (channel.SystemUsers.IsApproved(invoker.Nick, invoker.Host, "admin"))
-                {
-                    if (!GetConfig(channel, "NetCat.Enabled", false))
-                    {
-                        IRC.DeliverMessage("Relay is already disabled", channel.Name);
-                        return;
-                    }
-                    SetConfig(channel, "NetCat.Enabled", false);
-                    channel.SaveConfig();
-                    IRC.DeliverMessage("Relay was disabled", channel.Name);
-                    return;
-                }
-                if (!channel.SuppressWarnings)
-                {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
-                }
+                IRC.DeliverMessage("This channel doesn't require a token", p.SourceChannel.Name);
                 return;
             }
+            string token = GetConfig(p.SourceChannel, "NetCat.TokenData", "<invalid>");
+            IRC.DeliverMessage("Token for " + p.SourceChannel.Name + " is: " + token, p.SourceUser.Nick);
+        }
 
-            if (message == Configuration.System.CommandPrefix + "token-on")
+        private void relay_on(CommandParams p)
+        {
+            if (GetConfig(p.SourceChannel, "NetCat.Enabled", false))
             {
-                if (channel.SystemUsers.IsApproved(invoker.Nick, invoker.Host, "admin"))
-                {
-                    string token = GenerateToken();
-                    SetConfig(channel, "NetCat.Token", true);
-                    SetConfig(channel, "NetCat.TokenData", token);
-                    channel.SaveConfig();
-                    IRC.DeliverMessage("New token was generated for this channel, and it was sent to you in a private message", channel.Name);
-                    IRC.DeliverMessage("Token for " + channel.Name + " is: " + token, invoker.Nick);
-                    return;
-                }
-                if (!channel.SuppressWarnings)
-                {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
-                }
+                IRC.DeliverMessage("Relay is already enabled", p.SourceChannel.Name);
                 return;
             }
+            SetConfig(p.SourceChannel, "NetCat.Enabled", true);
+            p.SourceChannel.SaveConfig();
+            IRC.DeliverMessage("Relay was enabled", p.SourceChannel.Name);
+        }
 
-            if (message == Configuration.System.CommandPrefix + "token-off")
+        private void relay_off(CommandParams p)
+        {
+            if (!GetConfig(p.SourceChannel, "NetCat.Enabled", false))
             {
-                if (channel.SystemUsers.IsApproved(invoker.Nick, invoker.Host, "admin"))
-                {
-                    SetConfig(channel, "NetCat.Token", false);
-                    channel.SaveConfig();
-                    IRC.DeliverMessage("This channel will no longer require a token in order to relay messages into it", channel.Name);
-                    return;
-                }
-                if (!channel.SuppressWarnings)
-                {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
-                }
+                IRC.DeliverMessage("Relay is already disabled", p.SourceChannel.Name);
                 return;
             }
-
-            if (message == Configuration.System.CommandPrefix + "token-remind")
-            {
-                if (channel.SystemUsers.IsApproved(invoker.Nick, invoker.Host, "admin"))
-                {
-                    if (!GetConfig(channel, "NetCat.Token", false))
-                    {
-                        IRC.DeliverMessage("This channel doesn't require a token", channel.Name);
-                        return;
-                    }
-                    string token = GetConfig(channel, "NetCat.TokenData", "<invalid>");
-                    IRC.DeliverMessage("Token for " + channel.Name + " is: " + token, invoker.Nick);
-                    return;
-                }
-                if (!channel.SuppressWarnings)
-                {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
-                }
-                return;
-            }
-
-            if (message == Configuration.System.CommandPrefix + "relay-on")
-            {
-                if (channel.SystemUsers.IsApproved(invoker.Nick, invoker.Host, "admin"))
-                {
-                    if (GetConfig(channel, "NetCat.Enabled", false))
-                    {
-                        IRC.DeliverMessage("Relay is already enabled", channel.Name);
-                        return;
-                    }
-                    SetConfig(channel, "NetCat.Enabled", true);
-                    channel.SaveConfig();
-                    IRC.DeliverMessage("Relay was enabled", channel.Name);
-                    return;
-                }
-                if (!channel.SuppressWarnings)
-                {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
-                }
-            }
+            SetConfig(p.SourceChannel, "NetCat.Enabled", false);
+            p.SourceChannel.SaveConfig();
+            IRC.DeliverMessage("Relay was disabled", p.SourceChannel.Name);
         }
     }
 }

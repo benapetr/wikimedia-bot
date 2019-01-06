@@ -139,7 +139,7 @@ namespace wmib
             /// <summary>
             /// Version
             /// </summary>
-            public static string Version = "wikimedia bot v. 2.8.0.0";
+            public static string Version = "wikimedia bot v. 2.8.1.0";
             /// <summary>
             /// This is a limit for role level that can be granted, this is used to
             /// prevent users from granting roles like "root" by default
@@ -293,22 +293,22 @@ namespace wmib
             foreach (string line in xx)
             {
                 string content;
-                if (String.IsNullOrEmpty(line) || line.TrimStart(' ').StartsWith("//"))
+                if (String.IsNullOrEmpty(line) || line.TrimStart(' ').StartsWith("//", StringComparison.InvariantCulture))
                 {
                     continue;
                 }
                 Syslog.DebugWrite("Parsing line: " + line, 8);
                 if (LastName == null && line.Contains("="))
                 {
-                    LastName = line.Substring(0, line.IndexOf("="));
+                    LastName = line.Substring(0, line.IndexOf("=", StringComparison.InvariantCulture));
                     if (Values.ContainsKey(LastName))
                     {
                         throw new Exception("You can't redefine same value in configuration multiple times, error reading: " + LastName);
                     }
-                    content = line.Substring(line.IndexOf("=") + 1);
+                    content = line.Substring(line.IndexOf("=", StringComparison.InvariantCulture) + 1);
                     if (content.Contains(";"))
                     {
-                        content = content.Substring(0, content.IndexOf(";"));
+                        content = content.Substring(0, content.IndexOf(";", StringComparison.InvariantCulture));
                     }
                     Values.Add(LastName, content);
                     Syslog.DebugWrite("Stored config value: " + LastName + ": " + content);
@@ -329,7 +329,7 @@ namespace wmib
                     }
                     else
                     {
-                        content = content.Substring(0, content.IndexOf(";"));
+                        content = content.Substring(0, content.IndexOf(";", StringComparison.InvariantCulture));
                         Values[LastName] += "\n" + content;
                         Syslog.DebugWrite("Append config value: " + LastName + ": " + content);
                         LastName = null;
@@ -352,7 +352,7 @@ namespace wmib
             if (!File.Exists(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + Paths.ConfigFile))
             {
                 Console.WriteLine("Error: unable to find config file in configuration/" + Paths.ConfigFile);
-                Console.WriteLine("You can get a configuration file here: https://github.com/benapetr/wikimedia-bot/blob/master/configuration/wmib.conf");
+                Console.WriteLine("You can get a configuration file here: https://raw.githubusercontent.com/benapetr/wikimedia-bot/master/configuration/wmib.conf");
                 return 2;
             }
 

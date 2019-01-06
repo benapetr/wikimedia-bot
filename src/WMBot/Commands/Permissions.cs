@@ -8,7 +8,7 @@
 //MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //GNU General Public License for more details.
 
-// Copyright 2013 - 2014 Petr Bena (benapetr@gmail.com)
+// Copyright 2013 - 2018 Petr Bena (benapetr@gmail.com)
 
 using System;
 
@@ -20,7 +20,7 @@ namespace wmib
         {
             try
             {
-                if (message.StartsWith(Configuration.System.CommandPrefix + "trusted "))
+                if (message.StartsWith(Configuration.System.CommandPrefix + "trusted ", System.StringComparison.InvariantCulture))
                 {
                     Channel ch = Core.GetChannel(message.Substring("xtrusted ".Length));
                     if (ch != null)

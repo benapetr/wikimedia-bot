@@ -27,23 +27,35 @@ please consult the [documentation on Meta-Wiki](https://meta.wikimedia.org/wiki/
 
 Dependencies
 ===============
-* https://github.com/npgsql/npgsql (sudo apt-get install libmono-npgsql)
+All dependencies are linked as submodules, make sure to check them out before opening the project:
+```
+git submodule init
+git sumoduble update
+```
 
 How to build
 ===============
 
-This bot is designed for use on unix servers, but it is possible to compile and run it
-on windows as well. If you are using windows, jump to Windows section
+Due to nature of C# and it's universally bad support on GNU/Linux and all platforms other than MS Windows,
+it's currently necessary to compile the project using latest Visual Studio.
 
-cd root folder (that is the folder with this readme)
+Produced binaries may be accompanied with libraries that are not really necessary and do not need to be shipped.
 
-execute:
+Bot's core will be built as "wmib.exe" and modules will be in folder "mods" (typically 3 .dll plugins prefixed
+with WMBot). These libraries need to be in folder "modules" for bot to find them.
+
+Launching the bot from terminal will show you further instructions on how to configure it.
+
+GNU/Linux
+-------------
+Use mono to launch the bot:
+
 ```
-make
+mono wmib.exe
+
+# useful
+mono wmib.exe --help
 ```
-
-That will build everything in folder "bin" from there you can start the bot
-
 
 Windows
 -------------

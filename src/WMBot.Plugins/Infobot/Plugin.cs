@@ -17,7 +17,7 @@ using System.Threading;
 
 namespace wmib.Extensions
 {
-    public class InfobotModule : Module
+    public class InfobotModule : wmib.Module
     {
         public static readonly string PermissionAdd = "infobot_add";
         public static readonly string PermissionDel = "infobot_del";
@@ -37,33 +37,8 @@ namespace wmib.Extensions
         public override bool Construct()
         {
             RestartOnModuleCrash = true;
-            Version = new Version(1, 8, 0, 1);
+            Version = new Version(1, 8, 0, 2);
             return true;
-        }
-
-        public override bool Hook_OnUnload()
-        {
-            bool success = true;
-            if (writer != null)
-            {
-                writer.thread.Abort();
-                writer = null;
-            }
-            lock (Configuration.Channels)
-            {
-                foreach (Channel channel in Configuration.Channels)
-                {
-                    if (!channel.UnregisterObject("Infobot"))
-                    {
-                        success = false;
-                    }
-                }
-            }
-            if (!success)
-            {
-                Syslog.Log("Failed to unregister infobot objects in some channels", true);
-            }
-            return success;
         }
 
         public override void RegisterPermissions()
@@ -192,9 +167,36 @@ namespace wmib.Extensions
                     }
                 }
             }
+            RegisterCommand(new GenericCommand("infobot-keys", this.list_keys));
             if (!success)
             {
                 Syslog.Log("Failed to register infobot objects in some channels", true);
+            }
+            return success;
+        }
+
+        public override bool Hook_OnUnload()
+        {
+            bool success = true;
+            UnregisterCommand("infobot-keys");
+            if (writer != null)
+            {
+                writer.thread.Abort();
+                writer = null;
+            }
+            lock (Configuration.Channels)
+            {
+                foreach (Channel channel in Configuration.Channels)
+                {
+                    if (!channel.UnregisterObject("Infobot"))
+                    {
+                        success = false;
+                    }
+                }
+            }
+            if (!success)
+            {
+                Syslog.Log("Failed to unregister infobot objects in some channels", true);
             }
             return success;
         }
@@ -246,10 +248,42 @@ namespace wmib.Extensions
             return HTML;
         }
 
+        private void list_keys(CommandParams p)
+        {
+            Infobot info = (Infobot)p.SourceChannel.RetrieveObject("Infobot");
+            if (info == null)
+                return;
+
+            string result = "";
+
+            if (info.Keys.Count == 0)
+            {
+                result = "No keys defined";
+            }
+            else
+            {
+                foreach (Infobot.InfobotKey key in info.Keys)
+                {
+                    result += key.Key + ", ";
+                }
+            }
+
+            if (result.EndsWith(", ", StringComparison.InvariantCulture))
+            {
+                result = result.Substring(0, result.Length - 2);
+            }
+
+            if (result.Length > 450)
+            {
+                result = result.Substring(0, 450) + "...";
+            }
+            IRC.DeliverMessage(result, p.SourceChannel);
+        }
+
         public override void Hook_PRIV(Channel channel, libirc.UserInfo invoker, string message)
         {
             // "\uff01" is the full-width version of "!".
-            if ((message.StartsWith("!") || message.StartsWith("\uff01")) && GetConfig(channel, "Infobot.Enabled", true))
+            if ((message.StartsWith("!", StringComparison.InvariantCulture) || message.StartsWith("\uff01", StringComparison.InvariantCulture)) && GetConfig(channel, "Infobot.Enabled", true))
             {
                 while (Unwritable)
                 {
@@ -268,7 +302,7 @@ namespace wmib.Extensions
 
             Infobot infobot = null;
 
-            if (message.StartsWith(Configuration.System.CommandPrefix))
+            if (message.StartsWith(Configuration.System.CommandPrefix, StringComparison.InvariantCulture))
             {
                 infobot = (Infobot)channel.RetrieveObject("Infobot");
                 if (infobot == null)
@@ -287,7 +321,7 @@ namespace wmib.Extensions
 
             if (Snapshots)
             {
-                if (message.StartsWith(Configuration.System.CommandPrefix + "infobot-recovery "))
+                if (message.StartsWith(Configuration.System.CommandPrefix + "infobot-recovery ", StringComparison.InvariantCulture))
                 {
                     if (channel.SystemUsers.IsApproved(invoker, PermissionRestoreSnapshot))
                     {
@@ -310,7 +344,7 @@ namespace wmib.Extensions
                     return;
                 }
 
-                if (message.StartsWith(Configuration.System.CommandPrefix + "infobot-snapshot "))
+                if (message.StartsWith(Configuration.System.CommandPrefix + "infobot-snapshot ", StringComparison.InvariantCulture))
                 {
                     if (channel.SystemUsers.IsApproved(invoker, PermissionSnaphot))
                     {
@@ -333,7 +367,7 @@ namespace wmib.Extensions
                     return;
                 }
 
-                if (message.StartsWith(Configuration.System.CommandPrefix + "infobot-set-raw "))
+                if (message.StartsWith(Configuration.System.CommandPrefix + "infobot-set-raw ", StringComparison.InvariantCulture))
                 {
                     if (channel.SystemUsers.IsApproved(invoker, PermissionAdd))
                     {
@@ -356,7 +390,7 @@ namespace wmib.Extensions
                     return;
                 }
 
-                if (message.StartsWith(Configuration.System.CommandPrefix + "infobot-unset-raw "))
+                if (message.StartsWith(Configuration.System.CommandPrefix + "infobot-unset-raw ", StringComparison.InvariantCulture))
                 {
                     if (channel.SystemUsers.IsApproved(invoker, PermissionAdd))
                     {
@@ -379,7 +413,7 @@ namespace wmib.Extensions
                     return;
                 }
 
-                if (message.StartsWith(Configuration.System.CommandPrefix + "infobot-snapshot-rm "))
+                if (message.StartsWith(Configuration.System.CommandPrefix + "infobot-snapshot-rm ", StringComparison.InvariantCulture))
                 {
                     if (channel.SystemUsers.IsApproved(invoker, PermissionDeleteSnapshot))
                     {

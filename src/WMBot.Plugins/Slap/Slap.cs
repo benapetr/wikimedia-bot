@@ -15,7 +15,7 @@
 
 namespace wmib.Extensions
 {
-    public class Slap : Module
+    public class Slap : wmib.Module
     {
         public override bool Construct()
         {

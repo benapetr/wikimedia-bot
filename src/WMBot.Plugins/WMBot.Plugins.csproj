@@ -16,7 +16,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\bin\debug\modules\</OutputPath>
+    <OutputPath>..\..\bin\mods</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -36,9 +36,6 @@
     <Reference Include="Mono.Posix">
     </Reference>
     <Reference Include="System.Xml" />
-    <Reference Include="libirc">
-      <HintPath>..\WMBot\libirc.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\WMBot.WMFPlugins\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -69,6 +66,8 @@
     <Compile Include="Translate\Translate.cs" />
     <Compile Include="OperatorTools\ChannelTools.cs" />
     <Compile Include="Time\Time.cs" />
+    <Compile Include="AI\AI.cs" />
+    <Compile Include="AI\UserInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -78,14 +77,18 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Time\" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WMBot\WMBot.csproj">
       <Project>{69FFE45E-1CA0-47E5-92D9-4C8E2EDBE911}</Project>
       <Name>WMBot</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup />
-  <ItemGroup>
-    <Folder Include="Time\" />
+    <ProjectReference Include="..\..\libirc\libirc.csproj">
+      <Project>{944CB47E-0E2F-4371-8291-92CE2C4E68CA}</Project>
+      <Name>libirc</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>
