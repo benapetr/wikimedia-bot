@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WMBot.WMFPlugins", "src\WMB
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WMBot.ObsoletePlugins", "src\WMBot.ObsoletePlugins\WMBot.ObsoletePlugins.csproj", "{BA57A112-9F61-4CAC-968F-C18A1E21E713}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Npgsql", "npgsql\src\Npgsql\Npgsql.csproj", "{C3E495F8-A705-4C14-9A3D-4350FA1DA433}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libirc", "libirc\libirc.csproj", "{944CB47E-0E2F-4371-8291-92CE2C4E68CA}"
 EndProject
 Global
@@ -41,10 +39,6 @@ Global
 		{BA57A112-9F61-4CAC-968F-C18A1E21E713}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BA57A112-9F61-4CAC-968F-C18A1E21E713}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BA57A112-9F61-4CAC-968F-C18A1E21E713}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C3E495F8-A705-4C14-9A3D-4350FA1DA433}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C3E495F8-A705-4C14-9A3D-4350FA1DA433}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C3E495F8-A705-4C14-9A3D-4350FA1DA433}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C3E495F8-A705-4C14-9A3D-4350FA1DA433}.Release|Any CPU.Build.0 = Release|Any CPU
 		{944CB47E-0E2F-4371-8291-92CE2C4E68CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{944CB47E-0E2F-4371-8291-92CE2C4E68CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{944CB47E-0E2F-4371-8291-92CE2C4E68CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
