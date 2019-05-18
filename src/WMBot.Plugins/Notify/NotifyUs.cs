@@ -23,17 +23,28 @@ namespace wmib.Extensions
             return true;
         }
 
+        public override bool Hook_OnRegister()
+        {
+            RegisterCommand(new GenericCommand("notify", this.cmNotify));
+            RegisterCommand(new GenericCommand("unnotify", this.cmUnnotify));
+            Core.Help.Register("notify", "inform you when specified user become active or join some channel in private message");
+            Core.Help.Register("unnotify", "removes active notify");
+            return true;
+        }
+
         public override bool Hook_OnUnload()
         {
             UnregisterCommand("notify");
+            UnregisterCommand("unnotify");
             lock (Notification.NotificationList)
             {
                 foreach (Notification nt in Notification.NotificationList)
-                    Log("Dropping undelivered notification for user " + nt.Source_Name + " who was waiting for " + nt.User);
+                    Log("Dropping undelivered notification for user " + nt.Source_Name + " who was waiting for " + nt.Target);
 
                 Notification.NotificationList.Clear();
             }
             Core.Help.Unregister("notify");
+            Core.Help.Unregister("unnotify");
             return true;
         }
 
@@ -108,6 +119,31 @@ namespace wmib.Extensions
             }
         }
 
+        private void UnnotifyUser(string message, libirc.UserInfo invoker, libirc.Target target_)
+        {
+            string parameter = message.Substring(message.IndexOf(" ") + 1).Trim().ToLower();
+            if (String.IsNullOrEmpty(parameter))
+            {
+                IRC.DeliverMessage("This command requires exactly 1 parameter", target_.TargetName);
+                return;
+            }
+            if (parameter.Contains(" "))
+            {
+                IRC.DeliverMessage("That's not a valid nickname (spaces present)", target_.TargetName);
+                return;
+            }
+            foreach (Notification n in Notification.NotificationList)
+            {
+                if (n.Source_Name == invoker.Nick && n.Target.ToLower() == parameter)
+                {
+                    string original_nick = n.Target;
+                    Notification.NotificationList.Remove(n);
+                    IRC.DeliverMessage("You notification about " + original_nick + " was removed!", target_.TargetName);
+                    return;
+                }
+            }
+        }
+
         private void NotifyUser(string message, libirc.UserInfo invoker, libirc.Target target_)
         {
             string parameter = message.Substring(message.IndexOf(" ") + 1).Trim();
@@ -168,6 +204,14 @@ namespace wmib.Extensions
             }
         }
 
+        public void cmUnnotify(CommandParams pm)
+        {
+            if (String.IsNullOrEmpty(pm.Parameters))
+                return;
+
+            this.UnnotifyUser(pm.Message, pm.User, pm.SourceChannel);
+        }
+
         public void cmNotify(CommandParams pm)
         {
             if (String.IsNullOrEmpty(pm.Parameters))
@@ -212,6 +256,12 @@ namespace wmib.Extensions
                 return true;
             }
 
+            if (message.StartsWith(Configuration.System.CommandPrefix + "unnotify "))
+            {
+                this.UnnotifyUser(message, user, user);
+                return true;
+            }
+
             return false;
         }
 
@@ -219,20 +269,13 @@ namespace wmib.Extensions
         {
             if (notification.Message == null)
                 return;
-            IRC.DeliverMessage("Hi " + notification.User + ", " + notification.Source_Name + " was looking for you and wanted me to tell you this when you are here: " +
-                                  notification.Message, notification.User);
+            IRC.DeliverMessage("Hi " + notification.Target + ", " + notification.Source_Name + " was looking for you and wanted me to tell you this when you are here: " +
+                                  notification.Message, notification.Target);
         }
 
         public override void Hook_BeforeSysWeb(ref string html)
         {
             html += "<br />\nNotifications: " + Notification.NotificationList.Count;
-        }
-
-        public override bool Hook_OnRegister()
-        {
-            RegisterCommand(new GenericCommand("notify", this.cmNotify));
-            Core.Help.Register("notify", "inform you when specified user become active or join some channel in private message");
-            return true;
         }
 
         public override void Load()
