@@ -16,19 +16,26 @@ namespace wmib
 {
     public partial class Commands
     {
-        public static bool Trusted(string message, string user, string host)
+        public static bool Trusted(string message, string user, string host, CommandParams parameters)
         {
             try
             {
                 if (message.StartsWith(Configuration.System.CommandPrefix + "trusted ", System.StringComparison.InvariantCulture))
                 {
-                    Channel ch = Core.GetChannel(message.Substring("xtrusted ".Length));
+                    Channel ch;
+                    if (parameters.Parameters != null) {
+                        string[] channel_info = parameters.Parameters.Split(' ');
+                        ch = core.GetChannel(channel_info[1]);
+                    }
+                    else {
+                        ch = Core.GetChannel(message.Substring("xtrusted ".Length));
+                    }
                     if (ch != null)
                     {
                         IRC.DeliverMessage(messages.Localize("TrustedUserList", ch.Language) + ch.SystemUsers.ListAll(), user);
                         return true;
                     }
-                    IRC.DeliverMessage("There is no such a channel I know of", user);
+                    IRC.DeliverMessage("Sorry, I'm not currently in that channel.", user);
                     return true;
                 }
             } catch (Exception fail)
