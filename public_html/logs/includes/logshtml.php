@@ -75,8 +75,8 @@ class LogsHtml
             $n1 = 0;
             $n2 = 0;
             $n3 = 0;
-            $x[$i] = preg_replace("/\x03(\d\d?),(\d\d?)(.*?)(?(?=\x03)|$)/e", "'<span style=\"color: #'.\$c['$1'].';\">$3</span>'", $x[$i], -1, $n1);
-            $x[$i] = preg_replace("/\x03(\d\d?)(.*?)(?(?=\x03)|$)/e", "'<span style=\"color: #'.\$c['$1'].';\">$2</span>'", $x[$i], -1, $n2);
+            $x[$i] = preg_replace("/\x03(\d\d?),(\d\d?)(.*?)(?(?=\x03)|$)/", "'<span style=\"color: #'.\$c['$1'].';\">$3</span>'", $x[$i], -1, $n1);
+            $x[$i] = preg_replace("/\x03(\d\d?)(.*?)(?(?=\x03)|$)/", "'<span style=\"color: #'.\$c['$1'].';\">$2</span>'", $x[$i], -1, $n2);
             $x[$i] = preg_replace("/\x03|\x0F/", "<span style=\"color: #000;\">", $x[$i], -1, $n3);
             $x[$i] = preg_replace("/\x02(.*?)((?=\x02)\x02|$)/", "<b>$1</b>", $x[$i]);
             $x[$i] = preg_replace("/\x1F(.*?)((?=\x1F)\x1F|$)/", "<u>$1</u>", $x[$i]);
@@ -105,45 +105,45 @@ class LogsHtml
 
     public static function al($text)
     {
-        return self::auto_link_text(self::Remove(self::ConvertColorsToHtml(htmlspecialchars($text))) );
+        return self::auto_link_text(self::Remove(self::ConvertColorsToHtml(htmlspecialchars($text))));
     }
 
     public static function RenderLogs($logs)
     {
         $html = "<div class=logs><table class=logs>\n";
-        foreach ($logs as $blah)
+        foreach ($logs as $log_line)
         {
-            if ( $blah["type"] == 0 )
+            if ( $log_line["type"] == 0 )
             {
-		    if ( $blah["act"] == 1 )
+		    if ( $log_line["act"] == 1 )
 		    {
-		        $html .= "<tr><td width=160><b>" . $blah["time"] .
+		        $html .= "<tr><td width=160><b>" . $log_line["time"] .
 			   "</b></td><td colspan=2>* <b>" . 
-			   $blah["nick"] . "</b> " . self::al($blah["contents"]) . 
+			   $log_line["nick"] . "</b> " . self::al($log_line["contents"]) . 
 			   "</td></tr>\n";
 			continue;
 		    }
-	        $html .= ( "<tr><td width=160><b>" . $blah["time"] . 
-			   "</b></td><td><b>&lt;" . $blah["nick"] . 
-			   "&gt;</b></td><td>" . self::al($blah["contents"]) . "</td></tr>\n" );
+	        $html .= ( "<tr><td width=160><b>" . $log_line["time"] . 
+			   "</b></td><td><b>&lt;" . $log_line["nick"] . 
+			   "&gt;</b></td><td>" . self::al($log_line["contents"]) . "</td></tr>\n" );
                 continue;
             }
-            switch ( $blah["type"] )
+            switch ( $log_line["type"] )
             {
                 case 1:
-                    $html .= "<tr><td width=120><b>" . $blah["time"] . "</b></td><td colspan=2>** " . $blah["nick"] . " has quit: " . self::al( $blah["contents"] ) . "</td></tr>\n";
+                    $html .= "<tr><td width=120><b>" . $log_line["time"] . "</b></td><td colspan=2>** " . $log_line["nick"] . " has quit: " . self::al( $log_line["contents"] ) . "</td></tr>\n";
                     continue;
                 case 2:
-                    $html .= "<tr><td width=120><b>" . $blah["time"] . "</b></td><td colspan=2>** " . $blah["nick"] . " joined channel</td></tr>\n";
+                    $html .= "<tr><td width=120><b>" . $log_line["time"] . "</b></td><td colspan=2>** " . $log_line["nick"] . " joined channel</td></tr>\n";
                     continue;
                 case 3:
-                    $html .= "<tr><td width=120><b>" . $blah["time"] . "</b></td><td colspan=2>** " . $blah["nick"] . " parted the channel " . self::al( $blah["contents"] ) . "</td></tr>\n";
+                    $html .= "<tr><td width=120><b>" . $log_line["time"] . "</b></td><td colspan=2>** " . $log_line["nick"] . " parted the channel " . self::al( $log_line["contents"] ) . "</td></tr>\n";
                     continue;
                 case 4:
-                    $html .= "<tr><td width=120><b>" . $blah["time"] . "</b></td><td colspan=2>** " . $blah["nick"] . " was kicked from channel by " . $blah["contents"] . "</td></tr>\n";
+                    $html .= "<tr><td width=120><b>" . $log_line["time"] . "</b></td><td colspan=2>** " . $log_line["nick"] . " was kicked from channel by " . $log_line["contents"] . "</td></tr>\n";
                     continue;
                 case 6:
-                    $html .= "<tr><td width=120><b>" . $blah["time"] . "</b></td><td colspan=2>** " . $blah["contents"] . " changed nickname to " . $blah["nick"] . "</td></tr>\n";
+                    $html .= "<tr><td width=120><b>" . $log_line["time"] . "</b></td><td colspan=2>** " . $log_line["contents"] . " changed nickname to " . $log_line["nick"] . "</td></tr>\n";
                     continue;
             }
         }
