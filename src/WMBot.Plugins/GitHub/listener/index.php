@@ -29,7 +29,7 @@ if (!$payload->IsKnown())
 // for debugging only
 // file_put_contents("/tmp/github", $entityBody);
 // connect to db
-$conn = new mysqli('localhost', $github_user, $github_pw);
+$conn = new mysqli($github_db_host, $github_user, $github_pw);
 if ($conn->connect_error)
     die("Connection failed: " . $conn->connect_error);
 
