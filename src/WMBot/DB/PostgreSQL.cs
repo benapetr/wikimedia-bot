@@ -160,6 +160,7 @@ namespace wmib
                     line.Add(dr[i].ToString());
                 }
             }
+            dr.Close();
             return results;
         }
 
