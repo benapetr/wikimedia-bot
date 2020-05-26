@@ -104,7 +104,7 @@ namespace wmib
         {
             Channel chan;
             string[] rights_info = parameters.Parameters.Split(' ');
-            if (rights_info[0] = null)
+            if (rights_info[0] == null)
             {
                 IRC.DeliverMessage(messages.Localize("InvalidUser", parameters.SourceChannel.Language), parameters.SourceChannel);
                 return;
