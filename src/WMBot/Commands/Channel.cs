@@ -69,7 +69,7 @@ namespace wmib
                 channel.PrimaryInstance.Network.Join(channel_name, password);
                 Channel Chan = Core.GetChannel(channel_name);
                 if (!existing)
-                    Chan.SystemUsers.AddUser("admin", Security.EscapeUser(parameters.User.Nick) + "!.*@" + Security.EscapeUser(parameters.User.Host));
+                    Chan.SystemUsers.AddUser("admin", Security.EscapeUser(parameters.User.Nick) + "!.*@" + Security.EscapeUser(parameters.User.Host), Chan);
                 if (Chan.Extension_GetConfig("generic.founder") == null)
                 {
                     Chan.Extension_SetConfig("generic.founder", parameters.User.ToString());

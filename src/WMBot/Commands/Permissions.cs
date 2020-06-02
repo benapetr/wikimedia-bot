@@ -89,7 +89,7 @@ namespace wmib
                     return;
                 }
             }
-            if (channel.SystemUsers.AddUser(rights_info[1], rights_info[0]))
+            if (channel.SystemUsers.AddUser(rights_info[1], rights_info[0], parameters.SourceChannel))
             {
                 IRC.DeliverMessage(messages.Localize("UserSc", parameters.SourceChannel.Language) + rights_info[0], parameters.SourceChannel);
                 return;
@@ -122,7 +122,7 @@ namespace wmib
                     return;
                 }
             }
-            channel.SystemUsers.DeleteUser(parameters.SourceChannel.SystemUsers.GetUser(parameters.User), rights_info[0]);
+            channel.SystemUsers.DeleteUser(parameters.SourceChannel.SystemUsers.GetUser(parameters.User), rights_info[0], parameters.SourceChannel);
         }
 
         private static void TrustedList(CommandParams parameters)

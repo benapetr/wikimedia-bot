@@ -428,19 +428,19 @@ namespace wmib
         /// <param name="level">Level</param>
         /// <param name="user">Regex</param>
         /// <returns></returns>
-        public bool AddUser(string level, string user)
+        public bool AddUser(string level, string user, Channel err_channel)
         {
             if (!misc.IsValidRegex(user))
             {
                 Syslog.Log("Unable to create user " + user + " because the regex is invalid", true);
-                IRC.DeliverMessage("Unable to add user because this regex is not valid", this._Channel);
+                IRC.DeliverMessage("Unable to add user because this regex is not valid", err_channel);
                 return false;
             }
             foreach (SystemUser u in Users)
             {
                 if (u.Name == user)
                 {
-                    IRC.DeliverMessage("Unable to add user because this user is already in a list", this._Channel);
+                    IRC.DeliverMessage("Unable to add user because this user is already in a list", err_channel);
                     return false;
                 }
             }
@@ -455,7 +455,7 @@ namespace wmib
         /// <param name="origin"></param>
         /// <param name="user">Regex</param>
         /// <returns></returns>
-        public void DeleteUser(SystemUser origin, string user)
+        public void DeleteUser(SystemUser origin, string user, Channel channel)
         {
             foreach (SystemUser u in Users)
             {
@@ -465,22 +465,22 @@ namespace wmib
                     {
                         // users with role that has lower level than role of user who is to be removed aren't allowed to do that
                         // eg. trusted can't delete admin from channel
-                        IRC.DeliverMessage(messages.Localize("RoleMismatch", this._Channel.Language), this._Channel);
+                        IRC.DeliverMessage(messages.Localize("RoleMismatch", this._Channel.Language), channel);
                         return;
                     }
                     if (u.Name == origin.Name)
                     {
                         // users aren't permitted to delete themselve
-                        IRC.DeliverMessage(messages.Localize("Trust2", this._Channel.Language), this._Channel);
+                        IRC.DeliverMessage(messages.Localize("Trust2", this._Channel.Language), channel);
                         return;
                     }
                     Users.Remove(u);
                     Save();
-                    IRC.DeliverMessage(messages.Localize("Trust3", this._Channel.Language), this._Channel);
+                    IRC.DeliverMessage(messages.Localize("Trust3", this._Channel.Language), channel);
                     return;
                 }
             }
-            IRC.DeliverMessage(messages.Localize("Trust4", this._Channel.Language), this._Channel);
+            IRC.DeliverMessage(messages.Localize("Trust4", this._Channel.Language), channel);
             return;
         }
 
