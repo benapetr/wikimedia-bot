@@ -79,7 +79,7 @@ namespace wmib
                 return;
             }
             if (rights_info[2] != null) {
-                if ( channel.SystemUsers.IsApproved(invoker, "root") {
+                if ( channel.SystemUsers.IsApproved(invoker, "root")) {
                     chan = core.GetChannel(rights_info[2]);
                 }
                 else {
@@ -110,7 +110,7 @@ namespace wmib
                 return;
             }
             if (rights_info[1] != null) {
-                if ( channel.SystemUsers.IsApproved(invoker, "root") {
+                if ( channel.SystemUsers.IsApproved(invoker, "root")) {
                     chan = core.GetChannel(rights_info[1]);
                 }
                 else {
