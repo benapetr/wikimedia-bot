@@ -8,7 +8,7 @@
 //MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //GNU General Public License for more details.
 
-// Copyright 2013 - 2018 Petr Bena (benapetr@gmail.com)
+// Copyright 2013 - 2020 Petr Bena (benapetr@gmail.com)
 
 using System;
 
@@ -16,40 +16,34 @@ namespace wmib
 {
     public partial class Commands
     {
-        public static bool Trusted(string message, string user, string host, CommandParams parameters)
+        public static bool Trusted (string message, string user, string host)
         {
             try
             {
-                if (message.StartsWith(Configuration.System.CommandPrefix + "trusted ", System.StringComparison.InvariantCulture))
+                if (message.StartsWith (Configuration.System.CommandPrefix + "trusted ", System.StringComparison.InvariantCulture))
                 {
-                    Channel ch;
-                    if (parameters.Parameters != null) {
-                        string[] channel_info = parameters.Parameters.Split(' ');
-                        ch = core.GetChannel(channel_info[0]);
-                    }
-                    else {
-                        ch = Core.GetChannel(message.Substring("xtrusted ".Length));
-                    }
+                    Channel ch = Core.GetChannel (message.Substring ("xtrusted ".Length));
                     if (ch != null)
                     {
-                        IRC.DeliverMessage(messages.Localize("TrustedUserList", ch.Language) + ch.SystemUsers.ListAll(), user);
+                        IRC.DeliverMessage (messages.Localize ("TrustedUserList", ch.Language) + ch.SystemUsers.ListAll (), user);
                         return true;
                     }
-                    IRC.DeliverMessage("Sorry, I'm not currently in that channel.", user);
+                    IRC.DeliverMessage ("There is no such a channel I know of", user);
                     return true;
                 }
             } catch (Exception fail)
             {
-                Core.HandleException(fail);
+                Core.HandleException (fail);
             }
             return false;
         }
 
         private static void TrustAdd(CommandParams parameters)
         {
-            Channel chan;
+            Channel channel = parameters.SourceChannel;
             if (parameters.Parameters == null)
                 return;
+
             string[] rights_info = parameters.Parameters.Split(' ');
             if (rights_info.Length < 2)
             {
@@ -78,56 +72,72 @@ namespace wmib
                 IRC.DeliverMessage(messages.Localize("RoleMismatch", parameters.SourceChannel.Language), parameters.SourceChannel);
                 return;
             }
-            if (rights_info[2] != null) {
-                if ( channel.SystemUsers.IsApproved(invoker, "root") {
-                    chan = core.GetChannel(rights_info[2]);
+            if (rights_info.Length > 2)
+            {
+                if (channel.SystemUsers.IsApproved(parameters.User, "root"))
+                {
+                    channel = Core.GetChannel(rights_info[2]);
+                    if (channel == null)
+                    {
+                        IRC.DeliverMessage("I don't know this channel: " + rights_info[2], parameters.SourceChannel);
+                        return;
+                    }
                 }
-                else {
+                else
+                {
                     IRC.DeliverMessage("Sorry, only root users can manage permissions for other channels.", parameters.SourceChannel);
                     return;
                 }
             }
-            else {
-                chan = parameters.SourceChannel;
-            }
-            if (chan.SystemUsers.AddUser(rights_info[1], rights_info[0]))
+            if (channel.SystemUsers.AddUser(rights_info[1], rights_info[0]))
             {
                 IRC.DeliverMessage(messages.Localize("UserSc", parameters.SourceChannel.Language) + rights_info[0], parameters.SourceChannel);
-                if ( rights_info[2] != null ) {
-                    IRC.DeliverMessage(rights_info[0] + ", was added to the trust list in this channel. (" + parameters.SourceChannel + ")", chan);
-                }
                 return;
             }
         }
 
         private static void TrustDel(CommandParams parameters)
         {
-            Channel chan;
+            Channel channel = parameters.SourceChannel;
             string[] rights_info = parameters.Parameters.Split(' ');
             if (rights_info[0] == null)
             {
                 IRC.DeliverMessage(messages.Localize("InvalidUser", parameters.SourceChannel.Language), parameters.SourceChannel);
                 return;
             }
-            if (rights_info[1] != null) {
-                if ( channel.SystemUsers.IsApproved(invoker, "root") {
-                    chan = core.GetChannel(rights_info[1]);
+            if (rights_info.Length > 1)
+            {
+                if (channel.SystemUsers.IsApproved(parameters.User, "root"))
+                {
+                    channel = Core.GetChannel(rights_info[1]);
+                    if (channel == null)
+                    {
+                        IRC.DeliverMessage("I don't know this channel: " + rights_info[1], parameters.SourceChannel);
+                        return;
+                    }
                 }
-                else {
+                else
+                {
                     IRC.DeliverMessage("Sorry, only root users can manage permissions for other channels.", parameters.SourceChannel);
                     return;
                 }
             }
-            else {
-                chan = parameters.SourceChannel;
-            }
-            chan.SystemUsers.DeleteUser(parameters.SourceChannel.SystemUsers.GetUser(parameters.User), rights_info[0]);
-            return;
+            channel.SystemUsers.DeleteUser(parameters.SourceChannel.SystemUsers.GetUser(parameters.User), rights_info[0]);
         }
 
         private static void TrustedList(CommandParams parameters)
         {
-            IRC.DeliverMessage(messages.Localize("TrustedUserList", parameters.SourceChannel.Language) + parameters.SourceChannel.SystemUsers.ListAll(), parameters.SourceChannel);
+            Channel channel = parameters.SourceChannel;
+            if (!String.IsNullOrEmpty (parameters.Parameters))
+            {
+                channel = Core.GetChannel(parameters.Parameters.Trim());
+                if (channel == null)
+                {
+                    IRC.DeliverMessage("I don't know this channel: " + parameters.Parameters, parameters.SourceChannel);
+                    return;
+                }
+            }
+            IRC.DeliverMessage(messages.Localize("TrustedUserList", parameters.SourceChannel.Language) + channel.SystemUsers.ListAll(), parameters.SourceChannel);
         }
     }
 }
