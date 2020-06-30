@@ -191,3 +191,5 @@ Feed13=Minor changes already shown;
 Feed14=Minor changes already hidden;
 Feed15=Bot changes already shown;
 Feed16=Bot changes already hidden;
+ChannelRestricted=$1 was restricted to join. Please contact an admin to have it unblocked;
+ChannelUnblocking=Unblocking previously restricted channel $1;

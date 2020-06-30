@@ -217,6 +217,12 @@ namespace wmib
 
         protected override void __evt_PRIVMSG(NetworkPRIVMSGEventArgs args)
         {
+            if (Configuration.IgnoredHostmasks.Contains(args.SourceInfo.Host))
+            {
+                // messages from this user are ignored
+                return;
+            }
+
             if (args.ChannelName == null)
             {
                 // private message
@@ -281,4 +287,3 @@ namespace wmib
         }
     }
 }
-

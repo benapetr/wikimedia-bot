@@ -29,7 +29,7 @@ namespace wmib
         public static Dictionary<string, Instance> Instances = new Dictionary<string, Instance>();
         /// <summary>
         /// Targets of each instance
-        /// 
+        ///
         /// This is used to remember the last instance that user was talking to in a private message
         /// so that we respond to user using the same instance and not primary one
         /// </summary>
