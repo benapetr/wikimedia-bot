@@ -223,6 +223,7 @@ got|https://got.wikipedia.org/wiki/$1
 gotamac|https://www.got-a-mac.org/$1
 greatlakeswiki|https://greatlakeswiki.org/index.php/$1
 gu|https://gu.wikipedia.org/wiki/$1
+guwiktionary|https://gu.wiktionary.org/wiki/$1
 guildwiki|https://gw.gamewikis.org/wiki/$1
 gutenberg|https://www.gutenberg.org/etext/$1
 gutenbergwiki|https://www.gutenberg.org/wiki/$1
