@@ -144,6 +144,8 @@ namespace wmib
                         lock (Configuration.Channels)
                         {
                             channel.Remove();
+                            if (origin != channel.Name)
+                                IRC.DeliverMessage("Successfully dropped channel: " + channel.Name, origin);
                         }
                         Configuration.Save();
                         return;
