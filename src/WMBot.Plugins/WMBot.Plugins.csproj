@@ -68,6 +68,7 @@
     <Compile Include="Time\Time.cs" />
     <Compile Include="AI\AI.cs" />
     <Compile Include="AI\UserInfo.cs" />
+    <Compile Include="NetworkBridge\NetworkBridge.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -80,6 +81,7 @@
   <ItemGroup />
   <ItemGroup>
     <Folder Include="Time\" />
+    <Folder Include="NetworkBridge\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WMBot\WMBot.csproj">
