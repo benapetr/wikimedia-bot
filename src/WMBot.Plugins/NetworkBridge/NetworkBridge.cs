@@ -95,6 +95,17 @@ namespace wmib.Extensions
              if (!GetConfig(channel, "NetworkBridge.Enabled", false))
                 return;
 
+             // Ignore infobot and commands, we don't need to see that
+             if (message.StartsWith("!"))
+                return;
+
+             if (message.StartsWith("@"))
+                return;
+
+             // This is just temporary, we need to make this configurable
+             if (invoker.Nick == "wikibugs")
+                return;
+
              // Send message over
              this.sendMsg(channel.Name, "<" + invoker.Nick + "> " + message);
         }
