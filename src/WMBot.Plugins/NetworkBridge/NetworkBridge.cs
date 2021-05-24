@@ -47,7 +47,7 @@ namespace wmib.Extensions
                     {
                         if (this.itemsToSend.Count > 0)
                         {
-                            items = this.itemsToSend;
+                            items.AddRange(this.itemsToSend);
                             this.itemsToSend.Clear();
                         }
                     }
