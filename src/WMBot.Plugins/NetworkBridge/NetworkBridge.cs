@@ -14,6 +14,7 @@
 //  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -26,6 +27,7 @@ namespace wmib.Extensions
     {
         // NetCat port of bot on first network
         public int Port = 64834;
+        private List<string> itemsToSend = new List<string>();
 
         public override bool Construct()
         {
@@ -40,6 +42,33 @@ namespace wmib.Extensions
             {
                 try
                 {
+                    List<string> items = new List<string>();
+                    lock(this.itemsToSend)
+                    {
+                        if (this.itemsToSend.Count > 0)
+                        {
+                            items = this.itemsToSend;
+                            this.itemsToSend.Clear();
+                        }
+                    }
+                    if (items.Count > 0)
+                    {
+                        try
+                        {
+                            TcpClient client = new TcpClient("127.0.0.1", this.Port);
+                            NetworkStream nwStream = client.GetStream();
+                            string input = "";
+                            foreach (string i in items)
+                                input += i + "\n";
+                            
+                            byte[] bytesToSend = ASCIIEncoding.ASCII.GetBytes(input);
+                            nwStream.Write(bytesToSend, 0, bytesToSend.Length);
+                            client.Close();
+                        } catch (Exception e)
+                        {
+                            HandleException(e);
+                        }  
+                    }
                     Thread.Sleep(200);
                 }
                 catch (ThreadAbortException)
@@ -55,16 +84,9 @@ namespace wmib.Extensions
 
         private void sendMsg(string target, string message)
         {
-            try
+            lock (this.itemsToSend)
             {
-                TcpClient client = new TcpClient("127.0.0.1", this.Port);
-                NetworkStream nwStream = client.GetStream();
-                byte[] bytesToSend = ASCIIEncoding.ASCII.GetBytes(target + " " + message + "\n");
-                nwStream.Write(bytesToSend, 0, bytesToSend.Length);
-                client.Close();
-            } catch (Exception e)
-            {
-                HandleException(e);
+                this.itemsToSend.Add(target + " " + message);
             }
         }
 
