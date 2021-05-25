@@ -722,7 +722,7 @@ namespace wmib
                 {
                     if (!channel.SuppressWarnings)
                     {
-                        IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
+                        IRC.DeliverMessage(Localization.Localize("PermissionDenied", channel.Language), channel.Name);
                     }
                 }
                 return;
@@ -747,7 +747,7 @@ namespace wmib
                 {
                     if (!channel.SuppressWarnings)
                     {
-                        IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
+                        IRC.DeliverMessage(Localization.Localize("PermissionDenied", channel.Language), channel.Name);
                     }
                 }
                 return;

@@ -86,10 +86,10 @@ namespace wmib.Extensions
                 {
                     if (GetConfig(channel, "Logging.Enabled", false))
                     {
-                        IRC.DeliverMessage(messages.Localize("ChannelLogged", channel.Language), channel.Name);
+                        IRC.DeliverMessage(Localization.Localize("ChannelLogged", channel.Language), channel.Name);
                         return;
                     }
-                    IRC.DeliverMessage(messages.Localize("LoggingOn", channel.Language), channel.Name);
+                    IRC.DeliverMessage(Localization.Localize("LoggingOn", channel.Language), channel.Name);
                     SetConfig(channel, "Logging.Enabled", true);
                     channel.SaveConfig();
                     UpdateConfig(channel);
@@ -97,7 +97,7 @@ namespace wmib.Extensions
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
+                    IRC.DeliverMessage(Localization.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -108,18 +108,18 @@ namespace wmib.Extensions
                 {
                     if (!GetConfig(channel, "Logging.Enabled", false))
                     {
-                        IRC.DeliverMessage(messages.Localize("LogsE1", channel.Language), channel.Name);
+                        IRC.DeliverMessage(Localization.Localize("LogsE1", channel.Language), channel.Name);
                         return;
                     }
                     SetConfig(channel, "Logging.Enabled", false);
                     channel.SaveConfig();
                     UpdateConfig(channel);
-                    IRC.DeliverMessage(messages.Localize("NotLogged", channel.Language), channel.Name);
+                    IRC.DeliverMessage(Localization.Localize("NotLogged", channel.Language), channel.Name);
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
+                    IRC.DeliverMessage(Localization.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
             }
         }

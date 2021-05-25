@@ -145,12 +145,12 @@ namespace wmib.Extensions
         {
             if (GetConfig(parameters.SourceChannel, "Seen.Enabled", false))
             {
-                IRC.DeliverMessage(messages.Localize("seen-oe", parameters.SourceChannel.Language), parameters.SourceChannel.Name);
+                IRC.DeliverMessage(Localization.Localize("seen-oe", parameters.SourceChannel.Language), parameters.SourceChannel.Name);
                 return;
             }
             SetConfig(parameters.SourceChannel, "Seen.Enabled", true);
             parameters.SourceChannel.SaveConfig();
-            IRC.DeliverMessage(messages.Localize("seen-on", parameters.SourceChannel.Language), parameters.SourceChannel.Name);
+            IRC.DeliverMessage(Localization.Localize("seen-on", parameters.SourceChannel.Language), parameters.SourceChannel.Name);
         }
 
         private void cmSeenHost(CommandParams parameters)
@@ -166,7 +166,7 @@ namespace wmib.Extensions
             if (parameters.Parameters == null)
                 return;
             if (GetConfig(parameters.SourceChannel, "Seen.Enabled", false) && parameters.Parameters != "")
-                    RetrieveStatus(parameters.Parameters, parameters.SourceChannel, parameters.User.Nick);
+                RetrieveStatus(parameters.Parameters, parameters.SourceChannel, parameters.User.Nick);
         }
 
         public override bool Hook_OnUnload()
@@ -183,10 +183,10 @@ namespace wmib.Extensions
         {
             if (!GetConfig(parameters.SourceChannel, "Seen.Enabled", false))
             {
-                IRC.DeliverMessage(messages.Localize("seen-e2", parameters.SourceChannel.Language), parameters.SourceChannel.Name);
+                IRC.DeliverMessage(Localization.Localize("seen-e2", parameters.SourceChannel.Language), parameters.SourceChannel.Name);
                 return;
             }
-            IRC.DeliverMessage(messages.Localize("seen-off", parameters.SourceChannel.Language), parameters.SourceChannel.Name);
+            IRC.DeliverMessage(Localization.Localize("seen-off", parameters.SourceChannel.Language), parameters.SourceChannel.Name);
             SetConfig(parameters.SourceChannel, "Seen.Enabled", false);
             parameters.SourceChannel.SaveConfig();
         }
@@ -220,7 +220,7 @@ namespace wmib.Extensions
         {
             WriteStatus(user.Nick, user.Host, "N/A", Item.Action.Exit, "", Message);
         }
-        
+
         public override void Load()
         {
             try
@@ -292,7 +292,7 @@ namespace wmib.Extensions
                     bool multiple = false;
                     string results = "";
                     int cn = 0;
-                    string action = "quitting the network with reason " ;
+                    string action = "quitting the network with reason ";
                     lock (GlobalList)
                     {
                         foreach (Item xx in GlobalList)
@@ -432,7 +432,7 @@ namespace wmib.Extensions
                     Working = false;
                     goto ex;
                 }
-                IRC.DeliverMessage(messages.Localize("Error1", chan.Language), chan.Name);
+                IRC.DeliverMessage(Localization.Localize("Error1", chan.Language), chan.Name);
                 Working = false;
             }
             catch (ThreadAbortException)
@@ -444,8 +444,8 @@ namespace wmib.Extensions
                 HandleException(fail);
                 IsWorking = false;
             }
-            ex:
-                Core.ThreadManager.UnregisterThread(SearchThread);
+        ex:
+            Core.ThreadManager.UnregisterThread(SearchThread);
         }
 
         public void StartRegex()
@@ -492,7 +492,7 @@ namespace wmib.Extensions
                 temp_nick = nick;
                 temp_source = source;
                 chan = channel;
-                SearchThread = new Thread(Search) {Name = "Module:Seen/Search"};
+                SearchThread = new Thread(Search) { Name = "Module:Seen/Search" };
                 wmib.Core.ThreadManager.RegisterThread(SearchThread);
                 SearchThread.Start();
                 Working = true;
@@ -537,7 +537,7 @@ namespace wmib.Extensions
         {
             lock (requests)
             {
-                ChannelRequest rq = new ChannelRequest(nick, source, channel, false) {hostname_check = true};
+                ChannelRequest rq = new ChannelRequest(nick, source, channel, false) { hostname_check = true };
                 requests.Add(rq);
             }
         }
@@ -789,7 +789,7 @@ namespace wmib.Extensions
 
         public void LoadData()
         {
-            SearchHostThread = new Thread(StartRegex) {Name = "Module:Seen/SearchHostThread"};
+            SearchHostThread = new Thread(StartRegex) { Name = "Module:Seen/SearchHostThread" };
             Core.ThreadManager.RegisterThread(SearchHostThread);
             SearchHostThread.Start();
             try

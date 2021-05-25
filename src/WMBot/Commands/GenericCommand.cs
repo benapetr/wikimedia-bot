@@ -85,14 +85,14 @@ namespace wmib
                         if (!parameter.SourceChannel.SystemUsers.IsApproved(parameter.User, requiredPermission))
                         {
                             if (!parameter.SourceChannel.SuppressWarnings && !SilentErrors)
-                                IRC.DeliverMessage(messages.Localize("PermissionDenied", parameter.SourceChannel.Language), parameter.SourceChannel);
+                                IRC.DeliverMessage(Localization.Localize("PermissionDenied", parameter.SourceChannel.Language), parameter.SourceChannel);
                             // user doesn't have permission to run this command
                             return;
                         }
                     }
                     else if (!Security.IsGloballyApproved(parameter.User, RequiredPermission))
                     {
-                        IRC.DeliverMessage(messages.Localize("PermissionDenied"), parameter.User, libirc.Defs.Priority.Low);
+                        IRC.DeliverMessage(Localization.Localize("PermissionDenied"), parameter.User, libirc.Defs.Priority.Low);
                     }
                 }
                 this.action(parameter);

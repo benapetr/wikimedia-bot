@@ -210,12 +210,12 @@ namespace wmib
                         if (bool.TryParse(value, out _temp_a))
                         {
                             parameters.SourceChannel.IgnoreUnknown = _temp_a;
-                            IRC.DeliverMessage(messages.Localize("configuresave", parameters.SourceChannel.Language,
+                            IRC.DeliverMessage(Localization.Localize("configuresave", parameters.SourceChannel.Language,
                                                                        new List<string> { value, name }), parameters.SourceChannel);
                             parameters.SourceChannel.SaveConfig();
                             return;
                         }
-                        IRC.DeliverMessage(messages.Localize("configure-va", parameters.SourceChannel.Language, new List<string> { name, value }), parameters.SourceChannel);
+                        IRC.DeliverMessage(Localization.Localize("configure-va", parameters.SourceChannel.Language, new List<string> { name, value }), parameters.SourceChannel);
                         return;
                     case "respond-wait":
                         int _temp_b;
@@ -224,32 +224,32 @@ namespace wmib
                             if (_temp_b > 1 && _temp_b < 364000)
                             {
                                 parameters.SourceChannel.RespondWait = _temp_b;
-                                IRC.DeliverMessage(messages.Localize("configuresave", parameters.SourceChannel.Language, new List<string> { value, name }), parameters.SourceChannel);
+                                IRC.DeliverMessage(Localization.Localize("configuresave", parameters.SourceChannel.Language, new List<string> { value, name }), parameters.SourceChannel);
                                 parameters.SourceChannel.SaveConfig();
                                 return;
                             }
                         }
-                        IRC.DeliverMessage(messages.Localize("configure-va", parameters.SourceChannel.Language, new List<string> { name, value }), parameters.SourceChannel);
+                        IRC.DeliverMessage(Localization.Localize("configure-va", parameters.SourceChannel.Language, new List<string> { name, value }), parameters.SourceChannel);
                         return;
                     case "respond-message":
                         if (bool.TryParse(value, out _temp_a))
                         {
                             parameters.SourceChannel.RespondMessage = _temp_a;
-                            IRC.DeliverMessage(messages.Localize("configuresave", parameters.SourceChannel.Language, new List<string> { value, name }), parameters.SourceChannel);
+                            IRC.DeliverMessage(Localization.Localize("configuresave", parameters.SourceChannel.Language, new List<string> { value, name }), parameters.SourceChannel);
                             parameters.SourceChannel.SaveConfig();
                             return;
                         }
-                        IRC.DeliverMessage(messages.Localize("configure-va", parameters.SourceChannel.Language, new List<string> { name, value }), parameters.SourceChannel);
+                        IRC.DeliverMessage(Localization.Localize("configure-va", parameters.SourceChannel.Language, new List<string> { name, value }), parameters.SourceChannel);
                         return;
                     case "suppress-warnings":
                         if (bool.TryParse(value, out _temp_a))
                         {
                             parameters.SourceChannel.SuppressWarnings = _temp_a;
-                            IRC.DeliverMessage(messages.Localize("configuresave", parameters.SourceChannel.Language, new List<string> { value, name }), parameters.SourceChannel);
+                            IRC.DeliverMessage(Localization.Localize("configuresave", parameters.SourceChannel.Language, new List<string> { value, name }), parameters.SourceChannel);
                             parameters.SourceChannel.SaveConfig();
                             return;
                         }
-                        IRC.DeliverMessage(messages.Localize("configure-va", parameters.SourceChannel.Language, new List<string> { name, value }), parameters.SourceChannel);
+                        IRC.DeliverMessage(Localization.Localize("configure-va", parameters.SourceChannel.Language, new List<string> { name, value }), parameters.SourceChannel);
                         return;
                 }
                 bool exist = false;
@@ -267,7 +267,7 @@ namespace wmib
                     }
                 }
                 if (!parameters.SourceChannel.SuppressWarnings && !exist)
-                    IRC.DeliverMessage(messages.Localize("configure-wrong", parameters.SourceChannel.Language), parameters.SourceChannel);
+                    IRC.DeliverMessage(Localization.Localize("configure-wrong", parameters.SourceChannel.Language), parameters.SourceChannel);
                 return;
             }
             if (!parameters.Parameters.Contains(" "))
@@ -275,13 +275,13 @@ namespace wmib
                 switch (parameters.Parameters)
                 {
                     case "ignore-unknown":
-                        IRC.DeliverMessage(messages.Localize("Responses-Conf", parameters.SourceChannel.Language, new List<string> { parameters.Parameters, parameters.SourceChannel.IgnoreUnknown.ToString() }), parameters.SourceChannel);
+                        IRC.DeliverMessage(Localization.Localize("Responses-Conf", parameters.SourceChannel.Language, new List<string> { parameters.Parameters, parameters.SourceChannel.IgnoreUnknown.ToString() }), parameters.SourceChannel);
                         return;
                     case "respond-message":
-                        IRC.DeliverMessage(messages.Localize("Responses-Conf", parameters.SourceChannel.Language, new List<string> { parameters.Parameters, parameters.SourceChannel.RespondMessage.ToString() }), parameters.SourceChannel);
+                        IRC.DeliverMessage(Localization.Localize("Responses-Conf", parameters.SourceChannel.Language, new List<string> { parameters.Parameters, parameters.SourceChannel.RespondMessage.ToString() }), parameters.SourceChannel);
                         return;
                     case "suppress-warnings":
-                        IRC.DeliverMessage(messages.Localize("Responses-Conf", parameters.SourceChannel.Language, new List<string> { parameters.Parameters, parameters.SourceChannel.SuppressWarnings.ToString() }), parameters.SourceChannel);
+                        IRC.DeliverMessage(Localization.Localize("Responses-Conf", parameters.SourceChannel.Language, new List<string> { parameters.Parameters, parameters.SourceChannel.SuppressWarnings.ToString() }), parameters.SourceChannel);
                         return;
                 }
                 bool exist = false;
@@ -302,12 +302,12 @@ namespace wmib
                     return;
             }
             if (!parameters.SourceChannel.SuppressWarnings)
-                IRC.DeliverMessage(messages.Localize("configure-wrong", parameters.SourceChannel.Language), parameters.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("configure-wrong", parameters.SourceChannel.Language), parameters.SourceChannel);
         }
 
         private static void ChannelList(CommandParams parameters)
         {
-            IRC.DeliverMessage(messages.Localize("Responses-List", parameters.SourceChannel.Language, new List<string> { Configuration.Channels.Count.ToString() }),
+            IRC.DeliverMessage(Localization.Localize("Responses-List", parameters.SourceChannel.Language, new List<string> { Configuration.Channels.Count.ToString() }),
                                 parameters.SourceChannel);
         }
 
@@ -363,10 +363,10 @@ namespace wmib
             SystemUser current = parameters.SourceChannel.SystemUsers.GetUser(parameters.User);
             if (current.Role == "null")
             {
-                IRC.DeliverMessage(messages.Localize("Unknown", parameters.SourceChannel.Language), parameters.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("Unknown", parameters.SourceChannel.Language), parameters.SourceChannel);
                 return;
             }
-            IRC.DeliverMessage(messages.Localize("usr1", parameters.SourceChannel.Language, new List<string> { current.Role, current.Name }), parameters.SourceChannel);
+            IRC.DeliverMessage(Localization.Localize("usr1", parameters.SourceChannel.Language, new List<string> { current.Role, current.Name }), parameters.SourceChannel);
         }
 
         private static void Restart(CommandParams parameters)
@@ -383,7 +383,7 @@ namespace wmib
                 //Message("Channel had already quiet mode disabled", chan.name);
                 return;
             }
-            IRC.DeliverMessage(messages.Localize("SilenceBegin", parameters.SourceChannel.Language), parameters.SourceChannel);
+            IRC.DeliverMessage(Localization.Localize("SilenceBegin", parameters.SourceChannel.Language), parameters.SourceChannel);
             parameters.SourceChannel.Suppress = true;
             parameters.SourceChannel.SaveConfig();
         }
@@ -392,11 +392,11 @@ namespace wmib
         {
             if (!parameters.SourceChannel.Suppress)
             {
-                IRC.DeliverMessage(messages.Localize("Silence1", parameters.SourceChannel.Language), parameters.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("Silence1", parameters.SourceChannel.Language), parameters.SourceChannel);
                 return;
             }
             parameters.SourceChannel.Suppress = false;
-            IRC.DeliverMessage(messages.Localize("Silence2", parameters.SourceChannel.Language), parameters.SourceChannel);
+            IRC.DeliverMessage(Localization.Localize("Silence2", parameters.SourceChannel.Language), parameters.SourceChannel);
             parameters.SourceChannel.SaveConfig();
             Configuration.Save();
         }
@@ -411,7 +411,7 @@ namespace wmib
         {
             parameters.SourceChannel.LoadConfig();
             SystemHooks.IrcReloadChannelConf(parameters.SourceChannel);
-            IRC.DeliverMessage(messages.Localize("Config", parameters.SourceChannel.Language), parameters.SourceChannel);
+            IRC.DeliverMessage(Localization.Localize("Config", parameters.SourceChannel.Language), parameters.SourceChannel);
             return;
         }
 
@@ -433,18 +433,18 @@ namespace wmib
         {
             if (!String.IsNullOrEmpty(parameters.Parameters))
             {
-                if (messages.Exists(parameters.Parameters))
+                if (Localization.Exists(parameters.Parameters))
                 {
                     parameters.SourceChannel.Language = parameters.Parameters;
-                    IRC.DeliverMessage(messages.Localize("Language", parameters.SourceChannel.Language), parameters.SourceChannel);
+                    IRC.DeliverMessage(Localization.Localize("Language", parameters.SourceChannel.Language), parameters.SourceChannel);
                     parameters.SourceChannel.SaveConfig();
                     return;
                 }
                 if (!parameters.SourceChannel.SuppressWarnings)
-                    IRC.DeliverMessage(messages.Localize("InvalidCode", parameters.SourceChannel.Language), parameters.SourceChannel);
+                    IRC.DeliverMessage(Localization.Localize("InvalidCode", parameters.SourceChannel.Language), parameters.SourceChannel);
                 return;
             }
-            IRC.DeliverMessage(messages.Localize("LanguageInfo", parameters.SourceChannel.Language), parameters.SourceChannel);
+            IRC.DeliverMessage(Localization.Localize("LanguageInfo", parameters.SourceChannel.Language), parameters.SourceChannel);
         }
 
         private static void Drop(CommandParams parameters)
@@ -457,7 +457,7 @@ namespace wmib
                 Channel _Channel = Core.GetChannel(channel);
                 if (_Channel == null)
                 {
-                    IRC.DeliverMessage(messages.Localize("UnknownChan", parameters.SourceChannel.Language), parameters.SourceChannel,
+                    IRC.DeliverMessage(Localization.Localize("UnknownChan", parameters.SourceChannel.Language), parameters.SourceChannel,
                                                   libirc.Defs.Priority.Low);
                     return;
                 }
@@ -465,7 +465,7 @@ namespace wmib
                                  + "drop", parameters.SourceChannel.Name);
                 return;
             }
-            IRC.DeliverMessage(messages.Localize("Responses-PartFail", parameters.SourceChannel.Language), parameters.SourceChannel,
+            IRC.DeliverMessage(Localization.Localize("Responses-PartFail", parameters.SourceChannel.Language), parameters.SourceChannel,
                                           libirc.Defs.Priority.Low);
         }
 
@@ -479,7 +479,7 @@ namespace wmib
                 Channel _Channel = Core.GetChannel(channel);
                 if (_Channel == null)
                 {
-                    IRC.DeliverMessage(messages.Localize("UnknownChan", parameters.SourceChannel.Language), parameters.SourceChannel,
+                    IRC.DeliverMessage(Localization.Localize("UnknownChan", parameters.SourceChannel.Language), parameters.SourceChannel,
                                                   libirc.Defs.Priority.Low);
                     return;
                 }
@@ -487,7 +487,7 @@ namespace wmib
                                  + "part", parameters.SourceChannel.Name);
                 return;
             }
-            IRC.DeliverMessage(messages.Localize("Responses-PartFail", parameters.SourceChannel.Language), parameters.SourceChannel,
+            IRC.DeliverMessage(Localization.Localize("Responses-PartFail", parameters.SourceChannel.Language), parameters.SourceChannel,
                                           libirc.Defs.Priority.Low);
         }
     }

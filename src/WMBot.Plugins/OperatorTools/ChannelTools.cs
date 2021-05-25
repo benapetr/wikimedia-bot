@@ -28,10 +28,10 @@ namespace wmib.Extensions
         {
             if (GetConfig(p.SourceChannel, "OP.Permanent", false))
             {
-                IRC.DeliverMessage(messages.Localize("OpE3", p.SourceChannel.Language), p.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("OpE3", p.SourceChannel.Language), p.SourceChannel);
                 return;
             }
-            IRC.DeliverMessage(messages.Localize("OpM3", p.SourceChannel.Language), p.SourceChannel);
+            IRC.DeliverMessage(Localization.Localize("OpM3", p.SourceChannel.Language), p.SourceChannel);
             SetConfig(p.SourceChannel, "OP.Permanent", true);
             p.SourceChannel.SaveConfig();
         }
@@ -40,10 +40,10 @@ namespace wmib.Extensions
         {
             if (!GetConfig(p.SourceChannel, "OP.Permanent", false))
             {
-                IRC.DeliverMessage(messages.Localize("OpE2", p.SourceChannel.Language), p.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("OpE2", p.SourceChannel.Language), p.SourceChannel);
                 return;
             }
-            IRC.DeliverMessage(messages.Localize("OpM2", p.SourceChannel.Language), p.SourceChannel);
+            IRC.DeliverMessage(Localization.Localize("OpM2", p.SourceChannel.Language), p.SourceChannel);
             SetConfig(p.SourceChannel, "OP.Permanent", false);
             p.SourceChannel.SaveConfig();
         }
@@ -52,10 +52,10 @@ namespace wmib.Extensions
         {
             if (!GetConfig(p.SourceChannel, "OP.Enabled", false))
             {
-                IRC.DeliverMessage(messages.Localize("OpE4", p.SourceChannel.Language), p.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("OpE4", p.SourceChannel.Language), p.SourceChannel);
                 return;
             }
-            IRC.DeliverMessage(messages.Localize("OpM4", p.SourceChannel.Language), p.SourceChannel);
+            IRC.DeliverMessage(Localization.Localize("OpM4", p.SourceChannel.Language), p.SourceChannel);
             SetConfig(p.SourceChannel, "OP.Enabled", false);
             p.SourceChannel.SaveConfig();
         }
@@ -64,10 +64,10 @@ namespace wmib.Extensions
         {
             if (GetConfig(p.SourceChannel, "OP.Enabled", false))
             {
-                IRC.DeliverMessage(messages.Localize("OpE1", p.SourceChannel.Language), p.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("OpE1", p.SourceChannel.Language), p.SourceChannel);
                 return;
             }
-            IRC.DeliverMessage(messages.Localize("OpM1", p.SourceChannel.Language), p.SourceChannel.Name);
+            IRC.DeliverMessage(Localization.Localize("OpM1", p.SourceChannel.Language), p.SourceChannel.Name);
             SetConfig(p.SourceChannel, "OP.Enabled", true);
             p.SourceChannel.SaveConfig();
         }
@@ -147,7 +147,7 @@ namespace wmib.Extensions
                         libirc.User user = getUser(nick, channel);
                         if (user == null)
                         {
-                            IRC.DeliverMessage(messages.Localize("OpE5", channel.Language), channel, libirc.Defs.Priority.High);
+                            IRC.DeliverMessage(Localization.Localize("OpE5", channel.Language), channel, libirc.Defs.Priority.High);
                             return;
                         }
                         // op self
@@ -163,7 +163,7 @@ namespace wmib.Extensions
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
+                    IRC.DeliverMessage(Localization.Localize("PermissionDenied", channel.Language), channel.Name);
                 }
                 return;
             }
@@ -184,14 +184,14 @@ namespace wmib.Extensions
                         libirc.User user = getUser(nick, channel);
                         if (user == null)
                         {
-                            IRC.DeliverMessage(messages.Localize("OpE5", channel.Language), channel);
+                            IRC.DeliverMessage(Localization.Localize("OpE5", channel.Language), channel);
                             return;
                         }
                         // op self
                         GetOp(channel);
                         if (string.IsNullOrEmpty(user.Host))
                         {
-                            IRC.DeliverMessage(messages.Localize("OpE6", channel.Language), channel, libirc.Defs.Priority.High);
+                            IRC.DeliverMessage(Localization.Localize("OpE6", channel.Language), channel, libirc.Defs.Priority.High);
                         }
                         else
                         {
@@ -208,7 +208,7 @@ namespace wmib.Extensions
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
+                    IRC.DeliverMessage(Localization.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -232,7 +232,7 @@ namespace wmib.Extensions
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
+                    IRC.DeliverMessage(Localization.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -251,13 +251,13 @@ namespace wmib.Extensions
                         libirc.User user = getUser(nick, channel);
                         if (user == null)
                         {
-                            IRC.DeliverMessage(messages.Localize("OpE5", channel.Language), channel, libirc.Defs.Priority.High);
+                            IRC.DeliverMessage(Localization.Localize("OpE5", channel.Language), channel, libirc.Defs.Priority.High);
                             return;
                         }
 
                         if (string.IsNullOrEmpty(user.Host))
                         {
-                            IRC.DeliverMessage(messages.Localize("OpE6", channel.Language), channel, libirc.Defs.Priority.High);
+                            IRC.DeliverMessage(Localization.Localize("OpE6", channel.Language), channel, libirc.Defs.Priority.High);
                             return;
                         }
                         // op self
@@ -273,7 +273,7 @@ namespace wmib.Extensions
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
+                    IRC.DeliverMessage(Localization.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -292,13 +292,13 @@ namespace wmib.Extensions
                         libirc.User user = getUser(nick, channel);
                         if (user == null)
                         {
-                            IRC.DeliverMessage(messages.Localize("OpE5", channel.Language), channel, libirc.Defs.Priority.High);
+                            IRC.DeliverMessage(Localization.Localize("OpE5", channel.Language), channel, libirc.Defs.Priority.High);
                             return;
                         }
-                        
+
                         if (string.IsNullOrEmpty(user.Host))
                         {
-                            IRC.DeliverMessage(messages.Localize("OpE6", channel.Language), channel, libirc.Defs.Priority.High);
+                            IRC.DeliverMessage(Localization.Localize("OpE6", channel.Language), channel, libirc.Defs.Priority.High);
                             return;
                         }
                         GetOp(channel);
@@ -313,7 +313,7 @@ namespace wmib.Extensions
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
+                    IRC.DeliverMessage(Localization.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -347,7 +347,7 @@ namespace wmib.Extensions
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
+                    IRC.DeliverMessage(Localization.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
                 return;
             }
@@ -381,7 +381,7 @@ namespace wmib.Extensions
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
+                    IRC.DeliverMessage(Localization.Localize("PermissionDenied", channel.Language), channel.Name, libirc.Defs.Priority.Low);
                 }
             }
         }

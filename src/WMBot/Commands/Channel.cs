@@ -43,7 +43,7 @@ namespace wmib
                     password = pm[1];
                 if (!Core.ValidFile(channel_name) || !channel_name.StartsWith("#"))
                 {
-                    IRC.DeliverMessage(messages.Localize("InvalidName", parameters.SourceChannel.Language, new List<string> { channel_name }), parameters.SourceChannel);
+                    IRC.DeliverMessage(Localization.Localize("InvalidName", parameters.SourceChannel.Language, new List<string> { channel_name }), parameters.SourceChannel);
                     return;
                 }
                 lock (Configuration.Channels)
@@ -52,7 +52,7 @@ namespace wmib
                     {
                         if (channel_name == cu.Name)
                         {
-                            IRC.DeliverMessage(messages.Localize("ChannelIn", parameters.SourceChannel.Language), parameters.SourceChannel);
+                            IRC.DeliverMessage(Localization.Localize("ChannelIn", parameters.SourceChannel.Language), parameters.SourceChannel);
                             return;
                         }
                     }
@@ -83,7 +83,7 @@ namespace wmib
                 Chan.SaveConfig();
                 return;
             }
-            IRC.DeliverMessage(messages.Localize("InvalidName", parameters.SourceChannel.Language), parameters.SourceChannel);
+            IRC.DeliverMessage(Localization.Localize("InvalidName", parameters.SourceChannel.Language), parameters.SourceChannel);
             return;
         }
 
@@ -150,7 +150,7 @@ namespace wmib
                         Configuration.Save();
                         return;
                     }
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), origin);
+                    IRC.DeliverMessage(Localization.Localize("PermissionDenied", channel.Language), origin);
                     return;
                 }
 
@@ -176,7 +176,7 @@ namespace wmib
                         Configuration.Save();
                         return;
                     }
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), origin);
+                    IRC.DeliverMessage(Localization.Localize("PermissionDenied", channel.Language), origin);
                 }
             }
             catch (Exception fail)

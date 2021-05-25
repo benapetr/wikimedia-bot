@@ -187,17 +187,17 @@ namespace wmib.Extensions
                 {
                     if (!GetConfig(channel, "Statistics.Enabled", false))
                     {
-                        IRC.DeliverMessage(messages.Localize("StatE2", channel.Language), channel);
+                        IRC.DeliverMessage(Localization.Localize("StatE2", channel.Language), channel);
                         return;
                     }
                     SetConfig(channel, "Statistics.Enabled", false);
                     channel.SaveConfig();
-                    IRC.DeliverMessage(messages.Localize("Stat-off", channel.Language), channel);
+                    IRC.DeliverMessage(Localization.Localize("Stat-off", channel.Language), channel);
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
+                    IRC.DeliverMessage(Localization.Localize("PermissionDenied", channel.Language), channel);
                 }
                 return;
             }
@@ -211,12 +211,12 @@ namespace wmib.Extensions
                     {
                         st.Delete();
                     }
-                    IRC.DeliverMessage(messages.Localize("Statdt", channel.Language), channel);
+                    IRC.DeliverMessage(Localization.Localize("Statdt", channel.Language), channel);
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
+                    IRC.DeliverMessage(Localization.Localize("PermissionDenied", channel.Language), channel);
                 }
                 return;
             }
@@ -227,17 +227,17 @@ namespace wmib.Extensions
                 {
                     if (GetConfig(channel, "Statistics.Enabled", false))
                     {
-                        IRC.DeliverMessage(messages.Localize("StatE1", channel.Language), channel);
+                        IRC.DeliverMessage(Localization.Localize("StatE1", channel.Language), channel);
                         return;
                     }
                     SetConfig(channel, "Statistics.Enabled", true);
                     channel.SaveConfig();
-                    IRC.DeliverMessage(messages.Localize("Stat-on", channel.Language), channel);
+                    IRC.DeliverMessage(Localization.Localize("Stat-on", channel.Language), channel);
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel.Name);
+                    IRC.DeliverMessage(Localization.Localize("PermissionDenied", channel.Language), channel.Name);
                 }
             }
         }

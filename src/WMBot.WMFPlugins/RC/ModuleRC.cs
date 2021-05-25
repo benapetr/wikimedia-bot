@@ -177,7 +177,7 @@ namespace wmib.Extensions
                         string[] a = message.Split(' ');
                         if (a.Length != 3)
                         {
-                            IRC.DeliverMessage(messages.Localize("rcfeed-wrong-number-of-arguments", channel.Language, new List<string> { invoker.Nick }), channel.Name);
+                            IRC.DeliverMessage(Localization.Localize("rcfeed-wrong-number-of-arguments", channel.Language, new List<string> { invoker.Nick }), channel.Name);
                             return;
                         }
                         string wiki = a[1];
@@ -189,12 +189,12 @@ namespace wmib.Extensions
                         }
                         return;
                     }
-                    IRC.DeliverMessage(messages.Localize("Feed3", channel.Language), channel);
+                    IRC.DeliverMessage(Localization.Localize("Feed3", channel.Language), channel);
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
+                    IRC.DeliverMessage(Localization.Localize("PermissionDenied", channel.Language), channel);
                 }
                 return;
             }
@@ -208,7 +208,7 @@ namespace wmib.Extensions
                         string[] a = message.Split(' ');
                         if (a.Length != 3)
                         {
-                            IRC.DeliverMessage(messages.Localize("rcfeed-wrong-number-of-arguments", channel.Language, new List<string> { invoker.Nick }), channel.Name);
+                            IRC.DeliverMessage(Localization.Localize("rcfeed-wrong-number-of-arguments", channel.Language, new List<string> { invoker.Nick }), channel.Name);
                             return;
                         }
                         string wiki = a[1];
@@ -225,12 +225,12 @@ namespace wmib.Extensions
                         }
                         return;
                     }
-                    IRC.DeliverMessage(messages.Localize("Feed3", channel.Language), channel);
+                    IRC.DeliverMessage(Localization.Localize("Feed3", channel.Language), channel);
                     return;
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
+                    IRC.DeliverMessage(Localization.Localize("PermissionDenied", channel.Language), channel);
                 }
                 return;
             }
@@ -240,10 +240,10 @@ namespace wmib.Extensions
         {
             if (GetConfig(pm.SourceChannel, "RC.Enabled", false))
             {
-                IRC.DeliverMessage(messages.Localize("Feed1", pm.SourceChannel.Language), pm.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("Feed1", pm.SourceChannel.Language), pm.SourceChannel);
                 return;
             }
-            IRC.DeliverMessage(messages.Localize("Feed2", pm.SourceChannel.Language), pm.SourceChannel);
+            IRC.DeliverMessage(Localization.Localize("Feed2", pm.SourceChannel.Language), pm.SourceChannel);
             SetConfig(pm.SourceChannel, "RC.Enabled", true);
             pm.SourceChannel.SaveConfig();
         }
@@ -252,10 +252,10 @@ namespace wmib.Extensions
         {
             if (!GetConfig(pm.SourceChannel, "RC.Enabled", false))
             {
-                IRC.DeliverMessage(messages.Localize("Feed6", pm.SourceChannel.Language), pm.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("Feed6", pm.SourceChannel.Language), pm.SourceChannel);
                 return;
             }
-            IRC.DeliverMessage(messages.Localize("Feed7", pm.SourceChannel.Language), pm.SourceChannel);
+            IRC.DeliverMessage(Localization.Localize("Feed7", pm.SourceChannel.Language), pm.SourceChannel);
             SetConfig(pm.SourceChannel, "RC.Enabled", false);
             pm.SourceChannel.SaveConfig();
         }
@@ -264,10 +264,10 @@ namespace wmib.Extensions
         {
             if (GetConfig(pm.SourceChannel, "Minor.Enabled", false))
             {
-                IRC.DeliverMessage(messages.Localize("Feed13", pm.SourceChannel.Language), pm.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("Feed13", pm.SourceChannel.Language), pm.SourceChannel);
                 return;
             }
-            IRC.DeliverMessage(messages.Localize("Feed9", pm.SourceChannel.Language), pm.SourceChannel);
+            IRC.DeliverMessage(Localization.Localize("Feed9", pm.SourceChannel.Language), pm.SourceChannel);
             SetConfig(pm.SourceChannel, "Minor.Enabled", true);
             pm.SourceChannel.SaveConfig();
         }
@@ -276,10 +276,10 @@ namespace wmib.Extensions
         {
             if (!GetConfig(pm.SourceChannel, "Minor.Enabled", false))
             {
-                IRC.DeliverMessage(messages.Localize("Feed14", pm.SourceChannel.Language), pm.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("Feed14", pm.SourceChannel.Language), pm.SourceChannel);
                 return;
             }
-            IRC.DeliverMessage(messages.Localize("Feed10", pm.SourceChannel.Language), pm.SourceChannel);
+            IRC.DeliverMessage(Localization.Localize("Feed10", pm.SourceChannel.Language), pm.SourceChannel);
             SetConfig(pm.SourceChannel, "Minor.Enabled", false);
             pm.SourceChannel.SaveConfig();
         }
@@ -288,10 +288,10 @@ namespace wmib.Extensions
         {
             if (GetConfig(pm.SourceChannel, "Bot.Enabled", false))
             {
-                IRC.DeliverMessage(messages.Localize("Feed15", pm.SourceChannel.Language), pm.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("Feed15", pm.SourceChannel.Language), pm.SourceChannel);
                 return;
             }
-            IRC.DeliverMessage(messages.Localize("Feed11", pm.SourceChannel.Language), pm.SourceChannel);
+            IRC.DeliverMessage(Localization.Localize("Feed11", pm.SourceChannel.Language), pm.SourceChannel);
             SetConfig(pm.SourceChannel, "Bot.Enabled", true);
             pm.SourceChannel.SaveConfig();
         }
@@ -300,10 +300,10 @@ namespace wmib.Extensions
         {
             if (!GetConfig(pm.SourceChannel, "Bot.Enabled", false))
             {
-                IRC.DeliverMessage(messages.Localize("Feed16", pm.SourceChannel.Language), pm.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("Feed16", pm.SourceChannel.Language), pm.SourceChannel);
                 return;
             }
-            IRC.DeliverMessage(messages.Localize("Feed12", pm.SourceChannel.Language), pm.SourceChannel);
+            IRC.DeliverMessage(Localization.Localize("Feed12", pm.SourceChannel.Language), pm.SourceChannel);
             SetConfig(pm.SourceChannel, "Bot.Enabled", false);
             pm.SourceChannel.SaveConfig();
         }
@@ -317,9 +317,9 @@ namespace wmib.Extensions
             {
                 if (!New)
                 {
-                    return messages.Localize("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "modified", "" + username + "", "https://" + url + "/w/index.php?diff=" + link, summary });
+                    return Localization.Localize("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "modified", "" + username + "", "https://" + url + "/w/index.php?diff=" + link, summary });
                 }
-                return messages.Localize("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", "https://" + url + "/wiki/" + Core.WikiEncode(page), summary });
+                return Localization.Localize("fl", chan.Language, new List<string> { "12" + name_url + "", "" + page + "", "created", "" + username + "", "https://" + url + "/wiki/" + Core.WikiEncode(page), summary });
             }
             string action = "modified";
             string flags = "";
@@ -488,12 +488,12 @@ namespace wmib.Extensions
                     if (value != "null")
                     {
                         SetConfig(chan, "RC.Template", value);
-                        IRC.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan);
+                        IRC.DeliverMessage(Localization.Localize("configuresave", chan.Language, new List<string> { value, config }), chan);
                         chan.SaveConfig();
                         return true;
                     }
                     SetConfig(chan, "RC.Template", "");
-                    IRC.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { "null", config }), chan);
+                    IRC.DeliverMessage(Localization.Localize("configuresave", chan.Language, new List<string> { "null", config }), chan);
                     chan.SaveConfig();
                     return true;
             }

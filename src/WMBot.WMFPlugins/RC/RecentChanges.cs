@@ -147,11 +147,11 @@ namespace wmib.Extensions
                     MonitoredPages.Remove(currpage);
                     Module.SetConfig(channel, "HTML.Update", true);
                     Save();
-                    IRC.DeliverMessage(messages.Localize("rcfeed4", channel.Language), channel);
+                    IRC.DeliverMessage(Localization.Localize("rcfeed4", channel.Language), channel);
                     return true;
                 }
             }
-            IRC.DeliverMessage(messages.Localize("rcfeed5", channel.Language), channel);
+            IRC.DeliverMessage(Localization.Localize("rcfeed5", channel.Language), channel);
             return true;
         }
 
@@ -174,20 +174,20 @@ namespace wmib.Extensions
             {
                 if (!Page.EndsWith("*") || Page.Replace("*", "") == "")
                 {
-                    IRC.DeliverMessage(messages.Localize("rcfeed8", channel.Language), channel);
+                    IRC.DeliverMessage(Localization.Localize("rcfeed8", channel.Language), channel);
                     return true;
                 }
             }
             if (MonitoredPages.Contains(currpage))
             {
-                IRC.DeliverMessage(messages.Localize("rcfeed9", channel.Language), channel);
+                IRC.DeliverMessage(Localization.Localize("rcfeed9", channel.Language), channel);
                 return true;
             }
             lock (MonitoredPages)
             {
                 MonitoredPages.Add(new IWatch(wiki, Page));
             }
-            IRC.DeliverMessage(messages.Localize("rcfeed10", channel.Language), channel);
+            IRC.DeliverMessage(Localization.Localize("rcfeed10", channel.Language), channel);
             Module.SetConfig(channel, "HTML.Update", true);
             Save();
             return true;

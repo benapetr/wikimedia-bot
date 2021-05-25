@@ -171,11 +171,11 @@ namespace wmib
             {
                 SetConfig(p.SourceChannel, "Link.Enable", false);
                 p.SourceChannel.SaveConfig();
-                IRC.DeliverMessage(messages.Localize("Linkie-Off", p.SourceChannel.Language), p.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("Linkie-Off", p.SourceChannel.Language), p.SourceChannel);
             }
             else
             {
-                IRC.DeliverMessage(messages.Localize("Linkie-Off2", p.SourceChannel.Language), p.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("Linkie-Off2", p.SourceChannel.Language), p.SourceChannel);
             }
         }
 
@@ -185,11 +185,11 @@ namespace wmib
             {
                 SetConfig(p.SourceChannel, "Link.Enable", true);
                 p.SourceChannel.SaveConfig();
-                IRC.DeliverMessage(messages.Localize("Linkie-On", p.SourceChannel.Language), p.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("Linkie-On", p.SourceChannel.Language), p.SourceChannel);
             }
             else
             {
-                IRC.DeliverMessage(messages.Localize("Linkie-On2", p.SourceChannel.Language), p.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("Linkie-On2", p.SourceChannel.Language), p.SourceChannel);
             }
         }
 
@@ -213,7 +213,7 @@ namespace wmib
             {
                 if (GetConfig(channel, "Link.Last", "") == "")
                 {
-                    IRC.DeliverMessage(messages.Localize("Linkie-E1", channel.Language), channel);
+                    IRC.DeliverMessage(Localization.Localize("Linkie-E1", channel.Language), channel);
                     return;
                 }
                 string xx = MakeTemplate(GetConfig(channel, "Link.Last", ""), GetConfig(channel, "Link.Default", "en"), false) + MakeLink(GetConfig(channel, "Link.Last", ""), GetConfig(channel, "Link.Default", "en"), true);
@@ -222,7 +222,7 @@ namespace wmib
                     IRC.DeliverMessage(xx, channel);
                     return;
                 }
-                IRC.DeliverMessage(messages.Localize("Linkie-E2", channel.Language), channel);
+                IRC.DeliverMessage(Localization.Localize("Linkie-E2", channel.Language), channel);
                 return;
             }
 
@@ -235,7 +235,7 @@ namespace wmib
                     IRC.DeliverMessage(xx, channel);
                     return;
                 }
-                IRC.DeliverMessage(messages.Localize("Linkie-E3", channel.Language), channel);
+                IRC.DeliverMessage(Localization.Localize("Linkie-E3", channel.Language), channel);
                 return;
             }
 
@@ -263,10 +263,10 @@ namespace wmib
                 {
                     SetConfig(chan, "Link.Default", value);
                     chan.SaveConfig();
-                    IRC.DeliverMessage(messages.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
+                    IRC.DeliverMessage(Localization.Localize("configuresave", chan.Language, new List<string> { value, config }), chan.Name);
                     return true;
                 }
-                IRC.DeliverMessage(messages.Localize("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
+                IRC.DeliverMessage(Localization.Localize("configure-va", chan.Language, new List<string> { config, value }), chan.Name);
                 return true;
             }
             return false;

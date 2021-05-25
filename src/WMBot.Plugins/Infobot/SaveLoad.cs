@@ -26,14 +26,14 @@ namespace wmib.Extensions
         /// </summary>
         public void Save()
         {
-            update = true;
+            this.update = true;
             try
             {
                 Parent.DebugLog("Saving database of infobot", 2);
-                if (File.Exists(datafile_xml))
+                if (File.Exists(this.DatafileXML))
                 {
-                    Core.BackupData(datafile_xml);
-                    if (!File.Exists(Configuration.TempName(datafile_xml)))
+                    Core.BackupData(this.DatafileXML);
+                    if (!File.Exists(Configuration.TempName(this.DatafileXML)))
                     {
                         Parent.Log("Unable to create backup file for " + this.pChannel.Name);
                     }
@@ -92,30 +92,30 @@ namespace wmib.Extensions
                     data.AppendChild(xmlnode);
                 }
                 Parent.DebugLog("Writing xml document to a file");
-                data.Save(datafile_xml);
+                data.Save(this.DatafileXML);
                 Parent.DebugLog("Checking the previous file", 6);
-                if (File.Exists(Configuration.TempName(datafile_xml)))
+                if (File.Exists(Configuration.TempName(this.DatafileXML)))
                 {
                     Parent.DebugLog("Removing temp file", 6);
-                    File.Delete(Configuration.TempName(datafile_xml));
+                    File.Delete(Configuration.TempName(this.DatafileXML));
                 }
             }
             catch (Exception b)
             {
                 try
                 {
-                    if (Core.RecoverFile(datafile_xml, pChannel.Name))
+                    if (Core.RecoverFile(this.DatafileXML, this.pChannel.Name))
                     {
                         Parent.Log("Recovered db for channel " + pChannel.Name);
                     }
                     else
                     {
-                        Parent.HandleException(b, pChannel.Name);
+                        Parent.HandleException(b, this.pChannel.Name);
                     }
                 }
                 catch (Exception bb)
                 {
-                    Parent.HandleException(bb, pChannel.Name);
+                    Parent.HandleException(bb, this.pChannel.Name);
                 }
             }
         }
@@ -126,13 +126,13 @@ namespace wmib.Extensions
             {
                 Keys.Clear();
                 // Checking if db isn't broken
-                Core.RecoverFile(datafile_raw, pChannel.Name);
-                if (!File.Exists(datafile_raw))
+                Core.RecoverFile(this.DatafileRAW, this.pChannel.Name);
+                if (!File.Exists(this.DatafileRAW))
                 {
                     return false;
                 }
 
-                string[] db = File.ReadAllLines(datafile_raw);
+                string[] db = File.ReadAllLines(this.DatafileRAW);
                 foreach (string x in db)
                 {
                     if (x.Contains(Configuration.System.Separator))
@@ -161,27 +161,27 @@ namespace wmib.Extensions
         {
             lock (this)
             {
-                Keys.Clear();
+                this.Keys.Clear();
             }
-            // Checking if db isn't broken
-            Core.RecoverFile(datafile_xml, pChannel.Name);
-            if (LoadAncientDB())
+            // If DB wasn't properly saved on shutdown, 
+            Core.RecoverFile(this.DatafileXML, this.pChannel.Name);
+            if (this.LoadAncientDB())
             {
-                Parent.Log("Obsolete database found for " + pChannel.Name + " converting to new format");
-                Save();
-                File.Delete(datafile_raw);
+                Parent.Log("Obsolete database found for " + this.pChannel.Name + " converting to new format");
+                this.Save();
+                File.Delete(DatafileRAW);
                 return true;
             }
-            if (!File.Exists(datafile_xml))
+            if (!File.Exists(DatafileXML))
             {
                 // Create db
-                Save();
+                this.Save();
                 return true;
             }
             try
             {
                 XmlDocument data = new XmlDocument();
-                if (!File.Exists(datafile_xml))
+                if (!File.Exists(DatafileXML))
                 {
                     lock (this)
                     {
@@ -189,7 +189,7 @@ namespace wmib.Extensions
                     }
                     return true;
                 }
-                data.Load(datafile_xml);
+                data.Load(DatafileXML);
                 lock (this)
                 {
                     Keys.Clear();

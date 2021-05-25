@@ -29,25 +29,21 @@ namespace wmib
         /// </summary>
         /// <param name='sender'>Sender</param>
         /// <param name='args'>Arguments</param>
-        protected static void SigInt(object sender, ConsoleCancelEventArgs args)
+        protected static void SigInt (object sender, ConsoleCancelEventArgs args)
         {
-            if (!Core.IsRunning)
-            {
+            if (!Core.IsRunning) {
                 // in case that user hit ctrl + c multiple times, we don't want to
                 // call this, once is just enough
                 return;
             }
-            Syslog.WriteNow("SIGINT - Shutting down", true);
-            try
-            {
-                Core.Kill();
+            Syslog.WriteNow ("SIGINT - Shutting down", true);
+            try {
+                Core.Kill ();
+            } catch (Exception fail) {
+                Core.HandleException (fail);
             }
-            catch (Exception fail)
-            {
-                Core.HandleException(fail);
-            }
-            Syslog.WriteNow("Terminated (emergency)");
-            Process.GetCurrentProcess().Kill();
+            Syslog.WriteNow ("Terminated (emergency)");
+            Process.GetCurrentProcess ().Kill ();
         }
 
         /// <summary>
@@ -56,25 +52,21 @@ namespace wmib
         /// <param name='args'>
         /// What user has provided in terminal
         /// </param>
-        private static void ParseArgs(string[] args)
+        private static void ParseArgs (string [] args)
         {
             int i = 0;
-            List<string> parameters = new List<string>(args);
-            foreach (string item in parameters)
-            {
+            List<string> parameters = new List<string> (args);
+            foreach (string item in parameters) {
                 i++;
-                if (item == "--nocolors")
-                {
+                if (item == "--nocolors") {
                     Configuration.System.Colors = false;
                     continue;
                 }
-                if (item == "--traffic" )
-                {
+                if (item == "--traffic") {
                     Configuration.Network.Logging = true;
                 }
-                if (item == "-h" || item == "--help")
-                {
-                    Console.WriteLine("This is a wikimedia bot binary\n\n" +
+                if (item == "-h" || item == "--help") {
+                    Console.WriteLine ("This is a wikimedia bot binary\n\n" +
                         "Parameters:\n" +
                         "    --nocolors:  Disable colors in system logs\n" +
                         "    -h [--help]: Display help\n" +
@@ -86,50 +78,41 @@ namespace wmib
                         "                 to configuration/security.xml and restart the bot\n" +
                         "    -v: Increases verbosity\n\n" +
                         "This software is open source, licensed under GPLv3");
-                    Environment.Exit(0);
+                    Environment.Exit (0);
                 }
-                if (item == "--modules")
-                {
-                    ExtensionHandler.DumpMods();
-                    Environment.Exit(0);
+                if (item == "--modules") {
+                    ExtensionHandler.DumpMods ();
+                    Environment.Exit (0);
                 }
-                if (item == "--security")
-                {
+                if (item == "--security") {
                     Syslog.IsQuiet = true;
-                    if (Configuration.Load() != 0)
-                    {
+                    if (Configuration.Load () != 0) {
                         Syslog.IsQuiet = false;
-                        Syslog.WriteNow("Error while loading the config file, exiting", true);
-                        Environment.Exit(-2);
+                        Syslog.WriteNow ("Error while loading the config file, exiting", true);
+                        Environment.Exit (-2);
                     }
-                    ExtensionHandler.SearchMods();
-                    Security.Init();
-                    Console.WriteLine(Security.Dump());
-                    Environment.Exit(0);
+                    ExtensionHandler.SearchMods ();
+                    Security.Init ();
+                    Console.WriteLine (Security.Dump ());
+                    Environment.Exit (0);
                 }
-                if (item == "--pid")
-                {
-                    if (parameters.Count <= i)
-                    {
-                        Console.WriteLine("You didn't provide a name for pid file");
-                        Environment.Exit(0);
+                if (item == "--pid") {
+                    if (parameters.Count <= i) {
+                        Console.WriteLine ("You didn't provide a name for pid file");
+                        Environment.Exit (0);
                     }
-                    File.WriteAllText(parameters[i], Process.GetCurrentProcess().Id.ToString());
+                    File.WriteAllText (parameters [i], Process.GetCurrentProcess ().Id.ToString ());
                 }
-                if (item.StartsWith("-v", StringComparison.InvariantCulture))
-                {
-                    foreach (char x in item)
-                    {
-                        if (x == 'v')
-                        {
+                if (item.StartsWith ("-v", StringComparison.InvariantCulture)) {
+                    foreach (char x in item) {
+                        if (x == 'v') {
                             Configuration.System.SelectedVerbosity++;
                         }
                     }
                 }
             }
-            if (Configuration.System.SelectedVerbosity >= 1)
-            {
-                Syslog.DebugLog("System verbosity: " + Configuration.System.SelectedVerbosity);
+            if (Configuration.System.SelectedVerbosity >= 1) {
+                Syslog.DebugLog ("System verbosity: " + Configuration.System.SelectedVerbosity);
             }
         }
 
@@ -139,70 +122,61 @@ namespace wmib
         /// <param name='args'>
         /// The command-line arguments.
         /// </param>
-        private static void Main(string[] args)
+        private static void Main (string [] args)
         {
-            try
-            {
+            try {
                 Configuration.System.UpTime = DateTime.Now;
                 Core.KernelThread = Thread.CurrentThread;
                 Core.KernelThread.Name = "Kernel";
-                Configuration.System.Version += " [libirc v. " + libirc.Defs.Version.ToString() + "]";
-                Thread logger = new Thread(Logging.Exec) {Name = "Logger"};
-                Core.ThreadManager.RegisterThread(logger);
-                ParseArgs(args);
-                Syslog.WriteNow(Configuration.System.Version);
-                Syslog.WriteNow("Loading...");
-                logger.Start();
+                Configuration.System.Version += " [libirc v. " + libirc.Defs.Version.ToString () + "]";
+                Thread logger = new Thread (Logging.Exec) { Name = "Logger" };
+                Core.ThreadManager.RegisterThread (logger);
+                ParseArgs (args);
+                Syslog.WriteNow (Configuration.System.Version);
+                Syslog.WriteNow ("Loading...");
+                logger.Start ();
                 Console.CancelKeyPress += SigInt;
-                messages.LoadLD();
-                if (Configuration.Load() != 0)
-                {
-                    Syslog.WriteNow("Error while loading the config file, exiting", true);
-                    Environment.Exit(-2);
+                Localization.LoadLD ();
+                if (Configuration.Load () != 0) {
+                    Syslog.WriteNow ("Error while loading the config file, exiting", true);
+                    Environment.Exit (-2);
                 }
-                Terminal.Init();
-                Core.Help.CreateHelp();
-                Core.WriterThread = new Thread(StorageWriter.Exec);
-                Core.ThreadManager.RegisterThread(Core.WriterThread);
+                Terminal.Init ();
+                Core.Help.CreateHelp ();
+                Core.WriterThread = new Thread (StorageWriter.Exec);
+                Core.ThreadManager.RegisterThread (Core.WriterThread);
                 Core.WriterThread.Name = "Writer";
-                Core.WriterThread.Start();
-                if (WMIBMySQL.IsAvailable)
-                {
-                    Syslog.Log("Initializing MySQL");
-                    Core.MysqlDB = new WMIBMySQL();
-                } else
-                {
-                    Syslog.Log("Mysql is not configured, not using");
+                Core.WriterThread.Start ();
+                if (WMIBMySQL.IsAvailable) {
+                    Syslog.Log ("Initializing MySQL");
+                    Core.MysqlDB = new WMIBMySQL ();
+                } else {
+                    Syslog.Log ("Mysql is not configured, not using");
                 }
-                if (PostgreSQL.IsAvailable)
-                {
-                    Syslog.Log("Opening connection to PostgreDB");
-                    Core.PostgreDB = new PostgreSQL();
-                    Core.PostgreDB.Connect();
-                } else
-                {
-                    Syslog.Log("Postgres is not configured, not using");
+                if (PostgreSQL.IsAvailable) {
+                    Syslog.Log ("Opening connection to PostgreDB");
+                    Core.PostgreDB = new PostgreSQL ();
+                    Core.PostgreDB.Connect ();
+                } else {
+                    Syslog.Log ("Postgres is not configured, not using");
                 }
                 // let's use postgre as default
-                if (Core.PostgreDB != null)
-                {
-                    Syslog.Log("Using Postgres as a default SQL provider");
+                if (Core.PostgreDB != null) {
+                    Syslog.Log ("Using Postgres as a default SQL provider");
                     Core.DB = Core.PostgreDB;
-                }
-                else if (Core.MysqlDB != null)
-                {
-                    Syslog.Log("Using MySQL as a default SQL");
+                } else if (Core.MysqlDB != null) {
+                    Syslog.Log ("Using MySQL as a default SQL");
                     Core.DB = Core.MysqlDB;
                 }
                 // register all commands
-                Commands.InitAdminCommands();
-                Syslog.Log("Loading modules");
-                ExtensionHandler.SearchMods();
-                Security.Init();
-                Security.Global();
-                Syslog.Log("Connecting");
-                IRC.Connect();
-                #if __MonoCS__
+                Commands.InitAdminCommands ();
+                Syslog.Log ("Loading modules");
+                ExtensionHandler.SearchMods ();
+                Security.Init ();
+                Security.Global ();
+                Syslog.Log ("Connecting");
+                IRC.Connect ();
+#if __MonoCS__
 UnixSignal[] signals = 
                 {
                     new UnixSignal (Signum.SIGINT),
@@ -211,8 +185,7 @@ UnixSignal[] signals =
                     new UnixSignal (Signum.SIGHUP)
                 };
 #endif
-                while(Core.IsRunning)
-                {
+                while (Core.IsRunning) {
 #if __MonoCS__
                     int index = UnixSignal.WaitAny (signals,-1);
                     Signum signal = signals [index].Signum;
@@ -227,22 +200,20 @@ UnixSignal[] signals =
                             goto exit;
                     }
 #endif
-                    Thread.Sleep(200);
+                    Thread.Sleep (200);
                 }
 #if __MonoCS__
                 exit:
 #endif
-                    // memory cleanup
-                    if (Core.DB != null)
-                        ((WMIBMySQL)Core.DB).Dispose();
-            }
-            catch (Exception fatal)
-            {
-                Syslog.WriteNow("bot crashed, bellow is debugging information", Syslog.Type.Error);
-                Console.WriteLine("------------------------------------------------------------------------");
-                Console.WriteLine("Description: " + fatal.Message);
-                Console.WriteLine("Stack trace: " + fatal.StackTrace);
-                Environment.Exit(-2);
+                // memory cleanup
+                if (Core.DB != null)
+                    ((WMIBMySQL)Core.DB).Dispose ();
+            } catch (Exception fatal) {
+                Syslog.WriteNow ("bot crashed, bellow is debugging information", Syslog.Type.Error);
+                Console.WriteLine ("------------------------------------------------------------------------");
+                Console.WriteLine ("Description: " + fatal.Message);
+                Console.WriteLine ("Stack trace: " + fatal.StackTrace);
+                Environment.Exit (-2);
             }
         }
     }

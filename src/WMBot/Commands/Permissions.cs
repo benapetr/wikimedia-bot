@@ -25,7 +25,7 @@ namespace wmib
                     Channel ch = Core.GetChannel (message.Substring ("xtrusted ".Length));
                     if (ch != null)
                     {
-                        IRC.DeliverMessage (messages.Localize ("TrustedUserList", ch.Language) + ch.SystemUsers.ListAll (), user);
+                        IRC.DeliverMessage (Localization.Localize ("TrustedUserList", ch.Language) + ch.SystemUsers.ListAll (), user);
                         return true;
                     }
                     IRC.DeliverMessage ("There is no such a channel I know of", user);
@@ -47,12 +47,12 @@ namespace wmib
             string[] rights_info = parameters.Parameters.Split(' ');
             if (rights_info.Length < 2)
             {
-                IRC.DeliverMessage(messages.Localize("Trust1", parameters.SourceChannel.Language), parameters.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("Trust1", parameters.SourceChannel.Language), parameters.SourceChannel);
                 return;
             }
             if (!Security.Roles.ContainsKey(rights_info[1]))
             {
-                IRC.DeliverMessage(messages.Localize("Unknown1", parameters.SourceChannel.Language), parameters.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("Unknown1", parameters.SourceChannel.Language), parameters.SourceChannel);
                 return;
             }
             int level = Security.GetLevelOfRole(rights_info[1]);
@@ -69,7 +69,7 @@ namespace wmib
             // to grant admins to themselves
             if (level > parameters.SourceChannel.SystemUsers.GetLevel(parameters.User))
             {
-                IRC.DeliverMessage(messages.Localize("RoleMismatch", parameters.SourceChannel.Language), parameters.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("RoleMismatch", parameters.SourceChannel.Language), parameters.SourceChannel);
                 return;
             }
             if (rights_info.Length > 2)
@@ -91,7 +91,7 @@ namespace wmib
             }
             if (channel.SystemUsers.AddUser(rights_info[1], rights_info[0], parameters.SourceChannel))
             {
-                IRC.DeliverMessage(messages.Localize("UserSc", parameters.SourceChannel.Language) + rights_info[0], parameters.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("UserSc", parameters.SourceChannel.Language) + rights_info[0], parameters.SourceChannel);
                 return;
             }
         }
@@ -102,7 +102,7 @@ namespace wmib
             string[] rights_info = parameters.Parameters.Split(' ');
             if (rights_info[0] == null)
             {
-                IRC.DeliverMessage(messages.Localize("InvalidUser", parameters.SourceChannel.Language), parameters.SourceChannel);
+                IRC.DeliverMessage(Localization.Localize("InvalidUser", parameters.SourceChannel.Language), parameters.SourceChannel);
                 return;
             }
             if (rights_info.Length > 1)
@@ -137,7 +137,7 @@ namespace wmib
                     return;
                 }
             }
-            IRC.DeliverMessage(messages.Localize("TrustedUserList", parameters.SourceChannel.Language) + channel.SystemUsers.ListAll(), parameters.SourceChannel);
+            IRC.DeliverMessage(Localization.Localize("TrustedUserList", parameters.SourceChannel.Language) + channel.SystemUsers.ListAll(), parameters.SourceChannel);
         }
     }
 }

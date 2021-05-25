@@ -432,7 +432,7 @@ namespace wmib
                         DateTime time = channel_.TimeOfLastMsg;
                         if (DateTime.Now >= time.AddSeconds(channel_.RespondWait))
                         {
-                            IRC.DeliverMessage(messages.Localize("hi", channel_.Language, new List<string> { nick }), channel_.Name);
+                            IRC.DeliverMessage(Localization.Localize("hi", channel_.Language, new List<string> { nick }), channel_.Name);
                             channel_.TimeOfLastMsg = DateTime.Now;
                         }
                     }
@@ -587,7 +587,7 @@ namespace wmib
                 {
                     if (HelpData[parameter.ToLower()] == null)
                     {
-                        showInfo(parameter, messages.Localize(parameter.ToLower(), channel.Language), channel.Name);
+                        showInfo(parameter, Localization.Localize(parameter.ToLower(), channel.Language), channel.Name);
                         return true;
                     }
                     showInfo(parameter, HelpData[parameter.ToLower()], channel.Name);

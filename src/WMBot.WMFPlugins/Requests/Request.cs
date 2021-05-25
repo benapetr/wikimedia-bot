@@ -33,8 +33,8 @@ namespace wmib
             // "action=askargs" and add "?Modification date#ISO" to
             // the printouts to calculate "Waiting for x minutes"
             // data.
-            string Url = "https://wikitech.wikimedia.org/w/api.php" + "?action=ask" + "&query=" + 
-                Uri.EscapeUriString("[[Category:" + categoryName + "]] [[Is Completed::No]]|?" + 
+            string Url = "https://wikitech.wikimedia.org/w/api.php" + "?action=ask" + "&query=" +
+                Uri.EscapeUriString("[[Category:" + categoryName + "]] [[Is Completed::No]]|?" +
                                     usernamePrintout) + "&format=wddx";
 
             // Get the query results.
@@ -138,7 +138,7 @@ namespace wmib
                     return;
                 }
 
-                PendingRequests = new Thread(Run) {Name = "Pending queries thread for requests extension"};
+                PendingRequests = new Thread(Run) { Name = "Pending queries thread for requests extension" };
                 PendingRequests.Start();
 
                 Thread.Sleep(60000);
@@ -179,7 +179,7 @@ namespace wmib
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
+                    IRC.DeliverMessage(Localization.Localize("PermissionDenied", channel.Language), channel);
                 }
                 return;
             }
@@ -200,7 +200,7 @@ namespace wmib
                 }
                 if (!channel.SuppressWarnings)
                 {
-                    IRC.DeliverMessage(messages.Localize("PermissionDenied", channel.Language), channel);
+                    IRC.DeliverMessage(Localization.Localize("PermissionDenied", channel.Language), channel);
                 }
                 return;
             }

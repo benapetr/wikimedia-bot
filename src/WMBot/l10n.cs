@@ -18,7 +18,7 @@ namespace wmib
     /// <summary>
     /// Languages
     /// </summary>
-    public class messages
+    public class Localization
     {
         /// <summary>
         /// Default
@@ -28,12 +28,12 @@ namespace wmib
         /// <summary>
         /// Container for language data
         /// </summary>
-        public class container
+        public class Container
         {
             /// <summary>
             /// Name of language
             /// </summary>
-            public string language;
+            public string Language;
 
             /// <summary>
             /// Data
@@ -44,27 +44,27 @@ namespace wmib
             /// Creates a new language data
             /// </summary>
             /// <param name="LanguageCode"></param>
-            public container(string LanguageCode)
+            public Container(string LanguageCode)
             {
-                language = LanguageCode;
+                Language = LanguageCode;
                 Cache = new Dictionary<string, string>();
             }
         }
 
-        private static readonly Dictionary<string, container> data = new Dictionary<string, container>();
+        private static readonly Dictionary<string, Container> data = new Dictionary<string, Container>();
 
         /// <summary>
         /// Load all language data
         /// </summary>
         public static void LoadLD()
         {
-            data.Add("cs", new container("cs"));
-            data.Add("en", new container("en"));
-            data.Add("es", new container("es"));
-            data.Add("zh", new container("zh"));
-            data.Add("de", new container("de"));
-            data.Add("ko", new container("ko"));
-            data.Add("pt", new container("pt"));
+            data.Add("cs", new Container("cs"));
+            data.Add("en", new Container("en"));
+            data.Add("es", new Container("es"));
+            data.Add("zh", new Container("zh"));
+            data.Add("de", new Container("de"));
+            data.Add("ko", new Container("ko"));
+            data.Add("pt", new Container("pt"));
         }
 
         private static string Parse(string text, string name)
@@ -113,7 +113,7 @@ namespace wmib
         /// </summary>
         /// <param name="item">Key</param>
         /// <param name="language">Language</param>
-        /// <param name="va"></param>
+        /// <param name="va">List of params to use with localization strings that use them ($1, $2 ...)</param>
         /// <returns></returns>
         public static string Localize(string item, string language = null, List<string> va = null)
         {
