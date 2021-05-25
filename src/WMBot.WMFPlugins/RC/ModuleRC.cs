@@ -175,9 +175,9 @@ namespace wmib.Extensions
                     if (GetConfig(channel, "RC.Enabled", false))
                     {
                         string[] a = message.Split(' ');
-                        if (a.Length < 3)
+                        if (a.Length != 3)
                         {
-                            IRC.DeliverMessage(messages.Localize("Feed8", channel.Language, new List<string> { invoker.Nick }), channel.Name);
+                            IRC.DeliverMessage(messages.Localize("rcfeed-wrong-number-of-arguments", channel.Language, new List<string> { invoker.Nick }), channel.Name);
                             return;
                         }
                         string wiki = a[1];
@@ -206,13 +206,13 @@ namespace wmib.Extensions
                     if (GetConfig(channel, "RC.Enabled", false))
                     {
                         string[] a = message.Split(' ');
-                        if (a.Length < 3)
+                        if (a.Length != 3)
                         {
-                            IRC.DeliverMessage(messages.Localize("Feed4", channel.Language) + invoker.Nick + messages.Localize("Feed5", channel.Language), channel);
+                            IRC.DeliverMessage(messages.Localize("rcfeed-wrong-number-of-arguments", channel.Language, new List<string> { invoker.Nick }), channel.Name);
                             return;
                         }
                         string wiki = a[1];
-                        string Page = a[2];
+                        string page = a[2];
                         if (wiki.Contains("_"))
                         {
                             IRC.DeliverMessage("Underscore in wiki name is not supported, new format is for example: en.wikipedia.org instead of en_wikipedia", channel);
@@ -221,7 +221,7 @@ namespace wmib.Extensions
                         RecentChanges rc = (RecentChanges)channel.RetrieveObject("RC");
                         if (rc != null)
                         {
-                            rc.MonitorPage(wiki, Page);
+                            rc.MonitorPage(wiki, page);
                         }
                         return;
                     }
