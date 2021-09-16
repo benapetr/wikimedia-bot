@@ -136,6 +136,7 @@ namespace wmib
             /// How verbose the debugging is
             /// </summary>
             public static int SelectedVerbosity = 0;
+            public static string HelpText = null;
             /// <summary>
             /// Version
             /// </summary>
@@ -362,9 +363,11 @@ namespace wmib
             IRC.NickName = RetrieveConfig("nick");
             IRC.LoginNick = RetrieveConfig("nick");
             IRC.Hostname = RetrieveConfig("host", "wikimedia/bot/wm-bot");
+            IRC.Ident = RetrieveConfig("ident", IRC.Ident);
             System.DebugChan = RetrieveConfig("debug");
             System.MaxGrantableRoleLevel = RetrieveConfig("maximal_grantable_role_level", System.MaxGrantableRoleLevel);
             System.ModulesToLoad = RetrieveConfig("modules", "");
+            System.HelpText = RetrieveConfig("helptext");
             Network.BouncerPort = RetrieveConfig("bouncerp", Network.BouncerPort);
             WebPages.WebpageURL = RetrieveConfig("web", "");
             IRC.LoginPw = RetrieveConfig("password", "");

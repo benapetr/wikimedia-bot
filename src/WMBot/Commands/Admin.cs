@@ -422,11 +422,17 @@ namespace wmib
                 Core.ShowHelp(parameters.Parameters, parameters.SourceChannel);
                 return;
             }
-            IRC.DeliverMessage("I am running http://meta.wikimedia.org/wiki/WM-Bot version "
+            if (String.IsNullOrEmpty(Configuration.System.HelpText))
+            {
+                IRC.DeliverMessage("I am running http://meta.wikimedia.org/wiki/WM-Bot version "
                                           + Configuration.System.Version + " my source code is licensed "
                                           + "under GPL and located at https://github.com/benapetr/wikimedia-bot "
                                           + "I will be very happy if you fix my bugs or implement new features",
                                           parameters.SourceChannel);
+            } else
+            {
+                IRC.DeliverMessage(Configuration.System.HelpText, parameters.SourceChannel);
+            }
         }
 
         private static void Language(CommandParams parameters)
