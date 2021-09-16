@@ -94,6 +94,14 @@ namespace wmib
                         c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Integer));
                         c.Parameters[n++].Value = int.Parse(bind.Value);
                         break;
+                    case DataType.Double:
+                        c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Double));
+                        c.Parameters[n++].Value = double.Parse(bind.Value);
+                        break;
+                    case DataType.Numeric:
+                        c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Numeric));
+                        c.Parameters[n++].Value = double.Parse(bind.Value);
+                        break;
                     case DataType.Varchar:
                         c.Parameters.Add(new Npgsql.NpgsqlParameter(bind.Name, NpgsqlTypes.NpgsqlDbType.Varchar));
                         c.Parameters[n++].Value = bind.Value;

@@ -255,6 +255,8 @@ namespace wmib
                         {
                             case DataType.Boolean:
                             case DataType.Integer:
+                            case DataType.Numeric:
+                            case DataType.Double:
                                 sql.Append(value.Data);
                                 sql.Append(", ");
                                 break;

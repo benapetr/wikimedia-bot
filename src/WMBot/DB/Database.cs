@@ -68,6 +68,13 @@ namespace wmib
                     Column = column;
                 }
 
+                public Value(double number, string column = null)
+                {
+                    Data = number.ToString();
+                    Type = DataType.Double;
+                    Column = column;
+                }
+
                 /// <summary>
                 /// Creates a new value of type date
                 /// </summary>
@@ -196,6 +203,8 @@ namespace wmib
             /// Integer SQL
             /// </summary>
             Integer,
+            Double,
+            Numeric,
             /// <summary>
             /// Boolean SQL
             /// </summary>
