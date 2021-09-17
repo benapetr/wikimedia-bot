@@ -278,6 +278,14 @@ namespace wmib
                                 s.Parameters.Add(new Npgsql.NpgsqlParameter("v" + cv.ToString(), NpgsqlTypes.NpgsqlDbType.Timestamp));
                                 s.Parameters[cv].Value = DateTime.Parse(value.Data);
                                 break;
+                            case DataType.Double:
+                                s.Parameters.Add(new Npgsql.NpgsqlParameter("v" + cv.ToString(), NpgsqlTypes.NpgsqlDbType.Double));
+                                s.Parameters[cv].Value = double.Parse(value.Data);
+                                break;
+                            case DataType.Numeric:
+                                s.Parameters.Add(new Npgsql.NpgsqlParameter("v" + cv.ToString(), NpgsqlTypes.NpgsqlDbType.Numeric));
+                                s.Parameters[cv].Value = double.Parse(value.Data);
+                                break;
                         }
                         cv++;
                     }
