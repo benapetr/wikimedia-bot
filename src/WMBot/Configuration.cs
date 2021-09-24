@@ -140,7 +140,12 @@ namespace wmib
             /// <summary>
             /// Version
             /// </summary>
-            public static string Version = "wikimedia bot v. 2.8.1.0";
+            public static string Version = "wikimedia bot v. 2.8.2.0";
+            public static string UnknownPRIVMSG =    "Hi, I am a robot, this command was not understood. " +
+                                                     "Please bear in mind that every message you send " +
+                                                     "to me will be logged for debugging purposes. See " +
+                                                     "documentation for the bot at http://meta.wikimedia.org/wiki/wm-bot " +
+                                                     "for explanation of the bot's commands.";
             /// <summary>
             /// This is a limit for role level that can be granted, this is used to
             /// prevent users from granting roles like "root" by default

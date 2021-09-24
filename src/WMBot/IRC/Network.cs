@@ -252,12 +252,7 @@ namespace wmib
                 }
                 if (respond)
                 {
-                    IRC.DeliverMessage("Hi, I am a robot, this command was not understood." +
-                                         " Please bear in mind that every message you send" +
-                                         " to me will be logged for debugging purposes. See" +
-                                         " documentation for the bot at http://meta.wikimedia.org/wiki" +
-                                         "/wm-bot for explanation of the bot's commands.", args.SourceInfo,
-                                         libirc.Defs.Priority.Low);
+                    IRC.DeliverMessage(Configuration.System.UnknownPRIVMSG, args.SourceInfo, libirc.Defs.Priority.Low);
                     Syslog.Log("Ignoring private message: (" + args.SourceInfo.Nick + ") " + args.Message, false);
                 }
                 else
