@@ -16,11 +16,11 @@ namespace wmib
 {
     public partial class Commands
     {
-        public static bool Trusted (string message, string user, string host)
+        public static bool Trusted(string message, string user, string host)
         {
             try
             {
-                if (message.StartsWith (Configuration.System.CommandPrefix + "trusted ", System.StringComparison.InvariantCulture))
+                if (message.StartsWith(Configuration.System.CommandPrefix + "trusted ", System.StringComparison.InvariantCulture))
                 {
                     Channel ch = Core.GetChannel (message.Substring ("xtrusted ".Length));
                     if (ch != null)
@@ -44,12 +44,17 @@ namespace wmib
             if (parameters.Parameters == null)
                 return;
 
-            string[] rights_info = parameters.Parameters.Split(' ');
+            string[] rights_info = parameters.Parameters.Trim().Split(' ');
             if (rights_info.Length < 2)
             {
                 IRC.DeliverMessage(Localization.Localize("Trust1", parameters.SourceChannel.Language), parameters.SourceChannel);
                 return;
             }
+
+            // Sanitize input
+            rights_info[0] = rights_info[0].Trim();
+            rights_info[1] = rights_info[1].Trim();
+
             if (!Security.Roles.ContainsKey(rights_info[1]))
             {
                 IRC.DeliverMessage(Localization.Localize("Unknown1", parameters.SourceChannel.Language), parameters.SourceChannel);
@@ -99,12 +104,16 @@ namespace wmib
         private static void TrustDel(CommandParams parameters)
         {
             Channel channel = parameters.SourceChannel;
-            string[] rights_info = parameters.Parameters.Split(' ');
-            if (rights_info[0] == null)
+            string[] rights_info = parameters.Parameters.Trim().Split(' ');
+            if (string.IsNullOrEmpty(rights_info[0]))
             {
                 IRC.DeliverMessage(Localization.Localize("InvalidUser", parameters.SourceChannel.Language), parameters.SourceChannel);
                 return;
             }
+
+            // Sanitize input
+            rights_info[0] = rights_info[0].Trim();
+
             if (rights_info.Length > 1)
             {
                 if (channel.SystemUsers.IsApproved(parameters.User, "root"))
