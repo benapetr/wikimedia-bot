@@ -616,7 +616,7 @@ webseitzwiki|https://webseitz.fluxent.com/wiki/$1
 wg|https://wg.en.wikipedia.org/wiki/$1
 widget|http://www.mediawikiwidgets.org/$1
 wiki|https://c2.com/cgi/wiki?$1
-wikia|https://www.wikia.com/wiki/c:$1
+wikia|https://community.fandom.com/wiki/c:$1
 wikianso|https://www.ansorena.de/mediawiki/wiki/$1
 wikiasite|https://www.wikia.com/wiki/c:$1
 wikible|https://wikible.org/en/$1
