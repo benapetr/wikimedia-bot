@@ -356,6 +356,7 @@ mi|https://mi.wikipedia.org/wiki/$1
 mineralienatlas|https://www.mineralienatlas.de/lexikon/index.php/$1
 minnan|https://minnan.wikipedia.org/wiki/$1
 miraheze|https://meta.miraheze.org/wiki/$1
+mirahezebots|https://wiki.mirahezebots.org/wiki/$1
 mk|https://mk.wikipedia.org/wiki/$1
 ml|https://ml.wikipedia.org/wiki/$1
 mn|https://mn.wikipedia.org/wiki/$1
