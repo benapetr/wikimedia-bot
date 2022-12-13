@@ -70,7 +70,7 @@ class LogsHtml
         $x = str_replace(chr(3) . "0", chr(3), $x);
         $c = array("FFF","000","00007F","009000","FF0000","7F0000","9F009F","FF7F00","FFFF00","00F800","00908F","00FFFF","0000FF","FF00FF","7F7F7F","CFD0CF");
 
-        for ($i = 0; $i < count($c); $i++)
+        for ($i = 0; $i < count($x); $i++)
         {
             $n1 = 0;
             $n2 = 0;
@@ -132,19 +132,19 @@ class LogsHtml
             {
                 case 1:
                     $html .= "<tr><td width=120><b>" . $log_line["time"] . "</b></td><td colspan=2>** " . $log_line["nick"] . " has quit: " . self::al( $log_line["contents"] ) . "</td></tr>\n";
-                    continue;
+                    break;
                 case 2:
                     $html .= "<tr><td width=120><b>" . $log_line["time"] . "</b></td><td colspan=2>** " . $log_line["nick"] . " joined channel</td></tr>\n";
-                    continue;
+                    break;
                 case 3:
                     $html .= "<tr><td width=120><b>" . $log_line["time"] . "</b></td><td colspan=2>** " . $log_line["nick"] . " parted the channel " . self::al( $log_line["contents"] ) . "</td></tr>\n";
-                    continue;
+                    break;
                 case 4:
                     $html .= "<tr><td width=120><b>" . $log_line["time"] . "</b></td><td colspan=2>** " . $log_line["nick"] . " was kicked from channel by " . $log_line["contents"] . "</td></tr>\n";
-                    continue;
+                    break;
                 case 6:
                     $html .= "<tr><td width=120><b>" . $log_line["time"] . "</b></td><td colspan=2>** " . $log_line["contents"] . " changed nickname to " . $log_line["nick"] . "</td></tr>\n";
-                    continue;
+                    break;
             }
         }
         $html .= "</table></div>\n";
