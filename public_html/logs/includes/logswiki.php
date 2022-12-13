@@ -23,16 +23,16 @@ class LogsWiki
             {
                 case 1:
                     $html .= "'''" . $blah["time"] . " =" . $blah["nick"] . " has quit:''' " . htmlspecialchars ( LogsHtml::Remove( $blah["contents"] ) ) . "&lt;br&gt;<br>\n";
-                    continue;
+                    break;
                 case 2:
                     $html .= "'''" . $blah["time"] . " =" . $blah["nick"] . " joined channel'''" . "&lt;br&gt;<br>\n";
-                    continue;
+                    break;
                 case 3:
                     $html .= "'''" . $blah["time"] . " =" . $blah["nick"] . " parted the channel''' " . LogsHtml::al( $blah["contents"] ) . "&lt;br&gt;<br>\n";
-                    continue;
+                    break;
                 case 4:
                     $html .= "'''" . $blah["time"] . " =" . $blah["nick"] . " was kicked from channel''' by " . $blah["contents"] . "&lt;br&gt;<br>\n";
-                    continue;
+                    break;
             }
         }
         $html .= "</p></div>\n";
