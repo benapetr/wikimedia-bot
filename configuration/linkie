@@ -441,6 +441,7 @@ pi|https://pi.wikipedia.org/wiki/$1
 pih|https://pih.wikipedia.org/wiki/$1
 pl|https://pl.wikipedia.org/wiki/$1
 planetmath|https://planetmath.org/?op=getobj&from=objects&id=$1
+plwiktionary|https://pl.wiktionary.org/wiki/$1
 pmeg|https://www.bertilow.com/pmeg/$1
 pms|https://pms.wikipedia.org/wiki/$1
 pmwiki|https://old.porplemontage.com/wiki/index.php/$1
