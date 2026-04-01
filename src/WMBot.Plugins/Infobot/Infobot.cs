@@ -748,7 +748,7 @@ namespace wmib.Extensions
             }
             if (!key.StartsWith(Configuration.System.CommandPrefix + "regsearch ", StringComparison.InvariantCulture))
                 return;
-            if (!misc.IsValidRegex(key))
+            if (!Misc.IsValidRegex(key))
             {
                 IRC.DeliverMessage(Localization.Localize("Error1", Chan.Language), Chan.Name);
                 return;

@@ -37,7 +37,7 @@ namespace wmib
     /// <summary>
     /// misc
     /// </summary>
-    public class misc
+    public class Misc
     {
         /// <summary>
         /// Check if a regex is valid

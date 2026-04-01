@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using Newtonsoft.Json;
 
@@ -161,21 +159,11 @@ namespace wmib
             return null;
         }
 
-        public static bool Validator(object sender, X509Certificate certificate, X509Chain chain,
-                                      SslPolicyErrors sslPolicyErrors)
-        {
-            return true;
-        }
-
-
-
         private static bool Download(string file, string where)
         {
             try
             {
-                ServicePointManager.ServerCertificateValidationCallback = Validator;
-                WebClient _b = new WebClient();
-                _b.DownloadFile(file, where);
+                LegacyHttp.DownloadFile(file, where, true);
                 return true;
             }
             catch (Exception fail)

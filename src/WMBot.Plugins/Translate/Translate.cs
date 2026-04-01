@@ -114,7 +114,6 @@ namespace wmib.Extensions
 
         public override void Load()
         {
-            System.Net.WebClient wx = new System.Net.WebClient();
             string key = Configuration.RetrieveConfig("yandex");
             key = System.Web.HttpUtility.UrlEncode(key);
             if (key == null)
@@ -138,9 +137,9 @@ namespace wmib.Extensions
                         try
                         {
                             // get a translation for this item
-                            string result = wx.DownloadString(this.URL + "translate?key=" + key + "&lang=" + System.Web.HttpUtility.UrlEncode(request.SourceLang) + "-" +
-                                                              System.Web.HttpUtility.UrlEncode(request.TargetLang) + "&text=" + 
-                                                              System.Web.HttpUtility.UrlEncode(request.Message));
+                            string result = LegacyHttp.DownloadString(this.URL + "translate?key=" + key + "&lang=" + System.Web.HttpUtility.UrlEncode(request.SourceLang) + "-" +
+                                                                      System.Web.HttpUtility.UrlEncode(request.TargetLang) + "&text=" +
+                                                                      System.Web.HttpUtility.UrlEncode(request.Message));
                             XmlDocument xd = new XmlDocument();
                             xd.LoadXml(result);
                             bool ok = false;

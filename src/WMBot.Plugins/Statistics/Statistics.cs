@@ -66,7 +66,7 @@ namespace wmib.Extensions
                     {
                         list.data.Sort();
                         list.data.Reverse();
-                        foreach (Statistics.list user in list.data)
+                        foreach (Statistics.Entry user in list.data)
                         {
                             id++;
                             totalms += user.messages;
@@ -251,7 +251,7 @@ namespace wmib.Extensions
         public bool Stored = false;
         public static Thread db;
 
-        public class list : IComparable
+        public class Entry : IComparable
         {
             public string user;
             public int messages = 0;
@@ -262,19 +262,19 @@ namespace wmib.Extensions
 
             public int CompareTo(object O)
             {
-                if (O is list)
+                if (O is Entry)
                 {
-                    return messages.CompareTo((O as list).messages);
+                    return messages.CompareTo((O as Entry).messages);
                 }
                 return 0;
             }
         }
 
-        public List<list> data;
+        public List<Entry> data;
 
         public Statistics(Channel _channel)
         {
-            data = new List<list>();
+            data = new List<Entry>();
             channel = _channel;
             Load();
         }
@@ -283,10 +283,10 @@ namespace wmib.Extensions
         {
             if (Module.GetConfig(channel, "Statistics.Enabled", false))
             {
-                list user = null;
+                Entry user = null;
                 lock (data)
                 {
-                    foreach (list item in data)
+                    foreach (Entry item in data)
                     {
                         if (nick.ToUpper() == item.user.ToUpper())
                         {
@@ -297,7 +297,7 @@ namespace wmib.Extensions
                 }
                 if (user == null)
                 {
-                    user = new list {user = nick, logging_since = DateTime.Now};
+                    user = new Entry {user = nick, logging_since = DateTime.Now};
                     lock (data)
                     {
                         data.Add(user);
@@ -313,7 +313,7 @@ namespace wmib.Extensions
 
         public void Delete()
         {
-            data = new List<list>();
+            data = new List<Entry>();
             Save();
         }
 
@@ -324,7 +324,7 @@ namespace wmib.Extensions
 
             lock(data)
             {
-                foreach (list curr in data)
+                foreach (Entry curr in data)
                 {
                     XmlAttribute name = stat.CreateAttribute("username");
                     name.Value = curr.user;
@@ -367,14 +367,14 @@ namespace wmib.Extensions
                 {
                     lock (data)
                     {
-                        data = new List<list>();
+                        data = new List<Entry>();
                         XmlDocument stat = new XmlDocument();
                         stat.Load(Variables.ConfigurationDirectory + Path.DirectorySeparatorChar + channel.Name + ".statistics");
                         if (stat.ChildNodes[0].ChildNodes.Count > 0)
                         {
                             foreach (XmlNode curr in stat.ChildNodes[0].ChildNodes)
                             {
-                                list item = new list
+                                Entry item = new Entry
                                 {
                                     user = curr.Attributes[0].Value,
                                     messages = int.Parse(curr.Attributes[1].Value),

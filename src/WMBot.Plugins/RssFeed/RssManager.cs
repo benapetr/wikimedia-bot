@@ -16,9 +16,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Web;
 using System.Xml;
@@ -61,12 +58,6 @@ namespace wmib.Extensions.RssFeed
             return false;
         }
 
-        public static bool Validator(object sender, X509Certificate certificate, X509Chain chain,
-                                      SslPolicyErrors sslPolicyErrors)
-        {
-            return true;
-        }
-
         /// <summary>
         /// Reads the relevant Rss feed and returns a list of RssFeedItems
         /// </summary>
@@ -82,13 +73,8 @@ namespace wmib.Extensions.RssFeed
                 //create a new list of the rss feed items to return
                 List<RssFeedItem> rssFeedItems = new List<RssFeedItem>();
 
-                //create a http request which will be used to retrieve the rss feed
-                ServicePointManager.ServerCertificateValidationCallback = Validator;
-                HttpWebRequest rssFeed = (HttpWebRequest)WebRequest.Create(url);
-
                 XmlDocument rss = new XmlDocument();
-                StreamReader xx = new StreamReader(rssFeed.GetResponse().GetResponseStream());
-                temp = xx.ReadToEnd();
+                temp = LegacyHttp.DownloadString(url, ignoreCertificateErrors: true);
                 rss.LoadXml(temp);
 
                 if (url.StartsWith("http://bugzilla.wikimedia") || url.StartsWith("https://bugzilla.wikimedia"))

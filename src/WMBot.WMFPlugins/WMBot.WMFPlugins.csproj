@@ -15,6 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="../Shared/LegacyHttp.cs" Link="Compatibility/LegacyHttp.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../WMBot/WMBot.csproj" />
     <ProjectReference Include="../../libirc/libirc.csproj" />
   </ItemGroup>

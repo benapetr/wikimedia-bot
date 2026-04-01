@@ -284,7 +284,7 @@ namespace wmib.Extensions
         {
             try
             {
-                if (misc.IsValidRegex(temp_nick))
+                if (Misc.IsValidRegex(temp_nick))
                 {
                     Regex ex = new Regex(temp_nick);
                     string response = "I have never seen " + temp_nick;

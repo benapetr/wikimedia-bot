@@ -389,7 +389,7 @@ namespace wmib
         /// <returns></returns>
         public bool AddUser (string level, string user, Channel err_channel)
         {
-            if (!misc.IsValidRegex (user)) {
+            if (!Misc.IsValidRegex (user)) {
                 Syslog.Log ("Unable to create user " + user + " because the regex is invalid", true);
                 IRC.DeliverMessage ("Unable to add user because this regex is not valid", err_channel);
                 return false;

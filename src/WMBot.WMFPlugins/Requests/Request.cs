@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading;
 using System.Xml;
 
@@ -26,19 +25,16 @@ namespace wmib
 
         private static ArrayList getWaitingUsernames(string categoryName, string usernamePrintout)
         {
-            WebClient client = new WebClient();
-            client.Headers.Add("User-Agent", "wm-bot (https://meta.wikimedia.org/wiki/Wm-bot)");
-
             // TODO: When wikitech is updated to SMW 1.9, use
             // "action=askargs" and add "?Modification date#ISO" to
             // the printouts to calculate "Waiting for x minutes"
             // data.
             string Url = "https://wikitech.wikimedia.org/w/api.php" + "?action=ask" + "&query=" +
-                Uri.EscapeUriString("[[Category:" + categoryName + "]] [[Is Completed::No]]|?" +
-                                    usernamePrintout) + "&format=wddx";
+                Uri.EscapeDataString("[[Category:" + categoryName + "]] [[Is Completed::No]]|?" +
+                                     usernamePrintout) + "&format=wddx";
 
             // Get the query results.
-            string Result = client.DownloadString(Url);
+            string Result = LegacyHttp.DownloadString(Url, "wm-bot (https://meta.wikimedia.org/wiki/Wm-bot)", true);
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(Result);
 
@@ -127,10 +123,6 @@ namespace wmib
         {
             try
             {
-                // TODO: Install CA certificate used by wikitech to
-                // Mono.
-                ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => true;
-
                 pRequestsChannel = Core.GetChannel(RequestChannel);
                 if (pRequestsChannel == null)
                 {
