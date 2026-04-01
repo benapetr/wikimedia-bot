@@ -14,16 +14,41 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
-#if __MonoCS__
-using Mono.Unix.Native;
-using Mono.Unix;
-#endif
 
 namespace wmib
 {
     internal class Program
     {
+        private static IDisposable[] RegisterPosixSignals()
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                return Array.Empty<IDisposable>();
+            }
+
+            return new IDisposable[]
+            {
+                PosixSignalRegistration.Create(PosixSignal.SIGTERM, context =>
+                {
+                    context.Cancel = true;
+                    Syslog.WriteNow("SIGTERM - Shutting down", true);
+                    Core.Kill();
+                }),
+                PosixSignalRegistration.Create(PosixSignal.SIGQUIT, context =>
+                {
+                    context.Cancel = true;
+                    SigInt(null, null);
+                }),
+                PosixSignalRegistration.Create(PosixSignal.SIGHUP, context =>
+                {
+                    context.Cancel = true;
+                    SigInt(null, null);
+                })
+            };
+        }
+
         /// <summary>
         /// This is used to handle UNIX signals
         /// </summary>
@@ -136,6 +161,7 @@ namespace wmib
                 Syslog.WriteNow ("Loading...");
                 logger.Start ();
                 Console.CancelKeyPress += SigInt;
+                IDisposable[] signalRegistrations = RegisterPosixSignals();
                 Localization.LoadLD ();
                 if (Configuration.Load () != 0) {
                     Syslog.WriteNow ("Error while loading the config file, exiting", true);
@@ -176,35 +202,13 @@ namespace wmib
                 Security.Global ();
                 Syslog.Log ("Connecting");
                 IRC.Connect ();
-#if __MonoCS__
-UnixSignal[] signals = 
-                {
-                    new UnixSignal (Signum.SIGINT),
-                    new UnixSignal (Signum.SIGTERM),
-                    new UnixSignal (Signum.SIGQUIT),
-                    new UnixSignal (Signum.SIGHUP)
-                };
-#endif
                 while (Core.IsRunning) {
-#if __MonoCS__
-                    int index = UnixSignal.WaitAny (signals,-1);
-                    Signum signal = signals [index].Signum;
-                    switch (signal)
-                    {
-                        case Signum.SIGINT:
-                            SigInt(null, null);
-                            goto exit;
-                        case Signum.SIGTERM:
-                            Syslog.WriteNow("SIGTERM - Shutting down", true);
-                            Core.Kill();
-                            goto exit;
-                    }
-#endif
                     Thread.Sleep (200);
                 }
-#if __MonoCS__
-                exit:
-#endif
+                foreach (IDisposable registration in signalRegistrations)
+                {
+                    registration.Dispose();
+                }
                 // memory cleanup
                 if (Core.DB != null)
                     ((WMIBMySQL)Core.DB).Dispose ();

@@ -1,96 +1,18 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{48F7BDF0-4CD8-477F-A083-3F7E1D035F36}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WMBot.Plugins</RootNamespace>
     <AssemblyName>WMBot.Plugins</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <RootNamespace>WMBot.Plugins</RootNamespace>
+    <OutputPath>../../bin/modules/</OutputPath>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\..\bin\mods</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\..\bin\modules\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Web" />
-    <Reference Include="Mono.Posix">
-    </Reference>
-    <Reference Include="System.Xml" />
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\WMBot.WMFPlugins\Newtonsoft.Json.dll</HintPath>
+      <HintPath>../WMBot.WMFPlugins/Newtonsoft.Json.dll</HintPath>
     </Reference>
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="GitHub\GitHubHook.cs" />
-    <Compile Include="HtmlDump\HtmlDump.cs" />
-    <Compile Include="Infobot\Definitions.cs" />
-    <Compile Include="Infobot\Infobot.cs" />
-    <Compile Include="Infobot\IO.cs" />
-    <Compile Include="Infobot\Plugin.cs" />
-    <Compile Include="Infobot\SaveLoad.cs" />
-    <Compile Include="Logs\Log.cs" />
-    <Compile Include="NetCat\NetCat.cs" />
-    <Compile Include="Notify\Notification.cs" />
-    <Compile Include="Notify\NotifyUs.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RssFeed\Feed.cs" />
-    <Compile Include="RssFeed\Module.cs" />
-    <Compile Include="RssFeed\RssManager.cs" />
-    <Compile Include="Scripting\ScriptingEngine.cs" />
-    <Compile Include="Seen\Seen.cs" />
-    <Compile Include="Slap\Slap.cs" />
-    <Compile Include="Statistics\Statistics.cs" />
-    <Compile Include="SystemInfo\Info.cs" />
-    <Compile Include="Thanks\Thanks.cs" />
-    <Compile Include="DynamicRole\DynamicRoles.cs" />
-    <Compile Include="Translate\Translate.cs" />
-    <Compile Include="OperatorTools\ChannelTools.cs" />
-    <Compile Include="Time\Time.cs" />
-    <Compile Include="AI\AI.cs" />
-    <Compile Include="AI\UserInfo.cs" />
-    <Compile Include="NetworkBridge\NetworkBridge.cs" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
-  <ItemGroup />
-  <ItemGroup>
-    <Folder Include="Time\" />
-    <Folder Include="NetworkBridge\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\WMBot\WMBot.csproj">
-      <Project>{69FFE45E-1CA0-47E5-92D9-4C8E2EDBE911}</Project>
-      <Name>WMBot</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\libirc\libirc.csproj">
-      <Project>{944CB47E-0E2F-4371-8291-92CE2C4E68CA}</Project>
-      <Name>libirc</Name>
-    </ProjectReference>
+    <ProjectReference Include="../WMBot/WMBot.csproj" />
+    <ProjectReference Include="../../libirc/libirc.csproj" />
   </ItemGroup>
 </Project>

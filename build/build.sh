@@ -1,26 +1,34 @@
 #!/bin/sh
 
-p="/p:Configuration=Debug"
+set -eu
 
-if [ "$1" = "--rl" ]; then
-    p="/p:Configuration=Release"
+configuration="Debug"
+
+if [ "${1:-}" = "--rl" ]; then
+    configuration="Release"
 fi
 
-echo "Checking all required packages..."
-
-if [ "`which xbuild`" = "" ];then
-	echo "mono-xbuild is not installed!"
-	exit 1
+if ! command -v dotnet >/dev/null 2>&1; then
+    echo "dotnet SDK is not installed"
+    exit 1
 fi
 
-xbuild "$p" || exit 1
+if [ ! -f libirc/libirc.csproj ]; then
+    echo "Missing libirc submodule, run:"
+    echo "  git submodule update --init --recursive"
+    exit 1
+fi
 
-if [ ! -d bin/configuration ];then
+dotnet restore WMBot.sln
+dotnet build WMBot.sln -p:Configuration="$configuration"
+
+if [ ! -d bin/configuration ]; then
     cp -r configuration "bin/configuration"
 fi
 
-echo "Everything was built, you can start bot by typing"
-echo "this is terminal:"
-echo cd bin
-echo mono wmib.exe
-
+echo "Build completed."
+echo "Artifacts are in ./bin"
+echo "Run the bot with:"
+echo "  dotnet ./bin/wmib.dll"
+echo "Run the bouncer with:"
+echo "  dotnet ./bin/WMBot.Bouncer.dll"

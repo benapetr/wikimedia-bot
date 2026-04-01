@@ -1,73 +1,21 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{88297B7F-B4AD-48EA-B650-065E391B3C96}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WMBot.WMFPlugins</RootNamespace>
     <AssemblyName>WMBot.WMFPlugins</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <RootNamespace>WMBot.WMFPlugins</RootNamespace>
+    <OutputPath>../../bin/modules/</OutputPath>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\..\bin\mods</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\..\bin\mods</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
     <Reference Include="Newtonsoft.Json">
       <HintPath>Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Xml" />
     <Reference Include="XmlRcs">
-      <HintPath>.\XmlRcs.dll</HintPath>
+      <HintPath>XmlRcs.dll</HintPath>
     </Reference>
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="Labs\Labs.cs" />
-    <Compile Include="Link\Link.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RC\RecentChanges.cs" />
-    <Compile Include="RC\ModuleRC.cs" />
-    <Compile Include="Replag\Rl.cs" />
-    <Compile Include="Requests\Request.cs" />
-    <Compile Include="OpsTools\OpsTools.cs" />
+    <ProjectReference Include="../WMBot/WMBot.csproj" />
+    <ProjectReference Include="../../libirc/libirc.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\WMBot\WMBot.csproj">
-      <Project>{69FFE45E-1CA0-47E5-92D9-4C8E2EDBE911}</Project>
-      <Name>WMBot</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\libirc\libirc.csproj">
-      <Project>{944CB47E-0E2F-4371-8291-92CE2C4E68CA}</Project>
-      <Name>libirc</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

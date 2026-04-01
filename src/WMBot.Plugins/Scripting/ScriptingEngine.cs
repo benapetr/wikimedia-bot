@@ -191,6 +191,11 @@ namespace wmib.Extensions
 #if __MonoCS__
                                 Mono.Unix.Native.Syscall.chmod(filename, Mono.Unix.Native.FilePermissions.S_IROTH);
 #endif
+                                if (!OperatingSystem.IsWindows())
+                                {
+                                    UnixFileMode mode = File.GetUnixFileMode(filename);
+                                    File.SetUnixFileMode(filename, mode | UnixFileMode.OtherRead);
+                                }
                                 if (ts.channel == null)
                                 {
                                     // send back to channel
