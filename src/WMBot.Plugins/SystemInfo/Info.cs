@@ -29,6 +29,9 @@ namespace wmib.Extensions
                         " connected: " + instance.IsConnected + " working: " +
                         instance.IsWorking + " queue: " + instance.QueueSize(), pm.SourceChannel.Name);
                 }
+            } else
+            {
+                IRC.DeliverMessage("This command works only in " + Configuration.System.DebugChan, pm.SourceChannel);
             }
         }
 
